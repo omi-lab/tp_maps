@@ -3,18 +3,26 @@
 
 #include "tp_maps/Globals.h"
 
+#include "lib_platform/Polyfill.h"
+
 #include <functional>
 
 namespace tp_maps
 {
-class Map;
-class ShaderPointer;
-
 enum class ShaderType
 {
   Render,
   Picking
 };
+
+}
+
+TP_ENUM_HASH(tp_maps::ShaderType)
+
+namespace tp_maps
+{
+class Map;
+class ShaderPointer;
 
 //##################################################################################################
 //! The base class for shaders.

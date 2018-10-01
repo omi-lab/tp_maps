@@ -47,6 +47,23 @@
 #  define tpGenVertexArrays glGenVertexArrays
 #  define tpBindVertexArray glBindVertexArray
 #  define tpDeleteVertexArrays glDeleteVertexArrays
+#elif defined(TDP_ANDROID) //-----------------------------------------------------------------------
+#  include <GLES3/gl3.h>
+
+#  define TP_VERT_SHADER_HEADER "#version 100\nprecision mediump float;\n"
+#  define TP_FRAG_SHADER_HEADER "#version 100\nprecision mediump float;\n"
+
+#  define TP_GLSL_IN_V "attribute "
+#  define TP_GLSL_IN_F "varying "
+#  define TP_GLSL_OUT_V "varying "
+#  define TP_GLSL_OUT_F "varying "
+#  define TP_GLSL_GLFRAGCOLOR "gl_FragColor"
+#  define TP_GLSL_GLFRAGCOLOR_DEF
+#  define TP_GLSL_TEXTURE "texture2D"
+
+#  define tpGenVertexArrays glGenVertexArrays
+#  define tpBindVertexArray glBindVertexArray
+#  define tpDeleteVertexArrays glDeleteVertexArrays
 #else //--------------------------------------------------------------------------------------------
 #  include <GLES3/gl3.h>
 
