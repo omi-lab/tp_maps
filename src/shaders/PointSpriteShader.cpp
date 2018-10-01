@@ -16,12 +16,12 @@ const char* renderVertexShaderStr =
     TP_GLSL_IN_V"vec3 inPosition;\n"
     TP_GLSL_IN_V"vec3 inOffset;\n"
     TP_GLSL_IN_V"vec2 inTexture;\n"
-    "uniform mat4 matrix;\n"
-    "uniform vec2 scaleFactor;\n"
+                "uniform mat4 matrix;\n"
+                "uniform vec2 scaleFactor;\n"
     TP_GLSL_OUT_V"vec2 texCoordinate;\n"
     TP_GLSL_OUT_V"vec4 color;\n"
-    "void main()\n"
-    "{\n"
+                 "void main()\n"
+                 "{\n"
     //"  uint id = uint(gl_VertexID);\n"
     "  gl_Position = (matrix * vec4(inPosition, 1.0));\n"
     "  gl_Position = vec4(gl_Position.xyz * (1.0/gl_Position.w), 1.0) + vec4(inOffset.x*scaleFactor.x, inOffset.y*scaleFactor.y, 0.0, 0.0);\n"
@@ -38,9 +38,9 @@ const char* renderFragmentShaderStr =
     "void main()\n"
     "{\n"
     "  " TP_GLSL_GLFRAGCOLOR " = " TP_GLSL_TEXTURE "(textureSampler, texCoordinate) * color;\n"
-    "  if(" TP_GLSL_GLFRAGCOLOR ".a < 0.001)\n"
-    "    discard;\n"
-    "}\n";
+                                                   "  if(" TP_GLSL_GLFRAGCOLOR ".a < 0.001)\n"
+                                                                               "    discard;\n"
+                                                                               "}\n";
 
 const char* pickingVertexShaderStr =
     TP_VERT_SHADER_HEADER
@@ -48,22 +48,22 @@ const char* pickingVertexShaderStr =
     TP_GLSL_IN_V"vec3 inPosition;\n"
     TP_GLSL_IN_V"vec3 inOffset;\n"
     TP_GLSL_IN_V"vec2 inTexture;\n"
-    "uniform mat4 matrix;\n"
-    "uniform vec2 scaleFactor;\n"
-    "uniform uint pickingID;\n"
+                "uniform mat4 matrix;\n"
+                "uniform vec2 scaleFactor;\n"
+                "uniform uint pickingID;\n"
     TP_GLSL_OUT_V"vec2 texCoordinate;\n"
     TP_GLSL_OUT_V"vec4 picking;\n"
-    "void main()\n"
-    "{\n"
-    "  gl_Position = (matrix * vec4(inPosition, 1.0));\n"
-    "  gl_Position = vec4(gl_Position.xyz * (1.0/gl_Position.w), 1.0) + vec4(inOffset.x*scaleFactor.x, inOffset.y*scaleFactor.y, 0.0, 0.0);\n"
-    "  texCoordinate = inTexture;\n"
-    "  uint id = pickingID + (uint(gl_VertexID)/4u);\n"
-    "  uint r = (id & 0x000000FFu) >>  0u;\n"
-    "  uint g = (id & 0x0000FF00u) >>  8u;\n"
-    "  uint b = (id & 0x00FF0000u) >> 16u;\n"
-    "  picking = vec4(r,g,b,255.0f)/255.0f;\n"
-    "}\n";
+                 "void main()\n"
+                 "{\n"
+                 "  gl_Position = (matrix * vec4(inPosition, 1.0));\n"
+                 "  gl_Position = vec4(gl_Position.xyz * (1.0/gl_Position.w), 1.0) + vec4(inOffset.x*scaleFactor.x, inOffset.y*scaleFactor.y, 0.0, 0.0);\n"
+                 "  texCoordinate = inTexture;\n"
+                 "  uint id = pickingID + (uint(gl_VertexID)/4u);\n"
+                 "  uint r = (id & 0x000000FFu) >>  0u;\n"
+                 "  uint g = (id & 0x0000FF00u) >>  8u;\n"
+                 "  uint b = (id & 0x00FF0000u) >> 16u;\n"
+                 "  picking = vec4(r,g,b,255.0f)/255.0f;\n"
+                 "}\n";
 
 const char* pickingFragmentShaderStr =
     TP_FRAG_SHADER_HEADER
@@ -74,9 +74,9 @@ const char* pickingFragmentShaderStr =
     "void main()\n"
     "{\n"
     "  " TP_GLSL_GLFRAGCOLOR " = picking;\n"
-    "  if(" TP_GLSL_TEXTURE "(textureSampler, texCoordinate).a < 0.001)\n"
-    "    discard;\n"
-    "}\n";
+                             "  if(" TP_GLSL_TEXTURE "(textureSampler, texCoordinate).a < 0.001)\n"
+                                                     "    discard;\n"
+                                                     "}\n";
 }
 
 //##################################################################################################
@@ -100,12 +100,10 @@ struct PointSpriteShader::Private
       return;
 
     tpBindVertexArray(vertexBuffer->vaoID);
-    glDrawRangeElements(GL_TRIANGLES,
-                        0,
-                        vertexBuffer->vertexCount,
-                        GLsizei(vertexBuffer->indexCount),
-                        GL_UNSIGNED_INT,
-                        nullptr);
+    tpDrawElements(GL_TRIANGLES,
+                   GLsizei(vertexBuffer->indexCount),
+                   GL_UNSIGNED_INT,
+                   nullptr);
     tpBindVertexArray(0);
   }
 };
@@ -335,8 +333,12 @@ void PointSpriteShader::drawPointSprites(VertexBuffer* vertexBuffer)
 
 //##################################################################################################
 void PointSpriteShader::drawPointSpritesPicking(VertexBuffer* vertexBuffer, uint32_t pickingID)
-{  
+{
+#ifdef TDP_IOS
+  glUniform1i(d->pickingIDLoc, GLint(pickingID));
+#else
   glUniform1ui(d->pickingIDLoc, pickingID);
+#endif
   d->draw(vertexBuffer);
 }
 

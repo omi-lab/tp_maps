@@ -54,9 +54,7 @@ struct ImageShader::Private
   void draw(GLenum mode, ImageShader::VertexBuffer* vertexBuffer)
   {
     tpBindVertexArray(vertexBuffer->vaoID);
-    glDrawRangeElements(mode,
-                        0,
-                        vertexBuffer->vertexCount,
+    tpDrawElements(mode,
                         vertexBuffer->indexCount,
                         GL_UNSIGNED_SHORT,
                         nullptr);

@@ -20,14 +20,14 @@ const char* vertexShaderStr =
     TP_GLSL_OUT_V"vec2 texCoordinate;\n"
     TP_GLSL_OUT_V"vec3 normal;\n"
     TP_GLSL_OUT_V"vec3 fragPos;\n"
-    "uniform mat4 matrix;\n"
-    "void main()\n"
-    "{\n"
-    "  gl_Position = matrix * vec4(inVertex, 1.0);\n"
-    "  fragPos = inVertex;\n"
-    "  LightVector0 = vec3(1.0, 1.0, 1.0);\n"
-    "  normal = inNormal;\n"
-    "}\n";
+                 "uniform mat4 matrix;\n"
+                 "void main()\n"
+                 "{\n"
+                 "  gl_Position = matrix * vec4(inVertex, 1.0);\n"
+                 "  fragPos = inVertex;\n"
+                 "  LightVector0 = vec3(1.0, 1.0, 1.0);\n"
+                 "  normal = inNormal;\n"
+                 "}\n";
 
 const char* fragmentShaderStr =
     TP_FRAG_SHADER_HEADER
@@ -81,8 +81,8 @@ const char* fragmentShaderStr =
     "  \n"
     "  vec3 result = ambient + diffuse + specular;\n"
     "  " TP_GLSL_GLFRAGCOLOR " = vec4(result, material.alpha);\n"
-    "  " TP_GLSL_GLFRAGCOLOR " = (picking*pickingID) + ((1.0-picking)*" TP_GLSL_GLFRAGCOLOR ");"
-    "}\n";
+                             "  " TP_GLSL_GLFRAGCOLOR " = (picking*pickingID) + ((1.0-picking)*" TP_GLSL_GLFRAGCOLOR ");"
+                                                                                                                     "}\n";
 }
 
 //##################################################################################################
@@ -108,12 +108,10 @@ struct MaterialShader::Private
   void draw(GLenum mode, MaterialShader::VertexBuffer* vertexBuffer)
   {
     tpBindVertexArray(vertexBuffer->vaoID);
-    glDrawRangeElements(mode,
-                        0,
-                        vertexBuffer->vertexCount,
-                        vertexBuffer->indexCount,
-                        GL_UNSIGNED_SHORT,
-                        nullptr);
+    tpDrawElements(mode,
+                   vertexBuffer->indexCount,
+                   GL_UNSIGNED_SHORT,
+                   nullptr);
     tpBindVertexArray(0);
   }
 };

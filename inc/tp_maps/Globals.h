@@ -13,7 +13,7 @@
 
 #ifdef TDP_OSX //-----------------------------------------------------------------------------------
 #  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
-#  include <GLES3/gl3.h>
+#  include <gl3.h>
 #  include <OpenGL/glext.h>
 
 #  define TP_VERT_SHADER_HEADER "#version 120\n"
@@ -30,6 +30,28 @@
 #  define tpGenVertexArrays glGenVertexArraysAPPLE
 #  define tpBindVertexArray glBindVertexArrayAPPLE
 #  define tpDeleteVertexArrays glDeleteVertexArraysAPPLE
+#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
+
+#elif defined(TDP_IOS) //---------------------------------------------------------------------------
+#  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
+#  include <GLES2/gl2.h>
+
+#  define TP_VERT_SHADER_HEADER "#version 120\n"
+#  define TP_FRAG_SHADER_HEADER "#version 120\n"
+
+#  define TP_GLSL_IN_V "attribute "
+#  define TP_GLSL_IN_F "varying "
+#  define TP_GLSL_OUT_V "varying "
+#  define TP_GLSL_OUT_F "varying "
+#  define TP_GLSL_GLFRAGCOLOR "gl_FragColor"
+#  define TP_GLSL_GLFRAGCOLOR_DEF
+#  define TP_GLSL_TEXTURE "texture2D"
+
+#  define tpGenVertexArrays glGenVertexArraysOES
+#  define tpBindVertexArray glBindVertexArrayOES
+#  define tpDeleteVertexArrays glDeleteVertexArraysOES
+#  define tpDrawElements(mode, count, type, indices) glDrawElements(mode, count, type, indices)
+
 #elif defined(TDP_EMSCRIPTEN) //--------------------------------------------------------------------
 #  include <GLES3/gl3.h>
 
@@ -47,6 +69,8 @@
 #  define tpGenVertexArrays glGenVertexArrays
 #  define tpBindVertexArray glBindVertexArray
 #  define tpDeleteVertexArrays glDeleteVertexArrays
+#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
+
 #elif defined(TDP_ANDROID) //-----------------------------------------------------------------------
 #  include <GLES3/gl3.h>
 
@@ -64,6 +88,8 @@
 #  define tpGenVertexArrays glGenVertexArrays
 #  define tpBindVertexArray glBindVertexArray
 #  define tpDeleteVertexArrays glDeleteVertexArrays
+#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
+
 #else //--------------------------------------------------------------------------------------------
 #  include <GLES3/gl3.h>
 
@@ -81,6 +107,8 @@
 #  define tpGenVertexArrays glGenVertexArrays
 #  define tpBindVertexArray glBindVertexArray
 #  define tpDeleteVertexArrays glDeleteVertexArrays
+#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
+
 #endif //-------------------------------------------------------------------------------------------
 
 //##################################################################################################
