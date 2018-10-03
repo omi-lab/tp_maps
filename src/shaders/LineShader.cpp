@@ -13,7 +13,7 @@ namespace
 const char* vertexShaderStr =
     TP_VERT_SHADER_HEADER
     "uniform mat4 matrix;\n"
-    TP_GLSL_IN_V"vec3 position;\n"
+    TP_GLSL_IN_V "vec3 position;\n"
     "void main()\n"
     "{\n"
     "  gl_Position=matrix*vec4(position, 1.0);\n"
@@ -87,7 +87,7 @@ void LineShader::setLineWidth(float lineWidth)
 //##################################################################################################
 void LineShader::setColor(const glm::vec3& color)
 {
-  glUniform3fv(d->colorLocation , 1, (GLfloat*)&color);
+  glUniform3fv(d->colorLocation , 1, &color.x);
 }
 
 //##################################################################################################
@@ -121,7 +121,7 @@ LineShader::VertexBuffer* LineShader::generateVertexBuffer(Map* map, const std::
   tpBindVertexArray(vertexBuffer->vaoID);
 
   glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)(0));
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), nullptr);
   glEnableVertexAttribArray(0);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer->iboID);

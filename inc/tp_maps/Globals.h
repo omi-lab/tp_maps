@@ -36,16 +36,16 @@
 #  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
 #  include <GLES2/gl2.h>
 
-#  define TP_VERT_SHADER_HEADER "#version 120\n"
-#  define TP_FRAG_SHADER_HEADER "#version 120\n"
+#  define TP_VERT_SHADER_HEADER "#version 300 es\nprecision mediump float;"
+#  define TP_FRAG_SHADER_HEADER "#version 300 es\nprecision mediump float;"
 
-#  define TP_GLSL_IN_V "attribute "
-#  define TP_GLSL_IN_F "varying "
-#  define TP_GLSL_OUT_V "varying "
-#  define TP_GLSL_OUT_F "varying "
-#  define TP_GLSL_GLFRAGCOLOR "gl_FragColor"
-#  define TP_GLSL_GLFRAGCOLOR_DEF
-#  define TP_GLSL_TEXTURE "texture2D"
+#  define TP_GLSL_IN_V "in "
+#  define TP_GLSL_IN_F "in "
+#  define TP_GLSL_OUT_V "out "
+#  define TP_GLSL_OUT_F "out "
+#  define TP_GLSL_GLFRAGCOLOR "fragColor"
+#  define TP_GLSL_GLFRAGCOLOR_DEF "out vec4 fragColor;\n"
+#  define TP_GLSL_TEXTURE "texture"
 
 #  define tpGenVertexArrays glGenVertexArraysOES
 #  define tpBindVertexArray glBindVertexArrayOES
