@@ -12,7 +12,7 @@ HEADERS += inc/tp_maps/RenderInfo.h
 SOURCES += src/SpriteTexture.cpp
 HEADERS += inc/tp_maps/SpriteTexture.h
 
-SOURCES += src/MouseEvent.cpp
+#SOURCES += src/MouseEvent.cpp
 HEADERS += inc/tp_maps/MouseEvent.h
 
 
