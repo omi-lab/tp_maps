@@ -43,7 +43,7 @@ struct LineShader::Private
       return;
 
     tpBindVertexArray(vertexBuffer->vaoID);
-    tpDrawElements(mode, GLsizei(vertexBuffer->indexCount), GL_UNSIGNED_INT, nullptr);
+    tpDrawElements(mode, vertexBuffer->indexCount, GL_UNSIGNED_INT, nullptr);
     tpBindVertexArray(0);
   }
 };
