@@ -41,7 +41,7 @@ const char* renderFragmentShaderStr =
                                                    "  if(" TP_GLSL_GLFRAGCOLOR ".a < 0.001)\n"
                                                                                "    discard;\n"
                                                                                "}\n";
-
+#ifndef TDP_ANDROID
 const char* pickingVertexShaderStr =
     TP_VERT_SHADER_HEADER
     TP_GLSL_IN_V"vec4 inColor;\n"
@@ -77,6 +77,7 @@ const char* pickingFragmentShaderStr =
                              "  if(" TP_GLSL_TEXTURE "(textureSampler, texCoordinate).a < 0.001)\n"
                                                      "    discard;\n"
                                                      "}\n";
+#endif
 }
 
 //##################################################################################################
@@ -147,7 +148,11 @@ PointSpriteShader::PointSpriteShader():
   };
 
   compileShader( renderVertexShaderStr,  renderFragmentShaderStr,  "PointSpriteShader_render", ShaderType:: Render, d-> renderMatrixLoc, d-> renderScaleFactorLoc, nullptr);
+#ifndef TDP_ANDROID
   compileShader(pickingVertexShaderStr, pickingFragmentShaderStr, "PointSpriteShader_picking", ShaderType::Picking, d->pickingMatrixLoc, d->pickingScaleFactorLoc, &d->pickingIDLoc);
+#else
+#  warning fix point sprite picking on Android.
+#endif
 }
 
 //##################################################################################################
