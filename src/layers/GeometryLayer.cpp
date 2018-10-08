@@ -9,7 +9,7 @@
 
 #include "tp_triangulation/Triangulation.h"
 
-#include <glm/glm.hpp>
+#include "glm/glm.hpp"
 
 namespace tp_maps
 {

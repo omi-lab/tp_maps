@@ -4,7 +4,7 @@
 #include "tp_maps/PickingResult.h"
 #include "tp_maps/shaders/PointSpriteShader.h"
 
-#include <glm/glm.hpp>
+#include "glm/glm.hpp"
 
 namespace tp_maps
 {

@@ -3,7 +3,7 @@
 
 #include "tp_utils/DebugUtils.h"
 
-#include <glm/gtc/type_ptr.hpp>
+#include "glm/gtc/type_ptr.hpp"
 
 namespace tp_maps
 {

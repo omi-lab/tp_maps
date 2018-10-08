@@ -5,7 +5,7 @@
 
 #include "tp_utils/StringID.h"
 
-#include <glm/glm.hpp>
+#include "glm/glm.hpp"
 
 #include <functional>
 #include <vector>

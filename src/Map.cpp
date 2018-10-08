@@ -15,8 +15,8 @@
 #include "tp_utils/DebugUtils.h"
 #include "tp_utils/StackTrace.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 namespace tp_maps
 {

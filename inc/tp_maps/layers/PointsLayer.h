@@ -5,7 +5,7 @@
 #include "tp_maps/SpriteTexture.h"
 #include "tp_maps/shaders/PointSpriteShader.h"
 
-#include <glm/glm.hpp>
+#include "glm/glm.hpp"
 
 #include <functional>
 
