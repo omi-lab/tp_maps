@@ -57,7 +57,8 @@ struct Map::Private
     Layer** l = layers.data();
     Layer** lMax = l + layers.size();
     for(; l<lMax; l++)
-      (*l)->render(renderInfo);
+      if((*l)->visible())
+        (*l)->render(renderInfo);
   }
 
   //################################################################################################
