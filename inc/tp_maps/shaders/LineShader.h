@@ -21,7 +21,7 @@ public:
   LineShader();
 
   //################################################################################################
-  virtual ~LineShader();
+  ~LineShader() override;
 
   //################################################################################################
   //! Call this to set the camera matrix before drawing the lines

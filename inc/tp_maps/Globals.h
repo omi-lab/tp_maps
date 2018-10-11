@@ -120,6 +120,7 @@ TDP_DECLARE_ID(                   lineShaderSID,                      "Line shad
 TDP_DECLARE_ID(                  imageShaderSID,                     "Image shader")
 TDP_DECLARE_ID(            pointSpriteShaderSID,              "Point sprite shader")
 TDP_DECLARE_ID(               materialShaderSID,                  "Material shader")
+TDP_DECLARE_ID(               yuvImageShaderSID,                 "YUV image shader")
 }
 
 typedef float tpGLfloat;

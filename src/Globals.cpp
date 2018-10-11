@@ -8,4 +8,5 @@ TDP_DEFINE_ID(                   lineShaderSID,                      "Line shade
 TDP_DEFINE_ID(                  imageShaderSID,                     "Image shader")
 TDP_DEFINE_ID(            pointSpriteShaderSID,              "Point sprite shader")
 TDP_DEFINE_ID(               materialShaderSID,                  "Material shader")
+TDP_DEFINE_ID(               yuvImageShaderSID,                 "YUV image shader")
 }
