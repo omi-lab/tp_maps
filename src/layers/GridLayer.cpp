@@ -37,11 +37,11 @@ struct GridLayer::Private
   {
     for(int i=0; i< 100; i++)
     {
-      vertices.push_back(glm::vec3(float(i) * 0.1f,  0.0f, 0.0f));
-      vertices.push_back(glm::vec3(float(i) * 0.1f,  4.0f, 0.0f));
+      vertices.push_back(glm::vec3(float(i) * 0.001f,  0.0f, 0.0f));
+      vertices.push_back(glm::vec3(float(i) * 0.001f,  0.4f, 0.0f));
 
-      vertices.push_back(glm::vec3( 0.0f, float(i) * 0.1f, 0.0f));
-      vertices.push_back(glm::vec3( 2.0f, float(i) * 0.1f, 0.0f));
+      vertices.push_back(glm::vec3( 0.0f, float(i) * 0.001f, 0.0f));
+      vertices.push_back(glm::vec3( 0.2f, float(i) * 0.001f, 0.0f));
     }
   }
 
