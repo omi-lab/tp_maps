@@ -20,11 +20,12 @@ const char* renderVertexShaderStr =
                 "uniform vec2 scaleFactor;\n"
     TP_GLSL_OUT_V"vec2 texCoordinate;\n"
     TP_GLSL_OUT_V"vec4 color;\n"
-                 "void main()\n"
-                 "{\n"
-    //"  uint id = uint(gl_VertexID);\n"
+    TP_GLSL_OUT_V"float clip;\n"
+    "void main()\n"
+    "{\n"
     "  gl_Position = (matrix * vec4(inPosition, 1.0));\n"
-    "  gl_Position = vec4(gl_Position.xyz * (1.0/gl_Position.w), 1.0) + vec4(inOffset.x*scaleFactor.x, inOffset.y*scaleFactor.y, 0.0, 0.0);\n"
+    "  clip = (gl_Position.z<0.0001)?0.0f:1.0f;\n"
+    "  gl_Position += vec4((inOffset.x*scaleFactor.x)*gl_Position.w, (inOffset.y*scaleFactor.y)*gl_Position.w, 0.0, 0.0);\n"
     "  texCoordinate = inTexture;\n"
     "  color = inColor;\n"
     "}\n";
@@ -34,13 +35,14 @@ const char* renderFragmentShaderStr =
     "uniform sampler2D textureSampler;\n"
     TP_GLSL_IN_F"vec2 texCoordinate;\n"
     TP_GLSL_IN_F"vec4 color;\n"
+    TP_GLSL_IN_F"float clip;\n"
     TP_GLSL_GLFRAGCOLOR_DEF
     "void main()\n"
     "{\n"
     "  " TP_GLSL_GLFRAGCOLOR " = " TP_GLSL_TEXTURE "(textureSampler, texCoordinate) * color;\n"
-                                                   "  if(" TP_GLSL_GLFRAGCOLOR ".a < 0.001)\n"
-                                                                               "    discard;\n"
-                                                                               "}\n";
+    "  if(" TP_GLSL_GLFRAGCOLOR ".a < 0.001 || clip<0.1f)\n"
+    "    discard;\n"
+    "}\n";
 #ifndef TDP_ANDROID
 const char* pickingVertexShaderStr =
     TP_VERT_SHADER_HEADER
@@ -170,6 +172,7 @@ void PointSpriteShader::use(ShaderType shaderType)
   {
   case ShaderType::Render:
     glEnable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
     //glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
@@ -179,6 +182,7 @@ void PointSpriteShader::use(ShaderType shaderType)
 
   case ShaderType::Picking:
     glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
     d->matrixLoc = d->pickingMatrixLoc;
     d->scaleFactorLoc = d->pickingScaleFactorLoc;
     break;

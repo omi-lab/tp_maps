@@ -77,9 +77,7 @@ struct GridLayer::Private
       perpendicular = tpMax(std::fabs(perpendicular)*2.0f-1.0f, 0.0f);
     }
 
-    alpha = perpendicular;
-
-    tpDebug() << "perpendicular: " << perpendicular;
+    alpha = 1.0f;//perpendicular;
   }
 };
 
