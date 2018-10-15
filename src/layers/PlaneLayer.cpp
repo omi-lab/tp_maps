@@ -13,7 +13,7 @@ struct PlaneLayer::Private
 {
   PlaneLayer* q;
   tp_math_utils::Plane plane;
-  glm::vec3 color{1.0f, 0.0f, 0.0f};
+  glm::vec4 color{1.0f, 0.0f, 0.0f, 1.0f};
 
   //################################################################################################
   Private(PlaneLayer* q_):
@@ -93,13 +93,13 @@ void PlaneLayer::setPlane(const tp_math_utils::Plane& plane)
 }
 
 //##################################################################################################
-const glm::vec3& PlaneLayer::color()const
+const glm::vec4& PlaneLayer::color()const
 {
   return d->color;
 }
 
 //##################################################################################################
-void PlaneLayer::setColor(const glm::vec3& color)
+void PlaneLayer::setColor(const glm::vec4& color)
 {
   d->color = color;
   d->updatePlane();

@@ -15,7 +15,7 @@ class Texture;
 struct Lines
 {
   std::vector<glm::vec3> lines;
-  glm::vec3 color{1.0f, 0.0f, 0.0f};
+  glm::vec4 color{1.0f, 0.0f, 0.0f, 1.0f};
   GLenum mode{GL_LINE_LOOP};
 };
 

@@ -13,7 +13,7 @@ namespace
 struct LinesDetails_lt
 {
   LineShader::VertexBuffer* vertexBuffer;
-  glm::vec3 color;
+  glm::vec4 color;
 };
 }
 
@@ -32,8 +32,8 @@ struct FrustumLayer::Private
   bool renderFrustumBorder{true};
   bool renderRays{false};
 
-  glm::vec3 frustumBorderColor{1.0f, 0.0f, 0.0f};
-  glm::vec3 raysColor{0.0f, 1.0f, 0.0f};
+  glm::vec4 frustumBorderColor{1.0f, 0.0f, 0.0f, 1.0f};
+  glm::vec4 raysColor{0.0f, 1.0f, 0.0f, 1.0f};
 
   //################################################################################################
   Private(FrustumLayer* q_):
@@ -114,7 +114,7 @@ glm::vec3 FrustumLayer::frustumBorderColor() const
 }
 
 //##################################################################################################
-void FrustumLayer::setFrustumBorderColor(const glm::vec3& frustumBorderColor)
+void FrustumLayer::setFrustumBorderColor(const glm::vec4& frustumBorderColor)
 {
   d->frustumBorderColor = frustumBorderColor;
   d->updateVertexBuffer = true;
@@ -128,7 +128,7 @@ glm::vec3 FrustumLayer::raysColor() const
 }
 
 //##################################################################################################
-void FrustumLayer::setRaysColor(const glm::vec3& raysColor)
+void FrustumLayer::setRaysColor(const glm::vec4& raysColor)
 {
   d->raysColor = raysColor;
   d->updateVertexBuffer = true;

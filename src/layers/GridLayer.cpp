@@ -4,6 +4,8 @@
 #include "tp_maps/RenderInfo.h"
 #include "tp_maps/Controller.h"
 
+#include "tp_utils/DebugUtils.h"
+
 #include <vector>
 
 namespace tp_maps
@@ -26,6 +28,8 @@ struct GridLayer::Private
   //Processed geometry ready for rendering
   std::vector<LinesDetails_lt> processedGeometry;
   bool updateVertexBuffer{true};
+
+  float alpha{1.0f};
 
   //################################################################################################
   Private(GridLayer* q_):
@@ -54,6 +58,28 @@ struct GridLayer::Private
       delete details.vertexBuffer;
 
     processedGeometry.clear();
+  }
+
+  //################################################################################################
+  void calculateGrid(const glm::mat4& matrix_)
+  {
+    auto matrix = glm::inverse(matrix_);
+    glm::vec3 gridNormal(0.0f, 0.0f, 1.0f);
+
+    float perpendicular{0.0f};
+    {
+      auto n = matrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+      auto f = matrix * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+      auto v = glm::vec3((n/n.w)-(f/f.w));
+
+      perpendicular = glm::dot(gridNormal, glm::normalize(v));
+
+      perpendicular = tpMax(std::fabs(perpendicular)*2.0f-1.0f, 0.0f);
+    }
+
+    alpha = perpendicular;
+
+    tpDebug() << "perpendicular: " << perpendicular;
   }
 };
 
@@ -90,10 +116,14 @@ void GridLayer::render(RenderInfo& renderInfo)
       d->processedGeometry.push_back(details);
   }
 
+  glm::mat4 matrix = map()->controller()->matrix(coordinateSystem());
+
+  d->calculateGrid(matrix);
+
   shader->use();
-  shader->setMatrix(map()->controller()->matrix(coordinateSystem()));
+  shader->setMatrix(matrix);
   shader->setLineWidth(1.0f);
-  shader->setColor({1.0f, 0.0f, 0.0f});
+  shader->setColor({1.0f, 0.0f, 0.0f, d->alpha});
 
   map()->controller()->enableScissor(coordinateSystem());
   for(const LinesDetails_lt& line : d->processedGeometry)

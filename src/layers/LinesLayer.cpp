@@ -14,7 +14,7 @@ namespace
 struct LinesDetails_lt
 {
   LineShader::VertexBuffer* vertexBuffer;
-  glm::vec3 color;
+  glm::vec4 color;
   GLenum mode;
 };
 }

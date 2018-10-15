@@ -21,11 +21,11 @@ const char* vertexShaderStr =
 
 const char* fragmentShaderStr =
     TP_FRAG_SHADER_HEADER
-    "uniform vec3 color;\n"
+    "uniform vec4 color;\n"
     TP_GLSL_GLFRAGCOLOR_DEF
     "void main()\n"
     "{\n"
-    "  " TP_GLSL_GLFRAGCOLOR "=vec4(color, 1.0);\n"
+    "  " TP_GLSL_GLFRAGCOLOR "=color;\n"
     "}";
 }
 
@@ -73,6 +73,17 @@ LineShader::~LineShader()
 }
 
 //##################################################################################################
+void LineShader::use(ShaderType shaderType)
+{
+  //https://webglfundamentals.org/webgl/lessons/webgl-and-alpha.html
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
+
+  Shader::use(shaderType);
+}
+
+//##################################################################################################
 void LineShader::setMatrix(const glm::mat4& matrix)
 {
   glUniformMatrix4fv(d->matrixLocation, 1, GL_FALSE, glm::value_ptr(matrix));
@@ -85,9 +96,9 @@ void LineShader::setLineWidth(float lineWidth)
 }
 
 //##################################################################################################
-void LineShader::setColor(const glm::vec3& color)
+void LineShader::setColor(const glm::vec4& color)
 {
-  glUniform3fv(d->colorLocation , 1, &color.x);
+  glUniform4fv(d->colorLocation , 1, &color.x);
 }
 
 //##################################################################################################

@@ -35,13 +35,13 @@ public:
   glm::vec3 frustumBorderColor() const;
 
   //################################################################################################
-  void setFrustumBorderColor(const glm::vec3& frustumBorderColor);
+  void setFrustumBorderColor(const glm::vec4& frustumBorderColor);
 
   //################################################################################################
   glm::vec3 raysColor() const;
 
   //################################################################################################
-  void setRaysColor(const glm::vec3& raysColor);
+  void setRaysColor(const glm::vec4& raysColor);
 
 protected:
   //################################################################################################

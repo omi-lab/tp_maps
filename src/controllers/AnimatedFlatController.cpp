@@ -7,7 +7,6 @@
 
 #include "tp_utils/JSONUtils.h"
 
-#define GLM_ENABLE_EXPERIMENTAL
 #include "glm/gtx/transform.hpp"
 #include "glm/gtx/norm.hpp"
 

@@ -24,6 +24,10 @@ public:
   virtual ~LineShader();
 
   //################################################################################################
+  //! Prepare OpenGL for rendering
+  void use(ShaderType shaderType = ShaderType::Render) override;
+
+  //################################################################################################
   //! Call this to set the camera matrix before drawing the lines
   void setMatrix(const glm::mat4& matrix);
 
@@ -31,7 +35,7 @@ public:
   void setLineWidth(float lineWidth);
 
   //################################################################################################
-  void setColor(const glm::vec3& color);
+  void setColor(const glm::vec4& color);
 
   //################################################################################################
   struct VertexBuffer
