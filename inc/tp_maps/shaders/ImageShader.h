@@ -18,10 +18,10 @@ class TP_MAPS_SHARED_EXPORT ImageShader: public Shader
   friend class Map;
 public:
   //################################################################################################
-  ImageShader();
+  ImageShader(const char* vertexShader=nullptr, const char* fragmentShader=nullptr);
 
   //################################################################################################
-  virtual ~ImageShader();
+  ~ImageShader() override;
 
   //################################################################################################
   //! Prepare OpenGL for rendering

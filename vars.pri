@@ -54,6 +54,9 @@ HEADERS += inc/tp_maps/shaders/LineShader.h
 SOURCES += src/shaders/ImageShader.cpp
 HEADERS += inc/tp_maps/shaders/ImageShader.h
 
+SOURCES += src/shaders/YUVImageShader.cpp
+HEADERS += inc/tp_maps/shaders/YUVImageShader.h
+
 SOURCES += src/shaders/PointSpriteShader.cpp
 HEADERS += inc/tp_maps/shaders/PointSpriteShader.h
 

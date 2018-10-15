@@ -63,12 +63,18 @@ struct ImageShader::Private
 };
 
 //##################################################################################################
-ImageShader::ImageShader():
+ImageShader::ImageShader(const char* vertexShader, const char* fragmentShader):
   Shader(),
   d(new Private())
 {
-  compile(vertexShaderStr,
-          fragmentShaderStr,
+  if(!vertexShader)
+    vertexShader = vertexShaderStr;
+
+  if(!fragmentShader)
+    fragmentShader = fragmentShaderStr;
+
+  compile(vertexShader,
+          fragmentShader,
           [](GLuint program)
   {
     glBindAttribLocation(program, 0, "inVertex");
