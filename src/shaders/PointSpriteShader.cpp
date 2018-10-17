@@ -24,7 +24,7 @@ const char* renderVertexShaderStr =
     "void main()\n"
     "{\n"
     "  gl_Position = (matrix * vec4(inPosition, 1.0));\n"
-    "  clip = (gl_Position.z<0.0001)?0.0f:1.0f;\n"
+    "  clip = (gl_Position.z<-0.9999)?0.0f:1.0f;\n"
     "  gl_Position += vec4((inOffset.x*scaleFactor.x)*gl_Position.w, (inOffset.y*scaleFactor.y)*gl_Position.w, 0.0, 0.0);\n"
     "  texCoordinate = inTexture;\n"
     "  color = inColor;\n"
