@@ -36,8 +36,8 @@
 #  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
 #  include <GLES2/gl2.h>
 
-#  define TP_VERT_SHADER_HEADER "#version 300 es\nprecision mediump float;"
-#  define TP_FRAG_SHADER_HEADER "#version 300 es\nprecision mediump float;"
+#  define TP_VERT_SHADER_HEADER "#version 300 es\nprecision highp float;"
+#  define TP_FRAG_SHADER_HEADER "#version 300 es\nprecision highp float;"
 
 #  define TP_GLSL_IN_V "in "
 #  define TP_GLSL_IN_F "in "
@@ -55,8 +55,8 @@
 #elif defined(TDP_EMSCRIPTEN) //--------------------------------------------------------------------
 #  include <GLES3/gl3.h>
 
-#  define TP_VERT_SHADER_HEADER "#version 100\nprecision mediump float;\n"
-#  define TP_FRAG_SHADER_HEADER "#version 100\nprecision mediump float;\n"
+#  define TP_VERT_SHADER_HEADER "#version 100\nprecision highp float;\n"
+#  define TP_FRAG_SHADER_HEADER "#version 100\nprecision highp float;\n"
 
 #  define TP_GLSL_IN_V "attribute "
 #  define TP_GLSL_IN_F "varying "
@@ -74,8 +74,8 @@
 #elif defined(TDP_ANDROID) //-----------------------------------------------------------------------
 #  include <GLES3/gl3.h>
 
-#  define TP_VERT_SHADER_HEADER "#version 100\nprecision mediump float;\n"
-#  define TP_FRAG_SHADER_HEADER "#version 100\nprecision mediump float;\n"
+#  define TP_VERT_SHADER_HEADER "#version 100\nprecision highp float;\n"
+#  define TP_FRAG_SHADER_HEADER "#version 100\nprecision highp float;\n"
 
 #  define TP_GLSL_IN_V "attribute "
 #  define TP_GLSL_IN_F "varying "
@@ -93,8 +93,8 @@
 #else //--------------------------------------------------------------------------------------------
 #  include <GLES3/gl3.h>
 
-#  define TP_VERT_SHADER_HEADER "#version 130\nprecision mediump float;\n"
-#  define TP_FRAG_SHADER_HEADER "#version 130\nprecision mediump float;\n"
+#  define TP_VERT_SHADER_HEADER "#version 130\nprecision highp float;\n"
+#  define TP_FRAG_SHADER_HEADER "#version 130\nprecision highp float;\n"
 
 #  define TP_GLSL_IN_V "in "
 #  define TP_GLSL_IN_F "in "
