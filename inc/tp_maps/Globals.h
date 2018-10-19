@@ -1,13 +1,13 @@
 #ifndef tp_maps_Globals_h
 #define tp_maps_Globals_h
 
-#if defined(TP_MAPS_LIBRARY)
-#  define TP_MAPS_SHARED_EXPORT
-#else
-#  define TP_MAPS_SHARED_EXPORT
-#endif
-
 #include "tp_utils/StringID.h"
+
+#if defined(TP_MAPS_LIBRARY)
+#  define TP_MAPS_SHARED_EXPORT TP_EXPORT
+#else
+#  define TP_MAPS_SHARED_EXPORT TP_IMPORT
+#endif
 
 //https://github.com/mattdesl/lwjgl-basics/wiki/GLSL-Versions
 
@@ -121,6 +121,7 @@ TDP_DECLARE_ID(                  imageShaderSID,                     "Image shad
 TDP_DECLARE_ID(            pointSpriteShaderSID,              "Point sprite shader")
 TDP_DECLARE_ID(               materialShaderSID,                  "Material shader")
 TDP_DECLARE_ID(               yuvImageShaderSID,                 "YUV image shader")
+TDP_DECLARE_ID(                   fontShaderSID,                      "Font shader")
 }
 
 typedef float tpGLfloat;

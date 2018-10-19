@@ -1,8 +1,10 @@
 #include "tp_maps/layers/GridLayer.h"
 #include "tp_maps/shaders/LineShader.h"
+#include "tp_maps/shaders/FontShader.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/RenderInfo.h"
 #include "tp_maps/Controller.h"
+#include "tp_maps/PreparedString.h"
 
 #include "tp_utils/DebugUtils.h"
 
@@ -12,24 +14,29 @@ namespace tp_maps
 {
 namespace
 {
+//##################################################################################################
 struct LinesDetails_lt
 {
   LineShader::VertexBuffer* vertexBuffer{nullptr};
-  glm::vec3 color;
+  glm::vec3 color{0.0f, 0.0f, 0.0f};
 };
 }
 
 //##################################################################################################
 struct GridLayer::Private
 {
+  TP_NONCOPYABLE(Private);
   GridLayer* q;
   std::vector<glm::vec3> vertices;
 
+  FontRenderer* font{nullptr};
+
   //Processed geometry ready for rendering
   std::vector<LinesDetails_lt> processedGeometry;
-  bool updateVertexBuffer{true};
 
   float alpha{1.0f};
+
+  bool updateVertexBuffer{true};
 
   //################################################################################################
   Private(GridLayer* q_):
@@ -37,11 +44,11 @@ struct GridLayer::Private
   {
     for(int i=0; i< 100; i++)
     {
-      vertices.push_back(glm::vec3(float(i) * 0.001f,  0.0f, 0.0f));
-      vertices.push_back(glm::vec3(float(i) * 0.001f,  0.4f, 0.0f));
+      vertices.emplace_back(float(i) * 0.001f,  0.0f, 0.0f);
+      vertices.emplace_back(float(i) * 0.001f,  0.4f, 0.0f);
 
-      vertices.push_back(glm::vec3( 0.0f, float(i) * 0.001f, 0.0f));
-      vertices.push_back(glm::vec3( 0.2f, float(i) * 0.001f, 0.0f));
+      vertices.emplace_back( 0.0f, float(i) * 0.001f, 0.0f);
+      vertices.emplace_back( 0.2f, float(i) * 0.001f, 0.0f);
     }
   }
 
@@ -79,6 +86,52 @@ struct GridLayer::Private
 
     alpha = 1.0f;//perpendicular;
   }
+
+  //################################################################################################
+  void renderLines(const glm::mat4& matrix)
+  {
+    auto shader = q->map()->getShader<LineShader>();
+    if(shader->error())
+      return;
+
+    if(updateVertexBuffer)
+    {
+      deleteVertexBuffers();
+      updateVertexBuffer=false;
+
+      LinesDetails_lt details;
+      details.vertexBuffer = shader->generateVertexBuffer(q->map(), vertices);
+      details.color = {1.0f, 0.0f, 0.0f};
+      processedGeometry.push_back(details);
+    }
+
+    shader->use();
+    shader->setMatrix(matrix);
+    shader->setLineWidth(1.0f);
+    shader->setColor({1.0f, 0.0f, 0.0f, alpha});
+
+    q->map()->controller()->enableScissor(q->coordinateSystem());
+    for(const LinesDetails_lt& line : processedGeometry)
+      shader->drawLines(GL_LINES, line.vertexBuffer);
+    q->map()->controller()->disableScissor();
+  }
+
+  //################################################################################################
+  void renderText(const glm::mat4& matrix)
+  {
+    if(!font)
+      return;
+
+    auto shader = q->map()->getShader<FontShader>();
+    if(shader->error())
+      return;
+
+    shader->use();
+    shader->setMatrix(matrix);
+
+    //FontShader::PreparedString someText(shader, font, u"Hello");
+    //shader->drawPreparedString(someText);
+  }
 };
 
 //##################################################################################################
@@ -94,39 +147,22 @@ GridLayer::~GridLayer()
 }
 
 //##################################################################################################
+void GridLayer::setFont(FontRenderer* font)
+{
+  d->font = font;
+}
+
+//##################################################################################################
 void GridLayer::render(RenderInfo& renderInfo)
 {
   if(renderInfo.pass != NormalRenderPass)
     return;
 
-  LineShader* shader = map()->getShader<LineShader>();
-  if(shader->error())
-    return;
-
-  if(d->updateVertexBuffer)
-  {
-    d->deleteVertexBuffers();
-    d->updateVertexBuffer=false;
-
-      LinesDetails_lt details;
-      details.vertexBuffer = shader->generateVertexBuffer(map(), d->vertices);
-      details.color = {1.0f, 0.0f, 0.0f};
-      d->processedGeometry.push_back(details);
-  }
-
   glm::mat4 matrix = map()->controller()->matrix(coordinateSystem());
 
   d->calculateGrid(matrix);
-
-  shader->use();
-  shader->setMatrix(matrix);
-  shader->setLineWidth(1.0f);
-  shader->setColor({1.0f, 0.0f, 0.0f, d->alpha});
-
-  map()->controller()->enableScissor(coordinateSystem());
-  for(const LinesDetails_lt& line : d->processedGeometry)
-    shader->drawLines(GL_LINES, line.vertexBuffer);
-  map()->controller()->disableScissor();
+  d->renderLines(matrix);
+  d->renderText(matrix);
 }
 
 //##################################################################################################

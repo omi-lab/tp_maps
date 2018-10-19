@@ -180,7 +180,7 @@ void HandleLayer::setPlane(const tp_math_utils::Plane& plane)
 }
 
 //##################################################################################################
-void HandleLayer::setHandleMovedCallback(std::function<void(void)> handleMovedCallback)
+void HandleLayer::setHandleMovedCallback(const std::function<void(void)>& handleMovedCallback)
 {
   d->handleMovedCallback = handleMovedCallback;
 }
@@ -194,7 +194,7 @@ void HandleLayer::render(RenderInfo& renderInfo)
   if(renderInfo.pass != NormalRenderPass && renderInfo.pass != PickingRenderPass)
     return;
 
-  PointSpriteShader* shader = map()->getShader<PointSpriteShader>();
+  auto shader = map()->getShader<PointSpriteShader>();
   if(shader->error())
     return;
 
@@ -297,8 +297,8 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
       screenCoord.x = screenCoord.x * xOffset + xOffset;
       screenCoord.y = height - (screenCoord.y * yOffset + yOffset);
 
-      int xDiff = int(std::abs(screenCoord.x - event.pos.x));
-      int yDiff = int(std::abs(screenCoord.y - event.pos.y));
+      int xDiff{int(std::abs(screenCoord.x - event.pos.x))};
+      int yDiff{int(std::abs(screenCoord.y - event.pos.y))};
 
       int manhattanLength = xDiff + yDiff;
 

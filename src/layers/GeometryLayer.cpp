@@ -25,14 +25,15 @@ struct GeometryDetails_lt
 //##################################################################################################
 struct GeometryLayer::Private
 {
+  TP_NONCOPYABLE(Private);
   GeometryLayer* q;
 
   std::vector<Geometry> geometry;
   MaterialShader::Light light;
 
   //Processed geometry ready for rendering
-  bool updateVertexBuffer{true};
   std::vector<GeometryDetails_lt> processedGeometry;
+  bool updateVertexBuffer{true};
 
   //################################################################################################
   Private(GeometryLayer* q_):
@@ -98,7 +99,7 @@ void GeometryLayer::render(RenderInfo& renderInfo)
   if(renderInfo.pass != NormalRenderPass && renderInfo.pass != PickingRenderPass)
     return;
 
-  MaterialShader* shader = map()->getShader<MaterialShader>();
+  auto shader = map()->getShader<MaterialShader>();
   if(shader->error())
     return;
 
@@ -122,23 +123,23 @@ void GeometryLayer::render(RenderInfo& renderInfo)
       std::map<int, std::vector<tp_triangulation::Contour>> resultVerts;
       tp_triangulation::triangulate(srcData, GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES, resultVerts);
 
-      for(auto i = resultVerts.cbegin(); i != resultVerts.cend(); i++)
+      for(const auto& i : resultVerts)
       {
-        for(const tp_triangulation::Contour& c : i->second)
+        for(const tp_triangulation::Contour& c : i.second)
         {
           std::vector<GLushort> indexes;
           std::vector<MaterialShader::Vertex> verts;
-          for(int n=0; n<int(c.vertices.size()); n++)
+          for(size_t n=0; n<c.vertices.size(); n++)
           {
             const glm::vec3& v = c.vertices.at(n);
-            indexes.push_back(n);
+            indexes.push_back(GLushort(n));
             verts.push_back(MaterialShader::Vertex(
                               v,
             {0.0f, 0.0f, 1.0f}));
           }
 
           std::pair<GLenum, MaterialShader::VertexBuffer*> p;
-          p.first = i->first;
+          p.first = GLenum(i.first);
           p.second = shader->generateVertexBuffer(map(), indexes, verts);
           details.vertexBuffers.push_back(p);
 

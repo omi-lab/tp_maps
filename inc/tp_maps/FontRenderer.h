@@ -1,93 +1,76 @@
-#ifndef tp_maps_HandleLayer_h
-#define tp_maps_HandleLayer_h
+#ifndef tp_maps_FontRenderer_h
+#define tp_maps_FontRenderer_h
 
-#include "tp_maps/Layer.h"
-#include "tp_maps/SpriteTexture.h"
+#include "tp_maps/Globals.h"
 
-#include "glm/glm.hpp"
-
-#include <functional>
-
-namespace tp_math_utils
-{
-class Plane;
-}
+#include <unordered_set>
 
 namespace tp_maps
 {
-class HandleLayer;
-class Texture;
+class Map;
+class Font;
+class PreparedString;
+struct FontGeometry;
+struct Glyph;
+struct TextureData;
 
 //##################################################################################################
-class HandleDetails
+class TP_MAPS_SHARED_EXPORT FontRenderer
 {
-  friend class HandleLayer;
-  HandleLayer* m_layer;
-public:
-  glm::vec3 position;
-  glm::vec4 color;
-  int sprite;
-
-  float radius;
-
-  void* opaque;
-  void(*movedCallback)(HandleDetails* handle, const glm::vec3& newPosition);
-
-  //################################################################################################
-  HandleDetails(HandleLayer* layer,
-                const glm::vec3& position_,
-                const glm::vec4& color_,
-                int sprite,
-                float radius_=10.0f,
-                int index=0);
-
-  //################################################################################################
-  virtual ~HandleDetails();
-
-  //################################################################################################
-  HandleLayer* layer()const;
-};
-
-//##################################################################################################
-class TP_MAPS_SHARED_EXPORT HandleLayer: public Layer
-{
-  friend class HandleDetails;
+  friend class PreparedString;
 public:
   //################################################################################################
-  HandleLayer(SpriteTexture* spriteTexture);
+  FontRenderer(Map* map, Font* font);
 
   //################################################################################################
-  ~HandleLayer()override;  
+  virtual ~FontRenderer();
 
   //################################################################################################
-  const std::vector<HandleDetails*>& handles()const;
+  Map* map() const;
 
   //################################################################################################
-  void clearHandles();
+  Font* font() const;
 
   //################################################################################################
-  //! Returns the plane that handles move on
-  const tp_math_utils::Plane& plane()const;
+  //! Force a regeneration of the texture using only the required characters.
+  void squeeze();
 
   //################################################################################################
-  //! Sets the plane that handles move on
-  void setPlane(const tp_math_utils::Plane& plane);
+  //! Called when buffers become invalid.
+  /*!
+  This is called when the OpenGL context becomes invalid, all OpenGL resources should be ignored.
+  */
+  virtual void invalidateBuffers();
 
   //################################################################################################
-  void setHandleMovedCallback(const std::function<void(void)>& handleMovedCallback);
+  //! Returns the textureID, binding if required.
+  virtual GLuint textureID();
 
 protected:
   //################################################################################################
-  void render(RenderInfo& renderInfo) override;
+  virtual void prepareFontGeometry(const PreparedString& preparedString, FontGeometry& fontGeometry);
 
   //################################################################################################
-  void invalidateBuffers() override;
+  virtual void generate();
 
   //################################################################################################
-  bool mouseEvent(const MouseEvent& event) override;
+  virtual void modifyGlyph(const Glyph& glyph, const std::function<void(const Glyph&)>& addGlyph);
 
   //################################################################################################
-  void moveHandle(HandleDetails* handle, const glm::vec3& newPosition);
+  //! Reimplement this if you want to modify the texture.
+  virtual void setTexture(const TextureData& texture);
+
+  //################################################################################################
+  const std::vector<PreparedString*>& preparedStrings() const;
+
+  //################################################################################################
+  const std::unordered_set<char16_t>& requiredCharacters() const;
+
+  //################################################################################################
+  void addPreparedString(PreparedString* preparedString);
+
+  //################################################################################################
+  void removePreparedString(PreparedString* preparedString);
 
 private:
   struct Private;

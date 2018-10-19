@@ -3,6 +3,9 @@ TEMPLATE = lib
 
 DEFINES += TP_MAPS_LIBRARY
 
+SOURCES += src/Globals.cpp
+HEADERS += inc/tp_maps/Globals.h
+
 SOURCES += src/Map.cpp
 HEADERS += inc/tp_maps/Map.h
 
@@ -15,11 +18,32 @@ HEADERS += inc/tp_maps/SpriteTexture.h
 #SOURCES += src/MouseEvent.cpp
 HEADERS += inc/tp_maps/MouseEvent.h
 
-
-#-- Picking Results --------------------------------------------------------------------------------
 SOURCES += src/PickingResult.cpp
 HEADERS += inc/tp_maps/PickingResult.h
 
+SOURCES += src/Controller.cpp
+HEADERS += inc/tp_maps/Controller.h
+
+SOURCES += src/Shader.cpp
+HEADERS += inc/tp_maps/Shader.h
+
+SOURCES += src/Layer.cpp
+HEADERS += inc/tp_maps/Layer.h
+
+SOURCES += src/Texture.cpp
+HEADERS += inc/tp_maps/Texture.h
+
+SOURCES += src/Font.cpp
+HEADERS += inc/tp_maps/Font.h
+
+SOURCES += src/FontRenderer.cpp
+HEADERS += inc/tp_maps/FontRenderer.h
+
+SOURCES += src/PreparedString.cpp
+HEADERS += inc/tp_maps/PreparedString.h
+
+
+#-- Picking Results --------------------------------------------------------------------------------
 SOURCES += src/picking_results/ImagePickingResult.cpp
 HEADERS += inc/tp_maps/picking_results/ImagePickingResult.h
 
@@ -34,9 +58,6 @@ HEADERS += inc/tp_maps/picking_results/PointsPickingResult.h
 
 
 #-- Controllers ------------------------------------------------------------------------------------
-SOURCES += src/Controller.cpp
-HEADERS += inc/tp_maps/Controller.h
-
 SOURCES += src/controllers/FlatController.cpp
 HEADERS += inc/tp_maps/controllers/FlatController.h
 
@@ -45,9 +66,6 @@ HEADERS += inc/tp_maps/controllers/AnimatedFlatController.h
 
 
 #-- Shaders ----------------------------------------------------------------------------------------
-SOURCES += src/Shader.cpp
-HEADERS += inc/tp_maps/Shader.h
-
 SOURCES += src/shaders/LineShader.cpp
 HEADERS += inc/tp_maps/shaders/LineShader.h
 
@@ -63,11 +81,11 @@ HEADERS += inc/tp_maps/shaders/PointSpriteShader.h
 SOURCES += src/shaders/MaterialShader.cpp
 HEADERS += inc/tp_maps/shaders/MaterialShader.h
 
+SOURCES += src/shaders/FontShader.cpp
+HEADERS += inc/tp_maps/shaders/FontShader.h
+
 
 #-- Layers -----------------------------------------------------------------------------------------
-SOURCES += src/Layer.cpp
-HEADERS += inc/tp_maps/Layer.h
-
 SOURCES += src/layers/GridLayer.cpp
 HEADERS += inc/tp_maps/layers/GridLayer.h
 
@@ -94,16 +112,8 @@ HEADERS += inc/tp_maps/layers/PlaneLayer.h
 
 
 #-- Textures ---------------------------------------------------------------------------------------
-SOURCES += src/Texture.cpp
-HEADERS += inc/tp_maps/Texture.h
-
 SOURCES += src/textures/BasicTexture.cpp
 HEADERS += inc/tp_maps/textures/BasicTexture.h
 
 SOURCES += src/textures/DefaultSpritesTexture.cpp
 HEADERS += inc/tp_maps/textures/DefaultSpritesTexture.h
-
-
-SOURCES += src/Globals.cpp
-HEADERS += inc/tp_maps/Globals.h
-

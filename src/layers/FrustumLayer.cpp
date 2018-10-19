@@ -12,14 +12,15 @@ namespace
 {
 struct LinesDetails_lt
 {
-  LineShader::VertexBuffer* vertexBuffer;
-  glm::vec4 color;
+  LineShader::VertexBuffer* vertexBuffer{nullptr};
+  glm::vec4 color{0.0f, 0.0f, 0.0f, 1.0f};
 };
 }
 
 //##################################################################################################
 struct FrustumLayer::Private
 {
+  TP_NONCOPYABLE(Private);
   FrustumLayer* q;
 
   //Processed geometry ready for rendering
@@ -141,7 +142,7 @@ void FrustumLayer::render(RenderInfo& renderInfo)
   if(renderInfo.pass != NormalRenderPass)
     return;
 
-  LineShader* shader = map()->getShader<LineShader>();
+  auto shader = map()->getShader<LineShader>();
   if(shader->error())
     return;
 
@@ -158,7 +159,7 @@ void FrustumLayer::render(RenderInfo& renderInfo)
 
         glm::vec4 obj = d->inverseCameraMatrix * tmp;
         obj /= obj.w;
-        vertices.push_back(glm::vec3(obj));
+        vertices.emplace_back(obj);
       };
 
       addVert(start);

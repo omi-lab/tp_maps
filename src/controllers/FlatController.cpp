@@ -48,8 +48,8 @@ struct FlatController::Private
   void translate(float dx, float dy)
   {
     float radians = glm::radians(rotationAngle);
-    float ca = cos(radians);
-    float sa = sin(radians);
+    float ca = std::cos(radians);
+    float sa = std::sin(radians);
 
     //The width and height of the map widget
     float width(q->map()->width());
@@ -224,7 +224,7 @@ void FlatController::mapResized(int w, int h)
 //##################################################################################################
 void FlatController::updateMatrices()
 {
-  if(fabs(d->distance) < 0.000000001f)
+  if(std::fabs(d->distance) < 0.000000001f)
     d->distance = 1.0f;
 
   //The width and height of the map widget
@@ -295,7 +295,7 @@ bool FlatController::mouseEvent(const MouseEvent& event)
     {
       if(d->variableViewAngle)
       {
-        d->viewAngle += dy*0.2;
+        d->viewAngle += dy*0.2f;
 
         if(d->viewAngle>0)
           d->viewAngle = 0;

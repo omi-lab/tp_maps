@@ -27,12 +27,14 @@ class Shader;
 class Texture;
 struct MouseEvent;
 class PickingResult;
+class FontRenderer;
 
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT Map
 {  
   friend class Layer;
   friend class Controller;
+  friend class FontRenderer;
 
 public:
   //################################################################################################
@@ -85,7 +87,7 @@ public:
 
   //################################################################################################
   //! Insert a layer at a given position
-  void insertLayer(int i, Layer* layer);
+  void insertLayer(size_t i, Layer* layer);
 
   //################################################################################################
   //! Remove a layer from the map
@@ -228,6 +230,12 @@ private:
   //################################################################################################
   //! Add a shader to the map of shaders
   void addShader(const tp_utils::StringID& name, Shader* shader);
+
+  //################################################################################################
+  void addFontRenderer(FontRenderer* fontRenderer);
+
+  //################################################################################################
+  void removeFontRenderer(FontRenderer* fontRenderer);
 
   struct Private;
   Private* d;

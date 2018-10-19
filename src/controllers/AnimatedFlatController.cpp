@@ -128,8 +128,8 @@ void AnimatedFlatController::animate(double timestampMS)
   float     rotationAngleD = (d->rotationAngle - rotationAngle());
 
   if(glm::length2(focalPointD) < 0.0001f &&
-     fabs(distanceD)           < 0.0001f &&
-     fabs(rotationAngleD)      < 0.0001f)
+     std::fabs(distanceD)      < 0.0001f &&
+     std::fabs(rotationAngleD) < 0.0001f)
   {
     d->animate = false;
     d->timestampMS=0.0;

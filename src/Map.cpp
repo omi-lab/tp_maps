@@ -6,6 +6,7 @@
 #include "tp_maps/PickingResult.h"
 #include "tp_maps/Texture.h"
 #include "tp_maps/MouseEvent.h"
+#include "tp_maps/FontRenderer.h"
 
 #include "tp_math_utils/Plane.h"
 #include "tp_math_utils/Ray.h"
@@ -21,24 +22,24 @@
 namespace tp_maps
 {
 
+//##################################################################################################
 struct Map::Private
 {
   Map* q;
-  bool enableDepthBuffer;
-  glm::vec3 backgroundColor;
 
   Controller* controller{nullptr};
-  std::vector<Layer*> layers;
+  std::vector<Layer*> layers;  
+  std::unordered_map<tp_utils::StringID, Shader*> shaders;
+  std::vector<FontRenderer*> fontRenderers;
 
   RenderInfo renderInfo;
 
-  bool initialized{false};
-
   int width{1};
   int height{1};
+  glm::vec3 backgroundColor;
 
-  std::unordered_map<tp_utils::StringID, Shader*> shaders;
-
+  bool enableDepthBuffer;
+  bool initialized{false};
   bool preDeleteCalled{false};
 
   //################################################################################################
@@ -106,6 +107,9 @@ void Map::preDelete()
   d->controller=nullptr;
 
   clearLayers();
+
+  tpDeleteAll(d->fontRenderers);
+  d->fontRenderers.clear();
 
   d->preDeleteCalled = true;
 }
@@ -203,7 +207,7 @@ void Map::addLayer(Layer* layer)
 }
 
 //##################################################################################################
-void Map::insertLayer(int i, Layer *layer)
+void Map::insertLayer(size_t i, Layer *layer)
 {
   if(layer->map())
   {
@@ -212,7 +216,7 @@ void Map::insertLayer(int i, Layer *layer)
     return;
   }
 
-  d->layers.insert(d->layers.begin()+i, layer);
+  d->layers.insert(d->layers.begin()+int(i), layer);
   layer->setMap(this);
 }
 
@@ -516,11 +520,13 @@ void Map::initializeGL()
       i.second->invalidate();
       delete i.second;
     }
+    d->shaders.clear();
 
     for(auto i : d->layers)
       i->invalidateBuffers();
 
-    d->shaders.clear();
+    for(auto i : d->fontRenderers)
+      i->invalidateBuffers();
   }
 
   // Initialize GL
@@ -605,6 +611,18 @@ Shader* Map::getShader(const tp_utils::StringID& name)const
 void Map::addShader(const tp_utils::StringID& name, Shader* shader)
 {
   d->shaders[name] = shader;
+}
+
+//##################################################################################################
+void Map::addFontRenderer(FontRenderer* fontRenderer)
+{
+  d->fontRenderers.push_back(fontRenderer);
+}
+
+//##################################################################################################
+void Map::removeFontRenderer(FontRenderer* fontRenderer)
+{
+  tpRemoveOne(d->fontRenderers, fontRenderer);
 }
 
 }

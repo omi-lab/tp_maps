@@ -5,8 +5,9 @@
 
 namespace tp_maps
 {
+class FontRenderer;
 
-//################################################################################################
+//##################################################################################################
 class TP_MAPS_SHARED_EXPORT GridLayer: public Layer
 {
 public:
@@ -16,9 +17,18 @@ public:
   //################################################################################################
   ~GridLayer() override;
 
+  //################################################################################################
+  //! Set the font that will be used to labels
+  /*!
+  This sets the font that will be used to draw the grid labels.
+  \note This does not take ownership.
+  \param font The font to use for drawing grid labels.
+  */
+  void setFont(FontRenderer* font);
+
 protected:
   //################################################################################################
-  virtual void render(RenderInfo& renderInfo) override;
+  void render(RenderInfo& renderInfo) override;
 
   //################################################################################################
   void invalidateBuffers() override;
