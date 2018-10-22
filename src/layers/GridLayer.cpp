@@ -19,6 +19,8 @@ struct LinesDetails_lt
 {
   LineShader::VertexBuffer* vertexBuffer{nullptr};
   glm::vec3 color{0.0f, 0.0f, 0.0f};
+  glm::vec3 gridNormal{0.0f, 0.0f, 1.0f};
+  float alpha{1.0f};
 };
 }
 
@@ -33,8 +35,6 @@ struct GridLayer::Private
 
   //Processed geometry ready for rendering
   std::vector<LinesDetails_lt> processedGeometry;
-
-  float alpha{1.0f};
 
   bool updateVertexBuffer{true};
 
@@ -68,10 +68,9 @@ struct GridLayer::Private
   }
 
   //################################################################################################
-  void calculateGrid(const glm::mat4& matrix_)
+  void calculateGrid(const glm::mat4& matrix_, LinesDetails_lt& details)
   {
     auto matrix = glm::inverse(matrix_);
-    glm::vec3 gridNormal(0.0f, 0.0f, 1.0f);
 
     float perpendicular{0.0f};
     {
@@ -79,12 +78,10 @@ struct GridLayer::Private
       auto f = matrix * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
       auto v = glm::vec3((n/n.w)-(f/f.w));
 
-      perpendicular = glm::dot(gridNormal, glm::normalize(v));
-
+      perpendicular = glm::dot(details.gridNormal, glm::normalize(v));
       perpendicular = tpMax(std::fabs(perpendicular)*2.0f-1.0f, 0.0f);
     }
-
-    alpha = 1.0f;//perpendicular;
+    details.alpha = perpendicular;
   }
 
   //################################################################################################
@@ -108,11 +105,13 @@ struct GridLayer::Private
     shader->use();
     shader->setMatrix(matrix);
     shader->setLineWidth(1.0f);
-    shader->setColor({1.0f, 0.0f, 0.0f, alpha});
 
     q->map()->controller()->enableScissor(q->coordinateSystem());
     for(const LinesDetails_lt& line : processedGeometry)
+    {
+      shader->setColor({1.0f, 0.0f, 0.0f, line.alpha});
       shader->drawLines(GL_LINES, line.vertexBuffer);
+    }
     q->map()->controller()->disableScissor();
   }
 
@@ -160,7 +159,9 @@ void GridLayer::render(RenderInfo& renderInfo)
 
   glm::mat4 matrix = map()->controller()->matrix(coordinateSystem());
 
-  d->calculateGrid(matrix);
+  for(auto& lines : d->processedGeometry)
+    d->calculateGrid(matrix, lines);
+
   d->renderLines(matrix);
   d->renderText(matrix);
 }
