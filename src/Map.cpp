@@ -36,7 +36,7 @@ struct Map::Private
 
   int width{1};
   int height{1};
-  glm::vec3 backgroundColor;
+  glm::vec3 backgroundColor{0.0f, 0.0f, 0.0f};
 
   bool enableDepthBuffer;
   bool initialized{false};
