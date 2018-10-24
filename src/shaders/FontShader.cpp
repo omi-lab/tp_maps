@@ -207,6 +207,8 @@ void FontShader::drawPreparedString(PreparedString& preparedString)
       {
         Vertex_lt vert;
         vert.position = {glyph.vertices[i], 0.0f};
+        if(preparedString.topDown())
+          vert.position.y = -vert.position.y;
         vert.texture = glyph.textureCoords[i];
         vert.normal = {0.0f, 0.0f, 1.0f};
         verts.push_back(vert);
@@ -260,8 +262,11 @@ void FontShader::drawPreparedString(PreparedString& preparedString)
 }
 
 //##################################################################################################
-FontShader::PreparedString::PreparedString(const Shader* shader, FontRenderer* fontRenderer, const std::u16string& text):
-  tp_maps::PreparedString(fontRenderer, text),
+FontShader::PreparedString::PreparedString(const Shader* shader,
+                                           FontRenderer* fontRenderer,
+                                           const std::u16string& text,
+                                           bool topDown):
+  tp_maps::PreparedString(fontRenderer, text, topDown),
   d(new Private(fontRenderer->map(), shader))
 {
 

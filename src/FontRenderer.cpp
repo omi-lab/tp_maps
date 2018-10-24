@@ -200,6 +200,13 @@ void FontRenderer::generate()
     size_t width{0};
     size_t height{0};
 
+    float leftBearing  {0.0f}; //Negative for values to the left of 0
+    float rightBearing {0.0f}; //Positive to the right of kerningWidth
+    float topBearing   {0.0f}; //Positive above 0
+    float bottomBearing{0.0f}; //Positive above 0
+
+    float kerningWidth{0.0f};
+
     std::vector<Pixel> data;
 
     char16_t character;
@@ -223,6 +230,14 @@ void FontRenderer::generate()
         {
           current->width  = size_t(glyph.w);
           current->height = size_t(glyph.h);
+
+          current->leftBearing   = glyph.leftBearing  ;
+          current->rightBearing  = glyph.rightBearing ;
+          current->topBearing    = glyph.topBearing   ;
+          current->bottomBearing = glyph.bottomBearing;
+
+          current->kerningWidth  = glyph.kerningWidth ;
+
           current->data.resize(size);
           memcpy(current->data.data(), glyph.data, size*sizeof(Pixel));
         }
@@ -336,10 +351,10 @@ void FontRenderer::generate()
         glyphGeometry.textureCoords[2] = {fr, fb};
         glyphGeometry.textureCoords[3] = {fx, fb};
 
-        glyphGeometry.vertices[0] = {               0.0f,                 0.0f};
-        glyphGeometry.vertices[1] = {float(glyph->width),                 0.0f};
-        glyphGeometry.vertices[2] = {float(glyph->width), float(glyph->height)};
-        glyphGeometry.vertices[3] = {               0.0f, float(glyph->height)};
+        glyphGeometry.vertices[0] = {               0.0f,                 0.0f+glyph->bottomBearing};
+        glyphGeometry.vertices[1] = {float(glyph->width),                 0.0f+glyph->bottomBearing};
+        glyphGeometry.vertices[2] = {float(glyph->width), float(glyph->height)+glyph->bottomBearing};
+        glyphGeometry.vertices[3] = {               0.0f, float(glyph->height)+glyph->bottomBearing};
 
         glyphGeometry.leftBearing   = 0.0f;
         glyphGeometry.rightBearing  = 0.0f;
