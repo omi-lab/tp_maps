@@ -23,7 +23,7 @@ public:
   \param font The font to use for rendering the text.
   \param text The text to render.
   */
-  PreparedString(FontRenderer* fontRenderer, const std::u16string& text);
+  PreparedString(FontRenderer* fontRenderer, const std::u16string& text, bool topDown=false);
 
   //################################################################################################
   virtual ~PreparedString();
@@ -52,6 +52,9 @@ public:
   result the font geometry should be recreated next time fontGeometry is called.
   */
   virtual void regenerateBuffers();
+
+  //################################################################################################
+  bool topDown() const;
 
 private:
   struct Private;

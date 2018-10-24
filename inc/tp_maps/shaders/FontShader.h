@@ -41,7 +41,7 @@ public:
   {
   public:
     //##############################################################################################
-    PreparedString(const Shader *shader, FontRenderer* fontRenderer, const std::u16string& text);
+    PreparedString(const Shader *shader, FontRenderer* fontRenderer, const std::u16string& text, bool topDown=false);
 
     //##############################################################################################
     ~PreparedString() override;

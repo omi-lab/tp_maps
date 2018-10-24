@@ -13,19 +13,21 @@ struct PreparedString::Private
   FontGeometry fontGeometry;
 
   bool regenerateBuffers{true};
+  bool topDown;
 
   //################################################################################################
-  Private(FontRenderer* fontRenderer_, const std::u16string& text_):
+  Private(FontRenderer* fontRenderer_, const std::u16string& text_, bool topDown_):
     fontRenderer(fontRenderer_),
-    text(text_)
+    text(text_),
+    topDown(topDown_)
   {
 
   }
 };
 
 //##################################################################################################
-PreparedString::PreparedString(FontRenderer* fontRenderer, const std::u16string& text):
-  d(new Private(fontRenderer, text))
+PreparedString::PreparedString(FontRenderer* fontRenderer, const std::u16string& text, bool topDown):
+  d(new Private(fontRenderer, text, topDown))
 {
   d->fontRenderer->addPreparedString(this);
 }
@@ -71,6 +73,12 @@ void PreparedString::invalidateBuffers()
 void PreparedString::regenerateBuffers()
 {
   d->regenerateBuffers = true;
+}
+
+//##################################################################################################
+bool PreparedString::topDown() const
+{
+  return d->topDown;
 }
 
 }
