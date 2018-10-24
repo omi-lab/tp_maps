@@ -38,7 +38,7 @@ class TP_MAPS_SHARED_EXPORT Map
 
 public:
   //################################################################################################
-  Map(bool enableDepthBuffer = true);
+  Map(bool enableDepthBuffer = false);
 
   //################################################################################################
   virtual ~Map();  

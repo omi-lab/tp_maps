@@ -172,8 +172,6 @@ void PointSpriteShader::use(ShaderType shaderType)
   {
   case ShaderType::Render:
     glEnable(GL_BLEND);
-    glEnable(GL_DEPTH_TEST);
-    //glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
     d->matrixLoc = d->renderMatrixLoc;
