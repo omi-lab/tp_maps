@@ -12,6 +12,7 @@ namespace
 {
 const char* vertexShaderStr =
     TP_VERT_SHADER_HEADER
+    "//LineShader vertexShaderStr\n"
     "uniform mat4 matrix;\n"
     TP_GLSL_IN_V "vec3 position;\n"
     "void main()\n"
@@ -21,6 +22,7 @@ const char* vertexShaderStr =
 
 const char* fragmentShaderStr =
     TP_FRAG_SHADER_HEADER
+    "//LineShader fragmentShaderStr\n"
     "uniform vec4 color;\n"
     TP_GLSL_GLFRAGCOLOR_DEF
     "void main()\n"

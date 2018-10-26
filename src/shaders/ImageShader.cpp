@@ -13,6 +13,7 @@ namespace
 
 const char* vertexShaderStr =
     TP_VERT_SHADER_HEADER
+    "//ImageShader vertexShaderStr\n"
     TP_GLSL_IN_V"vec3 inVertex;\n"
     TP_GLSL_IN_V"vec3 inNormal;\n"
     TP_GLSL_IN_V"vec2 inTexture;\n"
@@ -30,6 +31,7 @@ const char* vertexShaderStr =
 
 const char* fragmentShaderStr =
     TP_FRAG_SHADER_HEADER
+    "//ImageShader fragmentShaderStr\n"
     TP_GLSL_IN_F"vec3 LightVector0;\n"
     TP_GLSL_IN_F"vec3 EyeNormal;\n"
     TP_GLSL_IN_F"vec2 texCoordinate;\n"

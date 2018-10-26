@@ -133,16 +133,13 @@ void GeometryLayer::render(RenderInfo& renderInfo)
           {
             const glm::vec3& v = c.vertices.at(n);
             indexes.push_back(GLushort(n));
-            verts.push_back(MaterialShader::Vertex(
-                              v,
-            {0.0f, 0.0f, 1.0f}));
+            verts.push_back(MaterialShader::Vertex(v, {0.0f, 0.0f, 1.0f}));
           }
 
           std::pair<GLenum, MaterialShader::VertexBuffer*> p;
           p.first = GLenum(i.first);
           p.second = shader->generateVertexBuffer(map(), indexes, verts);
           details.vertexBuffers.push_back(p);
-
         }
       }
 

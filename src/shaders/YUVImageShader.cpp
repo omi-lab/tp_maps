@@ -8,6 +8,7 @@ namespace
 
 const char* fragmentShaderStr =
     TP_FRAG_SHADER_HEADER
+    "//YUVImageShader fragmentShaderStr\n"
     TP_GLSL_IN_F"vec3 LightVector0;\n"
     TP_GLSL_IN_F"vec3 EyeNormal;\n"
     TP_GLSL_IN_F"vec2 texCoordinate;\n"

@@ -13,6 +13,7 @@ namespace
 
 const char* vertexShaderStr =
     TP_VERT_SHADER_HEADER
+    "//MaterialShader vertexShaderStr\n"
     TP_GLSL_IN_V"vec3 inVertex;\n"
     TP_GLSL_IN_V"vec3 inNormal;\n"
     TP_GLSL_OUT_V"vec3 LightVector0;\n"
@@ -31,6 +32,7 @@ const char* vertexShaderStr =
 
 const char* fragmentShaderStr =
     TP_FRAG_SHADER_HEADER
+    "//MaterialShader fragmentShaderStr\n"
     "\n"
     "struct Material\n"
     "{\n"
@@ -81,8 +83,8 @@ const char* fragmentShaderStr =
     "  \n"
     "  vec3 result = ambient + diffuse + specular;\n"
     "  " TP_GLSL_GLFRAGCOLOR " = vec4(result, material.alpha);\n"
-                             "  " TP_GLSL_GLFRAGCOLOR " = (picking*pickingID) + ((1.0-picking)*" TP_GLSL_GLFRAGCOLOR ");"
-                                                                                                                     "}\n";
+    "  " TP_GLSL_GLFRAGCOLOR " = (picking*pickingID) + ((1.0-picking)*" TP_GLSL_GLFRAGCOLOR ");"
+    "}\n";
 }
 
 //##################################################################################################
@@ -264,7 +266,7 @@ void MaterialShader::drawPicking(GLenum mode,
 {
   glDisable(GL_BLEND);
   glUniform1f(d->pickingLocation, 1.0f);
-  glUniform4fv(d->pickingIDLocation, 1, (GLfloat*)&pickingID);
+  glUniform4fv(d->pickingIDLocation, 1, &pickingID.x);
   d->draw(mode, vertexBuffer);
 }
 

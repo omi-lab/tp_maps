@@ -117,6 +117,20 @@ GLuint Shader::loadShader(const char* shaderSrc, GLenum type)
     GLchar infoLog[4096];
     glGetShaderInfoLog(shader, 4096, nullptr, static_cast<GLchar*>(infoLog));
     tpWarning() << "Failed to compile shader: " << static_cast<const GLchar*>(infoLog);
+
+    {
+      tpWarning() << "----- Shader Src -----";
+      std::vector<std::string> lines;
+      tpSplit(lines, shaderSrc,'\n');
+      for(size_t l=0; l<lines.size(); l++)
+      {
+        std::string lineNumber = std::to_string(l+1);
+        tp_utils::rightJustified(lineNumber, 4);
+        tpWarning() << lineNumber << ": " << lines.at(l);
+      }
+      tpWarning() << "----------------------";
+    }
+
     glDeleteShader(shader);
     return 0;
   }

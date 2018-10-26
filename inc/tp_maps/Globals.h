@@ -32,6 +32,8 @@
 #  define tpDeleteVertexArrays glDeleteVertexArraysAPPLE
 #  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
 
+#  define TP_GLSL_PICKING
+
 #elif defined(TDP_IOS) //---------------------------------------------------------------------------
 #  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
 #  include <GLES2/gl2.h>
@@ -51,6 +53,8 @@
 #  define tpBindVertexArray glBindVertexArrayOES
 #  define tpDeleteVertexArrays glDeleteVertexArraysOES
 #  define tpDrawElements(mode, count, type, indices) glDrawElements(mode, count, type, indices)
+
+#  define TP_GLSL_PICKING
 
 #elif defined(TDP_EMSCRIPTEN) //--------------------------------------------------------------------
 #  include <GLES3/gl3.h>
@@ -108,6 +112,8 @@
 #  define tpBindVertexArray glBindVertexArray
 #  define tpDeleteVertexArrays glDeleteVertexArrays
 #  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
+
+#  define TP_GLSL_PICKING
 
 #endif //-------------------------------------------------------------------------------------------
 
