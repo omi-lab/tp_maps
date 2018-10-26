@@ -108,7 +108,7 @@ struct PointSpriteShader::Private
 
     tpBindVertexArray(vertexBuffer->vaoID);
     tpDrawElements(GL_TRIANGLES,
-                   GLsizei(vertexBuffer->indexCount),
+                   vertexBuffer->indexCount,
                    GL_UNSIGNED_INT,
                    nullptr);
     tpBindVertexArray(0);

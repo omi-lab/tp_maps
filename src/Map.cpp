@@ -473,8 +473,7 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
         count+=pickingDetails.count;
         if(value<count && index<pickingDetails.count)
         {
-#warning fix this
-         // pickingDetails.index = size_t(index);
+          pickingDetails.index += size_t(index);
           return (pickingDetails.callback)?
                 pickingDetails.callback(PickingResult(pickingType, pickingDetails, d->renderInfo)):
                 nullptr;
