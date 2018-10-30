@@ -45,7 +45,7 @@ public:
   BasicTexture(Map* map, const TextureData& image=TextureData());
 
   //################################################################################################
-  virtual ~BasicTexture();
+  ~BasicTexture() override;
 
   //################################################################################################
   void setImage(const TextureData& image);
