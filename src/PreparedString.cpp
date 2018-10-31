@@ -2,6 +2,8 @@
 #include "tp_maps/Font.h"
 #include "tp_maps/FontRenderer.h"
 
+#include "tp_utils/DebugUtils.h"
+
 namespace tp_maps
 {
 

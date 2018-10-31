@@ -116,7 +116,11 @@ GLuint FontRenderer::textureID()
   d->generate();
 
   if(d->bindTexture)
+  {
+    d->bindTexture = false;
+    d->map->deleteTexture(d->textureID);
     d->textureID = d->texture.bindTexture();
+  }
 
   return d->textureID;
 }
