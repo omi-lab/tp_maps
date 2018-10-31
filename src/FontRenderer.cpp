@@ -188,7 +188,9 @@ void FontRenderer::prepareFontGeometry(const PreparedString& preparedString, Fon
 
   fontGeometry.glyphs.resize(count);
 
-  glm::vec2 calculatedOffset{-(fontGeometry.totalWidth/2.0f), -(fontGeometry.totalHeight/2.0f)};
+  glm::vec2 calculatedOffset{fontGeometry.totalWidth/2.0f, fontGeometry.totalHeight/2.0f};
+  calculatedOffset *= glm::vec2(-1.0f, -1.0f) + preparedString.config().relativeOffset;
+  calculatedOffset += preparedString.config().pixelOffset;
 
   for(auto& glyph : fontGeometry.glyphs)
   {
