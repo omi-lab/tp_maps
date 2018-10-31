@@ -3,12 +3,26 @@
 
 #include "tp_maps/Globals.h"
 
+#include "glm/glm.hpp"
+
 #include <string>
 
 namespace tp_maps
 {
 class FontRenderer;
 struct FontGeometry;
+
+//##################################################################################################
+struct PreparedStringConfig
+{
+  bool topDown{false};
+
+  //! Offset the text relative to the size of the block of text.
+  glm::vec2 relativeOffset{0.0f, 0.0f};
+
+  //! Offset the text in pixels.
+  glm::vec2 pixelOffset{0.0f, 0.0f};
+};
 
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT PreparedString
@@ -23,7 +37,7 @@ public:
   \param font The font to use for rendering the text.
   \param text The text to render.
   */
-  PreparedString(FontRenderer* fontRenderer, const std::u16string& text, bool topDown=false);
+  PreparedString(FontRenderer* fontRenderer, const std::u16string& text, const PreparedStringConfig& config=PreparedStringConfig());
 
   //################################################################################################
   virtual ~PreparedString();
@@ -54,7 +68,7 @@ public:
   virtual void regenerateBuffers();
 
   //################################################################################################
-  bool topDown() const;
+  const PreparedStringConfig& config() const;
 
 private:
   struct Private;

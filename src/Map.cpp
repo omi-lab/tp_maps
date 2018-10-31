@@ -259,6 +259,18 @@ void Map::project(const glm::vec3& scenePoint, glm::vec2& screenPoint, const glm
 }
 
 //##################################################################################################
+void Map::projectGL(const glm::vec3& scenePoint, glm::vec2& screenPoint, const glm::mat4& matrix)
+{
+  glm::vec4 v = matrix * glm::vec4(scenePoint, 1.0f);
+  v /= v.w;
+
+  v = (v+1.0f)/2.0f;
+
+  screenPoint.x = v.x * float(d->width);
+  screenPoint.y = v.y * float(d->height);
+}
+
+//##################################################################################################
 bool Map::unProject(const glm::vec2& screenPoint, glm::vec3& scenePoint, const tp_math_utils::Plane& plane)
 {
   return unProject(screenPoint, scenePoint, plane, d->controller->matrix(defaultSID()));

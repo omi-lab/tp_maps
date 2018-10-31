@@ -9,25 +9,26 @@ namespace tp_maps
 struct PreparedString::Private
 {
   FontRenderer* fontRenderer;
-  const std::u16string& text;
+  std::u16string text;
   FontGeometry fontGeometry;
 
-  bool regenerateBuffers{true};
-  bool topDown;
+  PreparedStringConfig config;
+
+  bool regenerateBuffers{true};  
 
   //################################################################################################
-  Private(FontRenderer* fontRenderer_, const std::u16string& text_, bool topDown_):
+  Private(FontRenderer* fontRenderer_, const std::u16string& text_, const PreparedStringConfig& config_):
     fontRenderer(fontRenderer_),
     text(text_),
-    topDown(topDown_)
+    config(config_)
   {
 
   }
 };
 
 //##################################################################################################
-PreparedString::PreparedString(FontRenderer* fontRenderer, const std::u16string& text, bool topDown):
-  d(new Private(fontRenderer, text, topDown))
+PreparedString::PreparedString(FontRenderer* fontRenderer, const std::u16string& text, const PreparedStringConfig& config):
+  d(new Private(fontRenderer, text, config))
 {
   d->fontRenderer->addPreparedString(this);
 }
@@ -76,9 +77,9 @@ void PreparedString::regenerateBuffers()
 }
 
 //##################################################################################################
-bool PreparedString::topDown() const
+const PreparedStringConfig& PreparedString::config() const
 {
-  return d->topDown;
+  return d->config;
 }
 
 }

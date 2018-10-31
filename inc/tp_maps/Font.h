@@ -90,6 +90,9 @@ public:
   //################################################################################################
   //! Optionally this can be implemented to render a place holder for a missing glyph.
   virtual void missingGlyph(const std::function<void(const Glyph&)>& addGlyph) const;
+
+  //################################################################################################
+  virtual float lineHeight() const = 0;
 };
 
 }

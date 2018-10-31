@@ -122,6 +122,7 @@
 namespace tp_maps
 {
 TDP_DECLARE_ID(                      defaultSID,                          "Default")
+TDP_DECLARE_ID(                       screenSID,                           "Screen")
 TDP_DECLARE_ID(                   lineShaderSID,                      "Line shader")
 TDP_DECLARE_ID(                  imageShaderSID,                     "Image shader")
 TDP_DECLARE_ID(            pointSpriteShaderSID,              "Point sprite shader")

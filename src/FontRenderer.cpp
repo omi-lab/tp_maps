@@ -127,14 +127,14 @@ void FontRenderer::prepareFontGeometry(const PreparedString& preparedString, Fon
 
   d->generate();
 
+  float lineSpacing=d->font->lineHeight();
+
   fontGeometry.leftBearing  = 0.0f;
   fontGeometry.rightBearing = 0.0f;
   fontGeometry.topBearing   = 0.0f;
 
   fontGeometry.totalWidth   = 0.0f;
-  fontGeometry.totalHeight  = 0.0f;
-
-  float lineSpacing=32.0f;
+  fontGeometry.totalHeight  = lineSpacing;
 
   const auto& text = preparedString.text();
 
@@ -148,6 +148,7 @@ void FontRenderer::prepareFontGeometry(const PreparedString& preparedString, Fon
     {
       offset.x = 0.0f;
       offset.y += lineSpacing;
+      fontGeometry.totalHeight += lineSpacing;
       row++;
     }
 
@@ -178,9 +179,20 @@ void FontRenderer::prepareFontGeometry(const PreparedString& preparedString, Fon
     count++;
 
     offset.x += geometry.kerningWidth;
+
+    if(offset.x > fontGeometry.totalWidth)
+      fontGeometry.totalWidth = offset.x;
   }
 
   fontGeometry.glyphs.resize(count);
+
+  glm::vec2 calculatedOffset{-(fontGeometry.totalWidth/2.0f), -(fontGeometry.totalHeight/2.0f)};
+
+  for(auto& glyph : fontGeometry.glyphs)
+  {
+    for(auto& vert : glyph.vertices)
+      vert += calculatedOffset;
+  }
 }
 
 //##################################################################################################
