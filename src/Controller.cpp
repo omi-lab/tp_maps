@@ -1,6 +1,8 @@
 #include "tp_maps/Controller.h"
 #include "tp_maps/Map.h"
 
+#include <unordered_map>
+
 namespace tp_maps
 {
 

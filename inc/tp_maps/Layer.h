@@ -6,6 +6,8 @@
 
 #include "tp_utils/StringID.h"
 
+#include <unordered_map>
+
 namespace tp_math_utils
 {
 class Transformation;

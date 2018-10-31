@@ -2,6 +2,8 @@
 
 #include "tp_utils/DebugUtils.h"
 
+#include <unordered_map>
+
 namespace tp_maps
 {
 namespace
