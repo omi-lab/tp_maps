@@ -1,5 +1,5 @@
-#ifndef tp_maps_ImageShader_h
-#define tp_maps_ImageShader_h
+#ifndef tp_maps_FrameShader_h
+#define tp_maps_FrameShader_h
 
 #include "tp_maps/Shader.h"
 
@@ -9,16 +9,16 @@ namespace tp_maps
 {
 
 //##################################################################################################
-//! A shader for drawing images.
-class TP_MAPS_SHARED_EXPORT ImageShader: public Shader
+//! A shader for drawing 9 patch style images with stretchable parts.
+class TP_MAPS_SHARED_EXPORT FrameShader: public Shader
 {
   friend class Map;
 public:
   //################################################################################################
-  ImageShader(const char* vertexShader=nullptr, const char* fragmentShader=nullptr);
+  FrameShader(const char* vertexShader=nullptr, const char* fragmentShader=nullptr);
 
   //################################################################################################
-  ~ImageShader() override;
+  ~FrameShader() override;
 
   //################################################################################################
   //! Prepare OpenGL for rendering
@@ -29,21 +29,28 @@ public:
   void setMatrix(const glm::mat4& matrix);
 
   //################################################################################################
+  //! Uses this to scale the stretchable bits of the image
+  void setScale(const glm::vec3& scale);
+
+  //################################################################################################
   //! Set the texture that will be draw, this needs to be done each frame before drawing
   void setTexture(GLuint textureID);
 
   //################################################################################################
   struct Vertex
   {
-    glm::vec3 position;
+    glm::vec3 positionP; //!< A position added to positionR once it has been multiplied by the scale.
+    glm::vec3 positionR; //!< A position multiplied by the scale.
     glm::vec3 normal;
     glm::vec2 texture;
 
     Vertex(){}
-    Vertex(const glm::vec3& position_,
+    Vertex(const glm::vec3& positionP_,
+           const glm::vec3& positionR_,
            const glm::vec3& normal_,
            const glm::vec2& texture_):
-      position(position_),
+      positionP(positionP_),
+      positionR(positionR_),
       normal(normal_),
       texture(texture_)
     {

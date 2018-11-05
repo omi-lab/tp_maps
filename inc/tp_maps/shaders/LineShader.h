@@ -9,13 +9,9 @@ namespace tp_maps
 {
 
 //##################################################################################################
-//! The base class for shaders.
-/*!
-This allows the map to cache shaders.
-*/
+//! A shader for drawing lines.
 class TP_MAPS_SHARED_EXPORT LineShader: public Shader
 {
-  friend class Map;
 public:
   //################################################################################################
   LineShader();

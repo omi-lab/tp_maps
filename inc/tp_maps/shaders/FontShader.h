@@ -10,13 +10,9 @@ namespace tp_maps
 {
 
 //##################################################################################################
-//! The base class for shaders.
-/*!
-This allows the map to cache shaders.
-*/
+//! A shader for rendering fonts.
 class TP_MAPS_SHARED_EXPORT FontShader: public Shader
 {
-  friend class Map;
 public:
   //################################################################################################
   FontShader(const char* vertexShader=nullptr, const char* fragmentShader=nullptr);

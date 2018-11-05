@@ -24,7 +24,7 @@
 #  define TP_GLSL_OUT_V "varying "
 #  define TP_GLSL_OUT_F "varying "
 #  define TP_GLSL_GLFRAGCOLOR "gl_FragColor"
-#  define TP_GLSL_GLFRAGCOLOR_DEF
+#  define TP_GLSL_GLFRAGCOLOR_DEF ""
 #  define TP_GLSL_TEXTURE "texture2D"
 
 #  define tpGenVertexArrays glGenVertexArraysAPPLE
@@ -33,6 +33,9 @@
 #  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
 
 #  define TP_GLSL_PICKING
+
+using TPGLsize = GLuint;
+using TPGLfloat = float;
 
 #elif defined(TDP_IOS) //---------------------------------------------------------------------------
 #  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
@@ -56,6 +59,9 @@
 
 #  define TP_GLSL_PICKING
 
+using TPGLsize = GLsizei;
+using TPGLfloat = float;
+
 #elif defined(TDP_EMSCRIPTEN) //--------------------------------------------------------------------
 #  include <GLES3/gl3.h>
 
@@ -67,13 +73,16 @@
 #  define TP_GLSL_OUT_V "varying "
 #  define TP_GLSL_OUT_F "varying "
 #  define TP_GLSL_GLFRAGCOLOR "gl_FragColor"
-#  define TP_GLSL_GLFRAGCOLOR_DEF
+#  define TP_GLSL_GLFRAGCOLOR_DEF ""
 #  define TP_GLSL_TEXTURE "texture2D"
 
 #  define tpGenVertexArrays glGenVertexArrays
 #  define tpBindVertexArray glBindVertexArray
 #  define tpDeleteVertexArrays glDeleteVertexArrays
 #  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
+
+using TPGLsize = GLsizei;
+using TPGLfloat = float;
 
 #elif defined(TDP_ANDROID) //-----------------------------------------------------------------------
 #  include <GLES3/gl3.h>
@@ -86,13 +95,16 @@
 #  define TP_GLSL_OUT_V "varying "
 #  define TP_GLSL_OUT_F "varying "
 #  define TP_GLSL_GLFRAGCOLOR "gl_FragColor"
-#  define TP_GLSL_GLFRAGCOLOR_DEF
+#  define TP_GLSL_GLFRAGCOLOR_DEF ""
 #  define TP_GLSL_TEXTURE "texture2D"
 
 #  define tpGenVertexArrays glGenVertexArrays
 #  define tpBindVertexArray glBindVertexArray
 #  define tpDeleteVertexArrays glDeleteVertexArrays
 #  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
+
+using TPGLsize = GLsizei;
+using TPGLfloat = float;
 
 #else //--------------------------------------------------------------------------------------------
 #  include <GLES3/gl3.h>
@@ -115,6 +127,9 @@
 
 #  define TP_GLSL_PICKING
 
+using TPGLsize = GLuint;
+using TPGLfloat = float;
+
 #endif //-------------------------------------------------------------------------------------------
 
 //##################################################################################################
@@ -129,8 +144,16 @@ TDP_DECLARE_ID(            pointSpriteShaderSID,              "Point sprite shad
 TDP_DECLARE_ID(               materialShaderSID,                  "Material shader")
 TDP_DECLARE_ID(               yuvImageShaderSID,                 "YUV image shader")
 TDP_DECLARE_ID(                   fontShaderSID,                      "Font shader")
-}
+TDP_DECLARE_ID(                  frameShaderSID,                     "Frame shader")
 
-typedef float tpGLfloat;
+//##################################################################################################
+struct ShaderString
+{
+  TP_NONCOPYABLE(ShaderString);
+  ShaderString(const char* text);
+  const char* data() const;
+  const std::string str;
+};
+}
 
 #endif

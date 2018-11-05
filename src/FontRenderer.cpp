@@ -37,7 +37,7 @@ struct FontRenderer::Private
     font(font_),
     texture(map)
   {
-    //texture.setMagFilterOption(GL_NEAREST);
+
   }
 
   //################################################################################################
@@ -195,6 +195,7 @@ void FontRenderer::prepareFontGeometry(const PreparedString& preparedString, Fon
   glm::vec2 calculatedOffset{fontGeometry.totalWidth/2.0f, fontGeometry.totalHeight/2.0f};
   calculatedOffset *= glm::vec2(-1.0f, -1.0f) + preparedString.config().relativeOffset;
   calculatedOffset += preparedString.config().pixelOffset;
+  calculatedOffset.y += (fontGeometry.topBearing/2.0f);
 
   for(auto& glyph : fontGeometry.glyphs)
   {
@@ -376,10 +377,10 @@ void FontRenderer::generate()
         glyphGeometry.vertices[2] = {float(glyph->width), float(glyph->height)+glyph->bottomBearing};
         glyphGeometry.vertices[3] = {               0.0f, float(glyph->height)+glyph->bottomBearing};
 
-        glyphGeometry.leftBearing   = 0.0f;
-        glyphGeometry.rightBearing  = 0.0f;
-        glyphGeometry.topBearing    = 0.0f;
-        glyphGeometry.bottomBearing = 0.0f;
+        glyphGeometry.leftBearing   = glyph->leftBearing  ;//0.0f;
+        glyphGeometry.rightBearing  = glyph->rightBearing ;//0.0f;
+        glyphGeometry.topBearing    = glyph->topBearing   ;//0.0f;
+        glyphGeometry.bottomBearing = glyph->bottomBearing;//0.0f;
 
         glyphGeometry.kerningWidth = float(glyph->width);
       }

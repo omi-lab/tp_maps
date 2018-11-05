@@ -11,27 +11,27 @@ namespace tp_maps
 namespace
 {
 
-const char* vertexShaderStr =
-    TP_VERT_SHADER_HEADER
+ShaderString vertexShaderStr =
+    "$TP_VERT_SHADER_HEADER$"
     "//MaterialShader vertexShaderStr\n"
-    TP_GLSL_IN_V"vec3 inVertex;\n"
-    TP_GLSL_IN_V"vec3 inNormal;\n"
-    TP_GLSL_OUT_V"vec3 LightVector0;\n"
-    TP_GLSL_OUT_V"vec3 EyeNormal;\n"
-    TP_GLSL_OUT_V"vec2 texCoordinate;\n"
-    TP_GLSL_OUT_V"vec3 normal;\n"
-    TP_GLSL_OUT_V"vec3 fragPos;\n"
-                 "uniform mat4 matrix;\n"
-                 "void main()\n"
-                 "{\n"
-                 "  gl_Position = matrix * vec4(inVertex, 1.0);\n"
-                 "  fragPos = inVertex;\n"
-                 "  LightVector0 = vec3(1.0, 1.0, 1.0);\n"
-                 "  normal = inNormal;\n"
-                 "}\n";
+    "$TP_GLSL_IN_V$vec3 inVertex;\n"
+    "$TP_GLSL_IN_V$vec3 inNormal;\n"
+    "$TP_GLSL_OUT_V$vec3 LightVector0;\n"
+    "$TP_GLSL_OUT_V$vec3 EyeNormal;\n"
+    "$TP_GLSL_OUT_V$vec2 texCoordinate;\n"
+    "$TP_GLSL_OUT_V$vec3 normal;\n"
+    "$TP_GLSL_OUT_V$vec3 fragPos;\n"
+    "uniform mat4 matrix;\n"
+    "void main()\n"
+    "{\n"
+    "  gl_Position = matrix * vec4(inVertex, 1.0);\n"
+    "  fragPos = inVertex;\n"
+    "  LightVector0 = vec3(1.0, 1.0, 1.0);\n"
+    "  normal = inNormal;\n"
+    "}\n";
 
-const char* fragmentShaderStr =
-    TP_FRAG_SHADER_HEADER
+ShaderString fragmentShaderStr =
+    "$TP_FRAG_SHADER_HEADER$"
     "//MaterialShader fragmentShaderStr\n"
     "\n"
     "struct Material\n"
@@ -62,7 +62,7 @@ const char* fragmentShaderStr =
     "\n"
     "varying vec3 LightVector0;\n"
     "varying vec3 EyeNormal;\n"
-    TP_GLSL_GLFRAGCOLOR_DEF
+    "$TP_GLSL_GLFRAGCOLOR_DEF$"
     "\n"
     "void main()\n"
     "{\n"
@@ -82,8 +82,8 @@ const char* fragmentShaderStr =
     "  vec3 specular = light.specular * (spec * material.specular);\n"
     "  \n"
     "  vec3 result = ambient + diffuse + specular;\n"
-    "  " TP_GLSL_GLFRAGCOLOR " = vec4(result, material.alpha);\n"
-    "  " TP_GLSL_GLFRAGCOLOR " = (picking*pickingID) + ((1.0-picking)*" TP_GLSL_GLFRAGCOLOR ");"
+    "  $TP_GLSL_GLFRAGCOLOR$ = vec4(result, material.alpha);\n"
+    "  $TP_GLSL_GLFRAGCOLOR$ = (picking*pickingID) + ((1.0-picking)*$TP_GLSL_GLFRAGCOLOR$);"
     "}\n";
 }
 
@@ -123,8 +123,8 @@ MaterialShader::MaterialShader():
   Shader(),
   d(new Private())
 {
-  compile(vertexShaderStr,
-          fragmentShaderStr,
+  compile(vertexShaderStr.data(),
+          fragmentShaderStr.data(),
           [](GLuint program)
   {
     glBindAttribLocation(program, 0, "inVertex");
@@ -244,7 +244,7 @@ MaterialShader::VertexBuffer::VertexBuffer(Map* map_, const Shader *shader_):
 //##################################################################################################
 MaterialShader::VertexBuffer::~VertexBuffer()
 {
-  if(!vaoID)
+  if(!vaoID || !shader.shader())
     return;
 
   map->makeCurrent();

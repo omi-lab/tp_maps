@@ -1,4 +1,4 @@
-#include "tp_maps/shaders/ImageShader.h"
+#include "tp_maps/shaders/FrameShader.h"
 #include "tp_maps/Map.h"
 
 #include "tp_utils/DebugUtils.h"
@@ -13,47 +13,54 @@ namespace
 
 ShaderString vertexShaderStr =
     "$TP_VERT_SHADER_HEADER$"
-    "//ImageShader vertexShaderStr\n"
-    "$TP_GLSL_IN_V$vec3 inVertex;\n"
+    "//FrameShader vertexShaderStr\n"
+    "$TP_GLSL_IN_V$vec3 inVertexP;\n"
+    "$TP_GLSL_IN_V$vec3 inVertexR;\n"
     "$TP_GLSL_IN_V$vec3 inNormal;\n"
     "$TP_GLSL_IN_V$vec2 inTexture;\n"
     "uniform mat4 matrix;\n"
-    "$TP_GLSL_OUT_V$vec3 LightVector0;\n"
-    "$TP_GLSL_OUT_V$vec3 EyeNormal;\n"
+    "uniform vec3 scale;\n"
+    "uniform vec4 color;\n"
+    "$TP_GLSL_OUT_V$vec3 lightVector0;\n"
+    "$TP_GLSL_OUT_V$vec3 eyeNormal;\n"
     "$TP_GLSL_OUT_V$vec2 texCoordinate;\n"
+    "$TP_GLSL_OUT_V$vec4 multColor;\n"
     "void main()\n"
     "{\n"
+    "  vec3 inVertex = inVertexP+(inVertexR*scale);\n"
     "  gl_Position = matrix * vec4(inVertex, 1.0);\n"
-    "  LightVector0 = vec3(1.0, 1.0, 1.0);\n"
-    "  EyeNormal = inNormal;\n"
+    "  lightVector0 = vec3(1.0, 1.0, 1.0);\n"
+    "  eyeNormal = inNormal;\n"
     "  texCoordinate = inTexture;\n"
+    "  multColor = color;\n"
     "}\n";
 
 ShaderString fragmentShaderStr =
     "$TP_FRAG_SHADER_HEADER$"
-    "//ImageShader fragmentShaderStr\n"
-    "$TP_GLSL_IN_F$vec3 LightVector0;\n"
-    "$TP_GLSL_IN_F$vec3 EyeNormal;\n"
+    "//FrameShader fragmentShaderStr\n"
+    "$TP_GLSL_IN_F$vec3 lightVector0;\n"
+    "$TP_GLSL_IN_F$vec3 eyeNormal;\n"
     "$TP_GLSL_IN_F$vec2 texCoordinate;\n"
+    "$TP_GLSL_IN_F$vec4 multColor;\n"
     "uniform sampler2D textureSampler;\n"
-    "uniform vec4 color;\n"
     "$TP_GLSL_GLFRAGCOLOR_DEF$"
     "void main()\n"
     "{\n"
-    "  $TP_GLSL_GLFRAGCOLOR$ = $TP_GLSL_TEXTURE$(textureSampler, texCoordinate)*color;\n"
+    "  $TP_GLSL_GLFRAGCOLOR$ = $TP_GLSL_TEXTURE$(textureSampler, texCoordinate)*multColor;\n"
     "  if($TP_GLSL_GLFRAGCOLOR$.a < 0.01)\n"
     "    discard;\n"
     "}\n";
 }
 
 //##################################################################################################
-struct ImageShader::Private
+struct FrameShader::Private
 {
   GLint matrixLocation{0};
+  GLint scaleLocation{0};
   GLint colorLocation{0};
 
   //################################################################################################
-  void draw(GLenum mode, ImageShader::VertexBuffer* vertexBuffer)
+  void draw(GLenum mode, FrameShader::VertexBuffer* vertexBuffer)
   {
     tpBindVertexArray(vertexBuffer->vaoID);
     tpDrawElements(mode, vertexBuffer->indexCount, GL_UNSIGNED_SHORT, nullptr);
@@ -62,7 +69,7 @@ struct ImageShader::Private
 };
 
 //##################################################################################################
-ImageShader::ImageShader(const char* vertexShader, const char* fragmentShader):
+FrameShader::FrameShader(const char* vertexShader, const char* fragmentShader):
   Shader(),
   d(new Private())
 {
@@ -76,27 +83,31 @@ ImageShader::ImageShader(const char* vertexShader, const char* fragmentShader):
           fragmentShader,
           [](GLuint program)
   {
-    glBindAttribLocation(program, 0, "inVertex");
-    glBindAttribLocation(program, 1, "inNormal");
-    glBindAttribLocation(program, 2, "inTexture");
+    glBindAttribLocation(program, 0, "inVertexP");
+    glBindAttribLocation(program, 1, "inVertexR");
+    glBindAttribLocation(program, 2, "inNormal");
+    glBindAttribLocation(program, 3, "inTexture");
   },
   [this](GLuint program)
   {
     d->matrixLocation = glGetUniformLocation(program, "matrix");
+    d->scaleLocation  = glGetUniformLocation(program, "scale");
     d->colorLocation  = glGetUniformLocation(program, "color");
-    const char* shaderName = "ImageShader";
+    const char* shaderName = "FrameShader";
     if(d->matrixLocation<0)tpWarning() << shaderName << " d->matrixLocation: " << d->matrixLocation;
+    if(d->scaleLocation<0)tpWarning()  << shaderName << " d->scaleLocation: "  << d->scaleLocation;
+    if(d->colorLocation<0)tpWarning()  << shaderName << " d->colorLocation: "  << d->colorLocation;
   });
 }
 
 //##################################################################################################
-ImageShader::~ImageShader()
+FrameShader::~FrameShader()
 {
   delete d;
 }
 
 //##################################################################################################
-void ImageShader::use(ShaderType shaderType)
+void FrameShader::use(ShaderType shaderType)
 {
   //https://webglfundamentals.org/webgl/lessons/webgl-and-alpha.html
   glEnable(GL_BLEND);
@@ -107,22 +118,28 @@ void ImageShader::use(ShaderType shaderType)
 }
 
 //##################################################################################################
-void ImageShader::setMatrix(const glm::mat4& matrix)
+void FrameShader::setMatrix(const glm::mat4& matrix)
 {
   glUniformMatrix4fv(d->matrixLocation, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
 //##################################################################################################
-void ImageShader::setTexture(GLuint textureID)
+void FrameShader::setScale(const glm::vec3& scale)
+{
+  glUniform3f(d->scaleLocation, scale.x, scale.y, scale.z);
+}
+
+//##################################################################################################
+void FrameShader::setTexture(GLuint textureID)
 {
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, textureID);
 }
 
 //##################################################################################################
-ImageShader::VertexBuffer* ImageShader::generateVertexBuffer(Map* map,
+FrameShader::VertexBuffer* FrameShader::generateVertexBuffer(Map* map,
                                                              const std::vector<GLushort>& indexes,
-                                                             const std::vector<ImageShader::Vertex>& verts)const
+                                                             const std::vector<FrameShader::Vertex>& verts)const
 {
   VertexBuffer* vertexBuffer = new VertexBuffer(map, this);
 
@@ -136,20 +153,21 @@ ImageShader::VertexBuffer* ImageShader::generateVertexBuffer(Map* map,
 
   glGenBuffers(1, &vertexBuffer->vboID);
   glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
-  glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(verts.size()*sizeof(ImageShader::Vertex)), verts.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(verts.size()*sizeof(FrameShader::Vertex)), verts.data(), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   tpGenVertexArrays(1, &vertexBuffer->vaoID);
   tpBindVertexArray(vertexBuffer->vaoID);
 
   glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(ImageShader::Vertex), reinterpret_cast<void*>(0));
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(ImageShader::Vertex), reinterpret_cast<void*>(sizeof(float)*3));
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(ImageShader::Vertex), reinterpret_cast<void*>(sizeof(float)*6));
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), reinterpret_cast<void*>(sizeof(float)*0));
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), reinterpret_cast<void*>(sizeof(float)*3));
+  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), reinterpret_cast<void*>(sizeof(float)*6));
+  glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), reinterpret_cast<void*>(sizeof(float)*9));
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);
-  glDisableVertexAttribArray(3);
+  glEnableVertexAttribArray(3);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer->iboID);
 
@@ -159,14 +177,14 @@ ImageShader::VertexBuffer* ImageShader::generateVertexBuffer(Map* map,
 }
 
 //##################################################################################################
-ImageShader::VertexBuffer::VertexBuffer(Map* map_, const Shader *shader_):
+FrameShader::VertexBuffer::VertexBuffer(Map* map_, const Shader *shader_):
   map(map_),
   shader(shader_)
 {
 
 }
 //##################################################################################################
-ImageShader::VertexBuffer::~VertexBuffer()
+FrameShader::VertexBuffer::~VertexBuffer()
 {
   if(!vaoID || !shader.shader())
     return;
@@ -178,7 +196,7 @@ ImageShader::VertexBuffer::~VertexBuffer()
 }
 
 //##################################################################################################
-void ImageShader::drawImage(GLenum mode,
+void FrameShader::drawImage(GLenum mode,
                             VertexBuffer* vertexBuffer,
                             const glm::vec4& color)
 {
@@ -187,7 +205,7 @@ void ImageShader::drawImage(GLenum mode,
 }
 
 //##################################################################################################
-void ImageShader::drawImagePicking(GLenum mode,
+void FrameShader::drawImagePicking(GLenum mode,
                                    VertexBuffer* vertexBuffer,
                                    const glm::vec4& pickingID)
 {

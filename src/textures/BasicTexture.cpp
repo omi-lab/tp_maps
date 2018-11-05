@@ -4,8 +4,6 @@
 #include "tp_utils/DebugUtils.h"
 #include "tp_utils/StackTrace.h"
 
-#include <cstring>
-
 namespace tp_maps
 {
 
@@ -15,7 +13,7 @@ TextureData TextureData::clone()const
   TextureData clone;
   clone.w = w;
   clone.h = h;
-  int size = w*h;
+  size_t size = w*h;
   if(size>0)
   {
     clone.data = new Pixel[size];
@@ -27,7 +25,7 @@ TextureData TextureData::clone()const
 //##################################################################################################
 TextureData TextureData::clone2()const
 {
-  auto po2 = [](uint32_t v)
+  auto po2 = [](size_t v)
   {
     v--;
     v |= v >> 1;
@@ -54,7 +52,7 @@ TextureData TextureData::clone2()const
   clone.fw = float(w) / float(clone.w);
   clone.fh = float(h) / float(clone.h);
 
-  int size = clone.w*clone.h;
+  size_t size = clone.w*clone.h;
 
   clone.data = new Pixel[size];
   if(clone.w==w && clone.h==h)
@@ -65,7 +63,7 @@ TextureData TextureData::clone2()const
   {
     //size_t padX = (clone.w - w);//*sizeof(Pixel);
     size_t srcW = w*sizeof(Pixel);
-    for(int y=0; y<h; y++)
+    for(size_t y=0; y<h; y++)
     {
       Pixel* dst = clone.data+(y*clone.w);
       memcpy(dst, data+(y*w), srcW);
@@ -82,7 +80,7 @@ TextureData TextureData::clone2()const
     {
       size_t dstW = clone.w*sizeof(Pixel);
       void* src = clone.data+(clone.w*(h-1));
-      for(int y=h; y<clone.h; y++)
+      for(size_t y=h; y<clone.h; y++)
         memcpy(clone.data+(clone.w*y), src, dstW);
     }
   }
@@ -172,7 +170,7 @@ GLuint BasicTexture::bindTexture(const TextureData& img,
   glGenTextures(1, &txId);
   glBindTexture(target, txId);
 
-  glTexImage2D(target, 0, format, img.w, img.w, 0, format, GL_UNSIGNED_BYTE, img.data);
+  glTexImage2D(target, 0, format, int(img.w), int(img.h), 0, format, GL_UNSIGNED_BYTE, img.data);
 
   if((minFilterOption == GL_NEAREST_MIPMAP_NEAREST) || (minFilterOption == GL_LINEAR_MIPMAP_LINEAR))
     glGenerateMipmap(target);

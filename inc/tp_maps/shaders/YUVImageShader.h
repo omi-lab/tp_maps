@@ -12,7 +12,6 @@ namespace tp_maps
 //! A shader for rendering YUV image data.
 class TP_MAPS_SHARED_EXPORT YUVImageShader: public ImageShader
 {
-  friend class Map;
 public:
   //################################################################################################
   YUVImageShader();

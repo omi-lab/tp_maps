@@ -10,24 +10,24 @@ namespace tp_maps
 
 namespace
 {
-const char* vertexShaderStr =
-    TP_VERT_SHADER_HEADER
+ShaderString vertexShaderStr =
+    "$TP_VERT_SHADER_HEADER$"
     "//LineShader vertexShaderStr\n"
     "uniform mat4 matrix;\n"
-    TP_GLSL_IN_V "vec3 position;\n"
+    "$TP_GLSL_IN_V$vec3 position;\n"
     "void main()\n"
     "{\n"
     "  gl_Position=matrix*vec4(position, 1.0);\n"
     "}";
 
-const char* fragmentShaderStr =
-    TP_FRAG_SHADER_HEADER
+ShaderString fragmentShaderStr =
+    "$TP_FRAG_SHADER_HEADER$"
     "//LineShader fragmentShaderStr\n"
     "uniform vec4 color;\n"
-    TP_GLSL_GLFRAGCOLOR_DEF
+    "$TP_GLSL_GLFRAGCOLOR_DEF$"
     "void main()\n"
     "{\n"
-    "  " TP_GLSL_GLFRAGCOLOR "=color;\n"
+    "  $TP_GLSL_GLFRAGCOLOR$=color;\n"
     "}";
 }
 
@@ -55,8 +55,8 @@ LineShader::LineShader():
   Shader(),
   d(new Private())
 {
-  compile(vertexShaderStr,
-          fragmentShaderStr,
+  compile(vertexShaderStr.data(),
+          fragmentShaderStr.data(),
           [](GLuint program)
   {
     glBindAttribLocation(program, 0, "position");
@@ -142,21 +142,6 @@ LineShader::VertexBuffer* LineShader::generateVertexBuffer(Map* map, const std::
   tpBindVertexArray(0);
 
   return vertexBuffer;
-
-
-
-
-
-
-//  LineShader::VertexBuffer* vertexBuffer = new LineShader::VertexBuffer(map);
-
-//  glGenBuffers(1, &vertexBuffer->vboID);
-//  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
-//  glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(glm::vec3), vertices.data(), GL_STATIC_DRAW);
-//  glBindBuffer(GL_ARRAY_BUFFER, 0);
-//  vertexBuffer->vertexCount = vertices.size();
-
-//  return vertexBuffer;
 }
 
 //##################################################################################################

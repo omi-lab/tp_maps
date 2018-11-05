@@ -10,18 +10,18 @@ namespace tp_maps
 
 namespace
 {
-const char* renderVertexShaderStr =
-    TP_VERT_SHADER_HEADER
+ShaderString renderVertexShaderStr =
+    "$TP_VERT_SHADER_HEADER$"
     "//PointSpriteShader renderVertexShaderStr\n"
-    TP_GLSL_IN_V"vec4 inColor;\n"
-    TP_GLSL_IN_V"vec3 inPosition;\n"
-    TP_GLSL_IN_V"vec3 inOffset;\n"
-    TP_GLSL_IN_V"vec2 inTexture;\n"
+    "$TP_GLSL_IN_V$vec4 inColor;\n"
+    "$TP_GLSL_IN_V$vec3 inPosition;\n"
+    "$TP_GLSL_IN_V$vec3 inOffset;\n"
+    "$TP_GLSL_IN_V$vec2 inTexture;\n"
     "uniform mat4 matrix;\n"
     "uniform vec2 scaleFactor;\n"
-    TP_GLSL_OUT_V"vec2 texCoordinate;\n"
-    TP_GLSL_OUT_V"vec4 color;\n"
-    TP_GLSL_OUT_V"float clip;\n"
+    "$TP_GLSL_OUT_V$vec2 texCoordinate;\n"
+    "$TP_GLSL_OUT_V$vec4 color;\n"
+    "$TP_GLSL_OUT_V$float clip;\n"
     "void main()\n"
     "{\n"
     "  gl_Position = (matrix * vec4(inPosition, 1.0));\n"
@@ -31,33 +31,34 @@ const char* renderVertexShaderStr =
     "  color = inColor;\n"
     "}\n";
 
-const char* renderFragmentShaderStr =
-    TP_FRAG_SHADER_HEADER
+ShaderString renderFragmentShaderStr =
+    "$TP_FRAG_SHADER_HEADER$"
     "//PointSpriteShader renderFragmentShaderStr\n"
     "uniform sampler2D textureSampler;\n"
-    TP_GLSL_IN_F"vec2 texCoordinate;\n"
-    TP_GLSL_IN_F"vec4 color;\n"
-    TP_GLSL_IN_F"float clip;\n"
-    TP_GLSL_GLFRAGCOLOR_DEF
+    "$TP_GLSL_IN_F$vec2 texCoordinate;\n"
+    "$TP_GLSL_IN_F$vec4 color;\n"
+    "$TP_GLSL_IN_F$float clip;\n"
+    "$TP_GLSL_GLFRAGCOLOR_DEF$"
     "void main()\n"
     "{\n"
-    "  " TP_GLSL_GLFRAGCOLOR " = " TP_GLSL_TEXTURE "(textureSampler, texCoordinate) * color;\n"
-    "  if(" TP_GLSL_GLFRAGCOLOR ".a < 0.001 || clip<0.1)\n"
+    "  $TP_GLSL_GLFRAGCOLOR$ = $TP_GLSL_TEXTURE$(textureSampler, texCoordinate) * color;\n"
+    "  if($TP_GLSL_GLFRAGCOLOR$.a < 0.001 || clip<0.1)\n"
     "    discard;\n"
     "}\n";
+
 #ifdef TP_GLSL_PICKING
-const char* pickingVertexShaderStr =
-    TP_VERT_SHADER_HEADER
+ShaderString pickingVertexShaderStr =
+    "$TP_VERT_SHADER_HEADER$"
     "//PointSpriteShader pickingVertexShaderStr\n"
-    TP_GLSL_IN_V"vec4 inColor;\n"
-    TP_GLSL_IN_V"vec3 inPosition;\n"
-    TP_GLSL_IN_V"vec3 inOffset;\n"
-    TP_GLSL_IN_V"vec2 inTexture;\n"
+    "$TP_GLSL_IN_V$vec4 inColor;\n"
+    "$TP_GLSL_IN_V$vec3 inPosition;\n"
+    "$TP_GLSL_IN_V$vec3 inOffset;\n"
+    "$TP_GLSL_IN_V$vec2 inTexture;\n"
     "uniform mat4 matrix;\n"
     "uniform vec2 scaleFactor;\n"
     "uniform uint pickingID;\n"
-    TP_GLSL_OUT_V"vec2 texCoordinate;\n"
-    TP_GLSL_OUT_V"vec4 picking;\n"
+    "$TP_GLSL_OUT_V$vec2 texCoordinate;\n"
+    "$TP_GLSL_OUT_V$vec4 picking;\n"
     "void main()\n"
     "{\n"
     "  gl_Position = (matrix * vec4(inPosition, 1.0));\n"
@@ -70,17 +71,17 @@ const char* pickingVertexShaderStr =
     "  picking = vec4(r,g,b,255.0)/255.0;\n"
     "}\n";
 
-const char* pickingFragmentShaderStr =
-    TP_FRAG_SHADER_HEADER
+ShaderString pickingFragmentShaderStr =
+    "$TP_FRAG_SHADER_HEADER$"
     "//PointSpriteShader pickingFragmentShaderStr\n"
     "uniform sampler2D textureSampler;\n"
-    TP_GLSL_IN_F"vec2 texCoordinate;\n"
-    TP_GLSL_IN_F"vec4 picking;\n"
-    TP_GLSL_GLFRAGCOLOR_DEF
+    "$TP_GLSL_IN_F$vec2 texCoordinate;\n"
+    "$TP_GLSL_IN_F$vec4 picking;\n"
+    "$TP_GLSL_GLFRAGCOLOR_DEF$"
     "void main()\n"
     "{\n"
-    "  " TP_GLSL_GLFRAGCOLOR " = picking;\n"
-    "  if(" TP_GLSL_TEXTURE "(textureSampler, texCoordinate).a < 0.001)\n"
+    "  $TP_GLSL_GLFRAGCOLOR$ = picking;\n"
+    "  if($TP_GLSL_TEXTURE$(textureSampler, texCoordinate).a < 0.001)\n"
     "    discard;\n"
     "}\n";
 #endif
@@ -153,9 +154,9 @@ PointSpriteShader::PointSpriteShader():
     shaderType);
   };
 
-  compileShader( renderVertexShaderStr,  renderFragmentShaderStr,  "PointSpriteShader_render", ShaderType:: Render, d-> renderMatrixLoc, d-> renderScaleFactorLoc, nullptr);
+  compileShader( renderVertexShaderStr.data(),  renderFragmentShaderStr.data(),  "PointSpriteShader_render", ShaderType:: Render, d-> renderMatrixLoc, d-> renderScaleFactorLoc, nullptr);
 #ifdef TP_GLSL_PICKING
-  compileShader(pickingVertexShaderStr, pickingFragmentShaderStr, "PointSpriteShader_picking", ShaderType::Picking, d->pickingMatrixLoc, d->pickingScaleFactorLoc, &d->pickingIDLoc);
+  compileShader(pickingVertexShaderStr.data(), pickingFragmentShaderStr.data(), "PointSpriteShader_picking", ShaderType::Picking, d->pickingMatrixLoc, d->pickingScaleFactorLoc, &d->pickingIDLoc);
 #else
 #  warning fix point sprite picking on this platform.
 #endif
@@ -223,7 +224,7 @@ PointSpriteShader::VertexBuffer::VertexBuffer(Map* map_, const Shader *shader_):
 //##################################################################################################
 PointSpriteShader::VertexBuffer::~VertexBuffer()
 {  
-  if(!vaoID)
+  if(!vaoID || !shader.shader())
     return;
 
   map->makeCurrent();

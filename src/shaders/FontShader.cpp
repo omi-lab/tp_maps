@@ -14,16 +14,16 @@ namespace tp_maps
 namespace
 {
 
-const char* vertexShaderStr =
-    TP_VERT_SHADER_HEADER
+ShaderString vertexShaderStr =
+    "$TP_VERT_SHADER_HEADER$"
     "//FontShader vertexShaderStr\n"
-    TP_GLSL_IN_V"vec3 inVertex;\n"
-    TP_GLSL_IN_V"vec3 inNormal;\n"
-    TP_GLSL_IN_V"vec2 inTexture;\n"
+    "$TP_GLSL_IN_V$vec3 inVertex;\n"
+    "$TP_GLSL_IN_V$vec3 inNormal;\n"
+    "$TP_GLSL_IN_V$vec2 inTexture;\n"
     "uniform mat4 matrix;\n"
-    TP_GLSL_OUT_V"vec3 LightVector0;\n"
-    TP_GLSL_OUT_V"vec3 EyeNormal;\n"
-    TP_GLSL_OUT_V"vec2 texCoordinate;\n"
+    "$TP_GLSL_OUT_V$vec3 LightVector0;\n"
+    "$TP_GLSL_OUT_V$vec3 EyeNormal;\n"
+    "$TP_GLSL_OUT_V$vec2 texCoordinate;\n"
     "void main()\n"
     "{\n"
     "  gl_Position = matrix * vec4(inVertex, 1.0);\n"
@@ -32,18 +32,18 @@ const char* vertexShaderStr =
     "  texCoordinate = inTexture;\n"
     "}\n";
 
-const char* fragmentShaderStr =
-    TP_FRAG_SHADER_HEADER
+ShaderString fragmentShaderStr =
+    "$TP_FRAG_SHADER_HEADER$"
     "//FontShader fragmentShaderStr\n"
-    TP_GLSL_IN_F"vec3 LightVector0;\n"
-    TP_GLSL_IN_F"vec3 EyeNormal;\n"
-    TP_GLSL_IN_F"vec2 texCoordinate;\n"
+    "$TP_GLSL_IN_F$vec3 LightVector0;\n"
+    "$TP_GLSL_IN_F$vec3 EyeNormal;\n"
+    "$TP_GLSL_IN_F$vec2 texCoordinate;\n"
     "uniform sampler2D textureSampler;\n"
-    TP_GLSL_GLFRAGCOLOR_DEF
+    "$TP_GLSL_GLFRAGCOLOR_DEF$"
     "void main()\n"
     "{\n"
-    "  " TP_GLSL_GLFRAGCOLOR " = " TP_GLSL_TEXTURE "(textureSampler, texCoordinate);\n"
-    "  if(" TP_GLSL_GLFRAGCOLOR ".a < 0.01)\n"
+    "  $TP_GLSL_GLFRAGCOLOR$ = $TP_GLSL_TEXTURE$ (textureSampler, texCoordinate);\n"
+    "  if($TP_GLSL_GLFRAGCOLOR$.a < 0.01)\n"
     "    discard;\n"
     "}\n";
 
@@ -124,10 +124,10 @@ FontShader::FontShader(const char* vertexShader, const char* fragmentShader):
   d(new Private())
 {
   if(!vertexShader)
-    vertexShader = vertexShaderStr;
+    vertexShader = vertexShaderStr.data();
 
   if(!fragmentShader)
-    fragmentShader = fragmentShaderStr;
+    fragmentShader = fragmentShaderStr.data();
 
   compile(vertexShader,
           fragmentShader,

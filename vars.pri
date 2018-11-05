@@ -84,6 +84,9 @@ HEADERS += inc/tp_maps/shaders/MaterialShader.h
 SOURCES += src/shaders/FontShader.cpp
 HEADERS += inc/tp_maps/shaders/FontShader.h
 
+SOURCES += src/shaders/FrameShader.cpp
+HEADERS += inc/tp_maps/shaders/FrameShader.h
+
 
 #-- Layers -----------------------------------------------------------------------------------------
 SOURCES += src/layers/GridLayer.cpp
