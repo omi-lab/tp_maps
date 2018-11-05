@@ -101,7 +101,7 @@ void PointsLayer::render(RenderInfo& renderInfo)
   if(!d->spriteTexture->texture()->imageReady())
     return;
 
-  if(renderInfo.pass != NormalRenderPass && renderInfo.pass != PickingRenderPass)
+  if(renderInfo.pass != RenderPass::NormalRenderPass && renderInfo.pass != RenderPass::PickingRenderPass)
     return;
 
   PointSpriteShader* shader = map()->getShader<PointSpriteShader>();
@@ -130,13 +130,13 @@ void PointsLayer::render(RenderInfo& renderInfo)
     d->updateVertexBuffer=false;
   }
 
-  shader->use(renderInfo.pass==PickingRenderPass?ShaderType::Picking:ShaderType::Render);
+  shader->use(renderInfo.pass==RenderPass::PickingRenderPass?ShaderType::Picking:ShaderType::Render);
   shader->setMatrix(map()->controller()->matrix(coordinateSystem()));
   shader->setScreenSize(map()->screenSize());
   shader->setTexture(d->textureID);
 
   map()->controller()->enableScissor(coordinateSystem());
-  if(renderInfo.pass==PickingRenderPass)
+  if(renderInfo.pass==RenderPass::PickingRenderPass)
   {
     PickingDetails pickingDetails;
 

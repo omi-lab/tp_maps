@@ -21,28 +21,32 @@ ShaderString vertexShaderStr =
     "$TP_GLSL_IN_V$vec3 inNormal;\n"
     "$TP_GLSL_IN_V$vec2 inTexture;\n"
     "uniform mat4 matrix;\n"
-    "$TP_GLSL_OUT_V$vec3 LightVector0;\n"
-    "$TP_GLSL_OUT_V$vec3 EyeNormal;\n"
+    "uniform vec4 color;\n"
+    "$TP_GLSL_OUT_V$vec3 lightVector0;\n"
+    "$TP_GLSL_OUT_V$vec3 eyeNormal;\n"
     "$TP_GLSL_OUT_V$vec2 texCoordinate;\n"
+    "$TP_GLSL_OUT_V$vec4 multColor;\n"
     "void main()\n"
     "{\n"
     "  gl_Position = matrix * vec4(inVertex, 1.0);\n"
-    "  LightVector0 = vec3(1.0, 1.0, 1.0);\n"
-    "  EyeNormal = inNormal;\n"
+    "  lightVector0 = vec3(1.0, 1.0, 1.0);\n"
+    "  eyeNormal = inNormal;\n"
     "  texCoordinate = inTexture;\n"
+    "  multColor = color;\n"
     "}\n";
 
 ShaderString fragmentShaderStr =
     "$TP_FRAG_SHADER_HEADER$"
     "//FontShader fragmentShaderStr\n"
-    "$TP_GLSL_IN_F$vec3 LightVector0;\n"
-    "$TP_GLSL_IN_F$vec3 EyeNormal;\n"
+    "$TP_GLSL_IN_F$vec3 lightVector0;\n"
+    "$TP_GLSL_IN_F$vec3 eyeNormal;\n"
     "$TP_GLSL_IN_F$vec2 texCoordinate;\n"
+    "$TP_GLSL_IN_F$vec4 multColor;\n"
     "uniform sampler2D textureSampler;\n"
     "$TP_GLSL_GLFRAGCOLOR_DEF$"
     "void main()\n"
     "{\n"
-    "  $TP_GLSL_GLFRAGCOLOR$ = $TP_GLSL_TEXTURE$ (textureSampler, texCoordinate);\n"
+    "  $TP_GLSL_GLFRAGCOLOR$ = $TP_GLSL_TEXTURE$ (textureSampler, texCoordinate)*multColor;\n"
     "  if($TP_GLSL_GLFRAGCOLOR$.a < 0.01)\n"
     "    discard;\n"
     "}\n";
@@ -140,8 +144,10 @@ FontShader::FontShader(const char* vertexShader, const char* fragmentShader):
   [this](GLuint program)
   {
     d->matrixLocation = glGetUniformLocation(program, "matrix");
+    d->colorLocation  = glGetUniformLocation(program, "color");
     const char* shaderName = "FontShader";
     if(d->matrixLocation<0)tpWarning() << shaderName << " d->matrixLocation: " << d->matrixLocation;
+    if(d->matrixLocation<0)tpWarning() << shaderName << " d->colorLocation: " << d->colorLocation;
   });
 }
 
@@ -166,6 +172,12 @@ void FontShader::use(ShaderType shaderType)
 void FontShader::setMatrix(const glm::mat4& matrix)
 {
   glUniformMatrix4fv(d->matrixLocation, 1, GL_FALSE, glm::value_ptr(matrix));
+}
+
+//##################################################################################################
+void FontShader::setColor(const glm::vec4& color)
+{
+  glUniform4fv(d->colorLocation, 1, reinterpret_cast<const GLfloat*>(&color));
 }
 
 //##################################################################################################

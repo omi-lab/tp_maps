@@ -33,15 +33,14 @@ struct ImageLayer::Private
   glm::vec3 bottomRight;
   glm::vec3 bottomLeft;
   glm::vec3 topLeft;
-  bool externalCoords{false};
 
-  //Processed geometry ready for rendering
-  bool updateVertexBuffer{true};
   ImageShader::VertexBuffer* vertexBuffer{nullptr};
 
-  //Bound texture details
   GLuint textureID{0};
+
   bool bindBeforeRender{true};
+  bool externalCoords{false};
+  bool updateVertexBuffer{true};
 
   //################################################################################################
   Private(ImageLayer* q_, Texture* texture_):
@@ -122,7 +121,7 @@ void ImageLayer::render(RenderInfo& renderInfo)
   if(!d->texture->imageReady())
     return;
 
-  if(renderInfo.pass != NormalRenderPass && renderInfo.pass != PickingRenderPass)
+  if(renderInfo.pass != RenderPass::NormalRenderPass && renderInfo.pass != RenderPass::PickingRenderPass)
     return;
 
   ImageShader* shader = map()->getShader<ImageShader>();
@@ -178,7 +177,7 @@ void ImageLayer::render(RenderInfo& renderInfo)
   shader->setTexture(d->textureID);
 
   map()->controller()->enableScissor(coordinateSystem());
-  if(renderInfo.pass==PickingRenderPass)
+  if(renderInfo.pass==RenderPass::PickingRenderPass)
   {
     auto pickingID = renderInfo.pickingIDMat(PickingDetails(0, [](const PickingResult& r)
     {

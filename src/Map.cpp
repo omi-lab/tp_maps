@@ -436,7 +436,7 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
   //------------------------------------------------------------------------------------------------
   // Execute a picking render pass.
   d->renderInfo.resetPicking();
-  d->renderInfo.pass = PickingRenderPass;
+  d->renderInfo.pass = RenderPass::PickingRenderPass;
   d->renderInfo.pickingType = pickingType;
   d->renderInfo.pos = pos;
 
@@ -570,7 +570,9 @@ void Map::paintGL()
   glClearColor(1.0f, 1.0f, float(std::rand()%255)/255.0f, 1.0f);
 #endif
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  d->renderInfo.pass = NormalRenderPass;
+  d->renderInfo.pass = RenderPass::NormalRenderPass;
+  d->render();
+  d->renderInfo.pass = RenderPass::GUIRenderPass;
   d->render();
   printOpenGLError("Map::paintGL");
 }

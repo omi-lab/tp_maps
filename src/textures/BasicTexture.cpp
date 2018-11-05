@@ -92,6 +92,7 @@ TextureData TextureData::clone2()const
 void TextureData::destroy()
 {
   delete[] data;
+  data=nullptr;
 }
 
 //##################################################################################################

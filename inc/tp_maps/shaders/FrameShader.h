@@ -107,7 +107,7 @@ public:
                         const glm::vec4& pickingID);
 
   //################################################################################################
-  static inline const tp_utils::StringID& name(){return imageShaderSID();}
+  static inline const tp_utils::StringID& name(){return frameShaderSID();}
 
 private:
   struct Private;

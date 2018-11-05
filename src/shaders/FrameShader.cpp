@@ -126,7 +126,7 @@ void FrameShader::setMatrix(const glm::mat4& matrix)
 //##################################################################################################
 void FrameShader::setScale(const glm::vec3& scale)
 {
-  glUniform3f(d->scaleLocation, scale.x, scale.y, scale.z);
+  glUniform3fv(d->scaleLocation, 1, &scale.x);
 }
 
 //##################################################################################################

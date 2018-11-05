@@ -139,7 +139,7 @@ void FrustumLayer::setRaysColor(const glm::vec4& raysColor)
 //##################################################################################################
 void FrustumLayer::render(RenderInfo& renderInfo)
 {
-  if(renderInfo.pass != NormalRenderPass)
+  if(renderInfo.pass != RenderPass::NormalRenderPass)
     return;
 
   auto shader = map()->getShader<LineShader>();

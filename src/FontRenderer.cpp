@@ -247,21 +247,19 @@ void FontRenderer::generate()
       modifyGlyph(glyph, [&](const Glyph& glyph)
       {
         size_t size = size_t(glyph.w * glyph.h);
+        current->width  = size_t(glyph.w);
+        current->height = size_t(glyph.h);
+
+        current->leftBearing   = glyph.leftBearing  ;
+        current->rightBearing  = glyph.rightBearing ;
+        current->topBearing    = glyph.topBearing   ;
+        current->bottomBearing = glyph.bottomBearing;
+
+        current->kerningWidth  = glyph.kerningWidth ;
+
+        current->data.resize(size);
         if(size>0)
-        {
-          current->width  = size_t(glyph.w);
-          current->height = size_t(glyph.h);
-
-          current->leftBearing   = glyph.leftBearing  ;
-          current->rightBearing  = glyph.rightBearing ;
-          current->topBearing    = glyph.topBearing   ;
-          current->bottomBearing = glyph.bottomBearing;
-
-          current->kerningWidth  = glyph.kerningWidth ;
-
-          current->data.resize(size);
           memcpy(current->data.data(), glyph.data, size*sizeof(Pixel));
-        }
       });
     });
 
@@ -349,14 +347,14 @@ void FontRenderer::generate()
       lastHeight = glyph->height;
 
       {
-      size_t y = h;
-      size_t bytes = glyph->width*sizeof(Pixel);
-      for(size_t sy=0; sy<glyph->height; sy++, y++)
-      {
-        const auto src = glyph->data.data() + (sy*glyph->width);
-        auto dst = textureData.data + ((y*size_t(textureData.w)) + x);
-        memcpy(dst, src, bytes);
-      }
+        size_t y = h;
+        size_t bytes = glyph->width*sizeof(Pixel);
+        for(size_t sy=0; sy<glyph->height; sy++, y++)
+        {
+          const auto src = glyph->data.data() + (sy*glyph->width);
+          auto dst = textureData.data + ((y*size_t(textureData.w)) + x);
+          memcpy(dst, src, bytes);
+        }
       }
 
       {
@@ -377,12 +375,12 @@ void FontRenderer::generate()
         glyphGeometry.vertices[2] = {float(glyph->width), float(glyph->height)+glyph->bottomBearing};
         glyphGeometry.vertices[3] = {               0.0f, float(glyph->height)+glyph->bottomBearing};
 
-        glyphGeometry.leftBearing   = glyph->leftBearing  ;//0.0f;
-        glyphGeometry.rightBearing  = glyph->rightBearing ;//0.0f;
-        glyphGeometry.topBearing    = glyph->topBearing   ;//0.0f;
-        glyphGeometry.bottomBearing = glyph->bottomBearing;//0.0f;
+        glyphGeometry.leftBearing   = glyph->leftBearing  ;
+        glyphGeometry.rightBearing  = glyph->rightBearing ;
+        glyphGeometry.topBearing    = glyph->topBearing   ;
+        glyphGeometry.bottomBearing = glyph->bottomBearing;
 
-        glyphGeometry.kerningWidth = float(glyph->width);
+        glyphGeometry.kerningWidth = glyph->kerningWidth;
       }
     }
   }

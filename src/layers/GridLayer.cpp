@@ -154,7 +154,7 @@ void GridLayer::setFont(FontRenderer* font)
 //##################################################################################################
 void GridLayer::render(RenderInfo& renderInfo)
 {
-  if(renderInfo.pass != NormalRenderPass)
+  if(renderInfo.pass != RenderPass::NormalRenderPass)
     return;
 
   glm::mat4 matrix = map()->controller()->matrix(coordinateSystem());

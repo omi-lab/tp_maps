@@ -50,10 +50,11 @@ struct PickingDetails
 };
 
 //##################################################################################################
-enum RenderPass
+enum class RenderPass
 {
   NormalRenderPass,
-  PickingRenderPass
+  PickingRenderPass,
+  GUIRenderPass
 };
 
 //##################################################################################################

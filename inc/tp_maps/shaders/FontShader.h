@@ -26,7 +26,10 @@ public:
 
   //################################################################################################
   //! Call this to set the camera matrix before drawing the image
-  void setMatrix(const glm::mat4& matrix);
+  void setMatrix(const glm::mat4& matrix);  
+
+  //################################################################################################
+  void setColor(const glm::vec4& color);
 
   //################################################################################################
   //! Set the texture that will be draw, this needs to be done each frame before drawing
