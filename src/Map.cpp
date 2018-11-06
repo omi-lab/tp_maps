@@ -572,8 +572,13 @@ void Map::paintGL()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   d->renderInfo.pass = RenderPass::NormalRenderPass;
   d->render();
-  d->renderInfo.pass = RenderPass::GUIRenderPass;
-  d->render();
+
+  {
+    glDisable(GL_DEPTH_TEST);
+    d->renderInfo.pass = RenderPass::GUIRenderPass;
+    d->render();
+  }
+
   printOpenGLError("Map::paintGL");
 }
 
