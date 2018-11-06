@@ -276,7 +276,7 @@ void FontRenderer::generate()
   {
     size_t w=padding1;
     size_t h=padding1;
-    size_t lastHeight=0;
+    size_t rowHeight=0;
 
     overflow = false;
     for(const auto glyph : glyphs)
@@ -291,7 +291,8 @@ void FontRenderer::generate()
 
       if(w>textureSize)
       {
-        h+=pad1(lastHeight);
+        h+=pad1(rowHeight);
+        rowHeight=0;
 
         if((h+pad1(glyph->height))>textureSize)
         {
@@ -302,7 +303,8 @@ void FontRenderer::generate()
         w=pad1(glyph->width);
       }
 
-      lastHeight = glyph->height;
+      if(glyph->height>rowHeight)
+        rowHeight = glyph->height;
     }
   }
 
@@ -328,7 +330,7 @@ void FontRenderer::generate()
   {
     size_t w=padding1;
     size_t h=padding1;
-    size_t lastHeight=0;
+    size_t rowHeight=0;
 
     for(const auto glyph : glyphs)
     {
@@ -338,13 +340,15 @@ void FontRenderer::generate()
 
       if(w>textureSize)
       {
-        h+=pad1(lastHeight);
+        h+=pad1(rowHeight);
+        rowHeight=0;
 
         x = padding1;
         w=pad1(glyph->width);
       }
 
-      lastHeight = glyph->height;
+      if(glyph->height>rowHeight)
+        rowHeight = glyph->height;
 
       {
         size_t y = h;
