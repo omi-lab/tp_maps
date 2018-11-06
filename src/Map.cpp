@@ -108,8 +108,8 @@ void Map::preDelete()
 
   clearLayers();
 
-  tpDeleteAll(d->fontRenderers);
-  d->fontRenderers.clear();
+  while(!d->fontRenderers.empty())
+    delete tpTakeFirst(d->fontRenderers);
 
   d->preDeleteCalled = true;
 }
