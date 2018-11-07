@@ -121,7 +121,7 @@ void ImageLayer::render(RenderInfo& renderInfo)
   if(!d->texture->imageReady())
     return;
 
-  if(renderInfo.pass != RenderPass::NormalRenderPass && renderInfo.pass != RenderPass::PickingRenderPass)
+  if(renderInfo.pass != defaultRenderPass() && renderInfo.pass != RenderPass::Picking)
     return;
 
   ImageShader* shader = map()->getShader<ImageShader>();
@@ -177,7 +177,7 @@ void ImageLayer::render(RenderInfo& renderInfo)
   shader->setTexture(d->textureID);
 
   map()->controller()->enableScissor(coordinateSystem());
-  if(renderInfo.pass==RenderPass::PickingRenderPass)
+  if(renderInfo.pass==RenderPass::Picking)
   {
     auto pickingID = renderInfo.pickingIDMat(PickingDetails(0, [](const PickingResult& r)
     {

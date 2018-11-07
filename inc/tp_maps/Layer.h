@@ -68,24 +68,6 @@ public:
   Map* map()const;
 
   //################################################################################################
-  //! The hash that can be used for storing extra data.
-  /*!
-  This allows you to store any arbitrary data with the layer.
-
-  \return A reference to a hash of extra data that can be modified.
-  */
-  std::unordered_map<tp_utils::StringID, std::string>& extraDataMap();
-
-  //################################################################################################
-  //! The hash that can be used for storing extra data.
-  /*!
-  This allows you to store any arbitrary data with the layer.
-
-  \return A reference to a hash of extra data.
-  */
-  const std::unordered_map<tp_utils::StringID, std::string>& extraDataMap()const;
-
-  //################################################################################################
   //! Sets the coordinate system that this layer uses
   /*!
   A map can be configured to use multiple coordinate systems. See \link
@@ -104,17 +86,6 @@ public:
   const tp_utils::StringID& coordinateSystem()const;
 
   //################################################################################################
-  //! Sets the transformation that this layer uses
-  void setTransformation(const tp_math_utils::Transformation& transformation);
-
-  //################################################################################################
-  //! Returns the transformation that this layer should use
-  /*!
-  The transformation should be used to transform the layer within its coordinate system.
-  */
-  const tp_math_utils::Transformation& transformation()const;
-
-  //################################################################################################
   //! Returns the visibility of the layer
   /*!
   \return The visibility of this layer
@@ -131,6 +102,20 @@ public:
   \param visible: the new visibility for the layer
   */
   virtual void setVisible(bool visible);
+
+  //################################################################################################
+  //! The render pass that this layer should do most of its rendering in.
+  /*!
+  Layers may use this to select a render pass to do their main drawing in. Many layers will need to
+  perform rendering in multiple passes, its up to the layer to do this sensibly.
+
+  \return The default render pass for this layer.
+  */
+  RenderPass defaultRenderPass() const;
+
+  //################################################################################################
+  //! Set the render pass that this layer should do most of its rendering in.
+  void setDefaultRenderPass(RenderPass defaultRenderPass);
 
 protected:
   //################################################################################################

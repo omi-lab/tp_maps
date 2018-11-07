@@ -28,9 +28,11 @@ struct Map::Private
   Map* q;
 
   Controller* controller{nullptr};
-  std::vector<Layer*> layers;  
+  std::vector<Layer*> layers;
   std::unordered_map<tp_utils::StringID, Shader*> shaders;
   std::vector<FontRenderer*> fontRenderers;
+
+  std::vector<RenderPass> renderPasses{RenderPass::Background, RenderPass::Normal, RenderPass::GUI};
 
   RenderInfo renderInfo;
 
@@ -436,7 +438,7 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
   //------------------------------------------------------------------------------------------------
   // Execute a picking render pass.
   d->renderInfo.resetPicking();
-  d->renderInfo.pass = RenderPass::PickingRenderPass;
+  d->renderInfo.pass = RenderPass::Picking;
   d->renderInfo.pickingType = pickingType;
   d->renderInfo.pos = pos;
 
@@ -570,13 +572,44 @@ void Map::paintGL()
   glClearColor(1.0f, 1.0f, float(std::rand()%255)/255.0f, 1.0f);
 #endif
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  d->renderInfo.pass = RenderPass::NormalRenderPass;
-  d->render();
 
+  for(auto renderPass : d->renderPasses)
   {
-    glDisable(GL_DEPTH_TEST);
-    d->renderInfo.pass = RenderPass::GUIRenderPass;
-    d->render();
+    switch(renderPass)
+    {
+    case RenderPass::Background:
+    {
+      glDisable(GL_DEPTH_TEST);
+      glDepthMask(true);
+      d->renderInfo.pass = RenderPass::Background;
+      d->render();
+      break;
+    }
+
+    case RenderPass::Normal:
+    {
+      glEnable(GL_DEPTH_TEST);
+      glDepthMask(false);
+      d->renderInfo.pass = RenderPass::Normal;
+      d->render();
+      break;
+    }
+
+    case RenderPass::GUI:
+    {
+      glDisable(GL_DEPTH_TEST);
+      glDepthMask(true);
+      d->renderInfo.pass = RenderPass::GUI;
+      d->render();
+      break;
+    }
+
+    case RenderPass::Picking:
+    {
+      tpWarning() << "Error: Performing a picking render pass in paintGL does not make sense.";
+      break;
+    }
+    }
   }
 
   printOpenGLError("Map::paintGL");

@@ -13,10 +13,8 @@ struct Layer::Private
 
   Map* map{nullptr};
   tp_utils::StringID coordinateSystem{defaultSID()};
-  tp_math_utils::Transformation transformation;
+  RenderPass defaultRenderPass{RenderPass::Normal};
   bool visible{true};
-
-  std::unordered_map<tp_utils::StringID, std::string> extraDataMap;
 
   //################################################################################################
   Private(Layer* q_):
@@ -48,18 +46,6 @@ Map* Layer::map()const
 }
 
 //##################################################################################################
-std::unordered_map<tp_utils::StringID, std::string>& Layer::extraDataMap()
-{
-  return d->extraDataMap;
-}
-
-//##################################################################################################
-const std::unordered_map<tp_utils::StringID, std::string>& Layer::extraDataMap()const
-{
-  return d->extraDataMap;
-}
-
-//##################################################################################################
 void Layer::setCoordinateSystem(const tp_utils::StringID& coordinateSystem)
 {
   d->coordinateSystem = coordinateSystem;
@@ -72,18 +58,6 @@ const tp_utils::StringID& Layer::coordinateSystem()const
 }
 
 //##################################################################################################
-void Layer::setTransformation(const tp_math_utils::Transformation& transformation)
-{
-  d->transformation = transformation;
-}
-
-//##################################################################################################
-const tp_math_utils::Transformation& Layer::transformation()const
-{
-  return d->transformation;
-}
-
-//##################################################################################################
 bool Layer::visible() const
 {
   return d->visible;
@@ -93,6 +67,18 @@ bool Layer::visible() const
 void Layer::setVisible(bool visible)
 {
   d->visible = visible;
+}
+
+//##################################################################################################
+RenderPass Layer::defaultRenderPass() const
+{
+  return d->defaultRenderPass;
+}
+
+//##################################################################################################
+void Layer::setDefaultRenderPass(RenderPass defaultRenderPass)
+{
+  d->defaultRenderPass = defaultRenderPass;
 }
 
 //##################################################################################################

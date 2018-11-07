@@ -96,7 +96,7 @@ void LinesLayer::setLineWidth(float lineWidth)
 //##################################################################################################
 void LinesLayer::render(RenderInfo& renderInfo)
 {
-  if(renderInfo.pass != RenderPass::NormalRenderPass && renderInfo.pass != RenderPass::PickingRenderPass)
+  if(renderInfo.pass != RenderPass::Normal && renderInfo.pass != RenderPass::Picking)
     return;
 
   LineShader* shader = map()->getShader<LineShader>();
@@ -122,7 +122,7 @@ void LinesLayer::render(RenderInfo& renderInfo)
   shader->setMatrix(map()->controller()->matrix(coordinateSystem()));
   shader->setLineWidth(d->lineWidth);
 
-  if(renderInfo.pass==RenderPass::PickingRenderPass)
+  if(renderInfo.pass==RenderPass::Picking)
   {
   }
   else

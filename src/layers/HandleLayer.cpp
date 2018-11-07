@@ -191,7 +191,7 @@ void HandleLayer::render(RenderInfo& renderInfo)
   if(!d->spriteTexture->texture()->imageReady())
     return;
 
-  if(renderInfo.pass != RenderPass::NormalRenderPass && renderInfo.pass != RenderPass::PickingRenderPass)
+  if(renderInfo.pass != RenderPass::Normal && renderInfo.pass != RenderPass::Picking)
     return;
 
   auto shader = map()->getShader<PointSpriteShader>();
@@ -242,7 +242,7 @@ void HandleLayer::render(RenderInfo& renderInfo)
   shader->setTexture(d->textureID);
 
   map()->controller()->enableScissor(coordinateSystem());
-  if(renderInfo.pass==RenderPass::PickingRenderPass)
+  if(renderInfo.pass==RenderPass::Picking)
   {
     auto pickingID = renderInfo.pickingID(PickingDetails(0, [this](const PickingResult& r) -> PickingResult*
     {
