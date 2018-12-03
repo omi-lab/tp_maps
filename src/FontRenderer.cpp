@@ -322,8 +322,8 @@ void FontRenderer::generate()
     pixels.resize(textureSize*textureSize, p);
   }
   TextureData textureData;
-  textureData.w = int(textureSize);
-  textureData.h = int(textureSize);
+  textureData.w = textureSize;
+  textureData.h = textureSize;
   textureData.data = pixels.data();
 
   //-- Draw glyphs to the texture ------------------------------------------------------------------
