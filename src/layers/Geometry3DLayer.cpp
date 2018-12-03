@@ -1,4 +1,4 @@
-#include "tp_maps/layers/GeometryLayer.h"
+#include "tp_maps/layers/Geometry3DLayer.h"
 #include "tp_maps/Texture.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/Controller.h"
@@ -23,20 +23,22 @@ struct GeometryDetails_lt
 };
 }
 //##################################################################################################
-struct GeometryLayer::Private
+struct Geometry3DLayer::Private
 {
   TP_NONCOPYABLE(Private);
-  GeometryLayer* q;
+  Geometry3DLayer* q;
 
-  std::vector<Geometry> geometry;
+  std::vector<Geometry3D> geometry;
   MaterialShader::Light light;
+
+  glm::mat4 objectMatrix{1.0f};
 
   //Processed geometry ready for rendering
   std::vector<GeometryDetails_lt> processedGeometry;
   bool updateVertexBuffer{true};
 
   //################################################################################################
-  Private(GeometryLayer* q_):
+  Private(Geometry3DLayer* q_):
     q(q_)
   {
 
@@ -60,43 +62,68 @@ struct GeometryLayer::Private
 };
 
 //##################################################################################################
-GeometryLayer::GeometryLayer():
+Geometry3DLayer::Geometry3DLayer():
   d(new Private(this))
 {
 
 }
 
 //##################################################################################################
-GeometryLayer::~GeometryLayer()
+Geometry3DLayer::~Geometry3DLayer()
 {
   delete d;
 }
 
 //##################################################################################################
-const std::vector<Geometry>& GeometryLayer::geometry()const
+const std::vector<Geometry3D>& Geometry3DLayer::geometry()const
 {
   return d->geometry;
 }
 
 //##################################################################################################
-void GeometryLayer::setGeometry(const std::vector<Geometry>& geometry)
+void Geometry3DLayer::setGeometry(const std::vector<Geometry3D>& geometry)
 {
   d->geometry = geometry;
   d->updateVertexBuffer = true;
   update();
 }
 
+//################################################################################################
+const glm::mat4& Geometry3DLayer::objectMatrix()const
+{
+  return d->objectMatrix;
+}
+
+//################################################################################################
+void Geometry3DLayer::setObjectMatrix(const glm::mat4& objectMatrix)
+{
+  d->objectMatrix = objectMatrix;
+  update();
+}
+
 //##################################################################################################
-void GeometryLayer::setLight(const MaterialShader::Light& light)
+void Geometry3DLayer::setLight(const MaterialShader::Light& light)
 {
   d->light = light;
   update();
 }
 
 //##################################################################################################
-void GeometryLayer::render(RenderInfo& renderInfo)
+void Geometry3DLayer::setMaterial(const MaterialShader::Material& material)
 {
-  if(renderInfo.pass != RenderPass::Normal && renderInfo.pass != RenderPass::Picking)
+  for(auto& g : d->geometry)
+    g.material = material;
+
+  for(auto& g : d->processedGeometry)
+    g.material = material;
+
+  update();
+}
+
+//##################################################################################################
+void Geometry3DLayer::render(RenderInfo& renderInfo)
+{
+  if(renderInfo.pass != defaultRenderPass() && renderInfo.pass != RenderPass::Picking)
     return;
 
   auto shader = map()->getShader<MaterialShader>();
@@ -108,51 +135,43 @@ void GeometryLayer::render(RenderInfo& renderInfo)
     d->deleteVertexBuffers();
     d->updateVertexBuffer=false;
 
-    for(const Geometry& shape : d->geometry)
+    for(const auto& shape : d->geometry)
     {
-      GeometryDetails_lt details;
-      details.material = shape.material;
-
-      std::vector<tp_triangulation::Polygon> srcData;
-      tp_triangulation::Polygon polygon;
-      tp_triangulation::Contour contour;
-      contour.vertices = shape.geometry;
-      polygon.contours.push_back(contour);
-      srcData.push_back(polygon);
-
-      std::map<int, std::vector<tp_triangulation::Contour>> resultVerts;
-      tp_triangulation::triangulate(srcData, GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES, resultVerts);
-
-      for(const auto& i : resultVerts)
+      for(const auto& part : shape.geometry.indexes)
       {
-        for(const tp_triangulation::Contour& c : i.second)
+        GeometryDetails_lt details;
+        details.material = shape.material;
+
+        std::vector<GLuint> indexes;
+        std::vector<MaterialShader::Vertex> verts;
+        for(size_t n=0; n<part.indexes.size(); n++)
         {
-          std::vector<GLuint> indexes;
-          std::vector<MaterialShader::Vertex> verts;
-          for(size_t n=0; n<c.vertices.size(); n++)
+          auto idx = part.indexes.at(n);
+          if(size_t(idx)<shape.geometry.verts.size())
           {
-            const glm::vec3& v = c.vertices.at(n);
+            const auto& v = shape.geometry.verts.at(size_t(idx));
             indexes.push_back(GLuint(n));
-            verts.push_back(MaterialShader::Vertex(v, {0.0f, 0.0f, 1.0f}));
+            verts.push_back(MaterialShader::Vertex(v.vert, v.normal));
           }
-
-          std::pair<GLenum, MaterialShader::VertexBuffer*> p;
-          p.first = GLenum(i.first);
-          p.second = shader->generateVertexBuffer(map(), indexes, verts);
-          details.vertexBuffers.push_back(p);
         }
-      }
 
-      d->processedGeometry.push_back(details);
+        std::pair<GLenum, MaterialShader::VertexBuffer*> p;
+        p.first = GLenum(part.type);
+        p.second = shader->generateVertexBuffer(map(), indexes, verts);
+        details.vertexBuffers.push_back(p);
+
+        d->processedGeometry.push_back(details);
+      }
     }
   }
 
-  shader->use();
   {
+    shader->use();
     auto m = map()->controller()->matrices(coordinateSystem());
-    shader->setMatrix(glm::mat4(1.0f), m.v, m.p);
+    shader->setMatrix(d->objectMatrix, m.v, m.p);
+    shader->setCameraRay(m.cameraOriginNear, m.cameraOriginFar);
+    shader->setLight(d->light);
   }
-  shader->setLight(d->light);
 
   if(renderInfo.pass==RenderPass::Picking)
   {
@@ -180,7 +199,7 @@ void GeometryLayer::render(RenderInfo& renderInfo)
 }
 
 //##################################################################################################
-void GeometryLayer::invalidateBuffers()
+void Geometry3DLayer::invalidateBuffers()
 {
   d->deleteVertexBuffers();
   d->updateVertexBuffer=true;

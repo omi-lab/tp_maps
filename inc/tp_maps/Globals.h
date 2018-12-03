@@ -16,23 +16,40 @@
 #  include <gl3.h>
 #  include <OpenGL/glext.h>
 
-#  define TP_VERT_SHADER_HEADER "#version 120\n"
-#  define TP_FRAG_SHADER_HEADER "#version 120\n"
+#  define TP_VERT_SHADER_HEADER "#version 410\nprecision highp float;\n"
+#  define TP_FRAG_SHADER_HEADER "#version 410\nprecision highp float;\n"
 
-#  define TP_GLSL_IN_V "attribute "
-#  define TP_GLSL_IN_F "varying "
-#  define TP_GLSL_OUT_V "varying "
-#  define TP_GLSL_OUT_F "varying "
-#  define TP_GLSL_GLFRAGCOLOR "gl_FragColor"
-#  define TP_GLSL_GLFRAGCOLOR_DEF ""
-#  define TP_GLSL_TEXTURE "texture2D"
+#  define TP_GLSL_IN_V "in "
+#  define TP_GLSL_IN_F "in "
+#  define TP_GLSL_OUT_V "out "
+#  define TP_GLSL_OUT_F "out "
+#  define TP_GLSL_GLFRAGCOLOR "fragColor"
+#  define TP_GLSL_GLFRAGCOLOR_DEF "out vec4 fragColor;\n"
+#  define TP_GLSL_TEXTURE "texture"
 
-#  define tpGenVertexArrays glGenVertexArraysAPPLE
-#  define tpBindVertexArray glBindVertexArrayAPPLE
-#  define tpDeleteVertexArrays glDeleteVertexArraysAPPLE
+#  define tpGenVertexArrays glGenVertexArrays
+#  define tpBindVertexArray glBindVertexArray
+#  define tpDeleteVertexArrays glDeleteVertexArrays
 #  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
 
 #  define TP_GLSL_PICKING
+//#  define TP_VERT_SHADER_HEADER "#version 120\n"
+//#  define TP_FRAG_SHADER_HEADER "#version 120\n"
+
+//#  define TP_GLSL_IN_V "attribute "
+//#  define TP_GLSL_IN_F "varying "
+//#  define TP_GLSL_OUT_V "varying "
+//#  define TP_GLSL_OUT_F "varying "
+//#  define TP_GLSL_GLFRAGCOLOR "gl_FragColor"
+//#  define TP_GLSL_GLFRAGCOLOR_DEF ""
+//#  define TP_GLSL_TEXTURE "texture2D"
+
+//#  define tpGenVertexArrays glGenVertexArraysAPPLE
+//#  define tpBindVertexArray glBindVertexArrayAPPLE
+//#  define tpDeleteVertexArrays glDeleteVertexArraysAPPLE
+//#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
+
+//#  define TP_GLSL_PICKING
 
 using TPGLsize = GLuint;
 using TPGLfloat = float;

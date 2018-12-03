@@ -185,7 +185,6 @@ void PointSpriteShader::use(ShaderType shaderType)
 
   case ShaderType::Picking:
     glDisable(GL_BLEND);
-    glEnable(GL_DEPTH_TEST);
     d->matrixLoc = d->pickingMatrixLoc;
     d->scaleFactorLoc = d->pickingScaleFactorLoc;
     break;

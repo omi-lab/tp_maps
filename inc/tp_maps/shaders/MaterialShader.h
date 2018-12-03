@@ -26,20 +26,22 @@ public:
   //################################################################################################
   struct Material
   {
-    glm::vec3 ambient{0.0f, 0.0f, 0.0f};
-    glm::vec3 diffuse{0.0f, 0.0f, 0.0f};
-    glm::vec3 specular{0.0f, 0.0f, 0.0f};
-    float shininess{0.0f};
-    float alpha{0.0f};
+    glm::vec3 ambient{1.0f, 0.0f, 0.0f};
+    glm::vec3 diffuse{0.4f, 0.0f, 0.0f};
+    glm::vec3 specular{0.1f, 0.1f, 0.1f};
+    float shininess{32.0f};
+    float alpha{1.0f};
   };
 
   //################################################################################################
   struct Light
   {
-    glm::vec3 position{0.0f, 0.0f, 0.0f};
+    glm::vec3 position{0.0f, 0.0f, 20.0f};
     glm::vec3 ambient{0.4f, 0.4f, 0.4f};
-    glm::vec3 diffuse{0.8f, 0.8f, 0.8f};
+    glm::vec3 diffuse{0.6f, 0.6f, 0.6f};
     glm::vec3 specular{1.0f, 1.0f, 1.0f};
+    float diffuseScale{0.5f};              //! Multiplied with the diffuse lighting calculation.
+    float diffuseTranslate{1.0f};          //! Added to the diffuse lighting calculation.
   };
 
   //################################################################################################
@@ -51,8 +53,12 @@ public:
   void setLight(const Light& light);
 
   //################################################################################################
-  //! Call this to set the camera matrix before drawing the geometry
-  void setMatrix(const glm::mat4& matrix);
+  //! Call this to set the camera origin before drawing the geometry
+  void setCameraRay(const glm::vec3& near, const glm::vec3& far);
+
+  //################################################################################################
+  //! Call this to set the model, view, and projection matrices before drawing the geometry.
+  void setMatrix(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p);
 
   //################################################################################################
   struct Vertex
@@ -97,7 +103,7 @@ public:
 
   //################################################################################################
   VertexBuffer* generateVertexBuffer(Map* map,
-                                     const std::vector<GLushort>& indexes,
+                                     const std::vector<GLuint>& indexes,
                                      const std::vector<Vertex>& verts)const;
 
   //################################################################################################

@@ -249,8 +249,19 @@ void FlatController::updateMatrices()
                                     fh*d->distance,      // <- Top
                                     -100.0f*d->distance, // <- Near
                                     100.0f*d->distance); // <- Far
-
-  setMatrix(defaultSID(), projection * view);
+  Controller::Matrices vp;
+  vp.p  = projection;
+  vp.v  = view;
+  vp.vp = projection * view;
+  {
+    glm::vec4 origin = glm::inverse(vp.vp) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    vp.cameraOriginNear = origin / origin.w;
+  }
+  {
+    glm::vec4 origin = glm::inverse(vp.vp) * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+    vp.cameraOriginFar = origin / origin.w;
+  }
+  setMatrices(defaultSID(), vp);
 }
 
 //##################################################################################################

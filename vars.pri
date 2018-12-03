@@ -101,6 +101,9 @@ HEADERS += inc/tp_maps/layers/HandleLayer.h
 SOURCES += src/layers/GeometryLayer.cpp
 HEADERS += inc/tp_maps/layers/GeometryLayer.h
 
+SOURCES += src/layers/Geometry3DLayer.cpp
+HEADERS += inc/tp_maps/layers/Geometry3DLayer.h
+
 SOURCES += src/layers/LinesLayer.cpp
 HEADERS += inc/tp_maps/layers/LinesLayer.h
 

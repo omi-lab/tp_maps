@@ -374,10 +374,10 @@ void FontRenderer::generate()
         glyphGeometry.textureCoords[2] = {fr, fb};
         glyphGeometry.textureCoords[3] = {fx, fb};
 
-        glyphGeometry.vertices[0] = {               0.0f,                 0.0f+glyph->bottomBearing};
-        glyphGeometry.vertices[1] = {float(glyph->width),                 0.0f+glyph->bottomBearing};
-        glyphGeometry.vertices[2] = {float(glyph->width), float(glyph->height)+glyph->bottomBearing};
-        glyphGeometry.vertices[3] = {               0.0f, float(glyph->height)+glyph->bottomBearing};
+        glyphGeometry.vertices[0] = {               0.0f+glyph->leftBearing,                 0.0f+glyph->bottomBearing};
+        glyphGeometry.vertices[1] = {float(glyph->width)+glyph->leftBearing,                 0.0f+glyph->bottomBearing};
+        glyphGeometry.vertices[2] = {float(glyph->width)+glyph->leftBearing, float(glyph->height)+glyph->bottomBearing};
+        glyphGeometry.vertices[3] = {               0.0f+glyph->leftBearing, float(glyph->height)+glyph->bottomBearing};
 
         glyphGeometry.leftBearing   = glyph->leftBearing  ;
         glyphGeometry.rightBearing  = glyph->rightBearing ;

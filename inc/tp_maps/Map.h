@@ -68,12 +68,6 @@ public:
   glm::vec3 backgroundColor()const;
 
   //################################################################################################
-  void setEnableDepthBuffer(bool enableDepthBuffer);
-
-  //################################################################################################
-  bool enableDepthBuffer()const;
-
-  //################################################################################################
   //! Add a layer to the map
   /*!
   The default implementation simply appends the layer to the vector of layers and then

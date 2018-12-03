@@ -40,14 +40,12 @@ struct Map::Private
   int height{1};
   glm::vec3 backgroundColor{0.0f, 0.0f, 0.0f};
 
-  bool enableDepthBuffer;
   bool initialized{false};
   bool preDeleteCalled{false};
 
   //################################################################################################
-  Private(Map* q_, bool enableDepthBuffer_):
-    q(q_),
-    enableDepthBuffer(enableDepthBuffer_)
+  Private(Map* q_):
+    q(q_)
   {
     renderInfo.map = q;
   }
@@ -63,24 +61,11 @@ struct Map::Private
       if((*l)->visible())
         (*l)->render(renderInfo);
   }
-
-  //################################################################################################
-  void initDepthBuffer()
-  {
-    if(enableDepthBuffer)
-    {
-      glEnable(GL_DEPTH_TEST);
-      glClearDepthf(1.0f);
-      glDepthFunc(GL_LESS);
-    }
-    else
-      glDisable(GL_DEPTH_TEST);
-  }
 };
 
 //##################################################################################################
-Map::Map(bool enableDepthBuffer):
-  d(new Private(this, enableDepthBuffer))
+Map::Map(bool):
+  d(new Private(this))
 {
   //Create a new controller, it will assign itself to the map.
   Controller* controller = new FlatController(this);
@@ -183,23 +168,6 @@ void Map::setBackgroundColor(const glm::vec3& color)
 glm::vec3 Map::backgroundColor()const
 {
   return d->backgroundColor;
-}
-
-//##################################################################################################
-void Map::setEnableDepthBuffer(bool enableDepthBuffer)
-{
-  d->enableDepthBuffer = enableDepthBuffer;
-  if(d->initialized)
-  {
-    makeCurrent();
-    d->initDepthBuffer();
-  }
-}
-
-//##################################################################################################
-bool Map::enableDepthBuffer()const
-{
-  return d->enableDepthBuffer;
 }
 
 //##################################################################################################
@@ -547,8 +515,6 @@ void Map::initializeGL()
   // On some platforms the context isn't current, so fix that first
   makeCurrent();
 
-  d->initDepthBuffer();
-
   glDisable(GL_SCISSOR_TEST);
   glDisable(GL_STENCIL_TEST);
   glDisable(GL_DITHER);
@@ -571,6 +537,8 @@ void Map::paintGL()
   //Make the background flicker to show when the map is updateing
   glClearColor(1.0f, 1.0f, float(std::rand()%255)/255.0f, 1.0f);
 #endif
+  glDepthMask(true);
+  glClearDepthf(1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   for(auto renderPass : d->renderPasses)
@@ -580,7 +548,7 @@ void Map::paintGL()
     case RenderPass::Background:
     {
       glDisable(GL_DEPTH_TEST);
-      glDepthMask(true);
+      glDepthMask(false);
       d->renderInfo.pass = RenderPass::Background;
       d->render();
       break;
@@ -589,7 +557,8 @@ void Map::paintGL()
     case RenderPass::Normal:
     {
       glEnable(GL_DEPTH_TEST);
-      glDepthMask(false);
+      glDepthFunc(GL_LESS);
+      glDepthMask(true);
       d->renderInfo.pass = RenderPass::Normal;
       d->render();
       break;
@@ -597,10 +566,12 @@ void Map::paintGL()
 
     case RenderPass::GUI:
     {
+      glEnable(GL_SCISSOR_TEST);
       glDisable(GL_DEPTH_TEST);
-      glDepthMask(true);
+      glDepthMask(false);
       d->renderInfo.pass = RenderPass::GUI;
       d->render();
+      glDisable(GL_SCISSOR_TEST);
       break;
     }
 

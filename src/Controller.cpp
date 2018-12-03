@@ -10,7 +10,7 @@ namespace tp_maps
 struct Controller::Private
 {
   Map* map;
-  std::unordered_map<tp_utils::StringID, glm::mat4> matrices;
+  std::unordered_map<tp_utils::StringID, Matrices> matrices;
   std::unordered_map<tp_utils::StringID, Scissor> scissor;
   std::function<void(const MouseEvent&)> mouseClickCallback;
 
@@ -32,7 +32,13 @@ Controller::Controller(Map* map):
 //##################################################################################################
 glm::mat4 Controller::matrix(const tp_utils::StringID& coordinateSystem)const
 {
-  return tpGetMapValue(d->matrices, coordinateSystem, glm::mat4(1));
+  return tpGetMapValue(d->matrices, coordinateSystem).vp;
+}
+
+//##################################################################################################
+Controller::Matrices Controller::matrices(const tp_utils::StringID& coordinateSystem)const
+{
+  return tpGetMapValue(d->matrices, coordinateSystem);
 }
 
 //##################################################################################################
@@ -79,7 +85,13 @@ Controller::~Controller()
 //##################################################################################################
 void Controller::setMatrix(const tp_utils::StringID& coordinateSystem, const glm::mat4& matrix)
 {
-  d->matrices[coordinateSystem] = matrix;
+  d->matrices[coordinateSystem].vp = matrix;
+}
+
+//##################################################################################################
+void Controller::setMatrices(const tp_utils::StringID& coordinateSystem, const Matrices& matrices)
+{
+  d->matrices[coordinateSystem] = matrices;
 }
 
 //##################################################################################################

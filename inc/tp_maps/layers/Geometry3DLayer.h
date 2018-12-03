@@ -1,38 +1,50 @@
-#ifndef tp_maps_GeometryLayer_h
-#define tp_maps_GeometryLayer_h
+#ifndef tp_maps_Geometry3DLayer_h
+#define tp_maps_Geometry3DLayer_h
 
 #include "tp_maps/Layer.h"
 #include "tp_maps/shaders/MaterialShader.h"
+
+#include "tp_math_utils/Geometry3D.h"
 
 namespace tp_maps
 {
 
 //##################################################################################################
-struct Geometry
+struct Geometry3D
 {
-  std::vector<glm::vec3> geometry;
+  tp_math_utils::Geometry3D geometry;
   MaterialShader::Material material;
 };
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT GeometryLayer: public Layer
+class TP_MAPS_SHARED_EXPORT Geometry3DLayer: public Layer
 {
 public:
   //################################################################################################
-  GeometryLayer();
+  Geometry3DLayer();
 
   //################################################################################################
-  ~GeometryLayer()override;
+  ~Geometry3DLayer()override;
 
   //################################################################################################
-  const std::vector<Geometry>& geometry()const;
+  const std::vector<Geometry3D>& geometry()const;
 
   //################################################################################################
-  void setGeometry(const std::vector<Geometry>& geometry);
+  void setGeometry(const std::vector<Geometry3D>& geometry);
 
   //################################################################################################
-  //! Call this to set the lighting
+  const glm::mat4& objectMatrix()const;
+
+  //################################################################################################
+  void setObjectMatrix(const glm::mat4& objectMatrix);
+
+  //################################################################################################
+  //! Call this to set the lighting.
   void setLight(const MaterialShader::Light& light);
+
+  //################################################################################################
+  //! Call this to set the material of all geometry.
+  void setMaterial(const MaterialShader::Material& material);
 
 protected:
   //################################################################################################

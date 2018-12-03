@@ -30,6 +30,18 @@ public:
   Controller(Map* map);
 
   //################################################################################################
+  struct Matrices
+  {
+    glm::mat4 v{1.0f};
+    glm::mat4 p{1.0f};
+
+    glm::mat4 vp{1.0f};
+
+    glm::vec3 cameraOriginNear{0.0f, 0.0f, 0.0f};
+    glm::vec3 cameraOriginFar {0.0f, 0.0f, 1.0f};
+  };
+
+  //################################################################################################
   //! Returns the camera matrix for a given coordinate system
   /*!
   It is possible to have multiple coordinate systems in use on a single map. For example you always
@@ -46,6 +58,10 @@ public:
   \return The requested matrix, or an identity.
   */
   glm::mat4 matrix(const tp_utils::StringID& coordinateSystem)const;
+
+  //################################################################################################
+  //! This is basically the same as matrix however it returns the view and projection separatly.
+  Matrices matrices(const tp_utils::StringID& coordinateSystem)const;
 
   //################################################################################################
   struct Scissor
@@ -102,6 +118,9 @@ protected:
 
   //################################################################################################
   void setMatrix(const tp_utils::StringID& coordinateSystem, const glm::mat4& matrix);
+
+  //################################################################################################
+  void setMatrices(const tp_utils::StringID& coordinateSystem, const Matrices& matrices);
 
   //################################################################################################
   void setScissor(const tp_utils::StringID& coordinateSystem, int x, int y, int width, int height);

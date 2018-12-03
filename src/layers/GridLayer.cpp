@@ -44,11 +44,11 @@ struct GridLayer::Private
   {
     for(int i=0; i< 100; i++)
     {
-      vertices.emplace_back(float(i) * 0.001f,  0.0f, 0.0f);
-      vertices.emplace_back(float(i) * 0.001f,  0.4f, 0.0f);
+      vertices.emplace_back(float(i) * 0.01f,  0.0f, 0.0f);
+      vertices.emplace_back(float(i) * 0.01f,  0.4f, 0.0f);
 
-      vertices.emplace_back( 0.0f, float(i) * 0.001f, 0.0f);
-      vertices.emplace_back( 0.2f, float(i) * 0.001f, 0.0f);
+      vertices.emplace_back( 0.0f, float(i) * 0.01f, 0.0f);
+      vertices.emplace_back( 0.2f, float(i) * 0.01f, 0.0f);
     }
   }
 
@@ -82,6 +82,7 @@ struct GridLayer::Private
       perpendicular = tpMax(std::fabs(perpendicular)*2.0f-1.0f, 0.0f);
     }
     details.alpha = perpendicular;
+    details.alpha = 1.0f;
   }
 
   //################################################################################################
