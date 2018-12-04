@@ -493,6 +493,12 @@ glm::vec2 Map::screenSize()const
 }
 
 //##################################################################################################
+float Map::pixelScale()
+{
+  return 1.0f;
+}
+
+//##################################################################################################
 void Map::initializeGL()
 {
   //Invalidate old state before initializing new state
