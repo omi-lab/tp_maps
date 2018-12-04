@@ -3,6 +3,8 @@
 #include "tp_maps/Font.h"
 #include "tp_maps/Map.h"
 
+#include "tp_math_utils/Globals.h"
+
 #include "tp_utils/DebugUtils.h"
 #include "tp_utils/TimeUtils.h"
 
@@ -22,15 +24,11 @@ ShaderString vertexShaderStr =
     "$TP_GLSL_IN_V$vec2 inTexture;\n"
     "uniform mat4 matrix;\n"
     "uniform vec4 color;\n"
-    "$TP_GLSL_OUT_V$vec3 lightVector0;\n"
-    "$TP_GLSL_OUT_V$vec3 eyeNormal;\n"
     "$TP_GLSL_OUT_V$vec2 texCoordinate;\n"
     "$TP_GLSL_OUT_V$vec4 multColor;\n"
     "void main()\n"
     "{\n"
     "  gl_Position = matrix * vec4(inVertex, 1.0);\n"
-    "  lightVector0 = vec3(1.0, 1.0, 1.0);\n"
-    "  eyeNormal = inNormal;\n"
     "  texCoordinate = inTexture;\n"
     "  multColor = color;\n"
     "}\n";
@@ -38,8 +36,6 @@ ShaderString vertexShaderStr =
 ShaderString fragmentShaderStr =
     "$TP_FRAG_SHADER_HEADER$"
     "//FontShader fragmentShaderStr\n"
-    "$TP_GLSL_IN_F$vec3 lightVector0;\n"
-    "$TP_GLSL_IN_F$vec3 eyeNormal;\n"
     "$TP_GLSL_IN_F$vec2 texCoordinate;\n"
     "$TP_GLSL_IN_F$vec4 multColor;\n"
     "uniform sampler2D textureSampler;\n"

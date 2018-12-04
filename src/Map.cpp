@@ -32,7 +32,7 @@ struct Map::Private
   std::unordered_map<tp_utils::StringID, Shader*> shaders;
   std::vector<FontRenderer*> fontRenderers;
 
-  std::vector<RenderPass> renderPasses{RenderPass::Background, RenderPass::Normal, RenderPass::GUI};
+  std::vector<RenderPass> renderPasses{RenderPass::Background, RenderPass::Normal, RenderPass::Text, RenderPass::GUI};
 
   RenderInfo renderInfo;
 
@@ -566,6 +566,15 @@ void Map::paintGL()
       glDepthFunc(GL_LESS);
       glDepthMask(true);
       d->renderInfo.pass = RenderPass::Normal;
+      d->render();
+      break;
+    }
+
+    case RenderPass::Text:
+    {
+      glDisable(GL_DEPTH_TEST);
+      glDepthMask(false);
+      d->renderInfo.pass = RenderPass::Text;
       d->render();
       break;
     }
