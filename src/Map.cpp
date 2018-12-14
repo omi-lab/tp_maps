@@ -583,6 +583,8 @@ void Map::paintGL()
     {
       glEnable(GL_SCISSOR_TEST);
       glDisable(GL_DEPTH_TEST);
+      auto s = pixelScale();
+      glScissor(0, 0, GLsizei(float(width())*s), GLsizei(float(height())*s));
       glDepthMask(false);
       d->renderInfo.pass = RenderPass::GUI;
       d->render();

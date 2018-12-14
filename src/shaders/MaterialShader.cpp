@@ -37,7 +37,7 @@ ShaderString vertexShaderStr =
     "{\n"
     "  gl_Position = mvp * vec4(inVertex, 1.0);\n"
     "  fragPos = mat3(m)*inVertex;\n"
-    "  lightVector0 = vec3(0.0f, 0.0f, 1.0f);\n"
+    "  lightVector0 = vec3(0.0, 0.0, 1.0);\n"
     "  normal = mat3(m)*inNormal;\n"
     "}\n";
 

@@ -96,7 +96,7 @@ void GeometryLayer::setLight(const MaterialShader::Light& light)
 //##################################################################################################
 void GeometryLayer::render(RenderInfo& renderInfo)
 {
-  if(renderInfo.pass != RenderPass::Normal && renderInfo.pass != RenderPass::Picking)
+  if(renderInfo.pass != defaultRenderPass() && renderInfo.pass != RenderPass::Picking)
     return;
 
   auto shader = map()->getShader<MaterialShader>();

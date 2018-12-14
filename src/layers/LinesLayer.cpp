@@ -96,7 +96,7 @@ void LinesLayer::setLineWidth(float lineWidth)
 //##################################################################################################
 void LinesLayer::render(RenderInfo& renderInfo)
 {
-  if(renderInfo.pass != RenderPass::Normal && renderInfo.pass != RenderPass::Picking)
+  if(renderInfo.pass != defaultRenderPass() && renderInfo.pass != RenderPass::Picking)
     return;
 
   LineShader* shader = map()->getShader<LineShader>();
