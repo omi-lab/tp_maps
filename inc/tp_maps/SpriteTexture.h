@@ -47,6 +47,9 @@ public:
 
   //################################################################################################
   //! This should be called once before use
+  /*!
+  \param texture The texture object, SpriteTexture will take ownership of texture.
+  */
   void setTexture(Texture* texture);
 
   //################################################################################################

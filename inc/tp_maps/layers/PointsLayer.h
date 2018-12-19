@@ -19,6 +19,9 @@ class TP_MAPS_SHARED_EXPORT PointsLayer: public Layer
 {
 public:
   //################################################################################################
+  /*!
+  \param spriteTexture The sprite texture, PointsLayer will take ownership of spriteTexture.
+  */
   PointsLayer(SpriteTexture* spriteTexture);
 
   //################################################################################################
