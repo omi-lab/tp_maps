@@ -18,6 +18,9 @@ HEADERS += inc/tp_maps/SpriteTexture.h
 #SOURCES += src/MouseEvent.cpp
 HEADERS += inc/tp_maps/MouseEvent.h
 
+#SOURCES += src/KeyEvent.cpp
+HEADERS += inc/tp_maps/KeyEvent.h
+
 SOURCES += src/PickingResult.cpp
 HEADERS += inc/tp_maps/PickingResult.h
 
@@ -63,6 +66,9 @@ HEADERS += inc/tp_maps/controllers/FlatController.h
 
 SOURCES += src/controllers/AnimatedFlatController.cpp
 HEADERS += inc/tp_maps/controllers/AnimatedFlatController.h
+
+SOURCES += src/controllers/FPSController.cpp
+HEADERS += inc/tp_maps/controllers/FPSController.h
 
 
 #-- Shaders ----------------------------------------------------------------------------------------

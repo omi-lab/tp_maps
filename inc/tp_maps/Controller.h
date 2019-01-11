@@ -13,6 +13,7 @@ namespace tp_maps
 {
 class Map;
 struct MouseEvent;
+struct KeyEvent;
 
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT Controller
@@ -139,6 +140,9 @@ protected:
 
   //################################################################################################
   virtual bool mouseEvent(const MouseEvent& event)=0;
+
+  //################################################################################################
+  virtual bool keyEvent(const KeyEvent& event);
 
   //################################################################################################
   //! Update the state of the animation

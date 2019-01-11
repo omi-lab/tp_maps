@@ -629,6 +629,15 @@ bool Map::mouseEvent(const MouseEvent& event)
 }
 
 //##################################################################################################
+bool Map::keyEvent(const KeyEvent& event)
+{
+  for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
+    if((*(--l))->keyEvent(event))
+      return true;
+  return d->controller->keyEvent(event);
+}
+
+//##################################################################################################
 void Map::mapLayerDestroyed(Layer* layer)
 {
   tpRemoveOne(d->layers, layer);

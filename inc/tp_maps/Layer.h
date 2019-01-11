@@ -18,6 +18,7 @@ namespace tp_maps
 class Map;
 class RenderInfo;
 struct MouseEvent;
+struct KeyEvent;
 
 //##################################################################################################
 //! A directory of picking callbacks, and a description of how different layers handle picking callbacks.
@@ -137,11 +138,18 @@ protected:
   virtual void invalidateBuffers();
 
   //################################################################################################
-  //! Called with mouse press events.
+  //! Called with mouse events.
   /*!
   \param event - Details of the event that was passed to the map.
   */
   virtual bool mouseEvent(const MouseEvent& event);
+
+  //################################################################################################
+  //! Called with key events.
+  /*!
+  \param event - Details of the event that was passed to the map.
+  */
+  virtual bool keyEvent(const KeyEvent& event);
 
   //################################################################################################
   //! Update the state of the animation

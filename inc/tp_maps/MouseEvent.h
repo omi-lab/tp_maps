@@ -20,7 +20,7 @@ enum class MouseEventType
 };
 
 //##################################################################################################
-enum class Button
+enum class Button : size_t
 {
   NoButton   =0,
   RightButton=1,
@@ -38,6 +38,9 @@ struct TP_MAPS_SHARED_EXPORT MouseEvent
 
   //! The position of the mouse event.
   glm::ivec2 pos{0,0};
+
+  //! Movement since last event, usually used for full screen.
+  glm::ivec2 posDelta{0,0};
 
   //! Mouse wheel delta, where applicable.
   int delta{0};

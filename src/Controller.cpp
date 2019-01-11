@@ -106,6 +106,13 @@ void Controller::setScissor(const tp_utils::StringID& coordinateSystem, int x, i
 }
 
 //##################################################################################################
+bool Controller::keyEvent(const KeyEvent& event)
+{
+  TP_UNUSED(event);
+  return false;
+}
+
+//##################################################################################################
 void Controller::animate(double timestampMS)
 {
   TP_UNUSED(timestampMS);

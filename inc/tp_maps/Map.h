@@ -26,6 +26,7 @@ class RenderInfo;
 class Shader;
 class Texture;
 struct MouseEvent;
+struct KeyEvent;
 class PickingResult;
 class FontRenderer;
 
@@ -203,6 +204,9 @@ public:
 
   //################################################################################################
   bool mouseEvent(const MouseEvent& event);
+
+  //################################################################################################
+  bool keyEvent(const KeyEvent& event);
 
   //################################################################################################
   //! Return the controller

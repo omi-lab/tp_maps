@@ -101,6 +101,13 @@ bool Layer::mouseEvent(const MouseEvent& event)
 }
 
 //##################################################################################################
+bool Layer::keyEvent(const KeyEvent& event)
+{
+  TP_UNUSED(event);
+  return false;
+}
+
+//##################################################################################################
 void Layer::animate(double timestampMS)
 {
   TP_UNUSED(timestampMS);
