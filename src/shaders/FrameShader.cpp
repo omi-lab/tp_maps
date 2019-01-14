@@ -196,7 +196,7 @@ FrameShader::VertexBuffer::~VertexBuffer()
 }
 
 //##################################################################################################
-void FrameShader::drawImage(GLenum mode,
+void FrameShader::draw(GLenum mode,
                             VertexBuffer* vertexBuffer,
                             const glm::vec4& color)
 {
@@ -205,7 +205,7 @@ void FrameShader::drawImage(GLenum mode,
 }
 
 //##################################################################################################
-void FrameShader::drawImagePicking(GLenum mode,
+void FrameShader::drawPicking(GLenum mode,
                                    VertexBuffer* vertexBuffer,
                                    const glm::vec4& pickingID)
 {

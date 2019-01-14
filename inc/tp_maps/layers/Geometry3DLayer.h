@@ -46,6 +46,19 @@ public:
   //! Call this to set the material of all geometry.
   void setMaterial(const MaterialShader::Material& material);
 
+  //################################################################################################
+  enum class ShaderType
+  {
+    Material, //!< Render the 3D geometry as a shaded material using the MaterialShader.
+    Image     //!< Render the 3D geometry as flat unshaded images using the ImageShader.
+  };
+
+  //################################################################################################
+  void setShaderType(ShaderType shaderType);
+
+  //################################################################################################
+  ShaderType shaderType() const;
+
 protected:
   //################################################################################################
   void render(RenderInfo& renderInfo) override;

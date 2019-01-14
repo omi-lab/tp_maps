@@ -25,7 +25,7 @@ struct ImageLayer::Private
   Texture* texture;
 
   //The raw data passed to this class
-  std::vector<GLushort> indexes{0,1,2,3};
+  std::vector<GLuint> indexes{0,1,2,3};
   std::vector<ImageShader::Vertex> verts;
   glm::vec4 color{1.0f, 1.0f, 1.0f, 1.0f};
 
@@ -183,13 +183,13 @@ void ImageLayer::render(RenderInfo& renderInfo)
     {
       return new ImagePickingResult(r.pickingType, r.details, r.renderInfo, 0, 0);
     }));
-    shader->drawImagePicking(GL_TRIANGLE_FAN,
+    shader->drawPicking(GL_TRIANGLE_FAN,
                              d->vertexBuffer,
                              pickingID);
   }
   else
   {
-    shader->drawImage(GL_TRIANGLE_FAN,
+    shader->draw(GL_TRIANGLE_FAN,
                       d->vertexBuffer,
                       d->color);
   }

@@ -5,6 +5,9 @@
 #include "tp_maps/shaders/MaterialShader.h"
 #include "tp_maps/picking_results/GeometryPickingResult.h"
 
+#include "tp_maps/shaders/MaterialShader.h"
+#include "tp_maps/shaders/ImageShader.h"
+
 #include "tp_utils/DebugUtils.h"
 
 #include "tp_triangulation/Triangulation.h"
@@ -13,7 +16,6 @@
 
 namespace tp_maps
 {
-
 namespace
 {
 struct GeometryDetails_lt
@@ -30,6 +32,7 @@ struct Geometry3DLayer::Private
 
   std::vector<Geometry3D> geometry;
   MaterialShader::Light light;
+  ShaderType shaderType{ShaderType::Material};
 
   glm::mat4 objectMatrix{1.0f};
 
@@ -58,6 +61,45 @@ struct Geometry3DLayer::Private
         delete buffer.second;
 
     processedGeometry.clear();
+  }
+
+  //################################################################################################
+  void checkUpdateVertexBuffer(Geometry3DShader* shader)
+  {
+    if(updateVertexBuffer)
+    {
+      deleteVertexBuffers();
+      updateVertexBuffer=false;
+
+      for(const auto& shape : geometry)
+      {
+        for(const auto& part : shape.geometry.indexes)
+        {
+          GeometryDetails_lt details;
+          details.material = shape.material;
+
+          std::vector<GLuint> indexes;
+          std::vector<MaterialShader::Vertex> verts;
+          for(size_t n=0; n<part.indexes.size(); n++)
+          {
+            auto idx = part.indexes.at(n);
+            if(size_t(idx)<shape.geometry.verts.size())
+            {
+              const auto& v = shape.geometry.verts.at(size_t(idx));
+              indexes.push_back(GLuint(n));
+              verts.push_back(MaterialShader::Vertex(v.vert, v.normal, v.texture));
+            }
+          }
+
+          std::pair<GLenum, MaterialShader::VertexBuffer*> p;
+          p.first = GLenum(part.type);
+          p.second = shader->generateVertexBuffer(q->map(), indexes, verts);
+          details.vertexBuffers.push_back(p);
+
+          processedGeometry.push_back(details);
+        }
+      }
+    }
   }
 };
 
@@ -88,13 +130,13 @@ void Geometry3DLayer::setGeometry(const std::vector<Geometry3D>& geometry)
   update();
 }
 
-//################################################################################################
+//##################################################################################################
 const glm::mat4& Geometry3DLayer::objectMatrix()const
 {
   return d->objectMatrix;
 }
 
-//################################################################################################
+//##################################################################################################
 void Geometry3DLayer::setObjectMatrix(const glm::mat4& objectMatrix)
 {
   d->objectMatrix = objectMatrix;
@@ -121,81 +163,194 @@ void Geometry3DLayer::setMaterial(const MaterialShader::Material& material)
 }
 
 //##################################################################################################
+void Geometry3DLayer::setShaderType(ShaderType shaderType)
+{
+  d->shaderType = shaderType;
+  update();
+}
+
+//##################################################################################################
+Geometry3DLayer::ShaderType Geometry3DLayer::shaderType() const
+{
+  return d->shaderType;
+}
+
+//##################################################################################################
 void Geometry3DLayer::render(RenderInfo& renderInfo)
 {
   if(renderInfo.pass != defaultRenderPass() && renderInfo.pass != RenderPass::Picking)
     return;
 
-  auto shader = map()->getShader<MaterialShader>();
-  if(shader->error())
-    return;
-
-  if(d->updateVertexBuffer)
+  auto render = [&](auto s,
+      const auto& use,
+      const auto& setMaterialPicking,
+      const auto& drawPicking,
+      const auto& setMaterial,
+      const auto& draw,
+      RenderInfo& renderInfo)
   {
-    d->deleteVertexBuffers();
-    d->updateVertexBuffer=false;
+    auto shader = map()->getShader<typename std::remove_pointer<decltype(s)>::type>();
+    if(shader->error())
+      return;
 
-    for(const auto& shape : d->geometry)
+    d->checkUpdateVertexBuffer(shader);
+
+    use(shader);
+
+    if(renderInfo.pass==RenderPass::Picking)
     {
-      for(const auto& part : shape.geometry.indexes)
+      size_t iMax = d->processedGeometry.size();
+      for(size_t i=0; i<iMax; i++)
       {
-        GeometryDetails_lt details;
-        details.material = shape.material;
-
-        std::vector<GLuint> indexes;
-        std::vector<MaterialShader::Vertex> verts;
-        for(size_t n=0; n<part.indexes.size(); n++)
+        const GeometryDetails_lt& details = d->processedGeometry.at(i);
+        auto pickingID = renderInfo.pickingIDMat(PickingDetails(i, [](const PickingResult& r)
         {
-          auto idx = part.indexes.at(n);
-          if(size_t(idx)<shape.geometry.verts.size())
-          {
-            const auto& v = shape.geometry.verts.at(size_t(idx));
-            indexes.push_back(GLuint(n));
-            verts.push_back(MaterialShader::Vertex(v.vert, v.normal));
-          }
-        }
+          return new GeometryPickingResult(r.pickingType, r.details, r.renderInfo);
+        }));
 
-        std::pair<GLenum, MaterialShader::VertexBuffer*> p;
-        p.first = GLenum(part.type);
-        p.second = shader->generateVertexBuffer(map(), indexes, verts);
-        details.vertexBuffers.push_back(p);
-
-        d->processedGeometry.push_back(details);
+        setMaterialPicking(shader, details);
+        for(const std::pair<GLenum, MaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
+          drawPicking(shader, buff.first, buff.second, pickingID);
       }
     }
-  }
-
-  {
-    shader->use();
-    auto m = map()->controller()->matrices(coordinateSystem());
-    shader->setMatrix(d->objectMatrix, m.v, m.p);
-    shader->setCameraRay(m.cameraOriginNear, m.cameraOriginFar);
-    shader->setLight(d->light);
-  }
-
-  if(renderInfo.pass==RenderPass::Picking)
-  {
-    size_t iMax = d->processedGeometry.size();
-    for(size_t i=0; i<iMax; i++)
+    else
     {
-      const GeometryDetails_lt& details = d->processedGeometry.at(i);
-      auto pickingID = renderInfo.pickingIDMat(PickingDetails(i, [](const PickingResult& r)
+      for(const auto& details : d->processedGeometry)
       {
-        return new GeometryPickingResult(r.pickingType, r.details, r.renderInfo);
-      }));
-      for(const std::pair<GLenum, MaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
-        shader->drawPicking(buff.first, buff.second, pickingID);
+        setMaterial(shader, details);
+        for(const std::pair<GLenum, MaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
+          draw(shader, buff.first, buff.second);
+      }
     }
-  }
-  else
+  };
+
+
+  //-- MaterialShader ------------------------------------------------------------------------------
+  if(d->shaderType == ShaderType::Material)
   {
-    for(const auto& details : d->processedGeometry)
+    render(static_cast<MaterialShader*>(nullptr), [&](auto shader)
+    {
+      shader->use();
+      auto m = map()->controller()->matrices(coordinateSystem());
+      shader->setMatrix(d->objectMatrix, m.v, m.p);
+      shader->setCameraRay(m.cameraOriginNear, m.cameraOriginFar);
+      shader->setLight(d->light);
+    }, [&](auto, auto)
+    {
+
+    }, [&](auto shader, auto first, auto second, auto pickingID)
+    {
+      shader->drawPicking(first, second, pickingID);
+    }, [&](auto shader, const auto& details)
     {
       shader->setMaterial(details.material);
-      for(const std::pair<GLenum, MaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
-        shader->draw(buff.first, buff.second);
-    }
+    }, [&](auto shader, auto first, auto second)
+    {
+      shader->draw(first, second);
+    },
+    renderInfo);
   }
+
+
+  //-- ImageShader ---------------------------------------------------------------------------------
+  else if(d->shaderType == ShaderType::Image)
+  {
+    render(static_cast<ImageShader*>(nullptr), [&](auto shader)
+    {
+      shader->use();
+      auto m = map()->controller()->matrices(coordinateSystem());
+      shader->setMatrix(m.vp * d->objectMatrix);
+    }, [&](auto, auto)
+    {
+
+    }, [&](auto shader, auto first, auto second, auto pickingID)
+    {
+      shader->drawPicking(first, second, pickingID);
+    }, [&](auto, const auto&)
+    {
+
+    }, [&](auto shader, auto first, auto second)
+    {
+      shader->draw(first, second, {1.0f, 1.0f, 1.0f, 1.0f});
+    },
+    renderInfo);
+  }
+
+
+
+
+
+
+  //  auto shader = map()->getShader<MaterialShader>();
+  //  if(shader->error())
+  //    return;
+
+  //  if(d->updateVertexBuffer)
+  //  {
+  //    d->deleteVertexBuffers();
+  //    d->updateVertexBuffer=false;
+
+  //    for(const auto& shape : d->geometry)
+  //    {
+  //      for(const auto& part : shape.geometry.indexes)
+  //      {
+  //        GeometryDetails_lt details;
+  //        details.material = shape.material;
+
+  //        std::vector<GLuint> indexes;
+  //        std::vector<MaterialShader::Vertex> verts;
+  //        for(size_t n=0; n<part.indexes.size(); n++)
+  //        {
+  //          auto idx = part.indexes.at(n);
+  //          if(size_t(idx)<shape.geometry.verts.size())
+  //          {
+  //            const auto& v = shape.geometry.verts.at(size_t(idx));
+  //            indexes.push_back(GLuint(n));
+  //            verts.push_back(Geometry3DShader::Vertex(v.vert, v.normal, v.texture));
+  //          }
+  //        }
+
+  //        std::pair<GLenum, MaterialShader::VertexBuffer*> p;
+  //        p.first = GLenum(part.type);
+  //        p.second = shader->generateVertexBuffer(map(), indexes, verts);
+  //        details.vertexBuffers.push_back(p);
+
+  //        d->processedGeometry.push_back(details);
+  //      }
+  //    }
+  //  }
+
+  //  {
+  //    shader->use();
+  //    auto m = map()->controller()->matrices(coordinateSystem());
+  //    shader->setMatrix(d->objectMatrix, m.v, m.p);
+  //    shader->setCameraRay(m.cameraOriginNear, m.cameraOriginFar);
+  //    shader->setLight(d->light);
+  //  }
+
+  //  if(renderInfo.pass==RenderPass::Picking)
+  //  {
+  //    size_t iMax = d->processedGeometry.size();
+  //    for(size_t i=0; i<iMax; i++)
+  //    {
+  //      const GeometryDetails_lt& details = d->processedGeometry.at(i);
+  //      auto pickingID = renderInfo.pickingIDMat(PickingDetails(i, [](const PickingResult& r)
+  //      {
+  //        return new GeometryPickingResult(r.pickingType, r.details, r.renderInfo);
+  //      }));
+  //      for(const std::pair<GLenum, MaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
+  //        shader->drawPicking(buff.first, buff.second, pickingID);
+  //    }
+  //  }
+  //  else
+  //  {
+  //    for(const auto& details : d->processedGeometry)
+  //    {
+  //      shader->setMaterial(details.material);
+  //      for(const std::pair<GLenum, MaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
+  //        shader->draw(buff.first, buff.second);
+  //    }
+  //  }
 }
 
 //##################################################################################################

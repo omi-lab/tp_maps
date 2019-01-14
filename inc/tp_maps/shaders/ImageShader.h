@@ -1,7 +1,7 @@
 #ifndef tp_maps_ImageShader_h
 #define tp_maps_ImageShader_h
 
-#include "tp_maps/Shader.h"
+#include "tp_maps/shaders/Geometry3DShader.h"
 
 #include "glm/glm.hpp"
 
@@ -10,7 +10,7 @@ namespace tp_maps
 
 //##################################################################################################
 //! A shader for drawing images.
-class TP_MAPS_SHARED_EXPORT ImageShader: public Shader
+class TP_MAPS_SHARED_EXPORT ImageShader: public Geometry3DShader
 {
   friend class Map;
 public:
@@ -32,61 +32,61 @@ public:
   //! Set the texture that will be draw, this needs to be done each frame before drawing
   void setTexture(GLuint textureID);
 
-  //################################################################################################
-  struct Vertex
-  {
-    glm::vec3 position;
-    glm::vec3 normal;
-    glm::vec2 texture;
+//  //################################################################################################
+//  struct Vertex
+//  {
+//    glm::vec3 position;
+//    glm::vec3 normal;
+//    glm::vec2 texture;
 
-    Vertex(){}
-    Vertex(const glm::vec3& position_,
-           const glm::vec3& normal_,
-           const glm::vec2& texture_):
-      position(position_),
-      normal(normal_),
-      texture(texture_)
-    {
+//    Vertex()=default;
+//    Vertex(const glm::vec3& position_,
+//           const glm::vec3& normal_,
+//           const glm::vec2& texture_):
+//      position(position_),
+//      normal(normal_),
+//      texture(texture_)
+//    {
 
-    }
-  };
+//    }
+//  };
 
-  //################################################################################################
-  struct VertexBuffer
-  {
-    //##############################################################################################
-    VertexBuffer(Map* map_, const Shader* shader_);
+//  //################################################################################################
+//  struct VertexBuffer
+//  {
+//    //##############################################################################################
+//    VertexBuffer(Map* map_, const Shader* shader_);
 
-    //##############################################################################################
-    ~VertexBuffer();
+//    //##############################################################################################
+//    ~VertexBuffer();
 
-    Map* map;
-    ShaderPointer shader;
+//    Map* map;
+//    ShaderPointer shader;
 
-    //The Vertex Array Object
-    GLuint vaoID{0};
+//    //The Vertex Array Object
+//    GLuint vaoID{0};
 
-    //The Index Buffer Object
-    GLuint iboID{0};
+//    //The Index Buffer Object
+//    GLuint iboID{0};
 
-    //The Vertex Buffer Object
-    GLuint vboID{0};
+//    //The Vertex Buffer Object
+//    GLuint vboID{0};
 
-    GLuint vertexCount{0};
-    TPGLsize indexCount{0};
-  };
+//    GLuint vertexCount{0};
+//    TPGLsize indexCount{0};
+//  };
 
-  //################################################################################################
-  VertexBuffer* generateVertexBuffer(Map* map,
-                                     const std::vector<GLushort>& indexes,
-                                     const std::vector<Vertex>& verts)const;
+//  //################################################################################################
+//  VertexBuffer* generateVertexBuffer(Map* map,
+//                                     const std::vector<GLushort>& indexes,
+//                                     const std::vector<Vertex>& verts)const;
 
   //################################################################################################
   //! Call this to draw the image
   /*!
   \param vertices The points that make up the line.
   */
-  void drawImage(GLenum mode,
+  void draw(GLenum mode,
                  VertexBuffer* vertexBuffer,
                  const glm::vec4& color);
 
@@ -95,7 +95,7 @@ public:
   /*!
   \param vertices The points that make up the line.
   */
-  void drawImagePicking(GLenum mode,
+  void drawPicking(GLenum mode,
                         VertexBuffer* vertexBuffer,
                         const glm::vec4& pickingID);
 

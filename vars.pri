@@ -75,14 +75,17 @@ HEADERS += inc/tp_maps/controllers/FPSController.h
 SOURCES += src/shaders/LineShader.cpp
 HEADERS += inc/tp_maps/shaders/LineShader.h
 
+SOURCES += src/shaders/PointSpriteShader.cpp
+HEADERS += inc/tp_maps/shaders/PointSpriteShader.h
+
+SOURCES += src/shaders/Geometry3DShader.cpp
+HEADERS += inc/tp_maps/shaders/Geometry3DShader.h
+
 SOURCES += src/shaders/ImageShader.cpp
 HEADERS += inc/tp_maps/shaders/ImageShader.h
 
 SOURCES += src/shaders/YUVImageShader.cpp
 HEADERS += inc/tp_maps/shaders/YUVImageShader.h
-
-SOURCES += src/shaders/PointSpriteShader.cpp
-HEADERS += inc/tp_maps/shaders/PointSpriteShader.h
 
 SOURCES += src/shaders/MaterialShader.cpp
 HEADERS += inc/tp_maps/shaders/MaterialShader.h

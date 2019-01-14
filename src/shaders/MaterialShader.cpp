@@ -144,7 +144,7 @@ struct MaterialShader::Private
 
 //##################################################################################################
 MaterialShader::MaterialShader():
-  Shader(),
+  Geometry3DShader(),
   d(new Private())
 {
   compile(vertexShaderStr.data(),
@@ -252,61 +252,61 @@ void MaterialShader::setMatrix(const glm::mat4& m, const glm::mat4& v, const glm
   glUniformMatrix4fv(d->vpMatrixLocation , 1, GL_FALSE, glm::value_ptr(vp));
 }
 
-//##################################################################################################
-MaterialShader::VertexBuffer* MaterialShader::generateVertexBuffer(Map* map,
-                                                                   const std::vector<GLuint>& indexes,
-                                                                   const std::vector<MaterialShader::Vertex>& verts)const
-{
-  VertexBuffer* vertexBuffer = new VertexBuffer(map, this);
+////##################################################################################################
+//MaterialShader::VertexBuffer* MaterialShader::generateVertexBuffer(Map* map,
+//                                                                   const std::vector<GLuint>& indexes,
+//                                                                   const std::vector<MaterialShader::Vertex>& verts)const
+//{
+//  VertexBuffer* vertexBuffer = new VertexBuffer(map, this);
 
-  vertexBuffer->vertexCount = GLuint(verts.size());
-  vertexBuffer->indexCount = GLuint(indexes.size());
+//  vertexBuffer->vertexCount = GLuint(verts.size());
+//  vertexBuffer->indexCount = GLuint(indexes.size());
 
-  glGenBuffers(1, &vertexBuffer->iboID);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer->iboID);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexes.size()*sizeof(GLuint), indexes.data(), GL_STATIC_DRAW);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+//  glGenBuffers(1, &vertexBuffer->iboID);
+//  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer->iboID);
+//  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexes.size()*sizeof(GLuint), indexes.data(), GL_STATIC_DRAW);
+//  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-  glGenBuffers(1, &vertexBuffer->vboID);
-  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
-  glBufferData(GL_ARRAY_BUFFER, verts.size()*sizeof(MaterialShader::Vertex), verts.data(), GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
+//  glGenBuffers(1, &vertexBuffer->vboID);
+//  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
+//  glBufferData(GL_ARRAY_BUFFER, verts.size()*sizeof(MaterialShader::Vertex), verts.data(), GL_STATIC_DRAW);
+//  glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-  tpGenVertexArrays(1, &vertexBuffer->vaoID);
-  tpBindVertexArray(vertexBuffer->vaoID);
+//  tpGenVertexArrays(1, &vertexBuffer->vaoID);
+//  tpBindVertexArray(vertexBuffer->vaoID);
 
-  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MaterialShader::Vertex), (void*)(0));
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(MaterialShader::Vertex), (void*)(sizeof(float)*3));
-  glEnableVertexAttribArray(0);
-  glEnableVertexAttribArray(1);
-  glDisableVertexAttribArray(3);
+//  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
+//  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MaterialShader::Vertex), (void*)(0));
+//  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(MaterialShader::Vertex), (void*)(sizeof(float)*3));
+//  glEnableVertexAttribArray(0);
+//  glEnableVertexAttribArray(1);
+//  glDisableVertexAttribArray(3);
 
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer->iboID);
+//  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer->iboID);
 
-  tpBindVertexArray(0);
+//  tpBindVertexArray(0);
 
-  return vertexBuffer;
-}
+//  return vertexBuffer;
+//}
 
-//##################################################################################################
-MaterialShader::VertexBuffer::VertexBuffer(Map* map_, const Shader *shader_):
-  map(map_),
-  shader(shader_)
-{
+////##################################################################################################
+//MaterialShader::VertexBuffer::VertexBuffer(Map* map_, const Shader *shader_):
+//  map(map_),
+//  shader(shader_)
+//{
 
-}
-//##################################################################################################
-MaterialShader::VertexBuffer::~VertexBuffer()
-{
-  if(!vaoID || !shader.shader())
-    return;
+//}
+////##################################################################################################
+//MaterialShader::VertexBuffer::~VertexBuffer()
+//{
+//  if(!vaoID || !shader.shader())
+//    return;
 
-  map->makeCurrent();
-  tpDeleteVertexArrays(1, &vaoID);
-  glDeleteBuffers(1, &iboID);
-  glDeleteBuffers(1, &vboID);
-}
+//  map->makeCurrent();
+//  tpDeleteVertexArrays(1, &vaoID);
+//  glDeleteBuffers(1, &iboID);
+//  glDeleteBuffers(1, &vboID);
+//}
 
 //##################################################################################################
 void MaterialShader::draw(GLenum mode, VertexBuffer* vertexBuffer)

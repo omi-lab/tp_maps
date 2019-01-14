@@ -93,7 +93,7 @@ public:
   /*!
   \param vertices The points that make up the line.
   */
-  void drawImage(GLenum mode,
+  void draw(GLenum mode,
                  VertexBuffer* vertexBuffer,
                  const glm::vec4& color);
 
@@ -102,7 +102,7 @@ public:
   /*!
   \param vertices The points that make up the line.
   */
-  void drawImagePicking(GLenum mode,
+  void drawPicking(GLenum mode,
                         VertexBuffer* vertexBuffer,
                         const glm::vec4& pickingID);
 
