@@ -2,6 +2,7 @@
 #define tp_maps_Map_h
 
 #include "tp_maps/Globals.h"
+#include "tp_maps/textures/BasicTexture.h"
 
 #include "glm/glm.hpp"
 
@@ -140,6 +141,21 @@ public:
   PickingResult* performPicking(const tp_utils::StringID& pickingType, const glm::ivec2& pos);
 
   //################################################################################################
+  //! Resize the view and render to an image.
+  /*!
+  This will create a frame buffer of width x height dimensions and render the map to it, if
+  successful the results will be written to pixels and this will return true. This method should
+  return the map to its original state when it is done.
+
+  \param width of image to render.
+  \param height of image to render.
+  \param pixels this will be resized and the results will be written to here.
+  \param swapY swap rows to convert OpenGL format images to normal images.
+  \return True if successful.
+  */
+  bool renderToImage(int width, int height, std::vector<Pixel>& pixels, bool swapY=true);
+
+  //################################################################################################
   //! Delete the given texture
   /*!
   \param id: The id of the texture to delete
@@ -198,6 +214,9 @@ public:
 
   //################################################################################################
   void paintGL();
+
+  //################################################################################################
+  void paintGLNoMakeCurrent();
 
   //################################################################################################
   void resizeGL(int w, int h);

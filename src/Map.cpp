@@ -468,6 +468,89 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
 }
 
 //##################################################################################################
+#warning move the Pixel type somewhere common
+bool Map::renderToImage(int width, int height, std::vector<Pixel>& pixels, bool swapY)
+{
+  if(width<1 || height<1)
+  {
+    tpWarning() << "Error Map::renderToImage can't render to image smaller than 1 pixel.";
+    return false;
+  }
+
+  makeCurrent();
+
+  //------------------------------------------------------------------------------------------------
+  // Configure the frame buffer that the image will be rendered to.
+  GLuint frameBuffer = 0;
+  glGenFramebuffers(1, &frameBuffer);
+  TP_CLEANUP([&]{if(frameBuffer)glDeleteFramebuffers(1, &frameBuffer);});
+  glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+
+  GLuint frameBufferTexture = 0;
+  glGenTextures(1, &frameBufferTexture);
+  TP_CLEANUP([&]{if(frameBufferTexture)glDeleteTextures(1, &frameBufferTexture);});
+  glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+  GLuint frameBufferDepth = 0;
+  glGenRenderbuffers(1, &frameBufferDepth);
+  TP_CLEANUP([&]{if(frameBufferDepth)glDeleteRenderbuffers(1, &frameBufferDepth);});
+  glBindRenderbuffer(GL_RENDERBUFFER, frameBufferDepth);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, frameBufferDepth);
+
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameBufferTexture, 0);
+
+  if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+  {
+    tpWarning() << "Error Map::renderToImage frame buffer not complete!";
+    return false;
+  }
+
+  glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+  TP_CLEANUP([&]{glBindFramebuffer(GL_FRAMEBUFFER, 0);});
+
+  glViewport(0, 0, width, height);
+  TP_CLEANUP([&]{glViewport(0, 0, d->width, d->height);});
+
+  //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+  //------------------------------------------------------------------------------------------------
+  // Execute a picking render passes.
+  paintGLNoMakeCurrent();
+
+
+  //------------------------------------------------------------------------------------------------
+  // Read the small patch from around the picking position and then free up the frame buffers.
+
+  //The size of the area to perform picking in, must be an odd number
+  pixels.resize(size_t(width*height));
+  glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+
+  if(swapY)
+  {
+    std::vector<Pixel> line{size_t(width)};
+    Pixel* c = line.data();
+    size_t rowLengthBytes = size_t(width)*sizeof(Pixel);
+    size_t yMax = size_t(height)/2;
+    for(size_t y=0; y<yMax; y++)
+    {
+      Pixel* a{pixels.data() + y*size_t(width)};
+      Pixel* b{pixels.data() + (size_t(height-1)-y)*size_t(width)};
+
+      memcpy(c, a, rowLengthBytes);
+      memcpy(a, b, rowLengthBytes);
+      memcpy(b, c, rowLengthBytes);
+    }
+  }
+
+  return true;
+}
+
+//##################################################################################################
 void Map::deleteTexture(GLuint id)
 {
   if(id>0)
@@ -539,6 +622,12 @@ void Map::initializeGL()
 void Map::paintGL()
 {
   makeCurrent();
+  paintGLNoMakeCurrent();
+}
+
+//##################################################################################################
+void Map::paintGLNoMakeCurrent()
+{
 #if 0
   //Make the background flicker to show when the map is updateing
   glClearColor(1.0f, 1.0f, float(std::rand()%255)/255.0f, 1.0f);
