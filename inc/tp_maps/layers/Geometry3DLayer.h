@@ -8,6 +8,7 @@
 
 namespace tp_maps
 {
+class Texture;
 
 //##################################################################################################
 struct Geometry3D
@@ -21,7 +22,7 @@ class TP_MAPS_SHARED_EXPORT Geometry3DLayer: public Layer
 {
 public:
   //################################################################################################
-  Geometry3DLayer();
+  Geometry3DLayer(Texture* texture=nullptr);
 
   //################################################################################################
   ~Geometry3DLayer()override;
