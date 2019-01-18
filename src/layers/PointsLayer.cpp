@@ -82,6 +82,14 @@ PointsLayer::~PointsLayer()
 }
 
 //##################################################################################################
+void PointsLayer::clearPoints()
+{
+  d->points.clear();
+  d->updateVertexBuffer = true;
+  update();
+}
+
+//##################################################################################################
 void PointsLayer::setPoints(const std::vector<PointSpriteShader::PointSprite>& points)
 {
   d->points = points;
