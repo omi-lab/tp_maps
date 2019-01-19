@@ -8,7 +8,7 @@ DefaultSpritesTexture::DefaultSpritesTexture(Map* map):
   BasicTexture(map)
 {
   TextureData texture;
-  texture.data = new Pixel[32*32];
+  texture.data = new TPPixel[32*32];
   texture.w = 32;
   texture.h = 32;
 
@@ -21,7 +21,7 @@ DefaultSpritesTexture::DefaultSpritesTexture(Map* map):
       float fx = abs(x-16);
       float f = sqrt(fx*fx + fy);
 
-      Pixel& p = texture.data[y*32+x];
+      TPPixel& p = texture.data[y*32+x];
       p.a = (f>16)?0:255;
       p.r = 255-f;
       p.g = 255-f;

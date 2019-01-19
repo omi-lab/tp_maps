@@ -153,7 +153,7 @@ public:
   \param swapY swap rows to convert OpenGL format images to normal images.
   \return True if successful.
   */
-  bool renderToImage(int width, int height, std::vector<Pixel>& pixels, bool swapY=true);
+  bool renderToImage(int width, int height, std::vector<TPPixel>& pixels, bool swapY=true);
 
   //################################################################################################
   //! Delete the given texture

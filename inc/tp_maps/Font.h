@@ -7,10 +7,11 @@
 
 #include <unordered_set>
 
+union TPPixel;
+
 namespace tp_maps
 {
 class PreparedString;
-struct Pixel;
 
 //##################################################################################################
 //! Details of a single character as produced by the Font.
@@ -18,7 +19,7 @@ struct Glyph
 {
   int w{0};
   int h{0};
-  Pixel* data{nullptr};
+  TPPixel* data{nullptr};
 
   float leftBearing  {0.0f}; //Negative for values to the left of 0
   float rightBearing {0.0f}; //Positive to the right of kerningWidth

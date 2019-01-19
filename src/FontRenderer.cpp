@@ -228,7 +228,7 @@ void FontRenderer::generate()
 
     float kerningWidth{0.0f};
 
-    std::vector<Pixel> data;
+    std::vector<TPPixel> data;
 
     char16_t character;
 
@@ -259,7 +259,7 @@ void FontRenderer::generate()
 
         current->data.resize(size);
         if(size>0)
-          memcpy(current->data.data(), glyph.data, size*sizeof(Pixel));
+          memcpy(current->data.data(), glyph.data, size*sizeof(TPPixel));
       });
     });
 
@@ -312,9 +312,9 @@ void FontRenderer::generate()
   if(overflow)
     return;
 
-  std::vector<Pixel> pixels;
+  std::vector<TPPixel> pixels;
   {
-    Pixel p;
+    TPPixel p;
     p.r = 0;
     p.g = 0;
     p.b = 0;
@@ -352,7 +352,7 @@ void FontRenderer::generate()
 
       {
         size_t y = h;
-        size_t bytes = glyph->width*sizeof(Pixel);
+        size_t bytes = glyph->width*sizeof(TPPixel);
         for(size_t sy=0; sy<glyph->height; sy++, y++)
         {
           const auto src = glyph->data.data() + (sy*glyph->width);

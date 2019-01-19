@@ -468,8 +468,7 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
 }
 
 //##################################################################################################
-#warning move the Pixel type somewhere common
-bool Map::renderToImage(int width, int height, std::vector<Pixel>& pixels, bool swapY)
+bool Map::renderToImage(int width, int height, std::vector<TPPixel>& pixels, bool swapY)
 {
   if(width<1 || height<1)
   {
@@ -532,14 +531,14 @@ bool Map::renderToImage(int width, int height, std::vector<Pixel>& pixels, bool 
 
   if(swapY)
   {
-    std::vector<Pixel> line{size_t(width)};
-    Pixel* c = line.data();
-    size_t rowLengthBytes = size_t(width)*sizeof(Pixel);
+    std::vector<TPPixel> line{size_t(width)};
+    TPPixel* c = line.data();
+    size_t rowLengthBytes = size_t(width)*sizeof(TPPixel);
     size_t yMax = size_t(height)/2;
     for(size_t y=0; y<yMax; y++)
     {
-      Pixel* a{pixels.data() + y*size_t(width)};
-      Pixel* b{pixels.data() + (size_t(height-1)-y)*size_t(width)};
+      TPPixel* a{pixels.data() + y*size_t(width)};
+      TPPixel* b{pixels.data() + (size_t(height-1)-y)*size_t(width)};
 
       memcpy(c, a, rowLengthBytes);
       memcpy(a, b, rowLengthBytes);

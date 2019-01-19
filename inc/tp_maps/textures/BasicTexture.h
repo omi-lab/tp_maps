@@ -3,17 +3,10 @@
 
 #include "tp_maps/Texture.h"
 
+#include "tp_utils/TPPixel.h"
+
 namespace tp_maps
 {
-
-//##################################################################################################
-struct Pixel
-{
-  uint8_t r;
-  uint8_t g;
-  uint8_t b;
-  uint8_t a;
-};
 
 //##################################################################################################
 struct TextureData
@@ -24,7 +17,7 @@ struct TextureData
   //These will be a value between 0.5f and 1.0f.
   float fw{1.0f};
   float fh{1.0f};
-  Pixel* data{nullptr};
+  TPPixel* data{nullptr};
 
   //################################################################################################
   TextureData clone()const;

@@ -16,8 +16,8 @@ TextureData TextureData::clone()const
   size_t size = w*h;
   if(size>0)
   {
-    clone.data = new Pixel[size];
-    memcpy(clone.data, data, size*sizeof(Pixel));
+    clone.data = new TPPixel[size];
+    memcpy(clone.data, data, size*sizeof(TPPixel));
   }
   return clone;
 }
@@ -54,31 +54,31 @@ TextureData TextureData::clone2()const
 
   size_t size = clone.w*clone.h;
 
-  clone.data = new Pixel[size];
+  clone.data = new TPPixel[size];
   if(clone.w==w && clone.h==h)
   {
-    memcpy(clone.data, data, size*sizeof(Pixel));
+    memcpy(clone.data, data, size*sizeof(TPPixel));
   }
   else
   {
-    //size_t padX = (clone.w - w);//*sizeof(Pixel);
-    size_t srcW = w*sizeof(Pixel);
+    //size_t padX = (clone.w - w);//*sizeof(TPPixel);
+    size_t srcW = w*sizeof(TPPixel);
     for(size_t y=0; y<h; y++)
     {
-      Pixel* dst = clone.data+(y*clone.w);
+      TPPixel* dst = clone.data+(y*clone.w);
       memcpy(dst, data+(y*w), srcW);
 
       {
-        Pixel* d=dst+w;
-        Pixel  p = *(d-1);
-        Pixel* dMax=dst+clone.w;
+        TPPixel* d=dst+w;
+        TPPixel  p = *(d-1);
+        TPPixel* dMax=dst+clone.w;
         for(; d<dMax; d++)
           (*d) = p;
       }
     }
 
     {
-      size_t dstW = clone.w*sizeof(Pixel);
+      size_t dstW = clone.w*sizeof(TPPixel);
       void* src = clone.data+(clone.w*(h-1));
       for(size_t y=h; y<clone.h; y++)
         memcpy(clone.data+(clone.w*y), src, dstW);
