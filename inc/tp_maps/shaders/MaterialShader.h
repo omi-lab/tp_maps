@@ -60,52 +60,6 @@ public:
   //! Call this to set the model, view, and projection matrices before drawing the geometry.
   void setMatrix(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p);
 
-//  //################################################################################################
-//  struct Vertex
-//  {
-//    glm::vec3 position;
-//    glm::vec3 normal;
-
-//    Vertex(){}
-//    Vertex(const glm::vec3& position_,
-//           const glm::vec3& normal_):
-//      position(position_),
-//      normal(normal_)
-//    {
-
-//    }
-//  };
-
-//  //################################################################################################
-//  struct VertexBuffer
-//  {
-//    //##############################################################################################
-//    VertexBuffer(Map* map_, const Shader* shader_);
-
-//    //##############################################################################################
-//    ~VertexBuffer();
-
-//    Map* map;
-//    ShaderPointer shader;
-
-//    //The Vertex Array Object
-//    GLuint vaoID{0};
-
-//    //The Index Buffer Object
-//    GLuint iboID{0};
-
-//    //The Vertex Buffer Object
-//    GLuint vboID{0};
-
-//    GLuint vertexCount{0};
-//    GLsizei indexCount{0};
-//  };
-
-//  //################################################################################################
-//  VertexBuffer* generateVertexBuffer(Map* map,
-//                                     const std::vector<GLuint>& indexes,
-//                                     const std::vector<Vertex>& verts)const;
-
   //################################################################################################
   //! Call this to draw the image
   /*!

@@ -16,7 +16,7 @@ Geometry3DShader::VertexBuffer* Geometry3DShader::generateVertexBuffer(Map* map,
 
   glGenBuffers(1, &vertexBuffer->iboID);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer->iboID);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexes.size()*sizeof(TPGLsize)), indexes.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexes.size()*sizeof(GLuint)), indexes.data(), GL_STATIC_DRAW);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
   glGenBuffers(1, &vertexBuffer->vboID);
