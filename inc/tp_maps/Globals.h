@@ -33,23 +33,8 @@
 #  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
 
 #  define TP_GLSL_PICKING
-//#  define TP_VERT_SHADER_HEADER "#version 120\n"
-//#  define TP_FRAG_SHADER_HEADER "#version 120\n"
 
-//#  define TP_GLSL_IN_V "attribute "
-//#  define TP_GLSL_IN_F "varying "
-//#  define TP_GLSL_OUT_V "varying "
-//#  define TP_GLSL_OUT_F "varying "
-//#  define TP_GLSL_GLFRAGCOLOR "gl_FragColor"
-//#  define TP_GLSL_GLFRAGCOLOR_DEF ""
-//#  define TP_GLSL_TEXTURE "texture2D"
-
-//#  define tpGenVertexArrays glGenVertexArraysAPPLE
-//#  define tpBindVertexArray glBindVertexArrayAPPLE
-//#  define tpDeleteVertexArrays glDeleteVertexArraysAPPLE
-//#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
-
-//#  define TP_GLSL_PICKING
+#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
 
 using TPGLsize = GLuint;
 using TPGLfloat = float;
@@ -76,6 +61,8 @@ using TPGLfloat = float;
 
 #  define TP_GLSL_PICKING
 
+#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32_OES
+
 using TPGLsize = GLsizei;
 using TPGLfloat = float;
 
@@ -98,6 +85,8 @@ using TPGLfloat = float;
 #  define tpDeleteVertexArrays glDeleteVertexArrays
 #  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
 
+#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
+
 using TPGLsize = GLsizei;
 using TPGLfloat = float;
 
@@ -119,6 +108,8 @@ using TPGLfloat = float;
 #  define tpBindVertexArray glBindVertexArray
 #  define tpDeleteVertexArrays glDeleteVertexArrays
 #  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
+
+#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
 
 using TPGLsize = GLsizei;
 using TPGLfloat = float;
@@ -143,6 +134,8 @@ using TPGLfloat = float;
 #  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
 
 #  define TP_GLSL_PICKING
+
+#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
 
 using TPGLsize = GLuint;
 using TPGLfloat = float;

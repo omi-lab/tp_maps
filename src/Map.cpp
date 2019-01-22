@@ -497,7 +497,8 @@ bool Map::renderToImage(int width, int height, std::vector<TPPixel>& pixels, boo
   glGenRenderbuffers(1, &frameBufferDepth);
   TP_CLEANUP([&]{if(frameBufferDepth)glDeleteRenderbuffers(1, &frameBufferDepth);});
   glBindRenderbuffer(GL_RENDERBUFFER, frameBufferDepth);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, width, height);
+
+  glRenderbufferStorage(GL_RENDERBUFFER, TP_GL_DEPTH_COMPONENT32, width, height);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, frameBufferDepth);
 
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameBufferTexture, 0);
