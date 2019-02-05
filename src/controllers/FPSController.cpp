@@ -186,6 +186,9 @@ void FPSController::updateMatrices()
   float width(map()->width());
   float height(map()->height());
 
+  if(width<1.0f || height<1.0f)
+    return;
+
   float fh = 1.0f;
   float fw = 1.0f;
   if(width>height)
