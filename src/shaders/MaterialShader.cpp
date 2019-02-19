@@ -29,10 +29,10 @@ ShaderString vertexShaderStr =
     "$TP_GLSL_OUT_V$vec3 fragPos;\n"
     "\n"
     "uniform mat4 m;\n"
-    "uniform mat4 v;\n"
-    "uniform mat4 p;\n"
+    // "uniform mat4 v;\n"
+    // "uniform mat4 p;\n"
     "uniform mat4 mvp;\n"
-    "uniform mat4 vp;\n"
+    //"uniform mat4 vp;\n"
     "void main()\n"
     "{\n"
     "  gl_Position = mvp * vec4(inVertex, 1.0);\n"
@@ -106,10 +106,10 @@ ShaderString fragmentShaderStr =
 struct MaterialShader::Private
 {
   GLint mMatrixLocation          {0};
-  GLint vMatrixLocation          {0};
-  GLint pMatrixLocation          {0};
+  // GLint vMatrixLocation          {0};
+  // GLint pMatrixLocation          {0};
   GLint mvpMatrixLocation        {0};
-  GLint vpMatrixLocation         {0};
+  // GLint vpMatrixLocation         {0};
 
   GLint cameraOriginNearLocation {0};
   GLint cameraOriginFarLocation  {0};
@@ -157,10 +157,10 @@ MaterialShader::MaterialShader():
   [this](GLuint program)
   {
     d->mMatrixLocation             = glGetUniformLocation(program, "m");
-    d->vMatrixLocation             = glGetUniformLocation(program, "v");
-    d->pMatrixLocation             = glGetUniformLocation(program, "p");
+    // d->vMatrixLocation             = glGetUniformLocation(program, "v");
+    // d->pMatrixLocation             = glGetUniformLocation(program, "p");
     d->mvpMatrixLocation           = glGetUniformLocation(program, "mvp");
-    d->vpMatrixLocation            = glGetUniformLocation(program, "vp");
+    // d->vpMatrixLocation            = glGetUniformLocation(program, "vp");
 
     d->cameraOriginNearLocation    = glGetUniformLocation(program, "cameraOriginNear");
     d->cameraOriginFarLocation     = glGetUniformLocation(program, "cameraOriginFar");
@@ -183,10 +183,10 @@ MaterialShader::MaterialShader():
 
     const char* shaderName = "MaterialShader";
     if(d->mMatrixLocation  <0)tpWarning() << shaderName << " mMatrixLocation  : " << d->mMatrixLocation  ;
-    if(d->vMatrixLocation  <0)tpWarning() << shaderName << " vMatrixLocation  : " << d->vMatrixLocation  ;
-    if(d->pMatrixLocation  <0)tpWarning() << shaderName << " pMatrixLocation  : " << d->pMatrixLocation  ;
+    // if(d->vMatrixLocation  <0)tpWarning() << shaderName << " vMatrixLocation  : " << d->vMatrixLocation  ;
+    // if(d->pMatrixLocation  <0)tpWarning() << shaderName << " pMatrixLocation  : " << d->pMatrixLocation  ;
     if(d->mvpMatrixLocation<0)tpWarning() << shaderName << " mvpMatrixLocation: " << d->mvpMatrixLocation;
-    if(d->vpMatrixLocation <0)tpWarning() << shaderName << " vpMatrixLocation : " << d->vpMatrixLocation ;
+    // if(d->vpMatrixLocation <0)tpWarning() << shaderName << " vpMatrixLocation : " << d->vpMatrixLocation ;
 
     if(d->cameraOriginNearLocation <0)tpWarning() << shaderName << " cameraOriginNearLocation  : " << d->cameraOriginNearLocation;
     if(d->cameraOriginFarLocation  <0)tpWarning() << shaderName << " cameraOriginFarLocation   : " << d->cameraOriginFarLocation ;
@@ -244,12 +244,12 @@ void MaterialShader::setCameraRay(const glm::vec3& near, const glm::vec3& far)
 void MaterialShader::setMatrix(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p)
 {
   glm::mat4 mvp = p*v*m;
-  glm::mat4 vp = p*v;
+  // glm::mat4 vp = p*v;
   glUniformMatrix4fv(d->mMatrixLocation  , 1, GL_FALSE, glm::value_ptr(m));
-  glUniformMatrix4fv(d->vMatrixLocation  , 1, GL_FALSE, glm::value_ptr(v));
-  glUniformMatrix4fv(d->pMatrixLocation  , 1, GL_FALSE, glm::value_ptr(p));
+  // glUniformMatrix4fv(d->vMatrixLocation  , 1, GL_FALSE, glm::value_ptr(v));
+  // glUniformMatrix4fv(d->pMatrixLocation  , 1, GL_FALSE, glm::value_ptr(p));
   glUniformMatrix4fv(d->mvpMatrixLocation, 1, GL_FALSE, glm::value_ptr(mvp));
-  glUniformMatrix4fv(d->vpMatrixLocation , 1, GL_FALSE, glm::value_ptr(vp));
+  // glUniformMatrix4fv(d->vpMatrixLocation , 1, GL_FALSE, glm::value_ptr(vp));
 }
 
 //##################################################################################################
