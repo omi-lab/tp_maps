@@ -12,6 +12,9 @@ class TP_MAPS_SHARED_EXPORT ImageLayer: public Layer
 {
 public:
   //################################################################################################
+  /*!
+  \param texture The image in OpenGL coordinate system (0,0) in bottom left.
+  */
   ImageLayer(Texture* texture);
 
   //################################################################################################
