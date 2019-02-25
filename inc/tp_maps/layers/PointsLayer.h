@@ -5,6 +5,8 @@
 #include "tp_maps/SpriteTexture.h"
 #include "tp_maps/shaders/PointSpriteShader.h"
 
+#include "tp_utils/RefCount.h"
+
 #include "glm/glm.hpp"
 
 #include <functional>
@@ -17,6 +19,7 @@ class Texture;
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT PointsLayer: public Layer
 {
+  TDP_REF_COUNT_OBJECTS("PointsLayer");
 public:
   //################################################################################################
   /*!

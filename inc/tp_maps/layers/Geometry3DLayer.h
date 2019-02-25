@@ -6,6 +6,8 @@
 
 #include "tp_math_utils/Geometry3D.h"
 
+#include "tp_utils/RefCount.h"
+
 namespace tp_maps
 {
 class Texture;
@@ -20,6 +22,7 @@ struct Geometry3D
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT Geometry3DLayer: public Layer
 {
+  TDP_REF_COUNT_OBJECTS("Geometry3DLayer");
 public:
   //################################################################################################
   Geometry3DLayer(Texture* texture=nullptr);

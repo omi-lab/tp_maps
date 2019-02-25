@@ -3,6 +3,8 @@
 
 #include "tp_maps/Layer.h"
 
+#include "tp_utils/RefCount.h"
+
 namespace tp_maps
 {
 class Texture;
@@ -10,6 +12,7 @@ class Texture;
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT ImageLayer: public Layer
 {
+  TDP_REF_COUNT_OBJECTS("ImageLayer");
 public:
   //################################################################################################
   /*!

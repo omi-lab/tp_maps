@@ -16,7 +16,7 @@ struct FontRenderer::Private
 {
   FontRenderer* q;
   Map* map;
-  Font* font;
+  std::shared_ptr<Font> font;
 
   std::vector<PreparedString*> preparedStrings;
   std::unordered_set<char16_t> requiredCharacters;
@@ -31,7 +31,7 @@ struct FontRenderer::Private
   bool regenerate{false};
 
   //################################################################################################
-  Private(FontRenderer* q_, Map* map_, Font* font_):
+  Private(FontRenderer* q_, Map* map_, std::shared_ptr<Font> font_):
     q(q_),
     map(map_),
     font(font_),
@@ -70,7 +70,7 @@ struct FontRenderer::Private
 };
 
 //##################################################################################################
-FontRenderer::FontRenderer(Map* map, Font* font):
+FontRenderer::FontRenderer(Map* map, std::shared_ptr<Font> font):
   d(new Private(this, map, font))
 {
   d->map->addFontRenderer(this);
@@ -90,7 +90,7 @@ Map* FontRenderer::map() const
 }
 
 //##################################################################################################
-Font* FontRenderer::font() const
+std::shared_ptr<Font> FontRenderer::font() const
 {
   return d->font;
 }

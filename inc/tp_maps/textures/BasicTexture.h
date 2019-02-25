@@ -4,6 +4,7 @@
 #include "tp_maps/Texture.h"
 
 #include "tp_utils/TPPixel.h"
+#include "tp_utils/RefCount.h"
 
 namespace tp_maps
 {
@@ -33,6 +34,7 @@ struct TextureData
 //##################################################################################################
 class BasicTexture : public Texture
 {
+  TDP_REF_COUNT_OBJECTS("BasicTexture");
 public:
   //################################################################################################
   BasicTexture(Map* map, const TextureData& image=TextureData());

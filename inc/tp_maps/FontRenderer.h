@@ -4,6 +4,7 @@
 #include "tp_maps/Globals.h"
 
 #include <unordered_set>
+#include <memory>
 
 namespace tp_maps
 {
@@ -20,7 +21,7 @@ class TP_MAPS_SHARED_EXPORT FontRenderer
   friend class PreparedString;
 public:
   //################################################################################################
-  FontRenderer(Map* map, Font* font);
+  FontRenderer(Map* map, std::shared_ptr<Font> font);
 
   //################################################################################################
   virtual ~FontRenderer();
@@ -29,7 +30,7 @@ public:
   Map* map() const;
 
   //################################################################################################
-  Font* font() const;
+  std::shared_ptr<Font> font() const;
 
   //################################################################################################
   //! Force a regeneration of the texture using only the required characters.

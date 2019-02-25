@@ -3,6 +3,8 @@
 
 #include "tp_maps/Globals.h"
 
+#include "tp_utils/RefCount.h"
+
 #include "glm/glm.hpp"
 
 #include <vector>
@@ -31,6 +33,7 @@ struct SpriteCoords
 //##################################################################################################
 class SpriteTexture
 {
+  TDP_REF_COUNT_OBJECTS("SpriteTexture");
 public:
   //################################################################################################
   ~SpriteTexture();
