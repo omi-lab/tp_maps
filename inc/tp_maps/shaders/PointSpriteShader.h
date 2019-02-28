@@ -41,14 +41,14 @@ public:
     glm::vec4 color;
     glm::vec3 position;
     glm::vec3 offset{0.0f, 0.0f, 0.0f};
-    int spriteIndex{0};
+    size_t spriteIndex{0};
     float radius{1.0f};
 
     //##############################################################################################
     PointSprite() = default;
 
     //##############################################################################################
-    PointSprite(const glm::vec4& color_, const glm::vec3& position_, int spriteIndex_, float radius_):
+    PointSprite(const glm::vec4& color_, const glm::vec3& position_, size_t spriteIndex_, float radius_):
       color(color_),
       position(position_),
       spriteIndex(spriteIndex_),

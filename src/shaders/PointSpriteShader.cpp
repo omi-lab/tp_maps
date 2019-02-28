@@ -158,7 +158,7 @@ PointSpriteShader::PointSpriteShader():
 #ifdef TP_GLSL_PICKING
   compileShader(pickingVertexShaderStr.data(), pickingFragmentShaderStr.data(), "PointSpriteShader_picking", ShaderType::Picking, d->pickingMatrixLoc, d->pickingScaleFactorLoc, &d->pickingIDLoc);
 #else
-#  warning fix point sprite picking on this platform.
+  //Point sprite picking is not implemented on this platform.
 #endif
 }
 
@@ -282,7 +282,7 @@ PointSpriteShader::VertexBuffer* PointSpriteShader::generateVertexBuffer(Map* ma
       indexes.push_back(verts.size()+2);
       indexes.push_back(verts.size()+3);
 
-      const auto& texCoords = (p->spriteIndex>=0 && p->spriteIndex<int(coords.size()))?coords.at(p->spriteIndex).coords:textureCoords;
+      const auto& texCoords = (p->spriteIndex<coords.size())?coords.at(p->spriteIndex).coords:textureCoords;
 
       for(int i=0; i<4; i++)
       {
@@ -301,23 +301,23 @@ PointSpriteShader::VertexBuffer* PointSpriteShader::generateVertexBuffer(Map* ma
 
   glGenBuffers(1, &vertexBuffer->iboID);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer->iboID);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexes.size()*sizeof(GLuint), indexes.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, TPGLsize(indexes.size()*sizeof(GLuint)), indexes.data(), GL_STATIC_DRAW);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 
   glGenBuffers(1, &vertexBuffer->vboID);
   glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
-  glBufferData(GL_ARRAY_BUFFER, verts.size()*sizeof(PointSprite_lt), verts.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, TPGLsize(verts.size()*sizeof(PointSprite_lt)), verts.data(), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   tpGenVertexArrays(1, &vertexBuffer->vaoID);
   tpBindVertexArray(vertexBuffer->vaoID);
 
   glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
-  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(PointSprite_lt), (void*)(0));                //vec4 color;
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(PointSprite_lt), (void*)(sizeof(float)*4));  //vec3 position;
-  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(PointSprite_lt), (void*)(sizeof(float)*7));  //vec3 offset;
-  glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(PointSprite_lt), (void*)(sizeof(float)*10)); //vec2 texture;
+  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(PointSprite_lt), reinterpret_cast<void*>(size_t(0)));                //vec4 color;
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(PointSprite_lt), reinterpret_cast<void*>(size_t(sizeof(float)*4)));  //vec3 position;
+  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(PointSprite_lt), reinterpret_cast<void*>(size_t(sizeof(float)*7)));  //vec3 offset;
+  glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(PointSprite_lt), reinterpret_cast<void*>(size_t(sizeof(float)*10))); //vec2 texture;
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);
