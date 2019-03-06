@@ -8,7 +8,8 @@ DefaultSpritesTexture::DefaultSpritesTexture(Map* map):
   BasicTexture(map)
 {
   TextureData texture;
-  texture.data = new TPPixel[32*32];
+  auto newData = new TPPixel[32*32];
+  texture.data = newData;
   texture.w = 32;
   texture.h = 32;
 
@@ -19,13 +20,13 @@ DefaultSpritesTexture::DefaultSpritesTexture(Map* map):
     for(int x=0; x<32; x++)
     {
       float fx = abs(x-16);
-      float f = sqrt(fx*fx + fy);
+      float f = std::sqrt(fx*fx + fy);
 
-      TPPixel& p = texture.data[y*32+x];
+      TPPixel& p = newData[y*32+x];
       p.a = (f>16)?0:255;
-      p.r = 255-f;
-      p.g = 255-f;
-      p.b = 255-f;
+      p.r = uint8_t(255.0f-f);
+      p.g = uint8_t(255.0f-f);
+      p.b = uint8_t(255.0f-f);
     }
   }
 

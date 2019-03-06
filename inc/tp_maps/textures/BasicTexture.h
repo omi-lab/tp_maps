@@ -18,7 +18,7 @@ struct TextureData
   //These will be a value between 0.5f and 1.0f.
   float fw{1.0f};
   float fh{1.0f};
-  TPPixel* data{nullptr};
+  const TPPixel* data{nullptr};
 
   //################################################################################################
   TextureData clone()const;

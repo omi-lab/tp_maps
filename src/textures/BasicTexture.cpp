@@ -16,8 +16,9 @@ TextureData TextureData::clone()const
   size_t size = w*h;
   if(size>0)
   {
-    clone.data = new TPPixel[size];
-    memcpy(clone.data, data, size*sizeof(TPPixel));
+    auto newData = new TPPixel[size];
+    clone.data = newData;
+    memcpy(newData, data, size*sizeof(TPPixel));
   }
   return clone;
 }
@@ -54,10 +55,11 @@ TextureData TextureData::clone2()const
 
   size_t size = clone.w*clone.h;
 
-  clone.data = new TPPixel[size];
+  auto newData = new TPPixel[size];
+  clone.data = newData;
   if(clone.w==w && clone.h==h)
   {
-    memcpy(clone.data, data, size*sizeof(TPPixel));
+    memcpy(newData, data, size*sizeof(TPPixel));
   }
   else
   {
@@ -65,7 +67,7 @@ TextureData TextureData::clone2()const
     size_t srcW = w*sizeof(TPPixel);
     for(size_t y=0; y<h; y++)
     {
-      TPPixel* dst = clone.data+(y*clone.w);
+      TPPixel* dst = newData+(y*clone.w);
       memcpy(dst, data+(y*w), srcW);
 
       {
@@ -79,9 +81,9 @@ TextureData TextureData::clone2()const
 
     {
       size_t dstW = clone.w*sizeof(TPPixel);
-      void* src = clone.data+(clone.w*(h-1));
+      const void* src = clone.data+(clone.w*(h-1));
       for(size_t y=h; y<clone.h; y++)
-        memcpy(clone.data+(clone.w*y), src, dstW);
+        memcpy(newData+(clone.w*y), src, dstW);
     }
   }
 

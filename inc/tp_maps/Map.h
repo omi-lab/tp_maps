@@ -156,6 +156,9 @@ public:
   bool renderToImage(int width, int height, std::vector<TPPixel>& pixels, bool swapY=true);
 
   //################################################################################################
+  bool renderToImage(int width, int height, TPPixel* pixels, bool swapY=true);
+
+  //################################################################################################
   //! Delete the given texture
   /*!
   \param id: The id of the texture to delete

@@ -470,6 +470,13 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
 //##################################################################################################
 bool Map::renderToImage(int width, int height, std::vector<TPPixel>& pixels, bool swapY)
 {
+  pixels.resize(size_t(width*height));
+  return renderToImage(width, height, pixels.data(), swapY);
+}
+
+//##################################################################################################
+bool Map::renderToImage(int width, int height, TPPixel* pixels, bool swapY)
+{
   if(width<1 || height<1)
   {
     tpWarning() << "Error Map::renderToImage can't render to image smaller than 1 pixel.";
@@ -515,20 +522,10 @@ bool Map::renderToImage(int width, int height, std::vector<TPPixel>& pixels, boo
   glViewport(0, 0, width, height);
   TP_CLEANUP([&]{glViewport(0, 0, d->width, d->height);});
 
-  //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-  //------------------------------------------------------------------------------------------------
-  // Execute a picking render passes.
+  // Execute a render passes.
   paintGLNoMakeCurrent();
 
-
-  //------------------------------------------------------------------------------------------------
-  // Read the small patch from around the picking position and then free up the frame buffers.
-
-  //The size of the area to perform picking in, must be an odd number
-  pixels.resize(size_t(width*height));
-  glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+  glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
   if(swapY)
   {
@@ -538,8 +535,8 @@ bool Map::renderToImage(int width, int height, std::vector<TPPixel>& pixels, boo
     size_t yMax = size_t(height)/2;
     for(size_t y=0; y<yMax; y++)
     {
-      TPPixel* a{pixels.data() + y*size_t(width)};
-      TPPixel* b{pixels.data() + (size_t(height-1)-y)*size_t(width)};
+      TPPixel* a{pixels + y*size_t(width)};
+      TPPixel* b{pixels + (size_t(height-1)-y)*size_t(width)};
 
       memcpy(c, a, rowLengthBytes);
       memcpy(a, b, rowLengthBytes);

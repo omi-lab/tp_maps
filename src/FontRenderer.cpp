@@ -356,7 +356,7 @@ void FontRenderer::generate()
         for(size_t sy=0; sy<glyph->height; sy++, y++)
         {
           const auto src = glyph->data.data() + (sy*glyph->width);
-          auto dst = textureData.data + ((y*size_t(textureData.w)) + x);
+          auto dst = pixels.data() + ((y*size_t(textureData.w)) + x);
           memcpy(dst, src, bytes);
         }
       }
