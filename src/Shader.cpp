@@ -108,7 +108,10 @@ GLuint Shader::loadShader(const char* shaderSrc, GLenum type)
 {
   GLuint shader = glCreateShader(type);
   if(shader == 0)
+  {
+    tpWarning() << "Failed to create shader.";
     return 0;
+  }
 
   glShaderSource(shader, 1, &shaderSrc, nullptr);
   glCompileShader(shader);

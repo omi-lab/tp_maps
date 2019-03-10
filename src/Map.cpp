@@ -468,14 +468,14 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
 }
 
 //##################################################################################################
-bool Map::renderToImage(int width, int height, std::vector<TPPixel>& pixels, bool swapY)
+bool Map::renderToImage(size_t width, size_t height, std::vector<TPPixel>& pixels, bool swapY)
 {
   pixels.resize(size_t(width*height));
   return renderToImage(width, height, pixels.data(), swapY);
 }
 
 //##################################################################################################
-bool Map::renderToImage(int width, int height, TPPixel* pixels, bool swapY)
+bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY)
 {
   if(width<1 || height<1)
   {
@@ -496,7 +496,7 @@ bool Map::renderToImage(int width, int height, TPPixel* pixels, bool swapY)
   glGenTextures(1, &frameBufferTexture);
   TP_CLEANUP([&]{if(frameBufferTexture)glDeleteTextures(1, &frameBufferTexture);});
   glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, int(width), int(height), 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
@@ -505,7 +505,7 @@ bool Map::renderToImage(int width, int height, TPPixel* pixels, bool swapY)
   TP_CLEANUP([&]{if(frameBufferDepth)glDeleteRenderbuffers(1, &frameBufferDepth);});
   glBindRenderbuffer(GL_RENDERBUFFER, frameBufferDepth);
 
-  glRenderbufferStorage(GL_RENDERBUFFER, TP_GL_DEPTH_COMPONENT32, width, height);
+  glRenderbufferStorage(GL_RENDERBUFFER, TP_GL_DEPTH_COMPONENT32, int(width), int(height));
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, frameBufferDepth);
 
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameBufferTexture, 0);
@@ -519,13 +519,13 @@ bool Map::renderToImage(int width, int height, TPPixel* pixels, bool swapY)
   glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
   TP_CLEANUP([&]{glBindFramebuffer(GL_FRAMEBUFFER, 0);});
 
-  glViewport(0, 0, width, height);
+  glViewport(0, 0, int(width), int(height));
   TP_CLEANUP([&]{glViewport(0, 0, d->width, d->height);});
 
   // Execute a render passes.
   paintGLNoMakeCurrent();
 
-  glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+  glReadPixels(0, 0, int(width), int(height), GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
   if(swapY)
   {

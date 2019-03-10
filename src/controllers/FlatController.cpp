@@ -172,6 +172,19 @@ void FlatController::setRotationAngle(float rotationAngle)
   map()->update();
 }
 
+//################################################################################################
+float FlatController::viewAngle()const
+{
+  return d->viewAngle;
+}
+
+//################################################################################################
+void FlatController::setViewAngle(float viewAngle)
+{
+  d->viewAngle = viewAngle;
+  map()->update();
+}
+
 //##################################################################################################
 float FlatController::rotationFactor()const
 {

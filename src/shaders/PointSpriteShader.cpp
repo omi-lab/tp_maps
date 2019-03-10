@@ -245,7 +245,7 @@ PointSpriteShader::VertexBuffer* PointSpriteShader::generateVertexBuffer(Map* ma
   //There will be 4 of these generated for each PointSprite.
   struct PointSprite_lt
   {
-    glm::vec4 color;    //The color to multiply th etexture by.
+    glm::vec4 color;    //The color to multiply the texture by.
     glm::vec3 position; //The center coordinate of the point sprite.
     glm::vec3 offset;   //The offset of each corner in relation to the position.
     glm::vec2 texture;  //Texture coords for this corner.

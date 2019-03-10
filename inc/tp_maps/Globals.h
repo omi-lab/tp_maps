@@ -11,7 +11,9 @@
 
 //https://github.com/mattdesl/lwjgl-basics/wiki/GLSL-Versions
 
-#ifdef TDP_OSX //-----------------------------------------------------------------------------------
+#ifdef TP_GLES3_100 //------------------------------------------------------------------------------
+
+#elif defined(TDP_OSX) //---------------------------------------------------------------------------
 #  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
 #  include <gl3.h>
 #  include <OpenGL/glext.h>
@@ -67,52 +69,10 @@ using TPGLsize = GLsizei;
 using TPGLfloat = float;
 
 #elif defined(TDP_EMSCRIPTEN) //--------------------------------------------------------------------
-#  include <GLES3/gl3.h>
-
-#  define TP_VERT_SHADER_HEADER "#version 100\nprecision highp float;\n"
-#  define TP_FRAG_SHADER_HEADER "#version 100\nprecision highp float;\n"
-
-#  define TP_GLSL_IN_V "attribute "
-#  define TP_GLSL_IN_F "varying "
-#  define TP_GLSL_OUT_V "varying "
-#  define TP_GLSL_OUT_F "varying "
-#  define TP_GLSL_GLFRAGCOLOR "gl_FragColor"
-#  define TP_GLSL_GLFRAGCOLOR_DEF ""
-#  define TP_GLSL_TEXTURE "texture2D"
-
-#  define tpGenVertexArrays glGenVertexArrays
-#  define tpBindVertexArray glBindVertexArray
-#  define tpDeleteVertexArrays glDeleteVertexArrays
-#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
-
-#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
-
-using TPGLsize = GLsizei;
-using TPGLfloat = float;
+#  define TP_GLES3_100
 
 #elif defined(TDP_ANDROID) //-----------------------------------------------------------------------
-#  include <GLES3/gl3.h>
-
-#  define TP_VERT_SHADER_HEADER "#version 100\nprecision highp float;\n"
-#  define TP_FRAG_SHADER_HEADER "#version 100\nprecision highp float;\n"
-
-#  define TP_GLSL_IN_V "attribute "
-#  define TP_GLSL_IN_F "varying "
-#  define TP_GLSL_OUT_V "varying "
-#  define TP_GLSL_OUT_F "varying "
-#  define TP_GLSL_GLFRAGCOLOR "gl_FragColor"
-#  define TP_GLSL_GLFRAGCOLOR_DEF ""
-#  define TP_GLSL_TEXTURE "texture2D"
-
-#  define tpGenVertexArrays glGenVertexArrays
-#  define tpBindVertexArray glBindVertexArray
-#  define tpDeleteVertexArrays glDeleteVertexArrays
-#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
-
-#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
-
-using TPGLsize = GLsizei;
-using TPGLfloat = float;
+#  define TP_GLES3_100
 
 #else //--------------------------------------------------------------------------------------------
 #  include <GLES3/gl3.h>
@@ -141,6 +101,32 @@ using TPGLsize = GLuint;
 using TPGLfloat = float;
 
 #endif //-------------------------------------------------------------------------------------------
+
+
+#ifdef TP_GLES3_100 //------------------------------------------------------------------------------
+#  include <GLES3/gl3.h>
+
+#  define TP_VERT_SHADER_HEADER "#version 100\nprecision highp float;\n"
+#  define TP_FRAG_SHADER_HEADER "#version 100\nprecision highp float;\n"
+
+#  define TP_GLSL_IN_V "attribute "
+#  define TP_GLSL_IN_F "varying "
+#  define TP_GLSL_OUT_V "varying "
+#  define TP_GLSL_OUT_F "varying "
+#  define TP_GLSL_GLFRAGCOLOR "gl_FragColor"
+#  define TP_GLSL_GLFRAGCOLOR_DEF ""
+#  define TP_GLSL_TEXTURE "texture2D"
+
+#  define tpGenVertexArrays glGenVertexArrays
+#  define tpBindVertexArray glBindVertexArray
+#  define tpDeleteVertexArrays glDeleteVertexArrays
+#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
+
+#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
+
+using TPGLsize = GLsizei;
+using TPGLfloat = float;
+#endif
 
 //##################################################################################################
 //! A simple 3D engine
