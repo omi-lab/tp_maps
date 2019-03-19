@@ -29,7 +29,6 @@ struct GridLayer::Private
 {
   TP_NONCOPYABLE(Private);
   GridLayer* q;
-  std::vector<glm::vec3> vertices;
 
   FontRenderer* font{nullptr};
 
@@ -42,14 +41,6 @@ struct GridLayer::Private
   Private(GridLayer* q_):
     q(q_)
   {
-    for(int i=0; i< 100; i++)
-    {
-      vertices.emplace_back(float(i) * 0.01f,  0.0f, 0.0f);
-      vertices.emplace_back(float(i) * 0.01f,  0.4f, 0.0f);
-
-      vertices.emplace_back( 0.0f, float(i) * 0.01f, 0.0f);
-      vertices.emplace_back( 0.2f, float(i) * 0.01f, 0.0f);
-    }
   }
 
   //################################################################################################
@@ -97,10 +88,34 @@ struct GridLayer::Private
       deleteVertexBuffers();
       updateVertexBuffer=false;
 
-      LinesDetails_lt details;
-      details.vertexBuffer = shader->generateVertexBuffer(q->map(), vertices);
-      details.color = {1.0f, 0.0f, 0.0f};
-      processedGeometry.push_back(details);
+      for(size_t a=0; a<3; a++)
+      {
+        glm::vec3 maskA{0,0,0};
+        maskA[int(a)]=0.01f;
+
+        glm::vec3 maskB{0,0,0};
+        maskB[int((a+1)%3)]=0.1f;
+
+        glm::vec3 maskC{0,0,0};
+        maskC[int((a+2)%3)]=0.1f;
+
+        std::vector<glm::vec3> vertices;
+        for(int i=0; i< 100; i++)
+        {
+          auto aa = float(i)*maskA;
+          vertices.emplace_back(aa);
+          vertices.emplace_back(aa+maskB);
+
+          vertices.emplace_back(aa);
+          vertices.emplace_back(aa+maskC);
+        }
+
+        LinesDetails_lt details;
+        details.vertexBuffer = shader->generateVertexBuffer(q->map(), vertices);
+        details.color = {0.0f, 0.0f, 0.0f};
+        details.color[int(a)] = 1.0f;
+        processedGeometry.push_back(details);
+      }
     }
 
     shader->use();
@@ -110,7 +125,7 @@ struct GridLayer::Private
     q->map()->controller()->enableScissor(q->coordinateSystem());
     for(const LinesDetails_lt& line : processedGeometry)
     {
-      shader->setColor({1.0f, 0.0f, 0.0f, line.alpha});
+      shader->setColor({line.color, line.alpha});
       shader->drawLines(GL_LINES, line.vertexBuffer);
     }
     q->map()->controller()->disableScissor();
