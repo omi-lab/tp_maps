@@ -273,6 +273,13 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
   //-- ImageShader ---------------------------------------------------------------------------------
   else if(d->shaderType == ShaderType::Image)
   {
+    if(!d->texture)
+    {
+      tpWarning() << "Can't render using texture because texture has not been set!";
+      d->shaderType = ShaderType::Material;
+      return;
+    }
+
     if(!d->texture->imageReady())
       return;
 
