@@ -15,13 +15,25 @@ namespace tp_maps
 
 namespace
 {
-const int32_t        UP_KEY = 82;
+const int32_t      UP_KEY = 82;
 const int32_t      LEFT_KEY = 80;
-const int32_t     RIGHT_KEY = 79;
+const int32_t      RIGHT_KEY = 79;
 const int32_t      DOWN_KEY = 81;
 
-const int32_t   PAGE_UP_KEY = 75;
-const int32_t PAGE_DOWN_KEY = 78;
+const int32_t      W_KEY = 26;
+const int32_t      A_KEY = 4;
+const int32_t      S_KEY = 22;
+const int32_t      D_KEY = 7;
+
+const int32_t      SPACE_KEY = 44;
+
+const int32_t      L_SHIFT_KEY = 229;
+const int32_t      R_SHIFT_KEY = 225;
+
+const int32_t      L_CTRL_KEY = 224;
+
+const int32_t      PAGE_UP_KEY = 75;
+const int32_t      PAGE_DOWN_KEY = 78;
 }
 
 //##################################################################################################
@@ -59,6 +71,18 @@ struct FPSController::Private
     keyState[RIGHT_KEY]      = false;
     keyState[DOWN_KEY ]      = false;
 
+    keyState[W_KEY]          = false;
+    keyState[A_KEY]          = false;
+    keyState[S_KEY]          = false;
+    keyState[D_KEY]          = false;
+
+    keyState[SPACE_KEY]      = false;
+
+    keyState[L_SHIFT_KEY]    = false;
+    keyState[R_SHIFT_KEY]    = false;
+
+    keyState[L_CTRL_KEY]     = false;
+
     keyState[PAGE_UP_KEY ]   = false;
     keyState[PAGE_DOWN_KEY ] = false;
   }
@@ -71,6 +95,21 @@ struct FPSController::Private
     float sa = std::sin(radians);
     cameraOrigin.x += dist*sa;
     cameraOrigin.y += dist*ca;
+  }
+
+  //################################################################################################
+  void strafe(float dist)
+  {
+    float radians = glm::radians(rotationAngle);
+    float ca = std::cos(radians);
+    float sa = std::sin(radians);
+
+    glm::vec3 forward{sa, ca, 0};
+    glm::vec3 up{0, 0, 1};
+    glm::vec crossProd = glm::cross(forward, up);
+
+    cameraOrigin.x += (crossProd.x*dist);
+    cameraOrigin.y += (crossProd.y*dist);
   }
 };
 
@@ -377,13 +416,18 @@ void FPSController::animate(double timestampMS)
   double rotateDegrees   = rotationFactor * delta;
   double translateMeters = translationFactor * delta;
 
-  if(d->keyState[UP_KEY])
+  if(d->keyState[L_SHIFT_KEY] ||d->keyState[R_SHIFT_KEY] )
+  {
+    translateMeters *= 10;
+  }
+
+  if(d->keyState[UP_KEY] ||d->keyState[W_KEY] )
   {
     d->translate(float(translateMeters));
     map()->update();
   }
 
-  if(d->keyState[DOWN_KEY])
+  if(d->keyState[DOWN_KEY]||d->keyState[S_KEY] )
   {
     d->translate(-float(translateMeters));
     map()->update();
@@ -405,13 +449,25 @@ void FPSController::animate(double timestampMS)
     map()->update();
   }
 
-  if(d->keyState[PAGE_UP_KEY])
+  if(d->keyState[A_KEY] )
+  {
+    d->strafe(-float(translateMeters));
+    map()->update();
+  }
+
+  if(d->keyState[D_KEY] )
+  {
+    d->strafe(float(translateMeters));
+    map()->update();
+  }
+
+  if(d->keyState[PAGE_UP_KEY] || d->keyState[SPACE_KEY])
   {
     d->cameraOrigin.z += float(translateMeters);
     map()->update();
   }
 
-  if(d->keyState[PAGE_DOWN_KEY])
+  if(d->keyState[PAGE_DOWN_KEY]|| d->keyState[L_CTRL_KEY])
   {
     d->cameraOrigin.z -= float(translateMeters);
     map()->update();
