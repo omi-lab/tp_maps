@@ -32,7 +32,7 @@ struct Map::Private
   std::unordered_map<tp_utils::StringID, Shader*> shaders;
   std::vector<FontRenderer*> fontRenderers;
 
-  std::vector<RenderPass> renderPasses{RenderPass::Background, RenderPass::Normal, RenderPass::Text, RenderPass::GUI};
+  std::vector<RenderPass> renderPasses{RenderPass::Background, RenderPass::Normal, RenderPass::Transparency, RenderPass::Text, RenderPass::GUI};
 
   RenderInfo renderInfo;
 
@@ -656,6 +656,16 @@ void Map::paintGLNoMakeCurrent()
       break;
     }
 
+    case RenderPass::Transparency:
+    {
+      glEnable(GL_DEPTH_TEST);
+      glDepthFunc(GL_LESS);
+      glDepthMask(false);
+      d->renderInfo.pass = RenderPass::Transparency;
+      d->render();
+      break;
+    }
+
     case RenderPass::Text:
     {
       glDisable(GL_DEPTH_TEST);
@@ -721,6 +731,18 @@ bool Map::keyEvent(const KeyEvent& event)
     if((*(--l))->keyEvent(event))
       return true;
   return d->controller->keyEvent(event);
+}
+
+//##################################################################################################
+void Map::setRelativeMouseMode(bool enabled)
+{
+  TP_UNUSED(enabled);
+}
+
+//##################################################################################################
+bool Map::relativeMouseMode() const
+{
+  return false;
 }
 
 //##################################################################################################

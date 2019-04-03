@@ -231,6 +231,12 @@ public:
   bool keyEvent(const KeyEvent& event);
 
   //################################################################################################
+  virtual void setRelativeMouseMode(bool enabled);
+
+  //################################################################################################
+  virtual bool relativeMouseMode() const;
+
+  //################################################################################################
   //! Return the controller
   Controller* controller();
 

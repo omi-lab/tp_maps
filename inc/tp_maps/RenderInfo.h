@@ -54,9 +54,10 @@ enum class RenderPass
 {
   Background,
   Normal,
+  Transparency,
   Text,
-  Picking,
-  GUI
+  GUI,
+  Picking
 };
 
 //##################################################################################################
