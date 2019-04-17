@@ -190,7 +190,7 @@ nlohmann::json FPSController::saveState()const
 
   j["View angle"]     = d->viewAngle;
   j["Rotation angle"] = d->rotationAngle;
-  j["Focal point"]    = tp_math_utils::vec3ToJSON(d->cameraOrigin);
+  j["Camera origin"]    = tp_math_utils::vec3ToJSON(d->cameraOrigin);
 
   return j;
 }
