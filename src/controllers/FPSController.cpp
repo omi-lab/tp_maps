@@ -54,6 +54,9 @@ struct FPSController::Private
   glm::vec3 cameraOrigin{0, 0, 1.8f};
   float rotationFactor{0.2f};
 
+  float near{0.01f};
+  float far{100.0f};
+
   bool mouseMoved{false};
 
   //Behaviour
@@ -184,6 +187,14 @@ void FPSController::setRotationFactor(float rotationFactor)
 }
 
 //##################################################################################################
+void FPSController::setNearAndFar(float near, float far)
+{
+  d->near = near;
+  d->far = far;
+  map()->update();
+}
+
+//##################################################################################################
 nlohmann::json FPSController::saveState()const
 {
   nlohmann::json j;
@@ -240,7 +251,7 @@ void FPSController::updateMatrices()
   view = glm::rotate(view, glm::radians(d->rotationAngle), glm::vec3(0.0f, 0.0f, 1.0f));
   view = glm::translate(view, -d->cameraOrigin);
 
-  glm::mat4 projection = glm::perspective(glm::radians(63.0f), fw/fh, 0.01f, 100.0f);
+  glm::mat4 projection = glm::perspective(glm::radians(63.0f), fw/fh, d->near, d->far);
 
   Controller::Matrices vp;
   vp.p  = projection;
