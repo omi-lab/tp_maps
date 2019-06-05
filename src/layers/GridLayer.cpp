@@ -37,9 +37,12 @@ struct GridLayer::Private
 
   bool updateVertexBuffer{true};
 
+  float scale;
+
   //################################################################################################
-  Private(GridLayer* q_):
-    q(q_)
+  Private(GridLayer* q_, float scale_):
+    q(q_),
+    scale(scale_)
   {
   }
 
@@ -91,13 +94,13 @@ struct GridLayer::Private
       for(size_t a=0; a<3; a++)
       {
         glm::vec3 maskA{0,0,0};
-        maskA[int(a)]=0.01f;
+        maskA[int(a)]=scale*0.01f;
 
         glm::vec3 maskB{0,0,0};
-        maskB[int((a+1)%3)]=0.1f;
+        maskB[int((a+1)%3)]=scale*0.1f;
 
         glm::vec3 maskC{0,0,0};
-        maskC[int((a+2)%3)]=0.1f;
+        maskC[int((a+2)%3)]=scale*0.1f;
 
         std::vector<glm::vec3> vertices;
         for(int i=0; i< 100; i++)
@@ -150,8 +153,8 @@ struct GridLayer::Private
 };
 
 //##################################################################################################
-GridLayer::GridLayer():
-  d(new Private(this))
+GridLayer::GridLayer(float scale):
+  d(new Private(this, scale))
 {
 }
 
