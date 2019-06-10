@@ -123,70 +123,12 @@ void ImageShader::setTexture(GLuint textureID)
   glBindTexture(GL_TEXTURE_2D, textureID);
 }
 
-////##################################################################################################
-//ImageShader::VertexBuffer* ImageShader::generateVertexBuffer(Map* map,
-//                                                             const std::vector<GLushort>& indexes,
-//                                                             const std::vector<ImageShader::Vertex>& verts)const
-//{
-//  VertexBuffer* vertexBuffer = new VertexBuffer(map, this);
-
-//  vertexBuffer->vertexCount = GLuint(verts.size());
-//  vertexBuffer->indexCount  = TPGLsize(indexes.size());
-
-//  glGenBuffers(1, &vertexBuffer->iboID);
-//  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer->iboID);
-//  glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexes.size()*sizeof(GLushort)), indexes.data(), GL_STATIC_DRAW);
-//  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-//  glGenBuffers(1, &vertexBuffer->vboID);
-//  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
-//  glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(verts.size()*sizeof(ImageShader::Vertex)), verts.data(), GL_STATIC_DRAW);
-//  glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-//  tpGenVertexArrays(1, &vertexBuffer->vaoID);
-//  tpBindVertexArray(vertexBuffer->vaoID);
-
-//  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
-//  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(ImageShader::Vertex), reinterpret_cast<void*>(0));
-//  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(ImageShader::Vertex), reinterpret_cast<void*>(sizeof(float)*3));
-//  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(ImageShader::Vertex), reinterpret_cast<void*>(sizeof(float)*6));
-//  glEnableVertexAttribArray(0);
-//  glEnableVertexAttribArray(1);
-//  glEnableVertexAttribArray(2);
-//  glDisableVertexAttribArray(3);
-
-//  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer->iboID);
-
-//  tpBindVertexArray(0);
-
-//  return vertexBuffer;
-//}
-
-////##################################################################################################
-//ImageShader::VertexBuffer::VertexBuffer(Map* map_, const Shader *shader_):
-//  map(map_),
-//  shader(shader_)
-//{
-
-//}
-////##################################################################################################
-//ImageShader::VertexBuffer::~VertexBuffer()
-//{
-//  if(!vaoID || !shader.shader())
-//    return;
-
-//  map->makeCurrent();
-//  tpDeleteVertexArrays(1, &vaoID);
-//  glDeleteBuffers(1, &iboID);
-//  glDeleteBuffers(1, &vboID);
-//}
-
 //##################################################################################################
 void ImageShader::draw(GLenum mode,
                             VertexBuffer* vertexBuffer,
                             const glm::vec4& color)
 {
-  glUniform4fv(d->colorLocation, 1, reinterpret_cast<const GLfloat*>(&color));
+  glUniform4fv(d->colorLocation, 1, &color.r);
   d->draw(mode, vertexBuffer);
 }
 

@@ -118,7 +118,6 @@ struct PointSpriteShader::Private
 
 //##################################################################################################
 PointSpriteShader::PointSpriteShader():
-  Shader(),
   d(new Private())
 {
   //We compile 2 shaders one for picking and the other for normal rendering
@@ -237,7 +236,7 @@ PointSpriteShader::VertexBuffer* PointSpriteShader::generateVertexBuffer(Map* ma
                                                                          const std::vector<PointSpriteShader::PointSprite>& pointSptrites,
                                                                          const std::vector<SpriteCoords>& coords)const
 {
-  VertexBuffer* vertexBuffer = new VertexBuffer(map, this);
+  auto* vertexBuffer = new VertexBuffer(map, this);
 
   if(pointSptrites.empty())
     return vertexBuffer;
@@ -275,12 +274,12 @@ PointSpriteShader::VertexBuffer* PointSpriteShader::generateVertexBuffer(Map* ma
     const PointSpriteShader::PointSprite* pMax = p + pointSptrites.size();
     for(; p<pMax; p++)
     {
-      indexes.push_back(verts.size()+0);
-      indexes.push_back(verts.size()+1);
-      indexes.push_back(verts.size()+3);
-      indexes.push_back(verts.size()+1);
-      indexes.push_back(verts.size()+2);
-      indexes.push_back(verts.size()+3);
+      indexes.push_back(GLuint(verts.size()+0));
+      indexes.push_back(GLuint(verts.size()+1));
+      indexes.push_back(GLuint(verts.size()+3));
+      indexes.push_back(GLuint(verts.size()+1));
+      indexes.push_back(GLuint(verts.size()+2));
+      indexes.push_back(GLuint(verts.size()+3));
 
       const auto& texCoords = (p->spriteIndex<coords.size())?coords.at(p->spriteIndex).coords:textureCoords;
 
@@ -296,8 +295,8 @@ PointSpriteShader::VertexBuffer* PointSpriteShader::generateVertexBuffer(Map* ma
     }
   }
 
-  vertexBuffer->vertexCount = verts.size();
-  vertexBuffer->indexCount  = indexes.size();
+  vertexBuffer->vertexCount = GLuint(verts.size());
+  vertexBuffer->indexCount  = GLuint(indexes.size());
 
   glGenBuffers(1, &vertexBuffer->iboID);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer->iboID);
@@ -314,10 +313,10 @@ PointSpriteShader::VertexBuffer* PointSpriteShader::generateVertexBuffer(Map* ma
   tpBindVertexArray(vertexBuffer->vaoID);
 
   glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
-  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(PointSprite_lt), reinterpret_cast<void*>(size_t(0)));                //vec4 color;
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(PointSprite_lt), reinterpret_cast<void*>(size_t(sizeof(float)*4)));  //vec3 position;
-  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(PointSprite_lt), reinterpret_cast<void*>(size_t(sizeof(float)*7)));  //vec3 offset;
-  glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(PointSprite_lt), reinterpret_cast<void*>(size_t(sizeof(float)*10))); //vec2 texture;
+  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(PointSprite_lt), tpVoidLiteral( 0)); //vec4 color;
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(PointSprite_lt), tpVoidLiteral(16)); //vec3 position;
+  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(PointSprite_lt), tpVoidLiteral(28)); //vec3 offset;
+  glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(PointSprite_lt), tpVoidLiteral(40)); //vec2 texture;
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);

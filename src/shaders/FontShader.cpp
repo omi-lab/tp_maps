@@ -173,7 +173,7 @@ void FontShader::setMatrix(const glm::mat4& matrix)
 //##################################################################################################
 void FontShader::setColor(const glm::vec4& color)
 {
-  glUniform4fv(d->colorLocation, 1, reinterpret_cast<const GLfloat*>(&color));
+  glUniform4fv(d->colorLocation, 1, &color.r);
 }
 
 //##################################################################################################
@@ -245,9 +245,9 @@ void FontShader::drawPreparedString(PreparedString& preparedString)
     tpBindVertexArray(preparedString.d->vaoID);
 
     glBindBuffer(GL_ARRAY_BUFFER, preparedString.d->vboID);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex_lt), reinterpret_cast<void*>(0));
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex_lt), reinterpret_cast<void*>(sizeof(float)*3));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex_lt), reinterpret_cast<void*>(sizeof(float)*6));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex_lt), tpVoidLiteral( 0));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex_lt), tpVoidLiteral(12));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex_lt), tpVoidLiteral(24));
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);

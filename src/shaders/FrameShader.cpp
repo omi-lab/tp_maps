@@ -160,10 +160,10 @@ FrameShader::VertexBuffer* FrameShader::generateVertexBuffer(Map* map,
   tpBindVertexArray(vertexBuffer->vaoID);
 
   glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), reinterpret_cast<void*>(sizeof(float)*0));
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), reinterpret_cast<void*>(sizeof(float)*3));
-  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), reinterpret_cast<void*>(sizeof(float)*6));
-  glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), reinterpret_cast<void*>(sizeof(float)*9));
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), tpVoidLiteral( 0));
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), tpVoidLiteral(12));
+  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), tpVoidLiteral(24));
+  glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), tpVoidLiteral(36));
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);
@@ -200,7 +200,7 @@ void FrameShader::draw(GLenum mode,
                             VertexBuffer* vertexBuffer,
                             const glm::vec4& color)
 {
-  glUniform4fv(d->colorLocation, 1, reinterpret_cast<const GLfloat*>(&color));
+  glUniform4fv(d->colorLocation, 1, &color.r);
   d->draw(mode, vertexBuffer);
 }
 

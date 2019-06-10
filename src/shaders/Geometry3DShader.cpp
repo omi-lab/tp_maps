@@ -28,9 +28,9 @@ Geometry3DShader::VertexBuffer* Geometry3DShader::generateVertexBuffer(Map* map,
   tpBindVertexArray(vertexBuffer->vaoID);
 
   glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Geometry3DShader::Vertex), nullptr);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Geometry3DShader::Vertex), reinterpret_cast<void*>(sizeof(float)*3));
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Geometry3DShader::Vertex), reinterpret_cast<void*>(sizeof(float)*6));
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Geometry3DShader::Vertex), tpVoidLiteral( 0));
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Geometry3DShader::Vertex), tpVoidLiteral(12));
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Geometry3DShader::Vertex), tpVoidLiteral(24));
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);
