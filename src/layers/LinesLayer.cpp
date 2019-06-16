@@ -22,6 +22,7 @@ struct LinesDetails_lt
 //##################################################################################################
 struct LinesLayer::Private
 {
+  TP_NONCOPYABLE(Private);
   LinesLayer* q;
   std::vector<Lines> lines;
 
@@ -99,7 +100,7 @@ void LinesLayer::render(RenderInfo& renderInfo)
   if(renderInfo.pass != defaultRenderPass() && renderInfo.pass != RenderPass::Picking)
     return;
 
-  LineShader* shader = map()->getShader<LineShader>();
+  auto shader = map()->getShader<LineShader>();
   if(shader->error())
     return;
 
@@ -110,11 +111,10 @@ void LinesLayer::render(RenderInfo& renderInfo)
 
     for(const Lines& shape : d->lines)
     {
-      LinesDetails_lt details;
+      LinesDetails_lt& details = d->processedGeometry.emplace_back();
       details.vertexBuffer = shader->generateVertexBuffer(map(), shape.lines);
       details.color = shape.color;
       details.mode = shape.mode;
-      d->processedGeometry.push_back(details);
     }
   }
 

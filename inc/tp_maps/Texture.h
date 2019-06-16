@@ -21,8 +21,8 @@ texture and provide a OpenGL texture ID.
 class Texture
 {
   Map* m_map;
-  GLuint m_magFilterOption{GL_LINEAR};
-  GLuint m_minFilterOption{GL_LINEAR_MIPMAP_LINEAR};
+  GLint m_magFilterOption{GL_LINEAR};
+  GLint m_minFilterOption{GL_LINEAR_MIPMAP_LINEAR};
   std::function<void()> m_callback;
 public:
   //################################################################################################
@@ -47,16 +47,16 @@ public:
   virtual GLuint bindTexture()=0;
 
   //################################################################################################
-  void setMagFilterOption(GLuint magFilterOption);
+  void setMagFilterOption(GLint magFilterOption);
 
   //################################################################################################
-  void setMinFilterOption(GLuint minFilterOption);
+  void setMinFilterOption(GLint minFilterOption);
 
   //################################################################################################
-  GLuint magFilterOption()const;
+  GLint magFilterOption()const;
 
   //################################################################################################
-  GLuint minFilterOption()const;
+  GLint minFilterOption()const;
 
   //################################################################################################
   //! Returns the percentage of the texture that the image occupies

@@ -12,37 +12,34 @@ Texture::Texture(Map* map):
 }
 
 //##################################################################################################
-Texture::~Texture()
-{
-
-}
+Texture::~Texture() = default;
 
 //##################################################################################################
 void Texture::setImageChangedCallback(std::function<void()> callback)
 {
-  m_callback = callback;
+  m_callback = std::move(callback);
 }
 
 //##################################################################################################
-void Texture::setMagFilterOption(GLuint magFilterOption)
+void Texture::setMagFilterOption(GLint magFilterOption)
 {
   m_magFilterOption = magFilterOption;
 }
 
 //##################################################################################################
-void Texture::setMinFilterOption(GLuint minFilterOption)
+void Texture::setMinFilterOption(GLint minFilterOption)
 {
   m_minFilterOption = minFilterOption;
 }
 
 //##################################################################################################
-GLuint Texture::magFilterOption()const
+GLint Texture::magFilterOption()const
 {
   return m_magFilterOption;
 }
 
 //##################################################################################################
-GLuint Texture::minFilterOption()const
+GLint Texture::minFilterOption()const
 {
   return m_minFilterOption;
 }

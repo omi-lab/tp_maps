@@ -17,9 +17,9 @@ struct PreparedString::Private
   bool regenerateBuffers{true};  
 
   //################################################################################################
-  Private(FontRenderer* fontRenderer_, const std::u16string& text_, const PreparedStringConfig& config_):
+  Private(FontRenderer* fontRenderer_, std::u16string text_, const PreparedStringConfig& config_):
     fontRenderer(fontRenderer_),
-    text(text_),
+    text(std::move(text_)),
     config(config_)
   {
 

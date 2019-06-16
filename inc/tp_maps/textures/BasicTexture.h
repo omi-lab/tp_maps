@@ -62,10 +62,10 @@ public:
   \return the id for the new texture
   */
   GLuint bindTexture(const TextureData& img,
-                     GLenum target,
-                     GLint format,
-                     GLuint magFilterOption,
-                     GLuint minFilterOption);
+                     TPGLenum target,
+                     TPGLenum format,
+                     GLint magFilterOption,
+                     GLint minFilterOption);
 
   //################################################################################################
   glm::vec2 textureDims()const override;

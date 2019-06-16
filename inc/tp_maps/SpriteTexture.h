@@ -17,7 +17,7 @@ class Texture;
 //##################################################################################################
 struct SpriteCoords
 {
-  glm::vec2 coords[4];
+  std::array<glm::vec2, 4> coords;
 
   static std::vector<SpriteCoords> oneOne(float w=1.0f, float h=1.0f)
   {

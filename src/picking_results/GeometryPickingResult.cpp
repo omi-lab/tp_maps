@@ -15,9 +15,6 @@ GeometryPickingResult::GeometryPickingResult(const tp_utils::StringID& pickingTy
 }
 
 //##################################################################################################
-GeometryPickingResult::~GeometryPickingResult()
-{
-
-}
+GeometryPickingResult::~GeometryPickingResult() = default;
 
 }

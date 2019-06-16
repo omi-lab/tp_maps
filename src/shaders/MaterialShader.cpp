@@ -144,7 +144,6 @@ struct MaterialShader::Private
 
 //##################################################################################################
 MaterialShader::MaterialShader():
-  Geometry3DShader(),
   d(new Private())
 {
   compile(vertexShaderStr.data(),

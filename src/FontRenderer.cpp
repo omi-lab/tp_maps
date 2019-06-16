@@ -8,6 +8,7 @@
 #include "tp_utils/DebugUtils.h"
 
 #include <unordered_map>
+#include <cstring>
 
 namespace tp_maps
 {
@@ -34,7 +35,7 @@ struct FontRenderer::Private
   Private(FontRenderer* q_, Map* map_, std::shared_ptr<Font> font_):
     q(q_),
     map(map_),
-    font(font_),
+    font(std::move(font_)),
     texture(map)
   {
 
@@ -70,7 +71,7 @@ struct FontRenderer::Private
 };
 
 //##################################################################################################
-FontRenderer::FontRenderer(Map* map, std::shared_ptr<Font> font):
+FontRenderer::FontRenderer(Map* map, const std::shared_ptr<Font>& font):
   d(new Private(this, map, font))
 {
   d->map->addFontRenderer(this);
@@ -230,7 +231,7 @@ void FontRenderer::generate()
 
     std::vector<TPPixel> data;
 
-    char16_t character;
+    char16_t character{};
 
     bool valid{false};
   };
@@ -246,7 +247,7 @@ void FontRenderer::generate()
     {
       modifyGlyph(glyph, [&](const Glyph& glyph)
       {
-        size_t size = size_t(glyph.w * glyph.h);
+        auto size = size_t(glyph.w) * size_t(glyph.h);
         current->width  = size_t(glyph.w);
         current->height = size_t(glyph.h);
 

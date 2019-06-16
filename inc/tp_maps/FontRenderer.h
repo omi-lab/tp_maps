@@ -21,7 +21,7 @@ class TP_MAPS_SHARED_EXPORT FontRenderer
   friend class PreparedString;
 public:
   //################################################################################################
-  FontRenderer(Map* map, std::shared_ptr<Font> font);
+  FontRenderer(Map* map, const std::shared_ptr<Font>& font);
 
   //################################################################################################
   virtual ~FontRenderer();

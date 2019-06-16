@@ -33,8 +33,8 @@ struct Glyph
 //! Details of a character in a string.
 struct GlyphGeometry
 {
-  glm::vec2 textureCoords[4];
-  glm::vec2 vertices[4];
+  std::array<glm::vec2, 4> textureCoords;
+  std::array<glm::vec2, 4> vertices;
 
   float leftBearing{0.0f}; //Negative for values to the left of 0
   float rightBearing{0.0f};

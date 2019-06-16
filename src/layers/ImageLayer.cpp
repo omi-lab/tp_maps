@@ -20,6 +20,8 @@ namespace tp_maps
 //##################################################################################################
 struct ImageLayer::Private
 {
+  TP_NONCOPYABLE(Private);
+
   ImageLayer* q;
 
   Texture* texture;
@@ -29,10 +31,10 @@ struct ImageLayer::Private
   std::vector<ImageShader::Vertex> verts;
   glm::vec4 color{1.0f, 1.0f, 1.0f, 1.0f};
 
-  glm::vec3 topRight;
-  glm::vec3 bottomRight;
-  glm::vec3 bottomLeft;
-  glm::vec3 topLeft;
+  glm::vec3 topRight{};
+  glm::vec3 bottomRight{};
+  glm::vec3 bottomLeft{};
+  glm::vec3 topLeft{};
 
   ImageShader::VertexBuffer* vertexBuffer{nullptr};
 
@@ -124,7 +126,7 @@ void ImageLayer::render(RenderInfo& renderInfo)
   if(renderInfo.pass != defaultRenderPass() && renderInfo.pass != RenderPass::Picking)
     return;
 
-  ImageShader* shader = map()->getShader<ImageShader>();
+  auto shader = map()->getShader<ImageShader>();
   if(shader->error())
     return;
 

@@ -15,6 +15,7 @@ namespace tp_maps
 //##################################################################################################
 struct PointsLayer::Private
 {
+  TP_NONCOPYABLE(Private);
   PointsLayer* q;
 
   SpriteTexture* spriteTexture;
@@ -112,7 +113,7 @@ void PointsLayer::render(RenderInfo& renderInfo)
   if(renderInfo.pass != RenderPass::Normal && renderInfo.pass != RenderPass::Picking)
     return;
 
-  PointSpriteShader* shader = map()->getShader<PointSpriteShader>();
+  auto shader = map()->getShader<PointSpriteShader>();
   if(shader->error())
     return;
 

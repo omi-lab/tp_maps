@@ -4,6 +4,8 @@
 #include "tp_utils/DebugUtils.h"
 #include "tp_utils/StackTrace.h"
 
+#include <cstring>
+
 namespace tp_maps
 {
 
@@ -150,10 +152,10 @@ GLuint BasicTexture::bindTexture()
 
 //##################################################################################################
 GLuint BasicTexture::bindTexture(const TextureData& img,
-                                 GLenum target,
-                                 GLint format,
-                                 GLuint magFilterOption,
-                                 GLuint minFilterOption)
+                                 TPGLenum target,
+                                 TPGLenum format,
+                                 GLint magFilterOption,
+                                 GLint minFilterOption)
 {
   if(!map()->initialized())
   {

@@ -40,6 +40,7 @@
 
 using TPGLsize = GLuint;
 using TPGLfloat = float;
+using TPGLenum = GLenum;
 
 #elif defined(TDP_IOS) //---------------------------------------------------------------------------
 #  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
@@ -67,6 +68,7 @@ using TPGLfloat = float;
 
 using TPGLsize = GLsizei;
 using TPGLfloat = float;
+using TPGLenum = GLenum;
 
 #elif defined(TDP_EMSCRIPTEN) //--------------------------------------------------------------------
 #  define TP_GLES3_100
@@ -99,6 +101,7 @@ using TPGLfloat = float;
 
 using TPGLsize = GLuint;
 using TPGLfloat = float;
+using TPGLenum = GLenum;
 
 #endif //-------------------------------------------------------------------------------------------
 
@@ -126,6 +129,7 @@ using TPGLfloat = float;
 
 using TPGLsize = GLsizei;
 using TPGLfloat = float;
+using TPGLenum = GLenum;
 #endif
 
 //##################################################################################################

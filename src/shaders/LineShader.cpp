@@ -52,7 +52,6 @@ struct LineShader::Private
 
 //##################################################################################################
 LineShader::LineShader():
-  Shader(),
   d(new Private())
 {
   compile(vertexShaderStr.data(),
@@ -106,7 +105,7 @@ void LineShader::setColor(const glm::vec4& color)
 //##################################################################################################
 LineShader::VertexBuffer* LineShader::generateVertexBuffer(Map* map, const std::vector<glm::vec3>& vertices)const
 {
-  VertexBuffer* vertexBuffer = new VertexBuffer(map, this);
+  auto vertexBuffer = new VertexBuffer(map, this);
 
   if(vertices.empty())
     return vertexBuffer;

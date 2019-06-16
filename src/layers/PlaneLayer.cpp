@@ -46,7 +46,7 @@ struct PlaneLayer::Private
     };
 
     int size=10;
-    float sizeF = float(size);
+    auto sizeF = float(size);
 
     //The center cross
     addLine({0.0f, -sizeF, 0.0f}, {0.0f, sizeF, 0.0f});

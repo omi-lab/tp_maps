@@ -28,7 +28,7 @@ glm::vec4 RenderInfo::pickingIDMat(const PickingDetails& details)
 void RenderInfo::resetPicking()
 {
   pickingDetails.clear();
-  pickingDetails.push_back(PickingDetails());
+  pickingDetails.emplace_back();
   nextID = 1;
 }
 

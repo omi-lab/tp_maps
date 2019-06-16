@@ -244,29 +244,33 @@ PointSpriteShader::VertexBuffer* PointSpriteShader::generateVertexBuffer(Map* ma
   //There will be 4 of these generated for each PointSprite.
   struct PointSprite_lt
   {
-    glm::vec4 color;    //The color to multiply the texture by.
-    glm::vec3 position; //The center coordinate of the point sprite.
-    glm::vec3 offset;   //The offset of each corner in relation to the position.
-    glm::vec2 texture;  //Texture coords for this corner.
+    glm::vec4 color{};    //The color to multiply the texture by.
+    glm::vec3 position{}; //The center coordinate of the point sprite.
+    glm::vec3 offset{};   //The offset of each corner in relation to the position.
+    glm::vec2 texture{};  //Texture coords for this corner.
   };
 
   std::vector<GLuint> indexes;
   std::vector<PointSprite_lt> verts;
 
-  const glm::vec3 offsets[4] =
+  const std::array<glm::vec3, 4> offsets =
   {
-    {-1.0f,-1.0f,0.0f},
-    { 1.0f,-1.0f,0.0f},
-    { 1.0f, 1.0f,0.0f},
-    {-1.0f, 1.0f,0.0f}
+    {
+      {-1.0f,-1.0f,0.0f},
+      { 1.0f,-1.0f,0.0f},
+      { 1.0f, 1.0f,0.0f},
+      {-1.0f, 1.0f,0.0f}
+    }
   };
 
-  const glm::vec2 textureCoords[4] =
+  const std::array<glm::vec2, 4> textureCoords =
   {
-    {0.0f,0.0f},
-    {1.0f,0.0f},
-    {1.0f,1.0f},
-    {0.0f,1.0f}
+    {
+      {0.0f,0.0f},
+      {1.0f,0.0f},
+      {1.0f,1.0f},
+      {0.0f,1.0f}
+    }
   };
 
   {
@@ -283,14 +287,13 @@ PointSpriteShader::VertexBuffer* PointSpriteShader::generateVertexBuffer(Map* ma
 
       const auto& texCoords = (p->spriteIndex<coords.size())?coords.at(p->spriteIndex).coords:textureCoords;
 
-      for(int i=0; i<4; i++)
+      for(size_t i=0; i<4; i++)
       {
-        PointSprite_lt ps;
+        PointSprite_lt& ps = verts.emplace_back();
         ps.color    = p->color;
         ps.position = p->position;
-        ps.offset   =(p->offset+offsets[i])*p->radius;
-        ps.texture  = texCoords[i];
-        verts.push_back(ps);
+        ps.offset   =(p->offset+offsets.at(i))*p->radius;
+        ps.texture  = texCoords.at(i);
       }
     }
   }

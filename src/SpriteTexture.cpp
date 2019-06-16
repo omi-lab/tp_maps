@@ -27,7 +27,7 @@ const std::vector<SpriteCoords>& SpriteTexture::coords()const
 //##################################################################################################
 void SpriteTexture::setCoordsChangedCallback(std::function<void()> callback)
 {
-  m_callback = callback;
+  m_callback = std::move(callback);
 }
 
 //##################################################################################################

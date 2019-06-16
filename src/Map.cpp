@@ -85,7 +85,7 @@ void Map::preDelete()
 {
   makeCurrent();
 
-  for(auto i : d->shaders)
+  for(const auto& i : d->shaders)
     delete i.second;
 
   d->shaders.clear();
@@ -158,7 +158,7 @@ void Map::setBackgroundColor(const glm::vec3& color)
   if(d->initialized)
   {
     makeCurrent();
-    glClearColor(d->backgroundColor.r, d->backgroundColor.g, d->backgroundColor.b, 1.0f);
+    glClearColor(d->backgroundColor.x, d->backgroundColor.y, d->backgroundColor.z, 1.0f);
   }
 
   update();
@@ -251,22 +251,22 @@ bool Map::unProject(const glm::vec2& screenPoint, glm::vec3& scenePoint, const t
 {
   glm::mat4 inverse = glm::inverse(matrix);
 
-  glm::vec4 screenPoints[2];
-  glm::vec3 scenePoints[2];
+  std::array<glm::vec4, 2> screenPoints{};
+  std::array<glm::vec3, 2> scenePoints{};
 
   screenPoints[0] = glm::vec4(screenPoint, 0.0f, 1.0f);
   screenPoints[1] = glm::vec4(screenPoint, 1.0f, 1.0f);
 
-  for(int i=0; i<2; i++)
+  for(size_t i=0; i<2; i++)
   {
-    glm::vec4& tmp = screenPoints[i];
+    glm::vec4& tmp = screenPoints.at(i);
     tmp.x = tmp.x / float(d->width);
     tmp.y = (d->height - tmp.y) / float(d->height);
     tmp = tmp * 2.0f - 1.0f;
 
     glm::vec4 obj = inverse * tmp;
     obj /= obj.w;
-    scenePoints[i]= glm::vec3(obj);
+    scenePoints.at(i) = glm::vec3(obj);
   }
 
   return tp_math_utils::rayPlaneIntersection(tp_math_utils::Ray(scenePoints[0], scenePoints[1]), plane, scenePoint);
@@ -400,7 +400,7 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
 
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glClearColor(d->backgroundColor.g, d->backgroundColor.g, d->backgroundColor.b, 1.0f);
+  glClearColor(d->backgroundColor.x, d->backgroundColor.y, d->backgroundColor.z, 1.0f);
 
 
   //------------------------------------------------------------------------------------------------
@@ -433,9 +433,9 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
   // results near the center of the the patch.
 
   static const std::vector<glm::ivec2> testOrder(generateTestOrder(pickingSize));
-  for(size_t i=0; i<testOrder.size(); i++)
+  for(const auto& point : testOrder)
   {
-    const glm::ivec2& point = testOrder.at(i);
+
     unsigned char* p = pixels.data() + (((point.y*9)+point.x)*4);
 
     uint32_t r = p[0];
@@ -609,7 +609,7 @@ void Map::initializeGL()
   glFrontFace(GL_CCW);
   glCullFace(GL_BACK);
 
-  glClearColor(d->backgroundColor.r, d->backgroundColor.g, d->backgroundColor.b, 1.0f);
+  glClearColor(d->backgroundColor.x, d->backgroundColor.y, d->backgroundColor.z, 1.0f);
   d->initialized = true;
 
   d->controller->mapResized(d->width, d->height);

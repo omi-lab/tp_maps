@@ -67,7 +67,6 @@ struct ImageShader::Private
 
 //##################################################################################################
 ImageShader::ImageShader(const char* vertexShader, const char* fragmentShader):
-  Geometry3DShader(),
   d(new Private())
 {
   if(!vertexShader)
@@ -128,7 +127,7 @@ void ImageShader::draw(GLenum mode,
                             VertexBuffer* vertexBuffer,
                             const glm::vec4& color)
 {
-  glUniform4fv(d->colorLocation, 1, &color.r);
+  glUniform4fv(d->colorLocation, 1, &color.x);
   d->draw(mode, vertexBuffer);
 }
 

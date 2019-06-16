@@ -50,9 +50,9 @@ ShaderString fragmentShaderStr =
 //##################################################################################################
 struct Vertex_lt
 {
-  glm::vec3 position;
-  glm::vec3 normal;
-  glm::vec2 texture;
+  glm::vec3 position{};
+  glm::vec3 normal{};
+  glm::vec2 texture{};
 };
 }
 
@@ -66,6 +66,8 @@ struct FontShader::Private
 //##################################################################################################
 struct FontShader::PreparedString::Private
 {
+  TP_NONCOPYABLE(Private);
+
   Map* map;
   ShaderPointer shader;
 
@@ -120,7 +122,6 @@ struct FontShader::PreparedString::Private
 
 //##################################################################################################
 FontShader::FontShader(const char* vertexShader, const char* fragmentShader):
-  Shader(),
   d(new Private())
 {
   if(!vertexShader)
@@ -173,7 +174,7 @@ void FontShader::setMatrix(const glm::mat4& matrix)
 //##################################################################################################
 void FontShader::setColor(const glm::vec4& color)
 {
-  glUniform4fv(d->colorLocation, 1, &color.r);
+  glUniform4fv(d->colorLocation, 1, &color.x);
 }
 
 //##################################################################################################
@@ -215,13 +216,12 @@ void FontShader::drawPreparedString(PreparedString& preparedString)
 
       for(size_t i=0; i<4; i++)
       {
-        Vertex_lt vert;
-        vert.position = {glyph.vertices[i], 0.0f};
+        Vertex_lt& vert = verts.emplace_back();
+        vert.position = {glyph.vertices.at(i), 0.0f};
         if(preparedString.config().topDown)
           vert.position.y = -vert.position.y;
-        vert.texture = glyph.textureCoords[i];
+        vert.texture = glyph.textureCoords.at(i);
         vert.normal = {0.0f, 0.0f, 1.0f};
-        verts.push_back(vert);
       }
     }
 

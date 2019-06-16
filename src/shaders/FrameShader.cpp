@@ -70,7 +70,6 @@ struct FrameShader::Private
 
 //##################################################################################################
 FrameShader::FrameShader(const char* vertexShader, const char* fragmentShader):
-  Shader(),
   d(new Private())
 {
   if(!vertexShader)
@@ -141,7 +140,7 @@ FrameShader::VertexBuffer* FrameShader::generateVertexBuffer(Map* map,
                                                              const std::vector<GLushort>& indexes,
                                                              const std::vector<FrameShader::Vertex>& verts)const
 {
-  VertexBuffer* vertexBuffer = new VertexBuffer(map, this);
+  auto vertexBuffer = new VertexBuffer(map, this);
 
   vertexBuffer->vertexCount = GLuint(verts.size());
   vertexBuffer->indexCount  = TPGLsize(indexes.size());
@@ -200,7 +199,7 @@ void FrameShader::draw(GLenum mode,
                             VertexBuffer* vertexBuffer,
                             const glm::vec4& color)
 {
-  glUniform4fv(d->colorLocation, 1, &color.r);
+  glUniform4fv(d->colorLocation, 1, &color.x);
   d->draw(mode, vertexBuffer);
 }
 
