@@ -65,19 +65,24 @@ public:
   /*!
   \param vertices The points that make up the line.
   */
-  void draw(GLenum mode, VertexBuffer* vertexBuffer);
+  virtual void draw(GLenum mode, VertexBuffer* vertexBuffer);
 
   //################################################################################################
   //! Call this to draw the image for picking
   /*!
   \param vertices The points that make up the line.
   */
-  void drawPicking(GLenum mode,
-                   VertexBuffer* vertexBuffer,
-                   const glm::vec4& pickingID);
+  virtual void drawPicking(GLenum mode,
+                           VertexBuffer* vertexBuffer,
+                           const glm::vec4& pickingID);
 
   //################################################################################################
   static inline const tp_utils::StringID& name(){return materialShaderSID();}
+
+protected:
+
+  //################################################################################################
+  void drawVertexBuffer(GLenum mode, VertexBuffer* vertexBuffer);
 
 private:
   struct Private;

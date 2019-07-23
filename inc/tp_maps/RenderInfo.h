@@ -50,17 +50,6 @@ struct PickingDetails
 };
 
 //##################################################################################################
-enum class RenderPass
-{
-  Background,
-  Normal,
-  Transparency,
-  Text,
-  GUI,
-  Picking
-};
-
-//##################################################################################################
 class TP_MAPS_SHARED_EXPORT RenderInfo
 {
 public:

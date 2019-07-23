@@ -147,6 +147,18 @@ TDP_DECLARE_ID(                   fontShaderSID,                      "Font shad
 TDP_DECLARE_ID(                  frameShaderSID,                     "Frame shader")
 
 //##################################################################################################
+enum class RenderPass
+{
+  Background,
+  Normal,
+  Transparency,
+  Reflection,
+  Text,
+  GUI,
+  Picking
+};
+
+//##################################################################################################
 struct ShaderString
 {
   TP_NONCOPYABLE(ShaderString);

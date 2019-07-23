@@ -268,4 +268,10 @@ void MaterialShader::drawPicking(GLenum mode,
   d->draw(mode, vertexBuffer);
 }
 
+//##################################################################################################
+void MaterialShader::drawVertexBuffer(GLenum mode, VertexBuffer* vertexBuffer)
+{
+  d->draw(mode, vertexBuffer);
+}
+
 }

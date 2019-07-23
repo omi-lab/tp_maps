@@ -70,6 +70,12 @@ public:
   glm::vec3 backgroundColor()const;
 
   //################################################################################################
+  void setRenderPasses(const std::vector<RenderPass>& renderPasses);
+
+  //################################################################################################
+  const std::vector<RenderPass>& renderPasses() const;
+
+  //################################################################################################
   //! Add a layer to the map
   /*!
   The default implementation simply appends the layer to the vector of layers and then

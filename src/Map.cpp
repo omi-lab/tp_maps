@@ -32,7 +32,20 @@ struct Map::Private
   std::unordered_map<tp_utils::StringID, Shader*> shaders;
   std::vector<FontRenderer*> fontRenderers;
 
-  std::vector<RenderPass> renderPasses{RenderPass::Background, RenderPass::Normal, RenderPass::Transparency, RenderPass::Text, RenderPass::GUI};
+  std::vector<RenderPass> renderPasses =
+  {
+    RenderPass::Background,
+    RenderPass::Normal,
+    RenderPass::Transparency,
+    RenderPass::Text,
+    RenderPass::GUI
+  };
+
+  // Screen space reflection and similar effects are expensive because they require that the scene
+  // is rendered to a texture for the Background, Normal, and Transparency passes and then blitted
+  // to the screen for the Reflection pass. So by default we don't use a Reflection pass and we turn
+  // reflection off here.
+  bool reflectionIsOn{false};
 
   RenderInfo renderInfo;
 
@@ -168,6 +181,21 @@ void Map::setBackgroundColor(const glm::vec3& color)
 glm::vec3 Map::backgroundColor()const
 {
   return d->backgroundColor;
+}
+
+//################################################################################################
+void Map::setRenderPasses(const std::vector<RenderPass>& renderPasses)
+{
+  d->renderPasses = renderPasses;
+  d->reflectionIsOn = tpContains(d->renderPasses, RenderPass::Reflection);
+
+  update();
+}
+
+//################################################################################################
+const std::vector<RenderPass>& Map::renderPasses() const
+{
+  return d->renderPasses;
 }
 
 //##################################################################################################
@@ -590,6 +618,8 @@ void Map::initializeGL()
     }
     d->shaders.clear();
 
+#warning discard the reflection FBO
+
     for(auto i : d->layers)
       i->invalidateBuffers();
 
@@ -633,15 +663,24 @@ void Map::paintGLNoMakeCurrent()
   glClearDepthf(1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+  // If we are using reflection enable the reflection FBO for the first few passes, then in the
+  // reflection pass blit it to the screen and make the texture available so that layers can use it
+  // to render screen space reflections.
+  if(d->reflectionIsOn)
+  {
+#warning get ID of current FBO
+#warning enable reflection FBO here
+  }
+
   for(auto renderPass : d->renderPasses)
   {
+    d->renderInfo.pass = renderPass;
     switch(renderPass)
     {
     case RenderPass::Background:
     {
       glDisable(GL_DEPTH_TEST);
       glDepthMask(false);
-      d->renderInfo.pass = RenderPass::Background;
       d->render();
       break;
     }
@@ -651,7 +690,6 @@ void Map::paintGLNoMakeCurrent()
       glEnable(GL_DEPTH_TEST);
       glDepthFunc(GL_LESS);
       glDepthMask(true);
-      d->renderInfo.pass = RenderPass::Normal;
       d->render();
       break;
     }
@@ -661,7 +699,18 @@ void Map::paintGLNoMakeCurrent()
       glEnable(GL_DEPTH_TEST);
       glDepthFunc(GL_LESS);
       glDepthMask(false);
-      d->renderInfo.pass = RenderPass::Transparency;
+      d->render();
+      break;
+    }
+
+    case RenderPass::Reflection:
+    {
+#warning restore current FBO here.
+#warning blit the reflection color and depth buffers to the screen here.
+
+      glEnable(GL_DEPTH_TEST);
+      glDepthFunc(GL_LESS);
+      glDepthMask(false);
       d->render();
       break;
     }
@@ -670,7 +719,6 @@ void Map::paintGLNoMakeCurrent()
     {
       glDisable(GL_DEPTH_TEST);
       glDepthMask(false);
-      d->renderInfo.pass = RenderPass::Text;
       d->render();
       break;
     }
@@ -682,7 +730,6 @@ void Map::paintGLNoMakeCurrent()
       auto s = pixelScale();
       glScissor(0, 0, GLsizei(float(width())*s), GLsizei(float(height())*s));
       glDepthMask(false);
-      d->renderInfo.pass = RenderPass::GUI;
       d->render();
       glDisable(GL_SCISSOR_TEST);
       break;
