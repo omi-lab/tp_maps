@@ -701,7 +701,7 @@ void Map::paintGLNoMakeCurrent()
 
       if(d->reflectionFrameBufferDepth)
       {
-        glDeleteRenderbuffers(1, &d->reflectionFrameBufferDepth);
+        glDeleteTextures(1, &d->reflectionFrameBufferDepth);
         d->reflectionFrameBufferDepth = 0;
       }
     }
@@ -722,17 +722,23 @@ void Map::paintGLNoMakeCurrent()
       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, d->width, d->height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, d->reflectionFrameBufferTexture, 0);
 
-      glGenRenderbuffers(1, &d->reflectionFrameBufferDepth);
-      glBindRenderbuffer(GL_RENDERBUFFER, d->reflectionFrameBufferDepth);
+      glGenTextures(1, &d->reflectionFrameBufferDepth);
+      glBindTexture(GL_TEXTURE_2D, d->reflectionFrameBufferDepth);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, d->width, d->height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
 
-      //glRenderbufferStorage(GL_RENDERBUFFER, TP_GL_DEPTH_COMPONENT32, d->width, d->height);
-#warning fix to match the depth buffer
-      glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, d->width, d->height);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-      glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, d->reflectionFrameBufferDepth);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+      glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 
-      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, d->reflectionFrameBufferDepth, 0);
+      //glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, 1280, 720, 0,GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
+      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, d->reflectionFrameBufferDepth, 0);
+      //glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D, m_FBOdepth_textura,0);
     }
 
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
