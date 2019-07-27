@@ -191,6 +191,14 @@ public:
   }
 
   //################################################################################################
+  //! If there is a reflection texture this returns its ID.
+  GLuint reflectionTexture() const;
+
+  //################################################################################################
+  //! If there is a reflection depth texture this returns its ID.
+  GLuint reflectionDepth() const;
+
+  //################################################################################################
   //! Return the map's window width
   /*!
   \return the width of the window

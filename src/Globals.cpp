@@ -26,7 +26,7 @@ std::string parseShaderString(const char* text)
     while(pos != std::string::npos)
     {
       result.replace(pos, key.size(), value);
-      pos = result.find(key, pos + key.size());
+      pos = result.find(key, pos + value.size());
     }
   };
 

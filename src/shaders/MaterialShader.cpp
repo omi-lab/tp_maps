@@ -143,17 +143,34 @@ struct MaterialShader::Private
 };
 
 //##################################################################################################
-MaterialShader::MaterialShader():
+MaterialShader::MaterialShader(bool compileShader):
   d(new Private())
 {
-  compile(vertexShaderStr.data(),
-          fragmentShaderStr.data(),
-          [](GLuint program)
+  if(compileShader)
+    compile(vertexShaderStr.data(), fragmentShaderStr.data(), [](auto){}, [](auto){});
+}
+
+//##################################################################################################
+MaterialShader::~MaterialShader()
+{
+  delete d;
+}
+
+//################################################################################################
+void MaterialShader::compile(const char* vertexShaderStr,
+                             const char* fragmentShaderStr,
+                             const std::function<void(GLuint)>& bindLocations,
+                             const std::function<void(GLuint)>& getLocations)
+{
+  Shader::compile(vertexShaderStr,
+                  fragmentShaderStr,
+                  [&](GLuint program)
   {
     glBindAttribLocation(program, 0, "inVertex");
     glBindAttribLocation(program, 1, "inNormal");
+    bindLocations(program);
   },
-  [this](GLuint program)
+  [&](GLuint program)
   {
     d->mMatrixLocation             = glGetUniformLocation(program, "m");
     // d->vMatrixLocation             = glGetUniformLocation(program, "v");
@@ -189,13 +206,8 @@ MaterialShader::MaterialShader():
 
     if(d->cameraOriginNearLocation <0)tpWarning() << shaderName << " cameraOriginNearLocation  : " << d->cameraOriginNearLocation;
     if(d->cameraOriginFarLocation  <0)tpWarning() << shaderName << " cameraOriginFarLocation   : " << d->cameraOriginFarLocation ;
+    getLocations(program);
   });
-}
-
-//##################################################################################################
-MaterialShader::~MaterialShader()
-{
-  delete d;
 }
 
 //##################################################################################################

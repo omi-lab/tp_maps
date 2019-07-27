@@ -17,7 +17,7 @@ enum class ShaderType
 
 }
 
-TP_ENUM_HASH(tp_maps::ShaderType)
+//TP_ENUM_HASH(tp_maps::ShaderType)
 
 namespace tp_maps
 {

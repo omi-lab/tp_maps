@@ -14,10 +14,16 @@ class TP_MAPS_SHARED_EXPORT MaterialShader: public Geometry3DShader
 {
 public:
   //################################################################################################
-  MaterialShader();
+  MaterialShader(bool compileShader=true);
 
   //################################################################################################
   ~MaterialShader() override;
+
+  //################################################################################################
+  void compile(const char* vertexShaderStr,
+               const char* fragmentShaderStr,
+               const std::function<void(GLuint)>& bindLocations,
+               const std::function<void(GLuint)>& getLocations);
 
   //################################################################################################
   //! Prepare OpenGL for rendering

@@ -53,6 +53,12 @@ struct Map::Private
   int height{1};
   glm::vec3 backgroundColor{0.0f, 0.0f, 0.0f};
 
+  GLuint reflectionFrameBuffer{0};
+  GLuint reflectionFrameBufferTexture{0};
+  GLuint reflectionFrameBufferDepth{0};
+  int reflectionFrameBufferWidth{1};
+  int reflectionFrameBufferHeight{1};
+
   bool initialized{false};
   bool preDeleteCalled{false};
 
@@ -583,6 +589,18 @@ void Map::deleteTexture(GLuint id)
 }
 
 //##################################################################################################
+GLuint Map::reflectionTexture() const
+{
+  return d->reflectionFrameBufferTexture;
+}
+
+//##################################################################################################
+GLuint Map::reflectionDepth() const
+{
+  return d->reflectionFrameBufferDepth;
+}
+
+//##################################################################################################
 int Map::width() const
 {
   return d->width;
@@ -618,7 +636,9 @@ void Map::initializeGL()
     }
     d->shaders.clear();
 
-#warning discard the reflection FBO
+    d->reflectionFrameBuffer        = 0;
+    d->reflectionFrameBufferTexture = 0;
+    d->reflectionFrameBufferDepth   = 0;
 
     for(auto i : d->layers)
       i->invalidateBuffers();
@@ -655,6 +675,73 @@ void Map::paintGL()
 //##################################################################################################
 void Map::paintGLNoMakeCurrent()
 {
+  GLint originalFrameBuffer = 0;
+
+  // If we are using reflection enable the reflection FBO for the first few passes, then in the
+  // reflection pass blit it to the screen and make the texture available so that layers can use it
+  // to render screen space reflections.
+  if(d->reflectionIsOn)
+  {
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
+
+    if((d->reflectionFrameBuffer || d->reflectionFrameBufferTexture) &&
+       (d->reflectionFrameBufferWidth != d->width || d->reflectionFrameBufferHeight != d->height))
+    {
+      if(d->reflectionFrameBuffer)
+      {
+        glDeleteFramebuffers(1, &d->reflectionFrameBuffer);
+        d->reflectionFrameBuffer = 0;
+      }
+
+      if(d->reflectionFrameBuffer)
+      {
+        glDeleteTextures(1, &d->reflectionFrameBuffer);
+        d->reflectionFrameBuffer = 0;
+      }
+
+      if(d->reflectionFrameBufferDepth)
+      {
+        glDeleteRenderbuffers(1, &d->reflectionFrameBufferDepth);
+        d->reflectionFrameBufferDepth = 0;
+      }
+    }
+
+    if(!d->reflectionFrameBuffer)
+    {
+      glGenFramebuffers(1, &d->reflectionFrameBuffer);
+      d->reflectionFrameBufferWidth  = d->width;
+      d->reflectionFrameBufferHeight = d->height;
+    }
+
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, d->reflectionFrameBuffer);
+
+    if(!d->reflectionFrameBufferTexture)
+    {
+      glGenTextures(1, &d->reflectionFrameBufferTexture);
+      glBindTexture(GL_TEXTURE_2D, d->reflectionFrameBufferTexture);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, d->width, d->height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+      glGenRenderbuffers(1, &d->reflectionFrameBufferDepth);
+      glBindRenderbuffer(GL_RENDERBUFFER, d->reflectionFrameBufferDepth);
+
+      //glRenderbufferStorage(GL_RENDERBUFFER, TP_GL_DEPTH_COMPONENT32, d->width, d->height);
+#warning fix to match the depth buffer
+      glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, d->width, d->height);
+
+      glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, d->reflectionFrameBufferDepth);
+
+      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, d->reflectionFrameBufferDepth, 0);
+    }
+
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+      tpWarning() << "Error Map::paintGLNoMakeCurrent frame buffer not complete!";
+      return;
+    }
+  }
+
 #if 0
   //Make the background flicker to show when the map is updateing
   glClearColor(1.0f, 1.0f, float(std::rand()%255)/255.0f, 1.0f);
@@ -662,15 +749,6 @@ void Map::paintGLNoMakeCurrent()
   glDepthMask(true);
   glClearDepthf(1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  // If we are using reflection enable the reflection FBO for the first few passes, then in the
-  // reflection pass blit it to the screen and make the texture available so that layers can use it
-  // to render screen space reflections.
-  if(d->reflectionIsOn)
-  {
-#warning get ID of current FBO
-#warning enable reflection FBO here
-  }
 
   for(auto renderPass : d->renderPasses)
   {
@@ -705,8 +783,27 @@ void Map::paintGLNoMakeCurrent()
 
     case RenderPass::Reflection:
     {
-#warning restore current FBO here.
-#warning blit the reflection color and depth buffers to the screen here.
+      glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
+      glBindFramebuffer(GL_READ_FRAMEBUFFER, d->reflectionFrameBuffer);
+
+#if 1
+      glBlitFramebuffer(0, 0, d->width, d->height,
+                        0, 0, d->width, d->height,
+                        GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
+                        GL_NEAREST);
+#else
+      glBlitFramebuffer(0, 0, d->width, d->height,
+                        0, 0, d->width, d->height,
+                        GL_DEPTH_BUFFER_BIT,
+                        GL_NEAREST);
+
+      glBlitFramebuffer(0, 0, d->width, d->height,
+                        0, 0, d->width, d->height,
+                        GL_COLOR_BUFFER_BIT ,
+                        GL_LINEAR);
+#endif
+
+      glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
 
       glEnable(GL_DEPTH_TEST);
       glDepthFunc(GL_LESS);
