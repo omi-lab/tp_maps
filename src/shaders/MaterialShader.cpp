@@ -143,11 +143,12 @@ struct MaterialShader::Private
 };
 
 //##################################################################################################
-MaterialShader::MaterialShader(bool compileShader):
+MaterialShader::MaterialShader(tp_maps::OpenGLProfile openGLProfile, bool compileShader):
+  Geometry3DShader(openGLProfile),
   d(new Private())
 {
   if(compileShader)
-    compile(vertexShaderStr.data(), fragmentShaderStr.data(), [](auto){}, [](auto){});
+    compile(vertexShaderStr.data(openGLProfile), fragmentShaderStr.data(openGLProfile), [](auto){}, [](auto){});
 }
 
 //##################################################################################################

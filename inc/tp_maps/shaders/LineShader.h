@@ -14,7 +14,7 @@ class TP_MAPS_SHARED_EXPORT LineShader: public Shader
 {
 public:
   //################################################################################################
-  LineShader();
+  LineShader(tp_maps::OpenGLProfile openGLProfile);
 
   //################################################################################################
   ~LineShader() override;

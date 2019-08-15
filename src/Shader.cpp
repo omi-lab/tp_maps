@@ -19,13 +19,20 @@ struct ShaderDetails_lt
 //##################################################################################################
 struct Shader::Private
 {
+  tp_maps::OpenGLProfile openGLProfile;
   std::unordered_map<ShaderType, ShaderDetails_lt> shaders;
   bool error{false};
+
+  Private(tp_maps::OpenGLProfile profile_):
+    openGLProfile(profile_)
+  {
+
+  }
 };
 
 //##################################################################################################
-Shader::Shader():
-  d(new Private())
+Shader::Shader(tp_maps::OpenGLProfile openGLProfile):
+  d(new Private(openGLProfile))
 {
 
 }
@@ -49,6 +56,12 @@ Shader::~Shader()
   }
 
   delete d;
+}
+
+//##################################################################################################
+tp_maps::OpenGLProfile Shader::openGLProfile() const
+{
+  return d->openGLProfile;
 }
 
 //##################################################################################################

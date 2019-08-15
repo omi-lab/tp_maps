@@ -51,11 +51,12 @@ struct LineShader::Private
 };
 
 //##################################################################################################
-LineShader::LineShader():
+LineShader::LineShader(tp_maps::OpenGLProfile openGLProfile):
+  Shader(openGLProfile),
   d(new Private())
 {
-  compile(vertexShaderStr.data(),
-          fragmentShaderStr.data(),
+  compile(vertexShaderStr.data(openGLProfile),
+          fragmentShaderStr.data(openGLProfile),
           [](GLuint program)
   {
     glBindAttribLocation(program, 0, "position");

@@ -15,7 +15,7 @@ class TP_MAPS_SHARED_EXPORT FontShader: public Shader
 {
 public:
   //################################################################################################
-  FontShader(const char* vertexShader=nullptr, const char* fragmentShader=nullptr);
+  FontShader(tp_maps::OpenGLProfile openGLProfile, const char* vertexShader=nullptr, const char* fragmentShader=nullptr);
 
   //################################################################################################
   ~FontShader() override;

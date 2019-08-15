@@ -17,8 +17,6 @@ enum class ShaderType
 
 }
 
-//TP_ENUM_HASH(tp_maps::ShaderType)
-
 namespace tp_maps
 {
 class Map;
@@ -34,10 +32,13 @@ class TP_MAPS_SHARED_EXPORT Shader
   friend class Map;
 public:
   //################################################################################################
-  Shader();
+  Shader(tp_maps::OpenGLProfile openGLProfile);
 
   //################################################################################################
   virtual ~Shader();
+
+  //################################################################################################
+  tp_maps::OpenGLProfile openGLProfile() const;
 
   //################################################################################################
   void compile(const char* vertexShaderStr,

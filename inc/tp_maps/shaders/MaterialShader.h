@@ -14,7 +14,7 @@ class TP_MAPS_SHARED_EXPORT MaterialShader: public Geometry3DShader
 {
 public:
   //################################################################################################
-  MaterialShader(bool compileShader=true);
+  MaterialShader(tp_maps::OpenGLProfile openGLProfile, bool compileShader=true);
 
   //################################################################################################
   ~MaterialShader() override;

@@ -30,8 +30,8 @@ ShaderString fragmentShaderStr =
 }
 
 //##################################################################################################
-YUVImageShader::YUVImageShader():
-  ImageShader(nullptr, fragmentShaderStr.data())
+YUVImageShader::YUVImageShader(tp_maps::OpenGLProfile openGLProfile):
+  ImageShader(openGLProfile, nullptr, fragmentShaderStr.data(openGLProfile))
 {
 
 }

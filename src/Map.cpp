@@ -59,6 +59,8 @@ struct Map::Private
   int reflectionFrameBufferWidth{1};
   int reflectionFrameBufferHeight{1};
 
+  OpenGLProfile openGLProfile{TP_DEFAULT_PROFILE};
+
   bool initialized{false};
   bool preDeleteCalled{false};
 
@@ -118,6 +120,18 @@ void Map::preDelete()
     delete tpTakeFirst(d->fontRenderers);
 
   d->preDeleteCalled = true;
+}
+
+//##################################################################################################
+void Map::setOpenGLProfile(OpenGLProfile openGLProfile)
+{
+  d->openGLProfile = openGLProfile;
+}
+
+//##################################################################################################
+OpenGLProfile Map::openGLProfile() const
+{
+  return d->openGLProfile;
 }
 
 //##################################################################################################

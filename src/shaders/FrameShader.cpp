@@ -69,14 +69,15 @@ struct FrameShader::Private
 };
 
 //##################################################################################################
-FrameShader::FrameShader(const char* vertexShader, const char* fragmentShader):
+FrameShader::FrameShader(tp_maps::OpenGLProfile openGLProfile, const char* vertexShader, const char* fragmentShader):
+  Shader(openGLProfile),
   d(new Private())
 {
   if(!vertexShader)
-    vertexShader = vertexShaderStr.data();
+    vertexShader = vertexShaderStr.data(openGLProfile);
 
   if(!fragmentShader)
-    fragmentShader = fragmentShaderStr.data();
+    fragmentShader = fragmentShaderStr.data(openGLProfile);
 
   compile(vertexShader,
           fragmentShader,

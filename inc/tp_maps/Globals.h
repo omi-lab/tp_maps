@@ -9,25 +9,14 @@
 #  define TP_MAPS_SHARED_EXPORT TP_IMPORT
 #endif
 
-//https://github.com/mattdesl/lwjgl-basics/wiki/GLSL-Versions
-
-#ifdef TP_GLES3_100 //------------------------------------------------------------------------------
+#ifdef TP_GLES2_100 //------------------------------------------------------------------------------
 
 #elif defined(TDP_OSX) //---------------------------------------------------------------------------
 #  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
 #  include <gl3.h>
 #  include <OpenGL/glext.h>
 
-#  define TP_VERT_SHADER_HEADER "#version 410\nprecision highp float;\n"
-#  define TP_FRAG_SHADER_HEADER "#version 410\nprecision highp float;\n"
-
-#  define TP_GLSL_IN_V "in "
-#  define TP_GLSL_IN_F "in "
-#  define TP_GLSL_OUT_V "out "
-#  define TP_GLSL_OUT_F "out "
-#  define TP_GLSL_GLFRAGCOLOR "fragColor"
-#  define TP_GLSL_GLFRAGCOLOR_DEF "out vec4 fragColor;\n"
-#  define TP_GLSL_TEXTURE "texture"
+#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_410
 
 #  define tpGenVertexArrays glGenVertexArrays
 #  define tpBindVertexArray glBindVertexArray
@@ -46,16 +35,7 @@ using TPGLenum = GLenum;
 #  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
 #  include <GLES2/gl2.h>
 
-#  define TP_VERT_SHADER_HEADER "#version 300 es\nprecision highp float;"
-#  define TP_FRAG_SHADER_HEADER "#version 300 es\nprecision highp float;"
-
-#  define TP_GLSL_IN_V "in "
-#  define TP_GLSL_IN_F "in "
-#  define TP_GLSL_OUT_V "out "
-#  define TP_GLSL_OUT_F "out "
-#  define TP_GLSL_GLFRAGCOLOR "fragColor"
-#  define TP_GLSL_GLFRAGCOLOR_DEF "out vec4 fragColor;\n"
-#  define TP_GLSL_TEXTURE "texture"
+#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_300_ES
 
 #  define tpGenVertexArrays glGenVertexArraysOES
 #  define tpBindVertexArray glBindVertexArrayOES
@@ -71,24 +51,15 @@ using TPGLfloat = float;
 using TPGLenum = GLenum;
 
 #elif defined(TDP_EMSCRIPTEN) //--------------------------------------------------------------------
-#  define TP_GLES3_100
+#  define TP_GLES2_100
 
 #elif defined(TDP_ANDROID) //-----------------------------------------------------------------------
-#  define TP_GLES3_100
+#  define TP_GLES2_100
 
 #else //--------------------------------------------------------------------------------------------
 #  include <GLES3/gl3.h>
 
-#  define TP_VERT_SHADER_HEADER "#version 130\nprecision highp float;\n"
-#  define TP_FRAG_SHADER_HEADER "#version 130\nprecision highp float;\n"
-
-#  define TP_GLSL_IN_V "in "
-#  define TP_GLSL_IN_F "in "
-#  define TP_GLSL_OUT_V "out "
-#  define TP_GLSL_OUT_F "out "
-#  define TP_GLSL_GLFRAGCOLOR "fragColor"
-#  define TP_GLSL_GLFRAGCOLOR_DEF "out vec4 fragColor;\n"
-#  define TP_GLSL_TEXTURE "texture"
+#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_130
 
 #  define tpGenVertexArrays glGenVertexArrays
 #  define tpBindVertexArray glBindVertexArray
@@ -106,19 +77,10 @@ using TPGLenum = GLenum;
 #endif //-------------------------------------------------------------------------------------------
 
 
-#ifdef TP_GLES3_100 //------------------------------------------------------------------------------
-#  include <GLES3/gl3.h>
+#ifdef TP_GLES2_100 //------------------------------------------------------------------------------
+#  include <GLES3/gl2.h>
 
-#  define TP_VERT_SHADER_HEADER "#version 100\nprecision highp float;\n"
-#  define TP_FRAG_SHADER_HEADER "#version 100\nprecision highp float;\n"
-
-#  define TP_GLSL_IN_V "attribute "
-#  define TP_GLSL_IN_F "varying "
-#  define TP_GLSL_OUT_V "varying "
-#  define TP_GLSL_OUT_F "varying "
-#  define TP_GLSL_GLFRAGCOLOR "gl_FragColor"
-#  define TP_GLSL_GLFRAGCOLOR_DEF ""
-#  define TP_GLSL_TEXTURE "texture2D"
+#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_100_ES
 
 #  define tpGenVertexArrays glGenVertexArrays
 #  define tpBindVertexArray glBindVertexArray
@@ -158,13 +120,35 @@ enum class RenderPass
   Picking
 };
 
+enum class OpenGLProfile
+{
+  VERSION_110,
+  VERSION_120,
+  VERSION_130,
+  VERSION_140,
+  VERSION_150,
+  VERSION_330,
+  VERSION_400,
+  VERSION_410,
+  VERSION_420,
+  VERSION_430,
+  VERSION_440,
+  VERSION_450,
+  VERSION_460,
+  VERSION_100_ES,
+  VERSION_300_ES
+};
+
 //##################################################################################################
 struct ShaderString
 {
   TP_NONCOPYABLE(ShaderString);
   ShaderString(const char* text);
-  const char* data() const;
-  const std::string str;
+  const char* data(OpenGLProfile openGLProfile);
+
+private:
+  const std::string m_str;
+  std::unordered_map<OpenGLProfile, std::string> m_parsed;
 };
 }
 

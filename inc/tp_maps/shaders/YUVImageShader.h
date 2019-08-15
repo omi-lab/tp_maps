@@ -14,7 +14,7 @@ class TP_MAPS_SHARED_EXPORT YUVImageShader: public ImageShader
 {
 public:
   //################################################################################################
-  YUVImageShader();
+  YUVImageShader(tp_maps::OpenGLProfile openGLProfile);
 
   //################################################################################################
   static inline const tp_utils::StringID& name(){return yuvImageShaderSID();}

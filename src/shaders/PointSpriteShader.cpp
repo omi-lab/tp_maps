@@ -117,7 +117,8 @@ struct PointSpriteShader::Private
 };
 
 //##################################################################################################
-PointSpriteShader::PointSpriteShader():
+PointSpriteShader::PointSpriteShader(tp_maps::OpenGLProfile openGLProfile):
+  Shader(openGLProfile),
   d(new Private())
 {
   //We compile 2 shaders one for picking and the other for normal rendering
@@ -153,9 +154,9 @@ PointSpriteShader::PointSpriteShader():
     shaderType);
   };
 
-  compileShader( renderVertexShaderStr.data(),  renderFragmentShaderStr.data(),  "PointSpriteShader_render", ShaderType:: Render, d-> renderMatrixLoc, d-> renderScaleFactorLoc, nullptr);
+  compileShader( renderVertexShaderStr.data(openGLProfile),  renderFragmentShaderStr.data(openGLProfile),  "PointSpriteShader_render", ShaderType:: Render, d-> renderMatrixLoc, d-> renderScaleFactorLoc, nullptr);
 #ifdef TP_GLSL_PICKING
-  compileShader(pickingVertexShaderStr.data(), pickingFragmentShaderStr.data(), "PointSpriteShader_picking", ShaderType::Picking, d->pickingMatrixLoc, d->pickingScaleFactorLoc, &d->pickingIDLoc);
+  compileShader(pickingVertexShaderStr.data(openGLProfile), pickingFragmentShaderStr.data(openGLProfile), "PointSpriteShader_picking", ShaderType::Picking, d->pickingMatrixLoc, d->pickingScaleFactorLoc, &d->pickingIDLoc);
 #else
   //Point sprite picking is not implemented on this platform.
 #endif

@@ -49,7 +49,13 @@ protected:
   //################################################################################################
   void preDelete();
 
+  //################################################################################################
+  //! Only ever call this before any calls to render.
+  void setOpenGLProfile(OpenGLProfile openGLProfile);
+
 public:
+
+  OpenGLProfile openGLProfile() const;
 
   //################################################################################################
   bool initialized()const;
@@ -184,7 +190,7 @@ public:
     T* shader = static_cast<T*>(getShader(name));
     if(!shader)
     {
-      shader = new T();
+      shader = new T(openGLProfile());
       addShader(name, shader);
     }
     return shader;

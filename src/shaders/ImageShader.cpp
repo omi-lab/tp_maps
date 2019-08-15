@@ -66,14 +66,15 @@ struct ImageShader::Private
 };
 
 //##################################################################################################
-ImageShader::ImageShader(const char* vertexShader, const char* fragmentShader):
+ImageShader::ImageShader(tp_maps::OpenGLProfile openGLProfile, const char* vertexShader, const char* fragmentShader):
+  Geometry3DShader(openGLProfile),
   d(new Private())
 {
   if(!vertexShader)
-    vertexShader = vertexShaderStr.data();
+    vertexShader = vertexShaderStr.data(openGLProfile);
 
   if(!fragmentShader)
-    fragmentShader = fragmentShaderStr.data();
+    fragmentShader = fragmentShaderStr.data(openGLProfile);
 
   compile(vertexShader,
           fragmentShader,

@@ -3,6 +3,12 @@
 
 namespace tp_maps
 {
+//##################################################################################################
+Geometry3DShader::Geometry3DShader(tp_maps::OpenGLProfile openGLProfile):
+  Shader(openGLProfile)
+{
+
+}
 
 //##################################################################################################
 Geometry3DShader::VertexBuffer* Geometry3DShader::generateVertexBuffer(Map* map,
