@@ -122,7 +122,7 @@ enum class RenderPass
 
 enum class OpenGLProfile
 {
-  VERSION_110,
+  VERSION_110,  // Not really supported by most of the shaders in tp_maps
   VERSION_120,
   VERSION_130,
   VERSION_140,

@@ -34,28 +34,28 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
   {
   case OpenGLProfile::VERSION_110:
   {
-    replace("$TP_VERT_SHADER_HEADER$",   "#version 110\nprecision highp float;\n");
-    replace("$TP_FRAG_SHADER_HEADER$",   "#version 110\nprecision highp float;\n");
-    replace("$TP_GLSL_IN_V$",            "in ");
-    replace("$TP_GLSL_IN_F$",            "in ");
-    replace("$TP_GLSL_OUT_V$",           "out ");
-    replace("$TP_GLSL_OUT_F$",           "out ");
-    replace("$TP_GLSL_GLFRAGCOLOR$",     "fragColor");
-    replace("$TP_GLSL_GLFRAGCOLOR_DEF$", "out vec4 fragColor;\n");
+    replace("$TP_VERT_SHADER_HEADER$",   "#version 110\n");
+    replace("$TP_FRAG_SHADER_HEADER$",   "#version 110\n");
+    replace("$TP_GLSL_IN_V$",            "attribute ");
+    replace("$TP_GLSL_IN_F$",            "varying ");
+    replace("$TP_GLSL_OUT_V$",           "varying ");
+    replace("$TP_GLSL_OUT_F$",           "varying ");
+    replace("$TP_GLSL_GLFRAGCOLOR$",     "gl_FragColor");
+    replace("$TP_GLSL_GLFRAGCOLOR_DEF$", "");
     replace("$TP_GLSL_TEXTURE$",         "texture");
     break;
   }
 
   case OpenGLProfile::VERSION_120:
   {
-    replace("$TP_VERT_SHADER_HEADER$",   "#version 120\nprecision highp float;\n");
-    replace("$TP_FRAG_SHADER_HEADER$",   "#version 120\nprecision highp float;\n");
-    replace("$TP_GLSL_IN_V$",            "in ");
-    replace("$TP_GLSL_IN_F$",            "in ");
-    replace("$TP_GLSL_OUT_V$",           "out ");
-    replace("$TP_GLSL_OUT_F$",           "out ");
-    replace("$TP_GLSL_GLFRAGCOLOR$",     "fragColor");
-    replace("$TP_GLSL_GLFRAGCOLOR_DEF$", "out vec4 fragColor;\n");
+    replace("$TP_VERT_SHADER_HEADER$",   "#version 120\n");
+    replace("$TP_FRAG_SHADER_HEADER$",   "#version 120\n");
+    replace("$TP_GLSL_IN_V$",            "attribute ");
+    replace("$TP_GLSL_IN_F$",            "varying ");
+    replace("$TP_GLSL_OUT_V$",           "varying ");
+    replace("$TP_GLSL_OUT_F$",           "varying ");
+    replace("$TP_GLSL_GLFRAGCOLOR$",     "gl_FragColor");
+    replace("$TP_GLSL_GLFRAGCOLOR_DEF$", "");
     replace("$TP_GLSL_TEXTURE$",         "texture");
     break;
   }
@@ -216,8 +216,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
 
   case OpenGLProfile::VERSION_100_ES:
   {
-    replace("$TP_VERT_SHADER_HEADER$",   "#version 100 es\nprecision highp float;\n");
-    replace("$TP_FRAG_SHADER_HEADER$",   "#version 100 es\nprecision highp float;\n");
+    replace("$TP_VERT_SHADER_HEADER$",   "#version 100\nprecision highp float;\n");
+    replace("$TP_FRAG_SHADER_HEADER$",   "#version 100\nprecision highp float;\n");
     replace("$TP_GLSL_IN_V$",            "attribute ");
     replace("$TP_GLSL_IN_F$",            "varying ");
     replace("$TP_GLSL_OUT_V$",           "varying ");
