@@ -136,7 +136,9 @@ enum class OpenGLProfile
   VERSION_450,
   VERSION_460,
   VERSION_100_ES,
-  VERSION_300_ES
+  VERSION_300_ES,
+  VERSION_310_ES,
+  VERSION_320_ES
 };
 
 //##################################################################################################
