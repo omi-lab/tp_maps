@@ -8,7 +8,7 @@ namespace tp_maps
 {
 
 //##################################################################################################
-struct Geometry
+struct TP_MAPS_SHARED_EXPORT Geometry
 {
   std::vector<glm::vec3> geometry;
   MaterialShader::Material material;

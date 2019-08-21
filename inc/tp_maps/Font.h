@@ -6,6 +6,7 @@
 #include "glm/glm.hpp"
 
 #include <unordered_set>
+#include <array>
 
 union TPPixel;
 
@@ -15,7 +16,7 @@ class PreparedString;
 
 //##################################################################################################
 //! Details of a single character as produced by the Font.
-struct Glyph
+struct TP_MAPS_SHARED_EXPORT Glyph
 {
   int w{0};
   int h{0};
@@ -31,7 +32,7 @@ struct Glyph
 
 //##################################################################################################
 //! Details of a character in a string.
-struct GlyphGeometry
+struct TP_MAPS_SHARED_EXPORT GlyphGeometry
 {
   std::array<glm::vec2, 4> textureCoords;
   std::array<glm::vec2, 4> vertices;
@@ -46,7 +47,7 @@ struct GlyphGeometry
 
 //##################################################################################################
 //! Geometry details of a string of characters.
-struct FontGeometry
+struct TP_MAPS_SHARED_EXPORT FontGeometry
 {
   float leftBearing{0.0f}; //Negative for values to the left of 0
   float rightBearing{0.0f};

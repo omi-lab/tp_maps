@@ -317,7 +317,7 @@ bool Map::unProject(const glm::vec2& screenPoint, glm::vec3& scenePoint, const t
     scenePoints.at(i) = glm::vec3(obj);
   }
 
-  return tp_math_utils::rayPlaneIntersection(tp_math_utils::Ray(scenePoints[0], scenePoints[1]), plane, scenePoint);
+  return false;// tp_math_utils::rayPlaneIntersection(tp_math_utils::Ray(scenePoints[0], scenePoints[1]), plane, scenePoint);
 }
 
 //################################################################################################

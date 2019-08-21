@@ -57,7 +57,7 @@ using TPGLenum = GLenum;
 #  define TP_GLES2_100
 
 #elif defined(TDP_WIN32)
-//#  include <GLES3/gl3.h>
+
 #include <GL/glew.h>
 
 #  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_130

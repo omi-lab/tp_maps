@@ -19,7 +19,7 @@ class HandleLayer;
 class Texture;
 
 //##################################################################################################
-class HandleDetails
+class TP_MAPS_SHARED_EXPORT HandleDetails
 {
   friend class HandleLayer;
   HandleLayer* m_layer;
