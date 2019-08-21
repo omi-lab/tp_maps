@@ -56,6 +56,24 @@ using TPGLenum = GLenum;
 #elif defined(TDP_ANDROID) //-----------------------------------------------------------------------
 #  define TP_GLES2_100
 
+#elif defined(TDP_WIN32)
+//#  include <GLES3/gl3.h>
+#include <GL/glew.h>
+
+#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_130
+
+#  define tpGenVertexArrays glGenVertexArrays
+#  define tpBindVertexArray glBindVertexArray
+#  define tpDeleteVertexArrays glDeleteVertexArrays
+#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
+
+#  define TP_GLSL_PICKING
+
+#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
+
+using TPGLsize = GLuint;
+using TPGLfloat = float;
+using TPGLenum = GLenum;
 #else //--------------------------------------------------------------------------------------------
 #  include <GLES3/gl3.h>
 
