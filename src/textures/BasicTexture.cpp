@@ -197,7 +197,7 @@ glm::vec2 BasicTexture::textureDims()const
 //##################################################################################################
 glm::vec2 BasicTexture::imageDims()const
 {
-  return {d->image.w*d->image.fw, d->image.h*d->image.fh};
+  return {float(d->image.w)*d->image.fw, float(d->image.h)*d->image.fh};
 }
 
 }

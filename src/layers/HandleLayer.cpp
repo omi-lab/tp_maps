@@ -298,8 +298,8 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
       screenCoord.x = screenCoord.x * xOffset + xOffset;
       screenCoord.y = height - (screenCoord.y * yOffset + yOffset);
 
-      int xDiff{int(std::abs(screenCoord.x - event.pos.x))};
-      int yDiff{int(std::abs(screenCoord.y - event.pos.y))};
+      int xDiff{int(std::abs(screenCoord.x - float(event.pos.x)))};
+      int yDiff{int(std::abs(screenCoord.y - float(event.pos.y)))};
 
       int manhattanLength = xDiff + yDiff;
 

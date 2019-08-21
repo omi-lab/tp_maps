@@ -88,9 +88,9 @@ using TPGLenum = GLenum;
 
 #  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
 
-using TPGLsize = GLuint;
+using TPGLsize  = GLuint;
 using TPGLfloat = float;
-using TPGLenum = GLenum;
+using TPGLenum  = GLint;
 
 #endif //-------------------------------------------------------------------------------------------
 
