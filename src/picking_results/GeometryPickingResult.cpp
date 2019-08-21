@@ -9,7 +9,7 @@ GeometryPickingResult::GeometryPickingResult(const tp_utils::StringID& pickingTy
                                              const PickingDetails& details_,
                                              const RenderInfo& renderInfo_):
   PickingResult(pickingType_, details_, renderInfo_),
-  geometryIndex(details_.index)
+  geometryIndex(int(details_.index))
 {
 
 }
