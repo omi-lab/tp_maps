@@ -641,6 +641,16 @@ float Map::pixelScale()
 //##################################################################################################
 void Map::initializeGL()
 {
+#ifdef TDP_WIN32
+  static bool initGlew=[]
+  {
+    if(GLenum err = glewInit(); err!=GLEW_OK)
+      tpWarning() << "Error initializing glew: " << err;
+    return false;
+  }();
+  TP_UNUSED(initGlew);
+#endif
+
   //Invalidate old state before initializing new state
   {
     for(auto i : d->shaders)
