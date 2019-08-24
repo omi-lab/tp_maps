@@ -1,4 +1,5 @@
 #include "tp_maps/Globals.h"
+#include "tp_utils/Resources.h"
 
 //##################################################################################################
 namespace tp_maps
@@ -289,6 +290,24 @@ const char* ShaderString::data(OpenGLProfile openGLProfile)
 
   if(parsed.empty())
     parsed = parseShaderString(m_str, openGLProfile);
+
+  return parsed.c_str();
+}
+
+//##################################################################################################
+ShaderResource::ShaderResource(const std::string& resourceName):
+  m_resourceName(resourceName)
+{
+
+}
+
+//##################################################################################################
+const char* ShaderResource::data(OpenGLProfile openGLProfile)
+{
+  std::string& parsed = m_parsed[openGLProfile];
+
+  if(parsed.empty())
+    parsed = parseShaderString(tp_utils::resource(m_resourceName).data, openGLProfile);
 
   return parsed.c_str();
 }

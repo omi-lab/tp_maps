@@ -152,6 +152,18 @@ private:
   const std::string m_str;
   std::unordered_map<OpenGLProfile, std::string> m_parsed;
 };
+
+//##################################################################################################
+struct ShaderResource
+{
+  TP_NONCOPYABLE(ShaderResource);
+  ShaderResource(const std::string& resourceName);
+  const char* data(OpenGLProfile openGLProfile);
+
+private:
+  const std::string m_resourceName;
+  std::unordered_map<OpenGLProfile, std::string> m_parsed;
+};
 }
 
 #endif
