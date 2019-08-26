@@ -13,7 +13,7 @@ class FontRenderer;
 struct FontGeometry;
 
 //##################################################################################################
-struct PreparedStringConfig
+struct TP_MAPS_SHARED_EXPORT PreparedStringConfig
 {
   bool topDown{false};
 

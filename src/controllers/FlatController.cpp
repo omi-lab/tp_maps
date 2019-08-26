@@ -52,8 +52,8 @@ struct FlatController::Private
     float sa = std::sin(radians);
 
     //The width and height of the map widget
-    float width(q->map()->width());
-    float height(q->map()->height());
+    float width  = float(q->map()->width());
+    float height = float(q->map()->height());
 
     dx = dx / width;
     dy = dy / height;
@@ -241,8 +241,8 @@ void FlatController::updateMatrices()
     d->distance = 1.0f;
 
   //The width and height of the map widget
-  float width(map()->width());
-  float height(map()->height());
+  float width  = float(map()->width());
+  float height = float(map()->height());
 
   float fh = 1.0f;
   float fw = 1.0f;
@@ -309,8 +309,8 @@ bool FlatController::mouseEvent(const MouseEvent& event)
       d->mouseMoved = true;
     }
 
-    float dx = pos.x - d->previousPos.x;
-    float dy = pos.y - d->previousPos.y;
+    float dx = float(pos.x - d->previousPos.x);
+    float dy = float(pos.y - d->previousPos.y);
 
     d->previousPos2 = d->previousPos;
     d->previousPos = pos;

@@ -3,6 +3,8 @@
 
 #include "tp_utils/StringID.h"
 
+#include <unordered_map>
+
 #if defined(TP_MAPS_LIBRARY)
 #  define TP_MAPS_SHARED_EXPORT TP_EXPORT
 #else
@@ -56,8 +58,9 @@ using TPGLenum = GLenum;
 #elif defined(TDP_ANDROID) //-----------------------------------------------------------------------
 #  define TP_GLES2_100
 
-#else //--------------------------------------------------------------------------------------------
-#  include <GLES3/gl3.h>
+#elif defined(TDP_WIN32)
+
+#include <GL/glew.h>
 
 #  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_130
 
@@ -73,6 +76,23 @@ using TPGLenum = GLenum;
 using TPGLsize = GLuint;
 using TPGLfloat = float;
 using TPGLenum = GLenum;
+#else //--------------------------------------------------------------------------------------------
+#  include <GLES3/gl3.h>
+
+#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_130
+
+#  define tpGenVertexArrays glGenVertexArrays
+#  define tpBindVertexArray glBindVertexArray
+#  define tpDeleteVertexArrays glDeleteVertexArrays
+#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
+
+#  define TP_GLSL_PICKING
+
+#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
+
+using TPGLsize  = GLuint;
+using TPGLfloat = float;
+using TPGLenum  = GLint;
 
 #endif //-------------------------------------------------------------------------------------------
 

@@ -233,8 +233,8 @@ void FPSController::mapResized(int w, int h)
 void FPSController::updateMatrices()
 {
   //The width and height of the map widget
-  float width(map()->width());
-  float height(map()->height());
+  float width  = float(map()->width());
+  float height = float(map()->height());
 
   if(width<1.0f || height<1.0f)
     return;
@@ -303,13 +303,13 @@ bool FPSController::mouseEvent(const MouseEvent& event)
 
     if(d->fullScreen)
     {
-      dx = event.posDelta.x;
-      dy = event.posDelta.y;
+      dx = float(event.posDelta.x);
+      dy = float(event.posDelta.y);
     }
     else
     {
-      dx = pos.x - d->previousPos.x;
-      dy = pos.y - d->previousPos.y;
+      dx = float(pos.x - d->previousPos.x);
+      dy = float(pos.y - d->previousPos.y);
     }
 
     d->previousPos2 = d->previousPos;

@@ -284,8 +284,8 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
     if(event.button != Button::LeftButton)
       return false;
 
-    float width   = map()->width();
-    float height  = map()->height();
+    float width   = float(map()->width());
+    float height  = float(map()->height());
     float xOffset = width  / 2.0f;
     float yOffset = height / 2.0f;
 
@@ -298,8 +298,8 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
       screenCoord.x = screenCoord.x * xOffset + xOffset;
       screenCoord.y = height - (screenCoord.y * yOffset + yOffset);
 
-      int xDiff{int(std::abs(screenCoord.x - event.pos.x))};
-      int yDiff{int(std::abs(screenCoord.y - event.pos.y))};
+      int xDiff{int(std::abs(screenCoord.x - float(event.pos.x)))};
+      int yDiff{int(std::abs(screenCoord.y - float(event.pos.y)))};
 
       int manhattanLength = xDiff + yDiff;
 
@@ -376,9 +376,9 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
     };
 
     for(int i=1; i<int(d->handles.size()); i++)
-      calc(d->handles.at(i-1)->position, d->handles.at(size_t(i))->position, i);
+      calc(d->handles.at(size_t(i-1))->position, d->handles.at(size_t(i))->position, i);
 
-    calc(d->handles.at(d->handles.size()-1)->position, d->handles.at(0)->position, d->handles.size());
+    calc(d->handles.at(d->handles.size()-1)->position, d->handles.at(0)->position, int(d->handles.size()));
 
     if(index>=0)
     {

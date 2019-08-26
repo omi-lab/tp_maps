@@ -13,7 +13,7 @@ namespace tp_maps
 class Texture;
 
 //##################################################################################################
-struct Geometry3D
+struct TP_MAPS_SHARED_EXPORT Geometry3D
 {
   tp_math_utils::Geometry3D geometry;
   MaterialShader::Material material;

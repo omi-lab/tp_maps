@@ -121,7 +121,7 @@ void AnimatedFlatController::animate(double timestampMS)
 
   d->updateInertia();
 
-  float f = ((timestampMS - d->timestampMS)/1000.0);
+  float f = float((timestampMS - d->timestampMS)/1000.0);
 
   glm::vec3 focalPointD    = (d->focalPoint    - focalPoint()   );
   float     distanceD      = (d->distance      - distance()     );

@@ -8,6 +8,7 @@
 #include "glm/glm.hpp"
 
 #include <vector>
+#include <array>
 #include <functional>
 
 namespace tp_maps
@@ -15,7 +16,7 @@ namespace tp_maps
 class Texture;
 
 //##################################################################################################
-struct SpriteCoords
+struct TP_MAPS_SHARED_EXPORT SpriteCoords
 {
   std::array<glm::vec2, 4> coords;
 

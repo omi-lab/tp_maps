@@ -10,7 +10,7 @@ namespace tp_maps
 {
 
 //##################################################################################################
-struct TextureData
+struct TP_MAPS_SHARED_EXPORT TextureData
 {
   size_t w{0};
   size_t h{0};
@@ -32,7 +32,7 @@ struct TextureData
 };
 
 //##################################################################################################
-class BasicTexture : public Texture
+class TP_MAPS_SHARED_EXPORT BasicTexture : public Texture
 {
   TDP_REF_COUNT_OBJECTS("BasicTexture");
 public:

@@ -309,7 +309,7 @@ bool Map::unProject(const glm::vec2& screenPoint, glm::vec3& scenePoint, const t
   {
     glm::vec4& tmp = screenPoints.at(i);
     tmp.x = tmp.x / float(d->width);
-    tmp.y = (d->height - tmp.y) / float(d->height);
+    tmp.y = (float(d->height) - tmp.y) / float(d->height);
     tmp = tmp * 2.0f - 1.0f;
 
     glm::vec4 obj = inverse * tmp;
@@ -333,7 +333,7 @@ glm::vec3 Map::unProject(const glm::vec3& screenPoint, const glm::mat4& matrix)
 
   glm::vec4 tmp{screenPoint, 1.0f};
   tmp.x = tmp.x / float(d->width);
-  tmp.y = (d->height - tmp.y) / float(d->height);
+  tmp.y = (float(d->height) - tmp.y) / float(d->height);
   tmp = tmp * 2.0f - 1.0f;
   glm::vec4 obj = inverse * tmp;
 
@@ -641,6 +641,16 @@ float Map::pixelScale()
 //##################################################################################################
 void Map::initializeGL()
 {
+#ifdef TDP_WIN32
+  static bool initGlew=[]
+  {
+    if(GLenum err = glewInit(); err!=GLEW_OK)
+      tpWarning() << "Error initializing glew: " << err;
+    return false;
+  }();
+  TP_UNUSED(initGlew);
+#endif
+
   //Invalidate old state before initializing new state
   {
     for(auto i : d->shaders)

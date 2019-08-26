@@ -15,11 +15,11 @@ DefaultSpritesTexture::DefaultSpritesTexture(Map* map):
 
   for(int y=0; y<32; y++)
   {
-    float fy = abs(y-16);
+    float fy = float(std::abs(y-16));
     fy = fy*fy;
     for(int x=0; x<32; x++)
     {
-      float fx = abs(x-16);
+      float fx = float(std::abs(x-16));
       float f = std::sqrt(fx*fx + fy);
 
       TPPixel& p = newData[y*32+x];

@@ -9,7 +9,7 @@ namespace tp_maps
 {
 
 //##################################################################################################
-class DefaultSpritesTexture : public BasicTexture
+class TP_MAPS_SHARED_EXPORT DefaultSpritesTexture : public BasicTexture
 {
   TDP_REF_COUNT_OBJECTS("DefaultSpritesTexture");
 public:
