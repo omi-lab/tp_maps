@@ -23,26 +23,23 @@ ShaderString vertexShaderStr =
     "$TP_GLSL_IN_V$vec3 inNormal;\n"
     "$TP_GLSL_IN_V$vec2 inTexture;\n"
     "uniform mat4 matrix;\n"
-    "uniform vec4 color;\n"
     "$TP_GLSL_OUT_V$vec2 texCoordinate;\n"
-    "$TP_GLSL_OUT_V$vec4 multColor;\n"
     "void main()\n"
     "{\n"
     "  gl_Position = matrix * vec4(inVertex, 1.0);\n"
     "  texCoordinate = inTexture;\n"
-    "  multColor = color;\n"
     "}\n";
 
 ShaderString fragmentShaderStr =
     "$TP_FRAG_SHADER_HEADER$"
     "//FontShader fragmentShaderStr\n"
     "$TP_GLSL_IN_F$vec2 texCoordinate;\n"
-    "$TP_GLSL_IN_F$vec4 multColor;\n"
     "uniform sampler2D textureSampler;\n"
+    "uniform vec4 color;\n"
     "$TP_GLSL_GLFRAGCOLOR_DEF$"
     "void main()\n"
     "{\n"
-    "  $TP_GLSL_GLFRAGCOLOR$ = $TP_GLSL_TEXTURE$ (textureSampler, texCoordinate)*multColor;\n"
+    "  $TP_GLSL_GLFRAGCOLOR$ = $TP_GLSL_TEXTURE$ (textureSampler, texCoordinate) * vec4(255,0,0,255);\n" //*color;\n"
     "  if($TP_GLSL_GLFRAGCOLOR$.a < 0.01)\n"
     "    discard;\n"
     "}\n";
@@ -145,7 +142,7 @@ FontShader::FontShader(tp_maps::OpenGLProfile openGLProfile, const char* vertexS
     d->colorLocation  = glGetUniformLocation(program, "color");
     const char* shaderName = "FontShader";
     if(d->matrixLocation<0)tpWarning() << shaderName << " d->matrixLocation: " << d->matrixLocation;
-    if(d->matrixLocation<0)tpWarning() << shaderName << " d->colorLocation: " << d->colorLocation;
+    if(d->colorLocation<0)tpWarning() << shaderName << " d->colorLocation: " << d->colorLocation;
   });
 }
 
