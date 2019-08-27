@@ -67,6 +67,7 @@ bool Layer::visible() const
 void Layer::setVisible(bool visible)
 {
   d->visible = visible;
+  update();
 }
 
 //##################################################################################################
