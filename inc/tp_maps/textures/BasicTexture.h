@@ -43,7 +43,7 @@ public:
   ~BasicTexture() override;
 
   //################################################################################################
-  void setImage(const TextureData& image);
+  void setImage(const TextureData& image, bool quiet=false);
 
   //################################################################################################
   bool imageReady()override;

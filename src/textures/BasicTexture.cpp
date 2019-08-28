@@ -122,12 +122,14 @@ BasicTexture::~BasicTexture()
 }
 
 //##################################################################################################
-void BasicTexture::setImage(const TextureData& image)
+void BasicTexture::setImage(const TextureData& image, bool quiet)
 {
   d->image.destroy();
   d->image = image.clone2();
   d->imageReady = (d->image.data && d->image.w>0 && d->image.h>0);
-  imageChanged();
+
+  if(!quiet)
+    imageChanged();
 }
 
 //##################################################################################################
