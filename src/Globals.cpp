@@ -57,7 +57,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("$TP_GLSL_OUT_F$",           "varying ");
     replace("$TP_GLSL_GLFRAGCOLOR$",     "gl_FragColor");
     replace("$TP_GLSL_GLFRAGCOLOR_DEF$", "");
-    replace("$TP_GLSL_TEXTURE$",         "texture");
+    replace("$TP_GLSL_TEXTURE$",         "texture2D");
     break;
   }
 
