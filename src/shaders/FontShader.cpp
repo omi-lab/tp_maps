@@ -39,7 +39,7 @@ ShaderString fragmentShaderStr =
     "$TP_GLSL_GLFRAGCOLOR_DEF$"
     "void main()\n"
     "{\n"
-    "  $TP_GLSL_GLFRAGCOLOR$ = $TP_GLSL_TEXTURE$ (textureSampler, texCoordinate) * vec4(255,0,0,255);\n" //*color;\n"
+    "  $TP_GLSL_GLFRAGCOLOR$ = $TP_GLSL_TEXTURE$ (textureSampler, texCoordinate)*color;\n"
     "  if($TP_GLSL_GLFRAGCOLOR$.a < 0.01)\n"
     "    discard;\n"
     "}\n";
