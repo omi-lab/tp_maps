@@ -140,6 +140,7 @@ FontShader::FontShader(tp_maps::OpenGLProfile openGLProfile, const char* vertexS
   {
     d->matrixLocation = glGetUniformLocation(program, "matrix");
     d->colorLocation  = glGetUniformLocation(program, "color");
+
     const char* shaderName = "FontShader";
     if(d->matrixLocation<0)tpWarning() << shaderName << " d->matrixLocation: " << d->matrixLocation;
     if(d->colorLocation<0)tpWarning() << shaderName << " d->colorLocation: " << d->colorLocation;
