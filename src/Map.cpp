@@ -737,7 +737,7 @@ void Map::paintGLNoMakeCurrent()
       d->reflectionFrameBufferHeight = d->height;
     }
 
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, d->reflectionFrameBuffer);
+    glBindFramebuffer(TP_GL_DRAW_FRAMEBUFFER, d->reflectionFrameBuffer);
 
     if(!d->reflectionFrameBufferTexture)
     {
@@ -750,7 +750,7 @@ void Map::paintGLNoMakeCurrent()
 
       glGenTextures(1, &d->reflectionFrameBufferDepth);
       glBindTexture(GL_TEXTURE_2D, d->reflectionFrameBufferDepth);
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, d->width, d->height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
+      glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, d->width, d->height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
 
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -760,7 +760,7 @@ void Map::paintGLNoMakeCurrent()
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
       glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 
-      //glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, 1280, 720, 0,GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
+      //glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, 1280, 720, 0,GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, d->reflectionFrameBufferDepth, 0);
       //glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D, m_FBOdepth_textura,0);
     }

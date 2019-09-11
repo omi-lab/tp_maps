@@ -28,6 +28,8 @@
 #  define TP_GLSL_PICKING
 
 #  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
+#  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24
+#  define TP_GL_DRAW_FRAMEBUFFER GL_DRAW_FRAMEBUFFER
 
 using TPGLsize = GLuint;
 using TPGLfloat = float;
@@ -47,13 +49,30 @@ using TPGLenum = GLenum;
 #  define TP_GLSL_PICKING
 
 #  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32_OES
+#  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24
+#  define TP_GL_DRAW_FRAMEBUFFER GL_DRAW_FRAMEBUFFER
 
 using TPGLsize = GLsizei;
 using TPGLfloat = float;
 using TPGLenum = GLenum;
 
 #elif defined(TDP_EMSCRIPTEN) //--------------------------------------------------------------------
-#  define TP_GLES2_100
+#  include <GLES3/gl3.h>
+
+#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_100_ES
+
+#  define tpGenVertexArrays glGenVertexArrays
+#  define tpBindVertexArray glBindVertexArray
+#  define tpDeleteVertexArrays glDeleteVertexArrays
+#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
+
+#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT16
+#  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT16
+#  define TP_GL_DRAW_FRAMEBUFFER GL_FRAMEBUFFER
+
+using TPGLsize = GLsizei;
+using TPGLfloat = float;
+using TPGLenum = GLenum;
 
 #elif defined(TDP_ANDROID) //-----------------------------------------------------------------------
 #  define TP_GLES2_100
@@ -72,6 +91,8 @@ using TPGLenum = GLenum;
 #  define TP_GLSL_PICKING
 
 #  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
+#  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24
+#  define TP_GL_DRAW_FRAMEBUFFER GL_DRAW_FRAMEBUFFER
 
 using TPGLsize = GLuint;
 using TPGLfloat = float;
@@ -89,6 +110,8 @@ using TPGLenum = GLenum;
 #  define TP_GLSL_PICKING
 
 #  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
+#  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24
+#  define TP_GL_DRAW_FRAMEBUFFER GL_DRAW_FRAMEBUFFER
 
 using TPGLsize  = GLuint;
 using TPGLfloat = float;
@@ -108,6 +131,8 @@ using TPGLenum  = GLint;
 #  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
 
 #  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
+#  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24
+#  define TP_GL_DRAW_FRAMEBUFFER GL_DRAW_FRAMEBUFFER
 
 using TPGLsize = GLsizei;
 using TPGLfloat = float;
