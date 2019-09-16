@@ -143,15 +143,15 @@ using TPGLenum = GLenum;
 //! A simple 3D engine
 namespace tp_maps
 {
-TDP_DECLARE_ID(                      defaultSID,                          "Default")
-TDP_DECLARE_ID(                       screenSID,                           "Screen")
-TDP_DECLARE_ID(                   lineShaderSID,                      "Line shader")
-TDP_DECLARE_ID(                  imageShaderSID,                     "Image shader")
-TDP_DECLARE_ID(            pointSpriteShaderSID,              "Point sprite shader")
-TDP_DECLARE_ID(               materialShaderSID,                  "Material shader")
-TDP_DECLARE_ID(               yuvImageShaderSID,                 "YUV image shader")
-TDP_DECLARE_ID(                   fontShaderSID,                      "Font shader")
-TDP_DECLARE_ID(                  frameShaderSID,                     "Frame shader")
+TDP_DECLARE_ID(                      defaultSID,                          "Default");
+TDP_DECLARE_ID(                       screenSID,                           "Screen");
+TDP_DECLARE_ID(                   lineShaderSID,                      "Line shader");
+TDP_DECLARE_ID(                  imageShaderSID,                     "Image shader");
+TDP_DECLARE_ID(            pointSpriteShaderSID,              "Point sprite shader");
+TDP_DECLARE_ID(               materialShaderSID,                  "Material shader");
+TDP_DECLARE_ID(               yuvImageShaderSID,                 "YUV image shader");
+TDP_DECLARE_ID(                   fontShaderSID,                      "Font shader");
+TDP_DECLARE_ID(                  frameShaderSID,                     "Frame shader");
 
 //##################################################################################################
 enum class RenderPass
@@ -162,9 +162,14 @@ enum class RenderPass
   Reflection,
   Text,
   GUI,
-  Picking
+  Picking,
+  Custom1,
+  Custom2,
+  Custom3,
+  Custom4
 };
 
+//##################################################################################################
 enum class OpenGLProfile
 {
   VERSION_110,  // Not really supported by most of the shaders in tp_maps

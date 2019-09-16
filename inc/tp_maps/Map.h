@@ -82,6 +82,17 @@ public:
   const std::vector<RenderPass>& renderPasses() const;
 
   //################################################################################################
+  //! Sets the callbacks that are used to configure custom render passes.
+  /*!
+  \param renderPass The pass to set callbacks for, either: Custom1, Custom2, Custom3, Custom4
+  \param start A callback called before performing a render pass used to configure OpenGL.
+  \param end A callback called after performing a render pass.
+  */
+  void setCustomRenderPass(RenderPass renderPass,
+                           const std::function<void(RenderInfo&)>& start,
+                           const std::function<void(RenderInfo&)>& end=std::function<void(RenderInfo&)>());
+
+  //################################################################################################
   //! Add a layer to the map
   /*!
   The default implementation simply appends the layer to the vector of layers and then

@@ -41,6 +41,16 @@ struct Map::Private
     RenderPass::GUI
   };
 
+  // Callback that get called to prepare and cleanup custom render passes.
+  std::function<void(RenderInfo&)> custom1Start;
+  std::function<void(RenderInfo&)> custom1End;
+  std::function<void(RenderInfo&)> custom2Start;
+  std::function<void(RenderInfo&)> custom2End;
+  std::function<void(RenderInfo&)> custom3Start;
+  std::function<void(RenderInfo&)> custom3End;
+  std::function<void(RenderInfo&)> custom4Start;
+  std::function<void(RenderInfo&)> custom4End;
+
   // Screen space reflection and similar effects are expensive because they require that the scene
   // is rendered to a texture for the Background, Normal, and Transparency passes and then blitted
   // to the screen for the Reflection pass. So by default we don't use a Reflection pass and we turn
@@ -203,7 +213,7 @@ glm::vec3 Map::backgroundColor()const
   return d->backgroundColor;
 }
 
-//################################################################################################
+//##################################################################################################
 void Map::setRenderPasses(const std::vector<RenderPass>& renderPasses)
 {
   d->renderPasses = renderPasses;
@@ -212,10 +222,42 @@ void Map::setRenderPasses(const std::vector<RenderPass>& renderPasses)
   update();
 }
 
-//################################################################################################
+//##################################################################################################
 const std::vector<RenderPass>& Map::renderPasses() const
 {
   return d->renderPasses;
+}
+
+//##################################################################################################
+void Map::setCustomRenderPass(RenderPass renderPass,
+                              const std::function<void(RenderInfo&)>& start,
+                              const std::function<void(RenderInfo&)>& end)
+{
+  switch(renderPass)
+  {
+  case RenderPass::Custom1:
+    d->custom1Start = start;
+    d->custom1End   = end;
+    break;
+
+  case RenderPass::Custom2:
+    d->custom2Start = start;
+    d->custom2End   = end;
+    break;
+
+  case RenderPass::Custom3:
+    d->custom3Start = start;
+    d->custom3End   = end;
+    break;
+
+  case RenderPass::Custom4:
+    d->custom4Start = start;
+    d->custom4End   = end;
+    break;
+
+  default:
+    break;
+  }
 }
 
 //##################################################################################################
@@ -865,6 +907,58 @@ void Map::paintGLNoMakeCurrent()
     case RenderPass::Picking:
     {
       tpWarning() << "Error: Performing a picking render pass in paintGL does not make sense.";
+      break;
+    }
+
+    case RenderPass::Custom1:
+    {
+      if(d->custom1Start)
+        d->custom1Start(d->renderInfo);
+
+      d->render();
+
+      if(d->custom1End)
+        d->custom1End(d->renderInfo);
+
+      break;
+    }
+
+    case RenderPass::Custom2:
+    {
+      if(d->custom2Start)
+        d->custom2Start(d->renderInfo);
+
+      d->render();
+
+      if(d->custom2End)
+        d->custom2End(d->renderInfo);
+
+      break;
+    }
+
+    case RenderPass::Custom3:
+    {
+      if(d->custom3Start)
+        d->custom3Start(d->renderInfo);
+
+      d->render();
+
+      if(d->custom3End)
+        d->custom3End(d->renderInfo);
+
+      break;
+    }
+
+    case RenderPass::Custom4:
+    {
+      if(d->custom4Start)
+        d->custom4Start(d->renderInfo);
+
+      d->render();
+
+      if(d->custom4End)
+        d->custom4End(d->renderInfo);
+
       break;
     }
     }
