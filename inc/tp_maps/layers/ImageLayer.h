@@ -12,7 +12,7 @@ class Texture;
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT ImageLayer: public Layer
 {
-  TDP_REF_COUNT_OBJECTS("ImageLayer");
+  tp_qt_REF_COUNT_OBJECTS("ImageLayer");
 public:
   //################################################################################################
   /*!

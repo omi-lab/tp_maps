@@ -34,7 +34,7 @@ struct TP_MAPS_SHARED_EXPORT SpriteCoords
 //##################################################################################################
 class SpriteTexture
 {
-  TDP_REF_COUNT_OBJECTS("SpriteTexture");
+  tp_qt_REF_COUNT_OBJECTS("SpriteTexture");
 public:
   //################################################################################################
   ~SpriteTexture();

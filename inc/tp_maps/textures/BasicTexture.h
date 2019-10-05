@@ -34,7 +34,7 @@ struct TP_MAPS_SHARED_EXPORT TextureData
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT BasicTexture : public Texture
 {
-  TDP_REF_COUNT_OBJECTS("BasicTexture");
+  tp_qt_REF_COUNT_OBJECTS("BasicTexture");
 public:
   //################################################################################################
   BasicTexture(Map* map, const TextureData& image=TextureData());
