@@ -348,10 +348,10 @@ void PointSpriteShader::drawPointSprites(VertexBuffer* vertexBuffer)
 //##################################################################################################
 void PointSpriteShader::drawPointSpritesPicking(VertexBuffer* vertexBuffer, uint32_t pickingID)
 {
-#ifdef tp_qt_IOS
+#ifdef TP_IOS
   glUniform1i(d->pickingIDLoc, GLint(pickingID));
   d->draw(vertexBuffer);
-#elif defined(tp_qt_EMSCRIPTEN)
+#elif defined(TP_EMSCRIPTEN)
 
 #else
   glUniform1ui(d->pickingIDLoc, pickingID);

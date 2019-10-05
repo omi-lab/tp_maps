@@ -22,7 +22,7 @@ struct TP_MAPS_SHARED_EXPORT Geometry3D
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT Geometry3DLayer: public Layer
 {
-  tp_qt_REF_COUNT_OBJECTS("Geometry3DLayer");
+  TP_REF_COUNT_OBJECTS("Geometry3DLayer");
 public:
   //################################################################################################
   Geometry3DLayer(Texture* texture=nullptr);

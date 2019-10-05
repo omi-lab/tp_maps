@@ -4,15 +4,15 @@
 //##################################################################################################
 namespace tp_maps
 {
-tp_qt_DEFINE_ID(                      defaultSID,                          "Default");
-tp_qt_DEFINE_ID(                       screenSID,                           "Screen");
-tp_qt_DEFINE_ID(                   lineShaderSID,                      "Line shader");
-tp_qt_DEFINE_ID(                  imageShaderSID,                     "Image shader");
-tp_qt_DEFINE_ID(            pointSpriteShaderSID,              "Point sprite shader");
-tp_qt_DEFINE_ID(               materialShaderSID,                  "Material shader");
-tp_qt_DEFINE_ID(               yuvImageShaderSID,                 "YUV image shader");
-tp_qt_DEFINE_ID(                   fontShaderSID,                      "Font shader");
-tp_qt_DEFINE_ID(                  frameShaderSID,                     "Frame shader");
+TP_DEFINE_ID(                      defaultSID,                          "Default");
+TP_DEFINE_ID(                       screenSID,                           "Screen");
+TP_DEFINE_ID(                   lineShaderSID,                      "Line shader");
+TP_DEFINE_ID(                  imageShaderSID,                     "Image shader");
+TP_DEFINE_ID(            pointSpriteShaderSID,              "Point sprite shader");
+TP_DEFINE_ID(               materialShaderSID,                  "Material shader");
+TP_DEFINE_ID(               yuvImageShaderSID,                 "YUV image shader");
+TP_DEFINE_ID(                   fontShaderSID,                      "Font shader");
+TP_DEFINE_ID(                  frameShaderSID,                     "Frame shader");
 
 namespace
 {

@@ -11,7 +11,7 @@ namespace tp_maps
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT DefaultSpritesTexture : public BasicTexture
 {
-  tp_qt_REF_COUNT_OBJECTS("DefaultSpritesTexture");
+  TP_REF_COUNT_OBJECTS("DefaultSpritesTexture");
 public:
   //################################################################################################
   DefaultSpritesTexture(Map* map);

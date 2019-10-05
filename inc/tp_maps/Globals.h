@@ -13,7 +13,7 @@
 
 #ifdef TP_GLES2_100 //------------------------------------------------------------------------------
 
-#elif defined(tp_qt_OSX) //---------------------------------------------------------------------------
+#elif defined(TP_OSX) //---------------------------------------------------------------------------
 #  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
 #  include <gl3.h>
 #  include <OpenGL/glext.h>
@@ -35,7 +35,7 @@ using TPGLsize = GLuint;
 using TPGLfloat = float;
 using TPGLenum = GLenum;
 
-#elif defined(tp_qt_IOS) //---------------------------------------------------------------------------
+#elif defined(TP_IOS) //---------------------------------------------------------------------------
 #  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
 #  include <GLES2/gl2.h>
 
@@ -56,7 +56,7 @@ using TPGLsize = GLsizei;
 using TPGLfloat = float;
 using TPGLenum = GLenum;
 
-#elif defined(tp_qt_EMSCRIPTEN) //--------------------------------------------------------------------
+#elif defined(TP_EMSCRIPTEN) //--------------------------------------------------------------------
 #  include <GLES3/gl3.h>
 
 #  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_100_ES
@@ -74,10 +74,10 @@ using TPGLsize = GLsizei;
 using TPGLfloat = float;
 using TPGLenum = GLenum;
 
-#elif defined(tp_qt_ANDROID) //-----------------------------------------------------------------------
+#elif defined(TP_ANDROID) //-----------------------------------------------------------------------
 #  define TP_GLES2_100
 
-#elif defined(tp_qt_WIN32)
+#elif defined(TP_WIN32)
 
 #include <GL/glew.h>
 
@@ -143,15 +143,15 @@ using TPGLenum = GLenum;
 //! A simple 3D engine
 namespace tp_maps
 {
-tp_qt_DECLARE_ID(                      defaultSID,                          "Default");
-tp_qt_DECLARE_ID(                       screenSID,                           "Screen");
-tp_qt_DECLARE_ID(                   lineShaderSID,                      "Line shader");
-tp_qt_DECLARE_ID(                  imageShaderSID,                     "Image shader");
-tp_qt_DECLARE_ID(            pointSpriteShaderSID,              "Point sprite shader");
-tp_qt_DECLARE_ID(               materialShaderSID,                  "Material shader");
-tp_qt_DECLARE_ID(               yuvImageShaderSID,                 "YUV image shader");
-tp_qt_DECLARE_ID(                   fontShaderSID,                      "Font shader");
-tp_qt_DECLARE_ID(                  frameShaderSID,                     "Frame shader");
+TP_DECLARE_ID(                      defaultSID,                          "Default");
+TP_DECLARE_ID(                       screenSID,                           "Screen");
+TP_DECLARE_ID(                   lineShaderSID,                      "Line shader");
+TP_DECLARE_ID(                  imageShaderSID,                     "Image shader");
+TP_DECLARE_ID(            pointSpriteShaderSID,              "Point sprite shader");
+TP_DECLARE_ID(               materialShaderSID,                  "Material shader");
+TP_DECLARE_ID(               yuvImageShaderSID,                 "YUV image shader");
+TP_DECLARE_ID(                   fontShaderSID,                      "Font shader");
+TP_DECLARE_ID(                  frameShaderSID,                     "Frame shader");
 
 //##################################################################################################
 enum class RenderPass

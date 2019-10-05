@@ -683,7 +683,7 @@ float Map::pixelScale()
 //##################################################################################################
 void Map::initializeGL()
 {
-#ifdef tp_qt_WIN32
+#ifdef TP_WIN32
   static bool initGlew=[]
   {
     if(GLenum err = glewInit(); err!=GLEW_OK)

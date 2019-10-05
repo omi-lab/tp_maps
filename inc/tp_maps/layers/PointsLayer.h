@@ -19,7 +19,7 @@ class Texture;
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT PointsLayer: public Layer
 {
-  tp_qt_REF_COUNT_OBJECTS("PointsLayer");
+  TP_REF_COUNT_OBJECTS("PointsLayer");
 public:
   //################################################################################################
   /*!
