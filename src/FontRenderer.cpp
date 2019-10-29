@@ -143,6 +143,11 @@ void FontRenderer::prepareFontGeometry(const PreparedString& preparedString, Fon
   fontGeometry.totalWidth   = 0.0f;
   fontGeometry.totalHeight  = lineSpacing;
 
+  fontGeometry.top    = 0.0f;
+  fontGeometry.bottom = 0.0f;
+  fontGeometry.left   = 0.0f;
+  fontGeometry.right  = 0.0f;
+
   const auto& text = preparedString.text();
 
   fontGeometry.glyphs.resize(text.size());
@@ -196,13 +201,28 @@ void FontRenderer::prepareFontGeometry(const PreparedString& preparedString, Fon
   glm::vec2 calculatedOffset{fontGeometry.totalWidth/2.0f, fontGeometry.totalHeight/2.0f};
   calculatedOffset *= glm::vec2(-1.0f, -1.0f) + preparedString.config().relativeOffset;
   calculatedOffset += preparedString.config().pixelOffset;
-  calculatedOffset.y += (fontGeometry.topBearing/2.0f);
 
   for(auto& glyph : fontGeometry.glyphs)
   {
     for(auto& vert : glyph.vertices)
+    {
       vert += calculatedOffset;
+
+      if(vert.y>fontGeometry.top)
+        fontGeometry.top = vert.y;
+
+      if(vert.y<fontGeometry.bottom)
+        fontGeometry.bottom = vert.y;
+
+      if(vert.x<fontGeometry.left)
+        fontGeometry.left = vert.x;
+
+      if(vert.x>fontGeometry.right)
+        fontGeometry.right = vert.x;
+    }
   }
+
+  fontGeometry.totalHeight = tpMax(fontGeometry.totalHeight, fontGeometry.top - fontGeometry.bottom);
 }
 
 //##################################################################################################
@@ -375,10 +395,10 @@ void FontRenderer::generate()
         glyphGeometry.textureCoords[2] = {fr, fb};
         glyphGeometry.textureCoords[3] = {fx, fb};
 
-        glyphGeometry.vertices[0] = {               0.0f+glyph->leftBearing,                 0.0f+glyph->bottomBearing};
-        glyphGeometry.vertices[1] = {float(glyph->width)+glyph->leftBearing,                 0.0f+glyph->bottomBearing};
-        glyphGeometry.vertices[2] = {float(glyph->width)+glyph->leftBearing, float(glyph->height)+glyph->bottomBearing};
-        glyphGeometry.vertices[3] = {               0.0f+glyph->leftBearing, float(glyph->height)+glyph->bottomBearing};
+        glyphGeometry.vertices[0] = {               0.0f+glyph->leftBearing,                 0.0f+glyph->bottomBearing}; // Bottom left
+        glyphGeometry.vertices[1] = {float(glyph->width)+glyph->leftBearing,                 0.0f+glyph->bottomBearing}; // Bottom right
+        glyphGeometry.vertices[2] = {float(glyph->width)+glyph->leftBearing, float(glyph->height)+glyph->bottomBearing}; // Top right
+        glyphGeometry.vertices[3] = {               0.0f+glyph->leftBearing, float(glyph->height)+glyph->bottomBearing}; // Top left
 
         glyphGeometry.leftBearing   = glyph->leftBearing  ;
         glyphGeometry.rightBearing  = glyph->rightBearing ;
@@ -407,6 +427,10 @@ void FontRenderer::setTexture(const TextureData& texture)
 {
   d->texture.setImage(texture);
   d->freeTexture();
+
+  for(auto preparedString : preparedStrings())
+    preparedString->regenerateBuffers();
+
   d->bindTexture = true;
 }
 

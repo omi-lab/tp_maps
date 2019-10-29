@@ -22,6 +22,13 @@ struct TP_MAPS_SHARED_EXPORT Glyph
   int h{0};
   TPPixel* data{nullptr};
 
+  // Coordinate sysatem
+  // 1
+  // ^
+  // |
+  // |
+  // 0----> 1
+
   float leftBearing  {0.0f}; //Negative for values to the left of 0
   float rightBearing {0.0f}; //Positive to the right of kerningWidth
   float topBearing   {0.0f}; //Positive above 0
@@ -34,8 +41,15 @@ struct TP_MAPS_SHARED_EXPORT Glyph
 //! Details of a character in a string.
 struct TP_MAPS_SHARED_EXPORT GlyphGeometry
 {
-  std::array<glm::vec2, 4> textureCoords;
-  std::array<glm::vec2, 4> vertices;
+  // Coordinate sysatem
+  // 1
+  // ^
+  // |
+  // |
+  // 0----> 1
+
+  std::array<glm::vec2, 4> textureCoords; // (Bottom left, Bottom right, Top right, Top left)
+  std::array<glm::vec2, 4> vertices;      // (Bottom left, Bottom right, Top right, Top left)
 
   float leftBearing{0.0f}; //Negative for values to the left of 0
   float rightBearing{0.0f};
@@ -49,12 +63,24 @@ struct TP_MAPS_SHARED_EXPORT GlyphGeometry
 //! Geometry details of a string of characters.
 struct TP_MAPS_SHARED_EXPORT FontGeometry
 {
-  float leftBearing{0.0f}; //Negative for values to the left of 0
-  float rightBearing{0.0f};
-  float topBearing{0.0f};
+  // Coordinate sysatem
+  // 1
+  // ^
+  // |
+  // |
+  // 0----> 1
 
-  float totalWidth{0.0f};
-  float totalHeight{0.0f};
+  float leftBearing  {0.0f}; //Negative for values to the left of 0
+  float rightBearing {0.0f}; //Negative for values to the left of 0
+  float topBearing   {0.0f}; //Positive above 0
+
+  float totalWidth  {0.0f};
+  float totalHeight {0.0f};
+
+  float top    {0.0f};
+  float bottom {0.0f};
+  float left   {0.0f};
+  float right  {0.0f};
 
   std::vector<GlyphGeometry> glyphs;
 };
