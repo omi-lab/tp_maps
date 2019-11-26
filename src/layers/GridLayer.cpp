@@ -27,7 +27,9 @@ struct LinesDetails_lt
 //##################################################################################################
 struct GridLayer::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::GridLayer::Private");
   TP_NONCOPYABLE(Private);
+
   GridLayer* q;
 
   FontRenderer* font{nullptr};

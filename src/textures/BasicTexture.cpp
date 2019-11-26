@@ -102,6 +102,10 @@ void TextureData::destroy()
 //##################################################################################################
 struct BasicTexture::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::BasicTexture::Private");
+  TP_NONCOPYABLE(Private);
+  Private() = default;
+
   TextureData image;
   bool imageReady{false};
 };

@@ -15,6 +15,9 @@ namespace tp_maps
 //##################################################################################################
 struct AnimatedFlatController::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::AnimatedFlatController::Private");
+  TP_NONCOPYABLE(Private);
+
   AnimatedFlatController* q;
 
   float distance{10.0f};

@@ -9,6 +9,9 @@ namespace tp_maps
 {
 struct Layer::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::Layer::Private");
+  TP_NONCOPYABLE(Private);
+
   Layer* q;
 
   Map* map{nullptr};

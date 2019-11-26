@@ -25,6 +25,9 @@ namespace tp_maps
 //##################################################################################################
 struct Map::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::Map::Private");
+  TP_NONCOPYABLE(Private);
+
   Map* q;
 
   Controller* controller{nullptr};

@@ -9,6 +9,9 @@ namespace tp_maps
 //##################################################################################################
 struct Controller::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::Controller::Private");
+  TP_NONCOPYABLE(Private);
+
   Map* map;
   std::unordered_map<tp_utils::StringID, Matrices> matrices;
   std::unordered_map<tp_utils::StringID, Scissor> scissor;

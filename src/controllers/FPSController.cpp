@@ -39,6 +39,9 @@ const int32_t      PAGE_DOWN_KEY = 78;
 //##################################################################################################
 struct FPSController::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::FPSController::Private");
+  TP_NONCOPYABLE(Private);
+
   FPSController* q;
 
   glm::ivec2 previousPos{0,0};

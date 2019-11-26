@@ -55,6 +55,10 @@ ShaderString fragmentShaderStr =
 //##################################################################################################
 struct FrameShader::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::FrameShader::Private");
+  TP_NONCOPYABLE(Private);
+  Private() = default;
+
   GLint matrixLocation{0};
   GLint scaleLocation{0};
   GLint colorLocation{0};

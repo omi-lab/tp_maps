@@ -19,6 +19,9 @@ struct ShaderDetails_lt
 //##################################################################################################
 struct Shader::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::Shader::Private");
+  TP_NONCOPYABLE(Private);
+
   tp_maps::OpenGLProfile openGLProfile;
   std::unordered_map<ShaderType, ShaderDetails_lt> shaders;
   bool error{false};

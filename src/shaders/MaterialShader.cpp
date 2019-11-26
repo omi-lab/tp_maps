@@ -105,6 +105,10 @@ ShaderString fragmentShaderStr =
 //##################################################################################################
 struct MaterialShader::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::MaterialShader::Private");
+  TP_NONCOPYABLE(Private);
+  Private() = default;
+
   GLint mMatrixLocation          {0};
   // GLint vMatrixLocation          {0};
   // GLint pMatrixLocation          {0};

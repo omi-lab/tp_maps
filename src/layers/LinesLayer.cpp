@@ -22,7 +22,9 @@ struct LinesDetails_lt
 //##################################################################################################
 struct LinesLayer::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::LinesLayer::Private");
   TP_NONCOPYABLE(Private);
+
   LinesLayer* q;
   std::vector<Lines> lines;
 

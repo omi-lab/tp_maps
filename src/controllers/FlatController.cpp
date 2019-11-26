@@ -14,6 +14,9 @@ namespace tp_maps
 //##################################################################################################
 struct FlatController::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::FlatController::Private");
+  TP_NONCOPYABLE(Private);
+
   FlatController* q;
 
   float distance{10.0f};

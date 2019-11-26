@@ -15,6 +15,9 @@ namespace tp_maps
 //##################################################################################################
 struct FontRenderer::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::FontRenderer::Private");
+  TP_NONCOPYABLE(Private);
+
   FontRenderer* q;
   Map* map;
   std::shared_ptr<Font> font;

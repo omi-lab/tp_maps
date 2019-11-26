@@ -4,6 +4,8 @@
 #include "tp_maps/Shader.h"
 #include "tp_maps/SpriteTexture.h"
 
+#include "tp_utils/RefCount.h"
+
 #include "glm/glm.hpp"
 
 namespace tp_maps
@@ -61,6 +63,8 @@ public:
   //################################################################################################
   struct VertexBuffer
   {
+    TP_REF_COUNT_OBJECTS("PointSpriteShader::VertexBuffer");
+
     //##############################################################################################
     VertexBuffer(Map* map_, const Shader* shader_);
 

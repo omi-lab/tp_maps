@@ -20,7 +20,9 @@ struct LinesDetails_lt
 //##################################################################################################
 struct FrustumLayer::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::FrustumLayer::Private");
   TP_NONCOPYABLE(Private);
+
   FrustumLayer* q;
 
   //Processed geometry ready for rendering

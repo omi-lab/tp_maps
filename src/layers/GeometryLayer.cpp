@@ -25,7 +25,9 @@ struct GeometryDetails_lt
 //##################################################################################################
 struct GeometryLayer::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::Geometry3DLayer::Private");
   TP_NONCOPYABLE(Private);
+
   GeometryLayer* q;
 
   std::vector<Geometry> geometry;

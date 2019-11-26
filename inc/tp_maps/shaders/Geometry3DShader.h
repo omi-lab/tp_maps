@@ -38,6 +38,8 @@ public:
   //################################################################################################
   struct VertexBuffer
   {
+    TP_REF_COUNT_OBJECTS("Geometry3DShader::VertexBuffer");
+
     //##############################################################################################
     VertexBuffer(Map* map_, const Shader* shader_);
 

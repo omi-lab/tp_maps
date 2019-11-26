@@ -90,6 +90,10 @@ ShaderString pickingFragmentShaderStr =
 //##################################################################################################
 struct PointSpriteShader::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::PointSpriteShader::Private");
+  TP_NONCOPYABLE(Private);
+  Private() = default;
+
   GLint renderMatrixLoc{0};
   GLint renderScaleFactorLoc{0};
 

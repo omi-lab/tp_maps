@@ -15,7 +15,9 @@ namespace tp_maps
 //##################################################################################################
 struct PointsLayer::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::PointsLayer::Private");
   TP_NONCOPYABLE(Private);
+
   PointsLayer* q;
 
   SpriteTexture* spriteTexture;

@@ -8,6 +8,9 @@ namespace tp_maps
 //##################################################################################################
 struct PreparedString::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::PreparedString::Private");
+  TP_NONCOPYABLE(Private);
+
   FontRenderer* fontRenderer;
   std::u16string text;
   FontGeometry fontGeometry;

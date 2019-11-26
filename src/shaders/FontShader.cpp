@@ -56,6 +56,10 @@ struct Vertex_lt
 //##################################################################################################
 struct FontShader::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::FontShader::Private");
+  TP_NONCOPYABLE(Private);
+  Private() = default;
+
   GLint matrixLocation{0};
   GLint colorLocation{0};
 };
@@ -63,6 +67,7 @@ struct FontShader::Private
 //##################################################################################################
 struct FontShader::PreparedString::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::FontShader::PreparedString::Private");
   TP_NONCOPYABLE(Private);
 
   Map* map;

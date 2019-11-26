@@ -20,6 +20,7 @@ namespace tp_maps
 //##################################################################################################
 struct ImageLayer::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::ImageLayer::Private");
   TP_NONCOPYABLE(Private);
 
   ImageLayer* q;

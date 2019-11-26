@@ -37,7 +37,9 @@ glm::vec2 closestPointOnLine(const glm::vec2& a, const glm::vec2& b, const glm::
 //##################################################################################################
 struct HandleLayer::Private
 {
+  TP_REF_COUNT_OBJECTS("tp_maps::HandleLayer::Private");
   TP_NONCOPYABLE(Private);
+
   HandleLayer* q;
 
   SpriteTexture* spriteTexture;
