@@ -2,6 +2,7 @@
 #include "tp_maps/Map.h"
 #include "tp_maps/Controller.h"
 #include "tp_maps/shaders/LineShader.h"
+#include "tp_maps/picking_results/LinesPickingResult.h"
 
 #include "tp_utils/DebugUtils.h"
 
@@ -120,12 +121,24 @@ void LinesLayer::render(RenderInfo& renderInfo)
     }
   }
 
-  shader->use();
+  shader->use(renderInfo.pass==RenderPass::Picking?ShaderType::Picking:ShaderType::Render);
   shader->setMatrix(map()->controller()->matrix(coordinateSystem()));
   shader->setLineWidth(d->lineWidth);
 
   if(renderInfo.pass==RenderPass::Picking)
   {
+    size_t i=0;
+    for(const LinesDetails_lt& line : d->processedGeometry)
+    {
+      auto pickingID = renderInfo.pickingIDMat(PickingDetails(0, [&, i](const PickingResult& r) -> PickingResult*
+      {
+        return new LinesPickingResult(r.pickingType, r.details, r.renderInfo, this, i);
+      }));
+
+      shader->setColor(pickingID);
+      shader->drawLines(line.mode, line.vertexBuffer);
+      i++;
+    }
   }
   else
   {
