@@ -28,6 +28,14 @@ TextureData TextureData::clone()const
 //##################################################################################################
 TextureData TextureData::clone2()const
 {
+  TextureData clone;
+  clone2IntoOther(clone);
+  return clone;
+}
+
+//##################################################################################################
+void TextureData::clone2IntoOther(TextureData& clone)const
+{
   auto po2 = [](size_t v)
   {
     v--;
@@ -40,16 +48,17 @@ TextureData TextureData::clone2()const
     return v;
   };
 
-  TextureData clone;
-
   if(w<1||h<1)
   {
     clone.w = w;
     clone.h = h;
-    return clone;
+    clone.destroy();
+    return;
   }
 
-  clone.w = tpMax(po2(w), po2(h));
+  size_t existingSize=clone.w*clone.h;
+
+  clone.w = po2(tpMax(w, h));
   clone.h = clone.w;
 
   clone.fw = float(w) / float(clone.w);
@@ -57,19 +66,22 @@ TextureData TextureData::clone2()const
 
   size_t size = clone.w*clone.h;
 
-  auto newData = new TPPixel[size];
-  clone.data = newData;
+  if(!clone.data || existingSize!=size)
+  {
+    clone.destroy();
+    clone.data = new TPPixel[size];
+  }
+
   if(clone.w==w && clone.h==h)
   {
-    memcpy(newData, data, size*sizeof(TPPixel));
+    memcpy(const_cast<TPPixel*>(clone.data), data, size*sizeof(TPPixel));
   }
   else
   {
-    //size_t padX = (clone.w - w);//*sizeof(TPPixel);
     size_t srcW = w*sizeof(TPPixel);
     for(size_t y=0; y<h; y++)
     {
-      TPPixel* dst = newData+(y*clone.w);
+      TPPixel* dst = const_cast<TPPixel*>(clone.data)+(y*clone.w);
       memcpy(dst, data+(y*w), srcW);
 
       {
@@ -85,11 +97,9 @@ TextureData TextureData::clone2()const
       size_t dstW = clone.w*sizeof(TPPixel);
       const void* src = clone.data+(clone.w*(h-1));
       for(size_t y=h; y<clone.h; y++)
-        memcpy(newData+(clone.w*y), src, dstW);
+        memcpy(const_cast<TPPixel*>(clone.data)+(clone.w*y), src, dstW);
     }
   }
-
-  return clone;
 }
 
 //##################################################################################################
@@ -128,8 +138,7 @@ BasicTexture::~BasicTexture()
 //##################################################################################################
 void BasicTexture::setImage(const TextureData& image, bool quiet)
 {
-  d->image.destroy();
-  d->image = image.clone2();
+  image.clone2IntoOther(d->image);
   d->imageReady = (d->image.data && d->image.w>0 && d->image.h>0);
 
   if(!quiet)

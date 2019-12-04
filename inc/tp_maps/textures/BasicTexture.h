@@ -28,6 +28,10 @@ struct TP_MAPS_SHARED_EXPORT TextureData
   TextureData clone2()const;
 
   //################################################################################################
+  //! Clone the texture and pad to a power of 2 into an existing texture
+  void clone2IntoOther(TextureData& clone)const;
+
+  //################################################################################################
   void destroy();
 };
 
