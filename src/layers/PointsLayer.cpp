@@ -112,7 +112,7 @@ void PointsLayer::render(RenderInfo& renderInfo)
   if(!d->spriteTexture->texture()->imageReady())
     return;
 
-  if(renderInfo.pass != RenderPass::Normal && renderInfo.pass != RenderPass::Picking)
+  if(renderInfo.pass != defaultRenderPass() && renderInfo.pass != RenderPass::Picking)
     return;
 
   auto shader = map()->getShader<PointSpriteShader>();

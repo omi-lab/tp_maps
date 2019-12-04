@@ -59,6 +59,9 @@ HEADERS += inc/tp_maps/picking_results/GeometryPickingResult.h
 SOURCES += src/picking_results/PointsPickingResult.cpp
 HEADERS += inc/tp_maps/picking_results/PointsPickingResult.h
 
+SOURCES += src/picking_results/LinesPickingResult.cpp
+HEADERS += inc/tp_maps/picking_results/LinesPickingResult.h
+
 
 #-- Controllers ------------------------------------------------------------------------------------
 SOURCES += src/controllers/FlatController.cpp
