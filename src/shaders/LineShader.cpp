@@ -82,11 +82,21 @@ LineShader::~LineShader()
 void LineShader::use(ShaderType shaderType)
 {
   //https://webglfundamentals.org/webgl/lessons/webgl-and-alpha.html
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
 
-  Shader::use(shaderType);
+  switch(shaderType)
+  {
+  case ShaderType::Render:
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
+    break;
+
+  case ShaderType::Picking:
+    glDisable(GL_BLEND);
+    break;
+  }
+
+  Shader::use(ShaderType::Render);
 }
 
 //##################################################################################################
@@ -104,7 +114,7 @@ void LineShader::setLineWidth(float lineWidth)
 //##################################################################################################
 void LineShader::setColor(const glm::vec4& color)
 {
-  glUniform4fv(d->colorLocation , 1, &color.x);
+  glUniform4fv(d->colorLocation, 1, &color.x);
 }
 
 //##################################################################################################
