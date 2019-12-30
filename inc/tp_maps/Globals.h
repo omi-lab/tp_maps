@@ -170,21 +170,37 @@ enum class RenderPass
 };
 
 //##################################################################################################
+/*
+GLSL Version 	OpenGL Version 	Date               Shader Preprocessor
+1.10.59[1]    2.0             30 April 2004      #version 110
+1.20.8[2]     2.1             07 September 2006  #version 120
+1.30.10[3]    3.0             22 November 2009   #version 130
+1.40.08[4]    3.1             22 November 2009   #version 140
+1.50.11[5]    3.2             04 December 2009   #version 150
+3.30.6[6]     3.3             11 March 2010      #version 330
+4.00.9[7]     4.0             24 July 2010       #version 400
+4.10.6[8]     4.1             24 July 2010       #version 410
+4.20.11[9]    4.2             12 December 2011   #version 420
+4.30.8[10]    4.3             7 February 2013    #version 430
+4.40.9[11]    4.4             16 June 2014       #version 440
+4.50.7[12]    4.5             09 May 2017        #version 450
+4.60.5[13]    4.6             14 June 2018       #version 460
+*/
 enum class OpenGLProfile
 {
-  VERSION_110,  // Not really supported by most of the shaders in tp_maps
-  VERSION_120,
-  VERSION_130,
-  VERSION_140,
-  VERSION_150,
-  VERSION_330,
-  VERSION_400,
-  VERSION_410,
-  VERSION_420,
-  VERSION_430,
-  VERSION_440,
-  VERSION_450,
-  VERSION_460,
+  VERSION_110 = 20,  // Not really supported by most of the shaders in tp_maps
+  VERSION_120 = 21,
+  VERSION_130 = 30,
+  VERSION_140 = 31,
+  VERSION_150 = 32,
+  VERSION_330 = 33,
+  VERSION_400 = 40,
+  VERSION_410 = 41,
+  VERSION_420 = 42,
+  VERSION_430 = 43,
+  VERSION_440 = 44,
+  VERSION_450 = 45,
+  VERSION_460 = 46,
   VERSION_100_ES,
   VERSION_300_ES,
   VERSION_310_ES,
