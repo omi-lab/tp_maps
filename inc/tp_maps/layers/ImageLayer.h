@@ -8,6 +8,7 @@
 namespace tp_maps
 {
 class Texture;
+class ImageShader;
 
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT ImageLayer: public Layer
@@ -35,6 +36,9 @@ public:
                       const glm::vec3& bottomRight,
                       const glm::vec3& bottomLeft,
                       const glm::vec3& topLeft);
+
+  //################################################################################################
+  void setShader(const std::function<ImageShader*(Map*)>& getShader);
 
 protected:
   //################################################################################################

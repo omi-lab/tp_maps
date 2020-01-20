@@ -45,10 +45,13 @@ struct ImageLayer::Private
   bool externalCoords{false};
   bool updateVertexBuffer{true};
 
+  std::function<ImageShader*(Map*)> getShader;
+
   //################################################################################################
   Private(ImageLayer* q_, Texture* texture_):
     q(q_),
-    texture(texture_)
+    texture(texture_),
+    getShader([](Map* map){return static_cast<ImageShader*>(map->getShader<ImageShader>());})
   {
 
   }
@@ -119,6 +122,12 @@ void ImageLayer::setImageCoords(const glm::vec3& topRight,
 }
 
 //##################################################################################################
+void ImageLayer::setShader(const std::function<ImageShader*(Map*)>& getShader)
+{
+  d->getShader = getShader;
+}
+
+//##################################################################################################
 void ImageLayer::render(RenderInfo& renderInfo)
 {
   if(!d->texture->imageReady())
@@ -127,7 +136,7 @@ void ImageLayer::render(RenderInfo& renderInfo)
   if(renderInfo.pass != defaultRenderPass() && renderInfo.pass != RenderPass::Picking)
     return;
 
-  auto shader = map()->getShader<ImageShader>();
+  auto shader = d->getShader(map());
   if(shader->error())
     return;
 
