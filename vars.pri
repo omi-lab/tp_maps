@@ -76,6 +76,9 @@ HEADERS += inc/tp_maps/controllers/FPSController.h
 SOURCES += src/controllers/FixedController.cpp
 HEADERS += inc/tp_maps/controllers/FixedController.h
 
+SOURCES += src/controllers/GraphController.cpp
+HEADERS += inc/tp_maps/controllers/GraphController.h
+
 
 #-- Shaders ----------------------------------------------------------------------------------------
 SOURCES += src/shaders/LineShader.cpp
