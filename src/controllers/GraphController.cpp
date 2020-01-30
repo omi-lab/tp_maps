@@ -20,16 +20,16 @@ struct GraphController::Private
 
   GraphController* q;
 
-  float distanceX{10.0f};
-  float distanceY{1.0f};
+  double distanceX{10.0};
+  double distanceY{1.0};
 
-  glm::vec3 focalPoint{0, 0.5f, 0};
+  glm::dvec3 focalPoint{0, 0.5f, 0};
 
   //Behaviour
   bool allowTranslation{true};
   bool allowZoom{true};
 
-  float rotationFactor{0.2f};
+  double rotationFactor{0.2};
 
   glm::ivec2 previousPos{0,0};
   glm::ivec2 previousPos2{0,0};
@@ -44,21 +44,21 @@ struct GraphController::Private
   }
 
   //################################################################################################
-  void translate(float dx, float dy)
+  void translate(double dx, double dy)
   {
-    float radians = glm::radians(0.0f);
-    float ca = std::cos(radians);
-    float sa = std::sin(radians);
+    double radians = glm::radians(0.0);
+    double ca = std::cos(radians);
+    double sa = std::sin(radians);
 
     //The width and height of the map widget
-    float width  = float(q->map()->width());
-    float height = float(q->map()->height());
+    double width  = double(q->map()->width());
+    double height = double(q->map()->height());
 
     dx = dx / width;
     dy = dy / height;
 
-    float fh = 1.0f;
-    float fw = 1.0f;
+    double fh = 1.0;
+    double fw = 1.0;
     if(width>height)
     {
       fw = width/height;
@@ -68,8 +68,8 @@ struct GraphController::Private
       fh = height/width;
     }
 
-    dx *= (fw*distanceX)*2.0f;
-    dy *= fh*distanceY*2.0f;
+    dx *= (fw*distanceX)*2.0;
+    dy *= fh*distanceY*2.0;
 
     focalPoint.x -= dx*ca - dy*sa;
     focalPoint.y += dx*sa + dy*ca;
@@ -85,13 +85,13 @@ GraphController::GraphController(Map* map):
 }
 
 //##################################################################################################
-glm::vec3 GraphController::focalPoint()const
+glm::dvec3 GraphController::focalPoint()const
 {
   return d->focalPoint;
 }
 
 //##################################################################################################
-void GraphController::setFocalPoint(const glm::vec3& focalPoint)
+void GraphController::setFocalPoint(const glm::dvec3& focalPoint)
 {
   d->focalPoint = focalPoint;
   map()->update();
@@ -122,13 +122,13 @@ void GraphController::setAllowZoom(bool allowZoom)
 }
 
 //##################################################################################################
-float GraphController::rotationFactor()const
+double GraphController::rotationFactor()const
 {
   return d->rotationFactor;
 }
 
 //##################################################################################################
-void GraphController::setRotationFactor(float rotationFactor)
+void GraphController::setRotationFactor(double rotationFactor)
 {
   d->rotationFactor = rotationFactor;
 }
@@ -149,8 +149,8 @@ nlohmann::json GraphController::saveState()const
 void GraphController::loadState(const nlohmann::json& j)
 {
   d->focalPoint    = tp_math_utils::getJSONVec3   (j, "Focal point"   , d->focalPoint   );
-  d->distanceX     = tp_utils::getJSONValue<float>(j, "DistanceX"     , d->distanceX    );
-  d->distanceY     = tp_utils::getJSONValue<float>(j, "DistanceY"     , d->distanceY    );
+  d->distanceX     = tp_utils::getJSONValue<double>(j, "DistanceX"     , d->distanceX    );
+  d->distanceY     = tp_utils::getJSONValue<double>(j, "DistanceY"     , d->distanceY    );
 
   map()->update();
 }
@@ -171,33 +171,36 @@ void GraphController::mapResized(int w, int h)
 //##################################################################################################
 void GraphController::updateMatrices()
 {
-  if(std::fabs(d->distanceX) < 0.000000001f)
-    d->distanceX = 1.0f;
+  if(std::fabs(d->distanceX) < 0.000000001)
+    d->distanceX = 1.0;
 
-  if(std::fabs(d->distanceY) < 0.000000001f)
-    d->distanceY = 1.0f;
+  if(std::fabs(d->distanceY) < 0.000000001)
+    d->distanceY = 1.0;
 
   //The width and height of the map widget
-  float width  = float(map()->width());
-  float height = float(map()->height());
+  double width  = double(map()->width());
+  double height = double(map()->height());
 
-  float fh = 1.0f;
-  float fw = 1.0f;
+  double fh = 1.0f;
+  double fw = 1.0f;
   if(width>height)
     fw = width/height;
   else
     fh = height/width;
 
-  glm::mat4 view = glm::mat4(1.0f);
+  glm::dmat4 view = glm::dmat4(1.0);
   view = glm::translate(view, -d->focalPoint);
 
-  glm::mat4 projection = glm::ortho(-fw*d->distanceX, // <- Left
-                                    fw*d->distanceX,  // <- Right
-                                    -fh*d->distanceY, // <- Bottom
-                                    fh*d->distanceY,  // <- Top
+  glm::dmat4 projection = glm::ortho(float(-fw*d->distanceX), // <- Left
+                                    float(fw*d->distanceX),  // <- Right
+                                    float(-fh*d->distanceY), // <- Bottom
+                                    float(fh*d->distanceY),  // <- Top
                                     -1.0f,            // <- Near
                                     1.0f);            // <- Far
   Controller::Matrices vp;
+  vp.dp  = projection;
+  vp.dv  = view;
+  vp.dvp = projection * view;
   vp.p  = projection;
   vp.v  = view;
   vp.vp = projection * view;
@@ -244,8 +247,8 @@ bool GraphController::mouseEvent(const MouseEvent& event)
       d->mouseMoved = true;
     }
 
-    float dx = float(pos.x - d->previousPos.x);
-    float dy = float(pos.y - d->previousPos.y);
+    double dx = double(pos.x - d->previousPos.x);
+    double dy = double(pos.y - d->previousPos.y);
 
     d->previousPos2 = d->previousPos;
     d->previousPos = pos;
@@ -293,24 +296,24 @@ bool GraphController::mouseEvent(const MouseEvent& event)
     if(!d->allowZoom)
       return true;
 
-    glm::vec3 scenePointA;
+    glm::dvec3 scenePointA;
     bool moveOrigin = map()->unProject(event.pos, scenePointA, tp_math_utils::Plane());
 
     if(d->mouseInteraction == Button::RightButton)
     {
       if(event.delta<0)
-        d->distanceY *= 1.1f;
+        d->distanceY *= 1.1;
       else if(event.delta>0)
-        d->distanceY *= 0.9f;
+        d->distanceY *= 0.9;
       else
         return true;
     }
     else
     {
       if(event.delta<0)
-        d->distanceX *= 1.1f;
+        d->distanceX *= 1.1;
       else if(event.delta>0)
-        d->distanceX *= 0.9f;
+        d->distanceX *= 0.9;
       else
         return true;
     }
@@ -318,7 +321,7 @@ bool GraphController::mouseEvent(const MouseEvent& event)
     if(moveOrigin)
     {
       updateMatrices();
-      glm::vec3 scenePointB;
+      glm::dvec3 scenePointB;
       moveOrigin = map()->unProject(event.pos, scenePointB, tp_math_utils::Plane());
 
       if(moveOrigin)
@@ -346,7 +349,7 @@ bool GraphController::mouseEvent(const MouseEvent& event)
 }
 
 //##################################################################################################
-void GraphController::translate(float dx, float dy, double msSincePrevious)
+void GraphController::translate(double dx, double dy, double msSincePrevious)
 {
   TP_UNUSED(msSincePrevious);
   d->translate(dx, dy);

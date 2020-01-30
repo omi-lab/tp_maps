@@ -340,6 +340,12 @@ bool Map::unProject(const glm::vec2& screenPoint, glm::vec3& scenePoint, const t
 }
 
 //##################################################################################################
+bool Map::unProject(const glm::dvec2& screenPoint, glm::dvec3& scenePoint, const tp_math_utils::Plane& plane)
+{
+  return unProject(screenPoint, scenePoint, plane, d->controller->matrices(defaultSID()).dvp);
+}
+
+//##################################################################################################
 bool Map::unProject(const glm::vec2& screenPoint, glm::vec3& scenePoint, const tp_math_utils::Plane& plane, const glm::mat4& matrix)
 {
   glm::mat4 inverse = glm::inverse(matrix);
@@ -360,6 +366,32 @@ bool Map::unProject(const glm::vec2& screenPoint, glm::vec3& scenePoint, const t
     glm::vec4 obj = inverse * tmp;
     obj /= obj.w;
     scenePoints.at(i) = glm::vec3(obj);
+  }
+
+  return tp_math_utils::rayPlaneIntersection(tp_math_utils::Ray(scenePoints[0], scenePoints[1]), plane, scenePoint);
+}
+
+//##################################################################################################
+bool Map::unProject(const glm::dvec2& screenPoint, glm::dvec3& scenePoint, const tp_math_utils::Plane& plane, const glm::dmat4& matrix)
+{
+  glm::mat4 inverse = glm::inverse(matrix);
+
+  std::array<glm::dvec4, 2> screenPoints{};
+  std::array<glm::dvec3, 2> scenePoints{};
+
+  screenPoints[0] = glm::dvec4(screenPoint, 0.0, 1.0);
+  screenPoints[1] = glm::dvec4(screenPoint, 1.0, 1.0);
+
+  for(size_t i=0; i<2; i++)
+  {
+    glm::dvec4& tmp = screenPoints.at(i);
+    tmp.x = tmp.x / double(d->width);
+    tmp.y = (double(d->height) - tmp.y) / double(d->height);
+    tmp = tmp * 2.0 - 1.0;
+
+    glm::dvec4 obj = inverse * tmp;
+    obj /= obj.w;
+    scenePoints.at(i) = glm::dvec3(obj);
   }
 
   return tp_math_utils::rayPlaneIntersection(tp_math_utils::Ray(scenePoints[0], scenePoints[1]), plane, scenePoint);

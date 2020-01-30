@@ -38,6 +38,11 @@ public:
 
     glm::mat4 vp{1.0f};
 
+    glm::dmat4 dv{1.0f};
+    glm::dmat4 dp{1.0f};
+
+    glm::dmat4 dvp{1.0f};
+
     glm::vec3 cameraOriginNear{0.0f, 0.0f, 0.0f};
     glm::vec3 cameraOriginFar {0.0f, 0.0f, 1.0f};
   };

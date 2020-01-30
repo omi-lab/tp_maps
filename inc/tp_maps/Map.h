@@ -142,7 +142,13 @@ public:
   bool unProject(const glm::vec2& screenPoint, glm::vec3& scenePoint, const tp_math_utils::Plane& plane);
 
   //################################################################################################
+  bool unProject(const glm::dvec2& screenPoint, glm::dvec3& scenePoint, const tp_math_utils::Plane& plane);
+
+  //################################################################################################
   bool unProject(const glm::vec2& screenPoint, glm::vec3& scenePoint, const tp_math_utils::Plane& plane, const glm::mat4& matrix);
+
+  //################################################################################################
+  bool unProject(const glm::dvec2& screenPoint, glm::dvec3& scenePoint, const tp_math_utils::Plane& plane, const glm::dmat4& matrix);
 
   //################################################################################################
   glm::vec3 unProject(const glm::vec3& screenPoint);

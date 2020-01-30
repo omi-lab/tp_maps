@@ -98,6 +98,12 @@ void LinesLayer::setLineWidth(float lineWidth)
 }
 
 //##################################################################################################
+glm::mat4 LinesLayer::calculateMatrix() const
+{
+  return map()->controller()->matrix(coordinateSystem());
+}
+
+//##################################################################################################
 void LinesLayer::render(RenderInfo& renderInfo)
 {
   if(renderInfo.pass != defaultRenderPass() && renderInfo.pass != RenderPass::Picking)
@@ -122,7 +128,7 @@ void LinesLayer::render(RenderInfo& renderInfo)
   }
 
   shader->use(renderInfo.pass==RenderPass::Picking?ShaderType::Picking:ShaderType::Render);
-  shader->setMatrix(map()->controller()->matrix(coordinateSystem()));
+  shader->setMatrix(calculateMatrix());
   shader->setLineWidth(d->lineWidth);
 
   if(renderInfo.pass==RenderPass::Picking)

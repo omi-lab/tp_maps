@@ -14,10 +14,10 @@ public:
   GraphController(Map* map);
 
   //################################################################################################
-  glm::vec3 focalPoint()const;
+  glm::dvec3 focalPoint()const;
 
   //################################################################################################
-  void setFocalPoint(const glm::vec3& focalPoint);
+  void setFocalPoint(const glm::dvec3& focalPoint);
 
   //################################################################################################
   bool allowTranslation()const;
@@ -32,10 +32,10 @@ public:
   void setAllowZoom(bool allowZoom);
 
   //##################################################################################################
-  float rotationFactor()const;
+  double rotationFactor()const;
 
   //##################################################################################################
-  void setRotationFactor(float rotationFactor);
+  void setRotationFactor(double rotationFactor);
 
   //################################################################################################
   nlohmann::json saveState()const override;
@@ -57,7 +57,7 @@ protected:
   bool mouseEvent(const MouseEvent& event)override;
 
   //################################################################################################
-  virtual void translate(float dx, float dy, double msSincePrevious);
+  virtual void translate(double dx, double dy, double msSincePrevious);
 
   //################################################################################################
   virtual void translateInteractionFinished();
