@@ -134,6 +134,32 @@ void GraphController::setRotationFactor(double rotationFactor)
 }
 
 //##################################################################################################
+double GraphController::distanceX() const
+{
+  return d->distanceX;
+}
+
+//##################################################################################################
+void GraphController::setDistanceX(double distanceX)
+{
+  d->distanceX = distanceX;
+  map()->update();
+}
+
+//##################################################################################################
+double GraphController::distanceY() const
+{
+  return d->distanceY;
+}
+
+//##################################################################################################
+void GraphController::setDistanceY(double distanceY)
+{
+  d->distanceY = distanceY;
+  map()->update();
+}
+
+//##################################################################################################
 nlohmann::json GraphController::saveState()const
 {
   nlohmann::json j;
