@@ -22,9 +22,10 @@ enum class MouseEventType
 //##################################################################################################
 enum class Button : size_t
 {
-  NoButton   =0,
-  RightButton=1,
-  LeftButton =2
+  NoButton     = 0,
+  RightButton  = 1,
+  LeftButton   = 2,
+  MiddleButton = 4
 };
 
 //##################################################################################################
