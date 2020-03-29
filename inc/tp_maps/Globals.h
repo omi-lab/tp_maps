@@ -208,6 +208,22 @@ enum class OpenGLProfile
 };
 
 //##################################################################################################
+enum class OpenGLDepth
+{
+  OFF=0,
+  ON_16=16,
+  ON_24=24,
+  ON_32
+};
+
+//##################################################################################################
+struct OpenGLConfig
+{
+  OpenGLProfile profile{TP_DEFAULT_PROFILE};
+  OpenGLDepth depth{OpenGLDepth::ON_24};
+};
+
+//##################################################################################################
 struct ShaderString
 {
   TP_NONCOPYABLE(ShaderString);
