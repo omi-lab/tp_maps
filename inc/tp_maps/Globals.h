@@ -140,7 +140,7 @@ using TPGLenum = GLenum;
 #endif
 
 //##################################################################################################
-//! A simple 3D engine
+//! A simple 3D engine.
 namespace tp_maps
 {
 TP_DECLARE_ID(                      defaultSID,                          "Default");
