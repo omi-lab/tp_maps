@@ -82,11 +82,12 @@ void Shader::compile(const char* vertexShaderStr,
 
   if(s.vertexShader==0 || s.fragmentShader==0 || s.program==0)
   {
+    auto version = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
     tpWarning() << "Error Shader::compile"
                    " d->vertexShader:" << s.vertexShader <<
                    " d->fragmentShader:" << s.fragmentShader <<
                    " d->program:" << s.program <<
-                   " GL_SHADING_LANGUAGE_VERSION:" << glGetString(GL_SHADING_LANGUAGE_VERSION);
+                   " GL_SHADING_LANGUAGE_VERSION:" << (version?version:"");
     d->error=true;
     return;
   }

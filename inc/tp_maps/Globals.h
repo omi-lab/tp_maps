@@ -37,18 +37,23 @@ using TPGLenum = GLenum;
 
 #elif defined(TP_IOS) //---------------------------------------------------------------------------
 #  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
-#  include <GLES2/gl2.h>
+//#  include <GLES2/gl2.h>
+#  include <OpenGLES/ES3/gl.h>
 
 #  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_300_ES
 
-#  define tpGenVertexArrays glGenVertexArraysOES
-#  define tpBindVertexArray glBindVertexArrayOES
-#  define tpDeleteVertexArrays glDeleteVertexArraysOES
+//#  define tpGenVertexArrays glGenVertexArraysOES
+//#  define tpBindVertexArray glBindVertexArrayOES
+//#  define tpDeleteVertexArrays glDeleteVertexArraysOES
+#  define tpGenVertexArrays glGenVertexArrays
+#  define tpBindVertexArray glBindVertexArray
+#  define tpDeleteVertexArrays glDeleteVertexArrays
 #  define tpDrawElements(mode, count, type, indices) glDrawElements(mode, count, type, indices)
 
 #  define TP_GLSL_PICKING
 
-#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32_OES
+//#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32_OES
+#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
 #  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24
 #  define TP_GL_DRAW_FRAMEBUFFER GL_DRAW_FRAMEBUFFER
 
