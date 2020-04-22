@@ -3,6 +3,24 @@
 
 namespace tp_maps
 {
+namespace
+{
+//##################################################################################################
+void drawVBO(Geometry3DShader::VertexBuffer* vertexBuffer)
+{
+  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Geometry3DShader::Vertex), tpVoidLiteral( 0));
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Geometry3DShader::Vertex), tpVoidLiteral(12));
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Geometry3DShader::Vertex), tpVoidLiteral(24));
+  glEnableVertexAttribArray(0);
+  glEnableVertexAttribArray(1);
+  glEnableVertexAttribArray(2);
+  glDisableVertexAttribArray(3);
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer->iboID);
+}
+}
+
 //##################################################################################################
 Geometry3DShader::Geometry3DShader(tp_maps::OpenGLProfile openGLProfile):
   Shader(openGLProfile)
@@ -30,21 +48,12 @@ Geometry3DShader::VertexBuffer* Geometry3DShader::generateVertexBuffer(Map* map,
   glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(verts.size()*sizeof(Geometry3DShader::Vertex)), verts.data(), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+#ifdef TP_VERTEX_ARRAYS_SUPPORTED
   tpGenVertexArrays(1, &vertexBuffer->vaoID);
   tpBindVertexArray(vertexBuffer->vaoID);
-
-  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Geometry3DShader::Vertex), tpVoidLiteral( 0));
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Geometry3DShader::Vertex), tpVoidLiteral(12));
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Geometry3DShader::Vertex), tpVoidLiteral(24));
-  glEnableVertexAttribArray(0);
-  glEnableVertexAttribArray(1);
-  glEnableVertexAttribArray(2);
-  glDisableVertexAttribArray(3);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer->iboID);
-
+  drawVBO(vertexBuffer);
   tpBindVertexArray(0);
+#endif
 
   return vertexBuffer;
 }

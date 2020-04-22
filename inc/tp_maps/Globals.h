@@ -11,15 +11,48 @@
 #  define TP_MAPS_SHARED_EXPORT TP_IMPORT
 #endif
 
-#ifdef TP_GLES2_100 //------------------------------------------------------------------------------
+#ifdef TP_GLES2 //----------------------------------------------------------------------------------
+#  include <GLES2/gl2.h>
 
-#elif defined(TP_OSX) //---------------------------------------------------------------------------
+#elif defined(TP_GLES3) //--------------------------------------------------------------------------
+#  include <GLES3/gl3.h>
+
+#elif defined(TP_OSX) //----------------------------------------------------------------------------
 #  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
 #  include <gl3.h>
 #  include <OpenGL/glext.h>
-
 #  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_410
+#  define TP_GL3
 
+#elif defined(TP_IOS) //----------------------------------------------------------------------------
+#  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
+#  include <OpenGLES/ES3/gl.h>
+#  define TP_GLES3
+
+#elif defined(TP_EMSCRIPTEN) //---------------------------------------------------------------------
+#  define TP_GLES3
+
+#elif defined(TP_ANDROID) //------------------------------------------------------------------------
+#  if __ANDROID_API__ < 18
+#    include <GLES2/gl2.h>
+#    define TP_GLES2
+#  else
+#    define TP_GLES3
+#  endif
+
+#elif defined(TP_WIN32) //--------------------------------------------------------------------------
+#include <GL/glew.h>
+#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_130
+#  define TP_GL3
+
+#else //--------------------------------------------------------------------------------------------
+#  include <GLES3/gl3.h>
+#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_130
+#  define TP_GL3
+
+#endif //-------------------------------------------------------------------------------------------
+
+#ifdef TP_GL3 //------------------------------------------------------------------------------------
 #  define tpGenVertexArrays glGenVertexArrays
 #  define tpBindVertexArray glBindVertexArray
 #  define tpDeleteVertexArrays glDeleteVertexArrays
@@ -34,114 +67,51 @@
 using TPGLsize = GLuint;
 using TPGLfloat = float;
 using TPGLenum = GLenum;
+//using TPGLenum  = GLint;
+#endif
 
-#elif defined(TP_IOS) //---------------------------------------------------------------------------
-#  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
-//#  include <GLES2/gl2.h>
-#  include <OpenGLES/ES3/gl.h>
+#ifdef TP_GLES2 //----------------------------------------------------------------------------------
+#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_100_ES
 
+#  define tpGenVertexArrays glGenVertexArrays
+#  define tpBindVertexArray glBindVertexArray
+#  define tpDeleteVertexArrays glDeleteVertexArrays
+#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
+
+#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
+#  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24
+#  define TP_GL_DRAW_FRAMEBUFFER GL_DRAW_FRAMEBUFFER
+
+using TPGLsize = GLsizei;
+using TPGLfloat = float;
+using TPGLenum = GLenum;
+#endif
+
+#if TP_GLES3 //-------------------------------------------------------------------------------------
 #  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_300_ES
 
-//#  define tpGenVertexArrays glGenVertexArraysOES
-//#  define tpBindVertexArray glBindVertexArrayOES
-//#  define tpDeleteVertexArrays glDeleteVertexArraysOES
+//#  define tpGenVertexArrays glGenVertexArrays
+//#  define tpBindVertexArray glBindVertexArray
+//#  define tpDeleteVertexArrays glDeleteVertexArrays
+//#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
 #  define tpGenVertexArrays glGenVertexArrays
 #  define tpBindVertexArray glBindVertexArray
 #  define tpDeleteVertexArrays glDeleteVertexArrays
 #  define tpDrawElements(mode, count, type, indices) glDrawElements(mode, count, type, indices)
 
-#  define TP_GLSL_PICKING
-
-//#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32_OES
+//#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT16
+//#  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT16
+//#  define TP_GL_DRAW_FRAMEBUFFER GL_FRAMEBUFFER
 #  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
 #  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24
 #  define TP_GL_DRAW_FRAMEBUFFER GL_DRAW_FRAMEBUFFER
+
+#  define TP_GLSL_PICKING
 
 using TPGLsize = GLsizei;
 using TPGLfloat = float;
 using TPGLenum = GLenum;
 
-#elif defined(TP_EMSCRIPTEN) //--------------------------------------------------------------------
-#  include <GLES3/gl3.h>
-
-#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_100_ES
-
-#  define tpGenVertexArrays glGenVertexArrays
-#  define tpBindVertexArray glBindVertexArray
-#  define tpDeleteVertexArrays glDeleteVertexArrays
-#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
-
-#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT16
-#  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT16
-#  define TP_GL_DRAW_FRAMEBUFFER GL_FRAMEBUFFER
-
-using TPGLsize = GLsizei;
-using TPGLfloat = float;
-using TPGLenum = GLenum;
-
-#elif defined(TP_ANDROID) //-----------------------------------------------------------------------
-#  define TP_GLES2_100
-
-#elif defined(TP_WIN32)
-
-#include <GL/glew.h>
-
-#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_130
-
-#  define tpGenVertexArrays glGenVertexArrays
-#  define tpBindVertexArray glBindVertexArray
-#  define tpDeleteVertexArrays glDeleteVertexArrays
-#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
-
-#  define TP_GLSL_PICKING
-
-#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
-#  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24
-#  define TP_GL_DRAW_FRAMEBUFFER GL_DRAW_FRAMEBUFFER
-
-using TPGLsize = GLuint;
-using TPGLfloat = float;
-using TPGLenum = GLenum;
-#else //--------------------------------------------------------------------------------------------
-#  include <GLES3/gl3.h>
-
-#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_130
-
-#  define tpGenVertexArrays glGenVertexArrays
-#  define tpBindVertexArray glBindVertexArray
-#  define tpDeleteVertexArrays glDeleteVertexArrays
-#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
-
-#  define TP_GLSL_PICKING
-
-#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
-#  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24
-#  define TP_GL_DRAW_FRAMEBUFFER GL_DRAW_FRAMEBUFFER
-
-using TPGLsize  = GLuint;
-using TPGLfloat = float;
-using TPGLenum  = GLint;
-
-#endif //-------------------------------------------------------------------------------------------
-
-
-#ifdef TP_GLES2_100 //------------------------------------------------------------------------------
-#  include <GLES3/gl2.h>
-
-#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_100_ES
-
-#  define tpGenVertexArrays glGenVertexArrays
-#  define tpBindVertexArray glBindVertexArray
-#  define tpDeleteVertexArrays glDeleteVertexArrays
-#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
-
-#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
-#  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24
-#  define TP_GL_DRAW_FRAMEBUFFER GL_DRAW_FRAMEBUFFER
-
-using TPGLsize = GLsizei;
-using TPGLfloat = float;
-using TPGLenum = GLenum;
 #endif
 
 //##################################################################################################
