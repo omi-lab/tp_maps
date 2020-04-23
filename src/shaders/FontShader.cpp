@@ -103,13 +103,31 @@ struct FontShader::PreparedString::Private
   }
 
   //################################################################################################
+  void bindVBO()
+  {
+    glBindBuffer(GL_ARRAY_BUFFER, vboID);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex_lt), tpVoidLiteral( 0));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex_lt), tpVoidLiteral(12));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex_lt), tpVoidLiteral(24));
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glDisableVertexAttribArray(3);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID);
+  }
+
+  //################################################################################################
   void freeBuffers()
   {
     if(!vaoID)
       return;
 
     map->makeCurrent();
+
+#ifdef TP_VERTEX_ARRAYS_SUPPORTED
     tpDeleteVertexArrays(1, &vaoID);
+#endif
+
     glDeleteBuffers(1, &iboID);
     glDeleteBuffers(1, &vboID);
 
@@ -232,8 +250,10 @@ void FontShader::drawPreparedString(PreparedString& preparedString)
     if(indexes.empty() || verts.empty())
       return;
 
-    preparedString.d->vertexCount = GLuint(verts.size());
     preparedString.d->indexCount  = GLuint(indexes.size());
+
+#ifdef TP_VERTEX_ARRAYS_SUPPORTED
+    preparedString.d->vertexCount = GLuint(verts.size());
 
     glGenBuffers(1, &preparedString.d->iboID);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, preparedString.d->iboID);
@@ -247,31 +267,38 @@ void FontShader::drawPreparedString(PreparedString& preparedString)
 
     tpGenVertexArrays(1, &preparedString.d->vaoID);
     tpBindVertexArray(preparedString.d->vaoID);
-
-    glBindBuffer(GL_ARRAY_BUFFER, preparedString.d->vboID);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex_lt), tpVoidLiteral( 0));
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex_lt), tpVoidLiteral(12));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex_lt), tpVoidLiteral(24));
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-    glDisableVertexAttribArray(3);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, preparedString.d->iboID);
-
+    preparedString.d->bindVBO();
     tpBindVertexArray(0);
+#else
+    preparedString.d->vertexCount = GLuint(indexes.size());
+
+    std::vector<Vertex_lt> indexedVerts;
+    indexedVerts.reserve(indexes.size());
+    for(auto index : indexes)
+      indexedVerts.push_back(verts.at(size_t(index)));
+
+    glGenBuffers(1, &preparedString.d->vboID);
+    glBindBuffer(GL_ARRAY_BUFFER, preparedString.d->vboID);
+    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(indexedVerts.size()*sizeof(Vertex_lt)), indexedVerts.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+#endif
 
     preparedString.d->valid = true;
   }
 
   if(preparedString.d->valid)
   {
+#ifdef TP_VERTEX_ARRAYS_SUPPORTED
     tpBindVertexArray(preparedString.d->vaoID);
     tpDrawElements(GL_TRIANGLES,
                    preparedString.d->indexCount,
                    GL_UNSIGNED_SHORT,
                    nullptr);
     tpBindVertexArray(0);
+#else
+    preparedString.d->bindVBO();
+    glDrawArrays(GL_TRIANGLES, 0, preparedString.d->indexCount);
+#endif
   }
 }
 

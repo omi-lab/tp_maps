@@ -59,13 +59,17 @@ struct ImageShader::Private
   //################################################################################################
   void draw(GLenum mode, ImageShader::VertexBuffer* vertexBuffer)
   {
+#ifdef TP_VERTEX_ARRAYS_SUPPORTED
     tpBindVertexArray(vertexBuffer->vaoID);
     tpDrawElements(mode,
                    vertexBuffer->indexCount,
                    GL_UNSIGNED_INT,
                    nullptr);
     tpBindVertexArray(0);
-
+#else
+    vertexBuffer->bindVBO();
+    glDrawArrays(mode, 0, vertexBuffer->indexCount);
+#endif
   }
 };
 

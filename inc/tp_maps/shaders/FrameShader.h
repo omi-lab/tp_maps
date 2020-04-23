@@ -69,14 +69,19 @@ public:
     //##############################################################################################
     ~VertexBuffer();
 
+    //##############################################################################################
+    void bindVBO() const;
+
     Map* map;
     ShaderPointer shader;
 
+#ifdef TP_VERTEX_ARRAYS_SUPPORTED
     //The Vertex Array Object
     GLuint vaoID{0};
 
     //The Index Buffer Object
     GLuint iboID{0};
+#endif
 
     //The Vertex Buffer Object
     GLuint vboID{0};

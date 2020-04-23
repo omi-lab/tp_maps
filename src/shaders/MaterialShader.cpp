@@ -137,12 +137,14 @@ struct MaterialShader::Private
   //################################################################################################
   void draw(GLenum mode, MaterialShader::VertexBuffer* vertexBuffer)
   {
+#ifdef TP_VERTEX_ARRAYS_SUPPORTED
     tpBindVertexArray(vertexBuffer->vaoID);
-    tpDrawElements(mode,
-                   vertexBuffer->indexCount,
-                   GL_UNSIGNED_INT,
-                   nullptr);
+    tpDrawElements(mode, vertexBuffer->indexCount, GL_UNSIGNED_INT, nullptr);
     tpBindVertexArray(0);
+#else
+    vertexBuffer->bindVBO();
+    glDrawArrays(mode, 0, vertexBuffer->indexCount);
+#endif
   }
 };
 

@@ -66,9 +66,14 @@ struct FrameShader::Private
   //################################################################################################
   void draw(GLenum mode, FrameShader::VertexBuffer* vertexBuffer)
   {
+#ifdef TP_VERTEX_ARRAYS_SUPPORTED
     tpBindVertexArray(vertexBuffer->vaoID);
     tpDrawElements(mode, vertexBuffer->indexCount, GL_UNSIGNED_SHORT, nullptr);
     tpBindVertexArray(0);
+#else
+    vertexBuffer->bindVBO();
+    glDrawArrays(mode, 0, vertexBuffer->indexCount);
+#endif
   }
 };
 
@@ -147,8 +152,10 @@ FrameShader::VertexBuffer* FrameShader::generateVertexBuffer(Map* map,
 {
   auto vertexBuffer = new VertexBuffer(map, this);
 
-  vertexBuffer->vertexCount = GLuint(verts.size());
   vertexBuffer->indexCount  = TPGLsize(indexes.size());
+
+#ifdef TP_VERTEX_ARRAYS_SUPPORTED
+  vertexBuffer->vertexCount = GLuint(verts.size());
 
   glGenBuffers(1, &vertexBuffer->iboID);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer->iboID);
@@ -162,20 +169,21 @@ FrameShader::VertexBuffer* FrameShader::generateVertexBuffer(Map* map,
 
   tpGenVertexArrays(1, &vertexBuffer->vaoID);
   tpBindVertexArray(vertexBuffer->vaoID);
-
-  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), tpVoidLiteral( 0));
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), tpVoidLiteral(12));
-  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), tpVoidLiteral(24));
-  glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), tpVoidLiteral(36));
-  glEnableVertexAttribArray(0);
-  glEnableVertexAttribArray(1);
-  glEnableVertexAttribArray(2);
-  glEnableVertexAttribArray(3);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer->iboID);
-
+  vertexBuffer->bindVBO();
   tpBindVertexArray(0);
+#else
+  vertexBuffer->vertexCount = GLuint(indexes.size());
+
+  std::vector<FrameShader::Vertex> indexedVerts;
+  indexedVerts.reserve(indexes.size());
+  for(auto index : indexes)
+    indexedVerts.push_back(verts.at(size_t(index)));
+
+  glGenBuffers(1, &vertexBuffer->vboID);
+  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
+  glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(indexedVerts.size()*sizeof(FrameShader::Vertex)), indexedVerts.data(), GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+#endif
 
   return vertexBuffer;
 }
@@ -190,13 +198,39 @@ FrameShader::VertexBuffer::VertexBuffer(Map* map_, const Shader *shader_):
 //##################################################################################################
 FrameShader::VertexBuffer::~VertexBuffer()
 {
-  if(!vaoID || !shader.shader())
+  if(!shader.shader())
     return;
 
   map->makeCurrent();
-  tpDeleteVertexArrays(1, &vaoID);
-  glDeleteBuffers(1, &iboID);
-  glDeleteBuffers(1, &vboID);
+
+#ifdef TP_VERTEX_ARRAYS_SUPPORTED
+  if(vaoID)
+    tpDeleteVertexArrays(1, &vaoID);
+
+  if(iboID)
+    glDeleteBuffers(1, &iboID);
+#endif
+
+  if(vboID)
+    glDeleteBuffers(1, &vboID);
+}
+
+//##################################################################################################
+void FrameShader::VertexBuffer::bindVBO() const
+{
+  glBindBuffer(GL_ARRAY_BUFFER, vboID);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), tpVoidLiteral( 0));
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), tpVoidLiteral(12));
+  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), tpVoidLiteral(24));
+  glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), tpVoidLiteral(36));
+  glEnableVertexAttribArray(0);
+  glEnableVertexAttribArray(1);
+  glEnableVertexAttribArray(2);
+  glEnableVertexAttribArray(3);
+
+#ifdef TP_VERTEX_ARRAYS_SUPPORTED
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID);
+#endif
 }
 
 //##################################################################################################

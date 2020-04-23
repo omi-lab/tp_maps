@@ -776,6 +776,7 @@ void Map::paintGL()
 //##################################################################################################
 void Map::paintGLNoMakeCurrent()
 {
+#ifdef TP_REFLECTION_SUPPORTED
   GLint originalFrameBuffer = 0;
 
   // If we are using reflection enable the reflection FBO for the first few passes, then in the
@@ -848,6 +849,7 @@ void Map::paintGLNoMakeCurrent()
       return;
     }
   }
+#endif
 
 #if 0
   //Make the background flicker to show when the map is updateing
@@ -890,6 +892,7 @@ void Map::paintGLNoMakeCurrent()
 
     case RenderPass::Reflection:
     {
+#ifdef TP_REFLECTION_SUPPORTED
       glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
       glBindFramebuffer(GL_READ_FRAMEBUFFER, d->reflectionFrameBuffer);
 
@@ -916,6 +919,7 @@ void Map::paintGLNoMakeCurrent()
       glDepthFunc(GL_LESS);
       glDepthMask(false);
       d->render();
+#endif
       break;
     }
 

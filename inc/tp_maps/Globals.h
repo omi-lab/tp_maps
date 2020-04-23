@@ -53,12 +53,14 @@
 #endif //-------------------------------------------------------------------------------------------
 
 #ifdef TP_GL3 //------------------------------------------------------------------------------------
+#  define TP_VERTEX_ARRAYS_SUPPORTED
 #  define tpGenVertexArrays glGenVertexArrays
 #  define tpBindVertexArray glBindVertexArray
 #  define tpDeleteVertexArrays glDeleteVertexArrays
 #  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
 
-#  define TP_GLSL_PICKING
+#  define TP_GLSL_PICKING_SUPPORTED
+#  define TP_REFLECTION_SUPPORTED
 
 #  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
 #  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24
@@ -73,14 +75,9 @@ using TPGLenum = GLenum;
 #ifdef TP_GLES2 //----------------------------------------------------------------------------------
 #  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_100_ES
 
-#  define tpGenVertexArrays glGenVertexArrays
-#  define tpBindVertexArray glBindVertexArray
-#  define tpDeleteVertexArrays glDeleteVertexArrays
-#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
-
-#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
-#  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24
-#  define TP_GL_DRAW_FRAMEBUFFER GL_DRAW_FRAMEBUFFER
+#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT16
+#  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT16
+#  define TP_GL_DRAW_FRAMEBUFFER GL_FRAMEBUFFER
 
 using TPGLsize = GLsizei;
 using TPGLfloat = float;
@@ -90,6 +87,7 @@ using TPGLenum = GLenum;
 #if TP_GLES3 //-------------------------------------------------------------------------------------
 #  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_300_ES
 
+#  define TP_VERTEX_ARRAYS_SUPPORTED
 //#  define tpGenVertexArrays glGenVertexArrays
 //#  define tpBindVertexArray glBindVertexArray
 //#  define tpDeleteVertexArrays glDeleteVertexArrays
@@ -106,7 +104,8 @@ using TPGLenum = GLenum;
 #  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24
 #  define TP_GL_DRAW_FRAMEBUFFER GL_DRAW_FRAMEBUFFER
 
-#  define TP_GLSL_PICKING
+#  define TP_GLSL_PICKING_SUPPORTED
+#  define TP_REFLECTION_SUPPORTED
 
 using TPGLsize = GLsizei;
 using TPGLfloat = float;

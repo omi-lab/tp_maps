@@ -48,9 +48,14 @@ struct LineShader::Private
     if(vertexBuffer->indexCount<2)
       return;
 
+#ifdef TP_VERTEX_ARRAYS_SUPPORTED
     tpBindVertexArray(vertexBuffer->vaoID);
     tpDrawElements(mode, vertexBuffer->indexCount, GL_UNSIGNED_INT, nullptr);
     tpBindVertexArray(0);
+#else
+    vertexBuffer->bindVBO();
+    glDrawArrays(mode, 0, vertexBuffer->indexCount);
+#endif
   }
 };
 
@@ -125,6 +130,7 @@ LineShader::VertexBuffer* LineShader::generateVertexBuffer(Map* map, const std::
   if(vertices.empty())
     return vertexBuffer;
 
+#ifdef TP_VERTEX_ARRAYS_SUPPORTED
   std::vector<GLuint> indexes;
   indexes.reserve(vertices.size());
   for(GLuint i=0; i<GLuint(vertices.size()); i++)
@@ -138,7 +144,6 @@ LineShader::VertexBuffer* LineShader::generateVertexBuffer(Map* map, const std::
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexes.size()*sizeof(GLuint)), indexes.data(), GL_STATIC_DRAW);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-
   glGenBuffers(1, &vertexBuffer->vboID);
   glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
   glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(vertices.size()*sizeof(glm::vec3)), vertices.data(), GL_STATIC_DRAW);
@@ -146,14 +151,17 @@ LineShader::VertexBuffer* LineShader::generateVertexBuffer(Map* map, const std::
 
   tpGenVertexArrays(1, &vertexBuffer->vaoID);
   tpBindVertexArray(vertexBuffer->vaoID);
-
-  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), nullptr);
-  glEnableVertexAttribArray(0);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer->iboID);
-
+  vertexBuffer->bindVBO();
   tpBindVertexArray(0);
+#else
+  vertexBuffer->vertexCount = GLuint(vertices.size());
+  vertexBuffer->indexCount  = GLuint(vertices.size());
+
+  glGenBuffers(1, &vertexBuffer->vboID);
+  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
+  glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(vertices.size()*sizeof(glm::vec3)), vertices.data(), GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+#endif
 
   return vertexBuffer;
 }
@@ -168,13 +176,33 @@ LineShader::VertexBuffer::VertexBuffer(Map* map_, const Shader *shader_):
 //##################################################################################################
 LineShader::VertexBuffer::~VertexBuffer()
 {
-  if(!vaoID || !shader.shader())
+  if(!shader.shader())
     return;
 
   map->makeCurrent();
-  tpDeleteVertexArrays(1, &vaoID);
-  glDeleteBuffers(1, &iboID);
-  glDeleteBuffers(1, &vboID);
+
+#ifdef TP_VERTEX_ARRAYS_SUPPORTED
+  if(vaoID)
+    tpDeleteVertexArrays(1, &vaoID);
+
+  if(iboID)
+    glDeleteBuffers(1, &iboID);
+#endif
+
+  if(vboID)
+    glDeleteBuffers(1, &vboID);
+}
+
+//##################################################################################################
+void LineShader::VertexBuffer::bindVBO() const
+{
+  glBindBuffer(GL_ARRAY_BUFFER, vboID);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), nullptr);
+  glEnableVertexAttribArray(0);
+
+#ifdef TP_VERTEX_ARRAYS_SUPPORTED
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID);
+#endif
 }
 
 //##################################################################################################
