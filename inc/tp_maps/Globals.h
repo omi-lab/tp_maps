@@ -37,6 +37,7 @@
 #    include <GLES2/gl2.h>
 #    define TP_GLES2
 #  else
+#    include <GLES3/gl3.h>
 #    define TP_GLES3
 #  endif
 
@@ -84,7 +85,7 @@ using TPGLfloat = float;
 using TPGLenum = GLenum;
 #endif
 
-#if TP_GLES3 //-------------------------------------------------------------------------------------
+#ifdef TP_GLES3 //-------------------------------------------------------------------------------------
 #  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_300_ES
 
 #  define TP_VERTEX_ARRAYS_SUPPORTED
@@ -110,7 +111,6 @@ using TPGLenum = GLenum;
 using TPGLsize = GLsizei;
 using TPGLfloat = float;
 using TPGLenum = GLenum;
-
 #endif
 
 //##################################################################################################
