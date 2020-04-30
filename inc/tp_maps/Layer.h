@@ -19,6 +19,8 @@ class Map;
 class RenderInfo;
 struct MouseEvent;
 struct KeyEvent;
+struct TextEditingEvent;
+struct TextInputEvent;
 
 //##################################################################################################
 //! A directory of picking callbacks, and a description of how different layers handle picking callbacks.
@@ -150,6 +152,12 @@ protected:
   \param event - Details of the event that was passed to the map.
   */
   virtual bool keyEvent(const KeyEvent& event);
+
+  //################################################################################################
+  virtual bool textEditingEvent(const TextEditingEvent& event);
+
+  //################################################################################################
+  virtual bool textInputEvent(const TextInputEvent& event);
 
   //################################################################################################
   //! Update the state of the animation

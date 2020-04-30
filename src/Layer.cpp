@@ -112,6 +112,20 @@ bool Layer::keyEvent(const KeyEvent& event)
 }
 
 //##################################################################################################
+bool Layer::textEditingEvent(const TextEditingEvent& event)
+{
+  TP_UNUSED(event);
+  return false;
+}
+
+//##################################################################################################
+bool Layer::textInputEvent(const TextInputEvent& event)
+{
+  TP_UNUSED(event);
+  return false;
+}
+
+//##################################################################################################
 void Layer::animate(double timestampMS)
 {
   TP_UNUSED(timestampMS);

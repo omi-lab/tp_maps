@@ -28,6 +28,8 @@ class Shader;
 class Texture;
 struct MouseEvent;
 struct KeyEvent;
+struct TextEditingEvent;
+struct TextInputEvent;
 class PickingResult;
 class FontRenderer;
 
@@ -268,10 +270,22 @@ public:
   bool keyEvent(const KeyEvent& event);
 
   //################################################################################################
+  bool textEditingEvent(const TextEditingEvent& event);
+
+  //################################################################################################
+  bool textInputEvent(const TextInputEvent& event);
+
+  //################################################################################################
   virtual void setRelativeMouseMode(bool enabled);
 
   //################################################################################################
   virtual bool relativeMouseMode() const;
+
+  //################################################################################################
+  virtual void startTextInput();
+
+  //################################################################################################
+  virtual void stopTextInput();
 
   //################################################################################################
   //! Return the controller

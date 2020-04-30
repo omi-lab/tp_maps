@@ -1041,6 +1041,24 @@ bool Map::keyEvent(const KeyEvent& event)
 }
 
 //##################################################################################################
+bool Map::textEditingEvent(const TextEditingEvent& event)
+{
+  for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
+    if((*(--l))->textEditingEvent(event))
+      return true;
+  return false;
+}
+
+//##################################################################################################
+bool Map::textInputEvent(const TextInputEvent& event)
+{
+  for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
+    if((*(--l))->textInputEvent(event))
+      return true;
+  return false;
+}
+
+//##################################################################################################
 void Map::setRelativeMouseMode(bool enabled)
 {
   TP_UNUSED(enabled);
@@ -1050,6 +1068,18 @@ void Map::setRelativeMouseMode(bool enabled)
 bool Map::relativeMouseMode() const
 {
   return false;
+}
+
+//##################################################################################################
+void Map::startTextInput()
+{
+
+}
+
+//##################################################################################################
+void Map::stopTextInput()
+{
+
 }
 
 //##################################################################################################
