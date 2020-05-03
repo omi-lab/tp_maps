@@ -61,8 +61,8 @@ void TextureData::clone2IntoOther(TextureData& clone)const
   clone.w = po2(tpMax(w, h));
   clone.h = clone.w;
 
-  clone.fw = float(w) / float(clone.w);
-  clone.fh = float(h) / float(clone.h);
+  clone.fw = (float(w)*fw) / float(clone.w);
+  clone.fh = (float(h)*fh) / float(clone.h);
 
   size_t size = clone.w*clone.h;
 
