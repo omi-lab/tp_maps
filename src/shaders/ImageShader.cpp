@@ -35,6 +35,7 @@ ShaderString fragmentShaderStr =
     "$TP_GLSL_IN_F$vec3 LightVector0;\n"
     "$TP_GLSL_IN_F$vec3 EyeNormal;\n"
     "$TP_GLSL_IN_F$vec2 texCoordinate;\n"
+    "\n"
     "uniform sampler2D textureSampler;\n"
     "uniform vec4 color;\n"
     "$TP_GLSL_GLFRAGCOLOR_DEF$"

@@ -1,4 +1,4 @@
-#include "tp_maps/shaders/MaterialShader.h"
+﻿#include "tp_maps/shaders/MaterialShader.h"
 #include "tp_maps/Map.h"
 
 #include "tp_math_utils/Globals.h"
@@ -19,6 +19,7 @@ ShaderString vertexShaderStr =
     "\n"
     "$TP_GLSL_IN_V$vec3 inVertex;\n"
     "$TP_GLSL_IN_V$vec3 inNormal;\n"
+    "$TP_GLSL_IN_V$vec2 inTexture;\n"
     "\n"
     "$TP_GLSL_IN_V$vec3 positionWorldspace;\n"
     "\n"
@@ -39,6 +40,7 @@ ShaderString vertexShaderStr =
     "  fragPos = mat3(m)*inVertex;\n"
     "  lightVector0 = vec3(0.0, 0.0, 1.0);\n"
     "  normal = mat3(m)*inNormal;\n"
+    "  texCoordinate = inTexture;\n"
     "}\n";
 
 ShaderString fragmentShaderStr =
@@ -66,6 +68,12 @@ ShaderString fragmentShaderStr =
     "\n"
     "$TP_GLSL_IN_F$vec3 fragPos;\n"
     "$TP_GLSL_IN_F$vec3 normal;\n"
+    "$TP_GLSL_IN_F$vec2 texCoordinate;\n"
+    "\n"
+    "uniform sampler2D ambientTexture;\n"
+    "uniform sampler2D diffuseTexture;\n"
+    "uniform sampler2D specularTexture;\n"
+    "uniform sampler2D bumpTexture;\n"
     "\n"
     "uniform vec3 cameraOriginNear;\n"
     "uniform vec3 cameraOriginFar;\n"
@@ -80,13 +88,20 @@ ShaderString fragmentShaderStr =
     "\n"
     "void main()\n"
     "{\n"
-    "  vec3 norm = normalize(normal);\n"
+    "  vec3 ambientTex = $TP_GLSL_TEXTURE$(ambientTexture, texCoordinate).xyz;\n"
+    "  vec3 diffuseTex = $TP_GLSL_TEXTURE$(diffuseTexture, texCoordinate).xyz;\n"
+    "  vec3 specularTex = $TP_GLSL_TEXTURE$(specularTexture, texCoordinate).xyz;\n"
+    "  vec3 bumpTex = $TP_GLSL_TEXTURE$(bumpTexture, texCoordinate).xyz;\n"
+    "\n"
+//    "  vec3 norm = normalize(normal);\n"
+    "  vec3 norm = normalize(bumpTex * 2.0 - 1.0);\n"
+    "\n"
     "  // Ambient\n"
-    "  vec3 ambient = light.ambient * material.ambient;\n"
+    "  vec3 ambient = light.ambient * (ambientTex+material.ambient);\n"
     "  \n"
     "  // Diffuse\n"
     "  float diff = max((dot(norm, lightVector0)+light.diffuseTranslate)*light.diffuseScale, 0.0);\n"
-    "  vec3 diffuse = light.diffuse * (diff * material.diffuse);\n"
+    "  vec3 diffuse = light.diffuse * (diff * (diffuseTex+material.diffuse));\n"
     "  \n"
     "  // Specular\n"
     "  vec3 incidenceVector = -lightVector0;\n" //a unit vector
@@ -94,7 +109,7 @@ ShaderString fragmentShaderStr =
     "  vec3 surfaceToCamera = normalize(cameraOriginNear - cameraOriginFar);\n" //also a unit vector
     "  float cosAngle = max(0.0, dot(surfaceToCamera, reflectionVector));\n"
     "  float specularCoefficient = pow(cosAngle, material.shininess);\n"
-    "  vec3 specular = specularCoefficient * material.specular * light.specular;\n"
+    "  vec3 specular = specularCoefficient * light.specular * (specularTex+material.specular);\n"
     "  \n"
     "  vec3 result = ambient + diffuse + specular;\n"
     "  $TP_GLSL_GLFRAGCOLOR$ = vec4(result, material.alpha);\n"
@@ -133,6 +148,12 @@ struct MaterialShader::Private
 
   GLint pickingLocation          {0};
   GLint pickingIDLocation        {0};
+
+  GLint ambientTextureLocation {0};
+  GLint diffuseTextureLocation {0};
+  GLint specularTextureLocation{0};
+  //GLint alphaTextureIDLocation {0};
+  GLint bumpTextureIDLocation  {0};
 
   //################################################################################################
   void draw(GLenum mode, MaterialShader::VertexBuffer* vertexBuffer)
@@ -175,6 +196,7 @@ void MaterialShader::compile(const char* vertexShaderStr,
   {
     glBindAttribLocation(program, 0, "inVertex");
     glBindAttribLocation(program, 1, "inNormal");
+    glBindAttribLocation(program, 2, "inTexture");
     bindLocations(program);
   },
   [&](GLuint program)
@@ -184,6 +206,7 @@ void MaterialShader::compile(const char* vertexShaderStr,
     // d->pMatrixLocation             = glGetUniformLocation(program, "p");
     d->mvpMatrixLocation           = glGetUniformLocation(program, "mvp");
     // d->vpMatrixLocation            = glGetUniformLocation(program, "vp");
+
 
     d->cameraOriginNearLocation    = glGetUniformLocation(program, "cameraOriginNear");
     d->cameraOriginFarLocation     = glGetUniformLocation(program, "cameraOriginFar");
@@ -203,6 +226,14 @@ void MaterialShader::compile(const char* vertexShaderStr,
 
     d->pickingLocation           = glGetUniformLocation(program, "picking");
     d->pickingIDLocation         = glGetUniformLocation(program, "pickingID");
+
+
+
+    d->ambientTextureLocation = glGetUniformLocation(program, "ambientTexture");
+    d->diffuseTextureLocation = glGetUniformLocation(program, "diffuseTexture");
+    d->specularTextureLocation = glGetUniformLocation(program, "specularTexture");
+    //d->alphaTextureIDLocation = glGetUniformLocation(program, "ambientTexture");
+    d->bumpTextureIDLocation = glGetUniformLocation(program, "bumpTexture");
 
     const char* shaderName = "MaterialShader";
     if(d->mMatrixLocation  <0)tpWarning() << shaderName << " mMatrixLocation  : " << d->mMatrixLocation  ;
@@ -291,6 +322,34 @@ void MaterialShader::drawPicking(GLenum mode,
 void MaterialShader::drawVertexBuffer(GLenum mode, VertexBuffer* vertexBuffer)
 {
   d->draw(mode, vertexBuffer);
+}
+
+//##################################################################################################
+void MaterialShader::setTextures(GLuint ambientTextureID,
+                                 GLuint diffuseTextureID,
+                                 GLuint specularTextureID,
+                                 GLuint alphaTextureID,
+                                 GLuint bumpTextureID)
+{
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, ambientTextureID);
+  glUniform1i(d->ambientTextureLocation, 0);
+
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, diffuseTextureID);
+  glUniform1i(d->diffuseTextureLocation, 1);
+
+  glActiveTexture(GL_TEXTURE2);
+  glBindTexture(GL_TEXTURE_2D, specularTextureID);
+  glUniform1i(d->specularTextureLocation, 2);
+
+  glActiveTexture(GL_TEXTURE3);
+  glBindTexture(GL_TEXTURE_2D, alphaTextureID);
+  // glUniform1i(d->alphaTextureIDLocation, 3);
+
+  glActiveTexture(GL_TEXTURE4);
+  glBindTexture(GL_TEXTURE_2D, bumpTextureID);
+  glUniform1i(d->bumpTextureIDLocation, 4);
 }
 
 }

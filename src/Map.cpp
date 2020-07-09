@@ -101,9 +101,7 @@ struct Map::Private
 Map::Map(bool):
   d(new Private(this))
 {
-  //Create a new controller, it will assign itself to the map.
-  Controller* controller = new FlatController(this);
-  TP_UNUSED(controller);
+  d->controller = new FlatController(this);
 }
 
 //##################################################################################################

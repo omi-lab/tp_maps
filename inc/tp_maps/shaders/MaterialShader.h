@@ -37,6 +37,12 @@ public:
     glm::vec3 specular{0.1f, 0.1f, 0.1f};
     float shininess{32.0f};
     float alpha{1.0f};
+
+    tp_utils::StringID ambientTexture;
+    tp_utils::StringID diffuseTexture;
+    tp_utils::StringID specularTexture;
+    tp_utils::StringID alphaTexture;
+    tp_utils::StringID bumpTexture;
   };
 
   //################################################################################################
@@ -65,6 +71,13 @@ public:
   //################################################################################################
   //! Call this to set the model, view, and projection matrices before drawing the geometry.
   void setMatrix(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p);
+
+  //################################################################################################
+  void setTextures(GLuint ambientTextureID,
+                   GLuint diffuseTextureID,
+                   GLuint specularTextureID,
+                   GLuint alphaTextureID,
+                   GLuint bumpTextureID);
 
   //################################################################################################
   //! Call this to draw the image

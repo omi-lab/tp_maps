@@ -171,12 +171,16 @@ void FrustumLayer::render(RenderInfo& renderInfo)
     if(d->renderRays)
     {
       std::vector<glm::vec3> vertices;
-      for(float x=-1; x<=1.01f; x+=0.1f)
+      float x=-1;
+      while(x<=1.01f)
       {
-        for(float y=-1; y<=1.01f; y+=0.1f)
+        float y=-1;
+        while(y<=1.01f)
         {
           addLine(vertices, {x, y, 0.0f}, {x, y, 1.0f});
+          y+=0.1f;
         }
+        x+=0.1f;
       }
 
       LinesDetails_lt details;

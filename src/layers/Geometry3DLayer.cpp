@@ -22,6 +22,12 @@ struct GeometryDetails_lt
 {
   std::vector<std::pair<GLenum, MaterialShader::VertexBuffer*>> vertexBuffers;
   MaterialShader::Material material;
+
+  GLuint ambientTextureID{0};
+  GLuint diffuseTextureID{0};
+  GLuint specularTextureID{0};
+  GLuint alphaTextureID{0};
+  GLuint bumpTextureID{0};
 };
 }
 //##################################################################################################
@@ -32,23 +38,25 @@ struct Geometry3DLayer::Private
 
   Geometry3DLayer* q;
 
+  //-- Input data ----------------------------------------------------------------------------------
   std::vector<Geometry3D> geometry;
   MaterialShader::Light light;
-  Texture* texture;
+  std::unordered_map<tp_utils::StringID, Texture*> textures;
   ShaderType shaderType{ShaderType::Material};
-
   glm::mat4 objectMatrix{1.0f};
+  std::unique_ptr<BasicTexture> emptyTexture;
 
-  //Processed geometry ready for rendering
+  //-- Preprocessed data ---------------------------------------------------------------------------
   std::vector<GeometryDetails_lt> processedGeometry;
-  GLuint textureID{0};
+  std::unordered_map<tp_utils::StringID, GLuint> textureIDs;
+  GLuint emptyTextureID{0};
+
   bool updateVertexBuffer{true};
   bool bindBeforeRender{true};
 
   //################################################################################################
-  Private(Geometry3DLayer* q_, Texture* texture_):
-    q(q_),
-    texture(texture_)
+  Private(Geometry3DLayer* q_):
+    q(q_)
   {
 
   }
@@ -56,13 +64,18 @@ struct Geometry3DLayer::Private
   //################################################################################################
   ~Private()
   {
-    if(textureID)
+    if(!textureIDs.empty())
     {
       q->map()->makeCurrent();
-      q->map()->deleteTexture(textureID);
+      for(auto i : textureIDs)
+        if(i.second)
+          q->map()->deleteTexture(i.second);
     }
 
-    delete texture;
+    for(auto i : textures)
+      delete i.second;
+    textures.clear();
+
     deleteVertexBuffers();
   }
 
@@ -91,6 +104,26 @@ struct Geometry3DLayer::Private
           GeometryDetails_lt details;
           details.material = shape.material;
 
+          auto selectTexture = [&](const tp_utils::StringID& name, GLuint& textureID, glm::vec3& color)
+          {
+            if(auto i=textureIDs.find(name); i!=textureIDs.end())
+            {
+              textureID = i->second;
+              color = {0.0f, 0.0f, 0.0f};
+            }
+            else
+            {
+              textureID = emptyTextureID;
+            }
+          };
+
+          glm::vec3 tmpNormal{0.0f, 0.0f, 1.0f};
+          selectTexture(details.material.ambientTexture, details.ambientTextureID, details.material.ambient);
+          selectTexture(details.material.diffuseTexture, details.diffuseTextureID, details.material.diffuse);
+          selectTexture(details.material.specularTexture, details.specularTextureID, details.material.specular);
+          details.alphaTextureID = emptyTextureID;
+          selectTexture(details.material.bumpTexture, details.bumpTextureID, tmpNormal);
+
           std::vector<GLuint> indexes;
           std::vector<MaterialShader::Vertex> verts;
           for(size_t n=0; n<part.indexes.size(); n++)
@@ -117,23 +150,34 @@ struct Geometry3DLayer::Private
 };
 
 //##################################################################################################
-Geometry3DLayer::Geometry3DLayer(Texture* texture):
-  d(new Private(this, texture))
+Geometry3DLayer::Geometry3DLayer():
+  d(new Private(this))
 {
-  if(texture)
-  {
-    texture->setImageChangedCallback([this]()
-    {
-      d->bindBeforeRender = true;
-      update();
-    });
-  }
+
 }
 
 //##################################################################################################
 Geometry3DLayer::~Geometry3DLayer()
 {
   delete d;
+}
+
+//##################################################################################################
+void Geometry3DLayer::setTextures(const std::unordered_map<tp_utils::StringID, Texture*>& textures)
+{
+  for(auto i : d->textures)
+    delete i.second;
+  d->textures = textures;
+
+  for(auto i : d->textures)
+  {
+    i.second->setImageChangedCallback([this]()
+    {
+      d->bindBeforeRender = true;
+      update();
+    });
+  }
+  d->bindBeforeRender = true;
 }
 
 //##################################################################################################
@@ -201,6 +245,47 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
   if(renderInfo.pass != defaultRenderPass() && renderInfo.pass != RenderPass::Picking)
     return;
 
+  //== Bind Textures ===============================================================================
+  if(d->bindBeforeRender)
+  {
+    d->bindBeforeRender=false;
+    d->updateVertexBuffer=true;
+
+    for(auto i : d->textureIDs)
+      if(i.second)
+        map()->deleteTexture(i.second);
+    d->textureIDs.clear();
+
+    if(d->emptyTextureID)
+      map()->deleteTexture(d->emptyTextureID);
+    d->emptyTextureID = 0;
+
+    for(auto i : d->textures)
+    {
+      if(!i.second->imageReady())
+        continue;
+
+      auto textureID = i.second->bindTexture();
+      if(!textureID)
+        continue;
+
+      d->textureIDs[i.first] = textureID;
+    }
+
+    if(!d->emptyTexture)
+    {
+      TPPixel white{0, 0, 0, 255};
+      TextureData textureData;
+      textureData.w = 1;
+      textureData.h = 1;
+      textureData.data = &white;
+      d->emptyTexture = std::make_unique<BasicTexture>(map(), textureData);
+    }
+
+    d->emptyTextureID = d->emptyTexture->bindTexture();
+  }
+
+  //== Common ======================================================================================
   auto render = [&](auto s,
       const auto& use,
       const auto& setMaterialPicking,
@@ -244,74 +329,64 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     }
   };
 
-
-  //-- MaterialShader ------------------------------------------------------------------------------
+  //== MaterialShader ==============================================================================
   if(d->shaderType == ShaderType::Material)
   {
-    render(static_cast<MaterialShader*>(nullptr), [&](auto shader)
+
+    render(static_cast<MaterialShader*>(nullptr), [&](auto shader) //-- use ------------------------
     {
       shader->use();
       auto m = map()->controller()->matrices(coordinateSystem());
       shader->setMatrix(d->objectMatrix, m.v, m.p);
       shader->setCameraRay(m.cameraOriginNear, m.cameraOriginFar);
       shader->setLight(d->light);
-    }, [&](auto, auto)
+    },
+    [&](auto, const auto&) //-- setMaterialPicking -------------------------------------------------
     {
 
-    }, [&](auto shader, auto first, auto second, auto pickingID)
+    },
+    [&](auto shader, auto first, auto second, auto pickingID) //-- drawPicking ---------------------
     {
       shader->drawPicking(first, second, pickingID);
-    }, [&](auto shader, const auto& details)
+    },
+    [&](auto shader, const auto& details) //-- setMaterial -----------------------------------------
     {
       shader->setMaterial(details.material);
-    }, [&](auto shader, auto first, auto second)
+      shader->setTextures(details.ambientTextureID,
+                          details.diffuseTextureID,
+                          details.specularTextureID,
+                          details.alphaTextureID,
+                          details.bumpTextureID);
+    },
+    [&](auto shader, auto first, auto second) //-- draw --------------------------------------------
     {
       shader->draw(first, second);
     },
     renderInfo);
   }
 
-
-  //-- ImageShader ---------------------------------------------------------------------------------
+  //== ImageShader =================================================================================
   else if(d->shaderType == ShaderType::Image)
   {
-    if(!d->texture)
-    {
-      tpWarning() << "Can't render using texture because texture has not been set!";
-      d->shaderType = ShaderType::Material;
-      return;
-    }
-
-    if(!d->texture->imageReady())
-      return;
-
-    if(d->bindBeforeRender)
-    {
-      d->bindBeforeRender=false;
-      map()->deleteTexture(d->textureID);
-      d->textureID = d->texture->bindTexture();
-      d->updateVertexBuffer=true;
-    }
-
-    if(!d->textureID)
-      return;
-
-    render(static_cast<ImageShader*>(nullptr), [&](auto shader)
+    render(static_cast<ImageShader*>(nullptr), [&](auto shader) //-- use ---------------------------
     {
       shader->use();
       auto m = map()->controller()->matrices(coordinateSystem());
       shader->setMatrix(m.vp * d->objectMatrix);
-      shader->setTexture(d->textureID);
-    }, [&](auto, auto)
+    },
+    [&](auto shader, const auto& details) //-- setMaterialPicking ----------------------------------
     {
-
-    }, [&](auto shader, auto first, auto second, auto pickingID)
+      shader->setTexture(details.ambientTextureID);
+    },
+    [&](auto shader, auto first, auto second, auto pickingID) //-- drawPicking ---------------------
     {
       shader->drawPicking(first, second, pickingID);
-    }, [&](auto, const auto&)
+    },
+    [&](auto shader, const auto& details) //-- setMaterial -----------------------------------------
     {
-
-    }, [&](auto shader, auto first, auto second)
+      shader->setTexture(details.ambientTextureID);
+    },
+    [&](auto shader, auto first, auto second) //-- draw --------------------------------------------
     {
       shader->draw(first, second, {1.0f, 1.0f, 1.0f, 1.0f});
     },
@@ -323,9 +398,9 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
 void Geometry3DLayer::invalidateBuffers()
 {
   d->deleteVertexBuffers();
-  d->updateVertexBuffer=true;
-  d->textureID = 0;
+  d->updateVertexBuffer = true;
   d->bindBeforeRender = true;
+  d->textureIDs.clear();
 }
 
 }
