@@ -10,25 +10,8 @@ namespace tp_maps
 
 namespace
 {
-ShaderString vertexShaderStr =
-    "$TP_VERT_SHADER_HEADER$"
-    "//LineShader vertexShaderStr\n"
-    "uniform mat4 matrix;\n"
-    "$TP_GLSL_IN_V$vec3 position;\n"
-    "void main()\n"
-    "{\n"
-    "  gl_Position=matrix*vec4(position, 1.0);\n"
-    "}";
-
-ShaderString fragmentShaderStr =
-    "$TP_FRAG_SHADER_HEADER$"
-    "//LineShader fragmentShaderStr\n"
-    "uniform vec4 color;\n"
-    "$TP_GLSL_GLFRAGCOLOR_DEF$"
-    "void main()\n"
-    "{\n"
-    "  $TP_GLSL_GLFRAGCOLOR$=color;\n"
-    "}";
+ShaderResource vertShaderStr{"/tp_maps/LineShader.vert"};
+ShaderResource fragShaderStr{"/tp_maps/LineShader.frag"};
 }
 
 //##################################################################################################
@@ -64,8 +47,8 @@ LineShader::LineShader(tp_maps::OpenGLProfile openGLProfile):
   Shader(openGLProfile),
   d(new Private())
 {
-  compile(vertexShaderStr.data(openGLProfile),
-          fragmentShaderStr.data(openGLProfile),
+  compile(vertShaderStr.data(openGLProfile),
+          fragShaderStr.data(openGLProfile),
           [](GLuint program)
   {
     glBindAttribLocation(program, 0, "position");

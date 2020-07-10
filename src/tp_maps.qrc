@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/tp_maps">
+        <file alias="FontShader.frag">resources/shaders/FontShader.frag</file>
+        <file alias="FontShader.vert">resources/shaders/FontShader.vert</file>
+        <file alias="FrameShader.frag">resources/shaders/FrameShader.frag</file>
+        <file alias="FrameShader.vert">resources/shaders/FrameShader.vert</file>
+        <file alias="ImageShader.frag">resources/shaders/ImageShader.frag</file>
+        <file alias="ImageShader.vert">resources/shaders/ImageShader.vert</file>
+        <file alias="LineShader.frag">resources/shaders/LineShader.frag</file>
+        <file alias="LineShader.vert">resources/shaders/LineShader.vert</file>
+        <file alias="MaterialShader.frag">resources/shaders/MaterialShader.frag</file>
+        <file alias="MaterialShader.vert">resources/shaders/MaterialShader.vert</file>
+        <file alias="PointSpriteShader.frag">resources/shaders/PointSpriteShader.frag</file>
+        <file alias="PointSpriteShader.vert">resources/shaders/PointSpriteShader.vert</file>
+        <file alias="PointSpriteShader.picking.frag">resources/shaders/PointSpriteShader.picking.frag</file>
+        <file alias="PointSpriteShader.picking.vert">resources/shaders/PointSpriteShader.picking.vert</file>
+        <file alias="YUVImageShader.frag">resources/shaders/YUVImageShader.frag</file>
+    </qresource>
+</RCC>
+

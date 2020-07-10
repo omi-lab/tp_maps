@@ -16,33 +16,8 @@ namespace tp_maps
 namespace
 {
 
-ShaderString vertexShaderStr =
-    "$TP_VERT_SHADER_HEADER$"
-    "//FontShader vertexShaderStr\n"
-    "$TP_GLSL_IN_V$vec3 inVertex;\n"
-    "$TP_GLSL_IN_V$vec3 inNormal;\n"
-    "$TP_GLSL_IN_V$vec2 inTexture;\n"
-    "uniform mat4 matrix;\n"
-    "$TP_GLSL_OUT_V$vec2 texCoordinate;\n"
-    "void main()\n"
-    "{\n"
-    "  gl_Position = matrix * vec4(inVertex, 1.0);\n"
-    "  texCoordinate = inTexture;\n"
-    "}\n";
-
-ShaderString fragmentShaderStr =
-    "$TP_FRAG_SHADER_HEADER$"
-    "//FontShader fragmentShaderStr\n"
-    "$TP_GLSL_IN_F$vec2 texCoordinate;\n"
-    "uniform sampler2D textureSampler;\n"
-    "uniform vec4 color;\n"
-    "$TP_GLSL_GLFRAGCOLOR_DEF$"
-    "void main()\n"
-    "{\n"
-    "  $TP_GLSL_GLFRAGCOLOR$ = $TP_GLSL_TEXTURE$ (textureSampler, texCoordinate)*color;\n"
-    "  if($TP_GLSL_GLFRAGCOLOR$.a < 0.01)\n"
-    "    discard;\n"
-    "}\n";
+ShaderResource vertShaderStr{"/tp_maps/FontShader.vert"};
+ShaderResource fragShaderStr{"/tp_maps/FontShader.frag"};
 
 //##################################################################################################
 struct Vertex_lt
@@ -146,10 +121,10 @@ FontShader::FontShader(tp_maps::OpenGLProfile openGLProfile, const char* vertexS
   d(new Private())
 {
   if(!vertexShader)
-    vertexShader = vertexShaderStr.data(openGLProfile);
+    vertexShader = vertShaderStr.data(openGLProfile);
 
   if(!fragmentShader)
-    fragmentShader = fragmentShaderStr.data(openGLProfile);
+    fragmentShader = fragShaderStr.data(openGLProfile);
 
   compile(vertexShader,
           fragmentShader,

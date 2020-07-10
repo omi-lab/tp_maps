@@ -10,80 +10,12 @@ namespace tp_maps
 
 namespace
 {
-ShaderString renderVertexShaderStr =
-    "$TP_VERT_SHADER_HEADER$"
-    "//PointSpriteShader renderVertexShaderStr\n"
-    "$TP_GLSL_IN_V$vec4 inColor;\n"
-    "$TP_GLSL_IN_V$vec3 inPosition;\n"
-    "$TP_GLSL_IN_V$vec3 inOffset;\n"
-    "$TP_GLSL_IN_V$vec2 inTexture;\n"
-    "uniform mat4 matrix;\n"
-    "uniform vec2 scaleFactor;\n"
-    "$TP_GLSL_OUT_V$vec2 texCoordinate;\n"
-    "$TP_GLSL_OUT_V$vec4 color;\n"
-    "$TP_GLSL_OUT_V$float clip;\n"
-    "void main()\n"
-    "{\n"
-    "  gl_Position = (matrix * vec4(inPosition, 1.0));\n"
-    "  clip = (gl_Position.z<-0.9999)?0.0:1.0;\n"
-    "  gl_Position += vec4((inOffset.x*scaleFactor.x)*gl_Position.w, (inOffset.y*scaleFactor.y)*gl_Position.w, 0.0, 0.0);\n"
-    "  texCoordinate = inTexture;\n"
-    "  color = inColor;\n"
-    "}\n";
-
-ShaderString renderFragmentShaderStr =
-    "$TP_FRAG_SHADER_HEADER$"
-    "//PointSpriteShader renderFragmentShaderStr\n"
-    "uniform sampler2D textureSampler;\n"
-    "$TP_GLSL_IN_F$vec2 texCoordinate;\n"
-    "$TP_GLSL_IN_F$vec4 color;\n"
-    "$TP_GLSL_IN_F$float clip;\n"
-    "$TP_GLSL_GLFRAGCOLOR_DEF$"
-    "void main()\n"
-    "{\n"
-    "  $TP_GLSL_GLFRAGCOLOR$ = $TP_GLSL_TEXTURE$(textureSampler, texCoordinate) * color;\n"
-    "  if($TP_GLSL_GLFRAGCOLOR$.a < 0.001 || clip<0.1)\n"
-    "    discard;\n"
-    "}\n";
+ShaderResource vertShaderStr{"/tp_maps/PointSpriteShader.vert"};
+ShaderResource fragShaderStr{"/tp_maps/PointSpriteShader.frag"};
 
 #ifdef TP_GLSL_PICKING_SUPPORTED
-ShaderString pickingVertexShaderStr =
-    "$TP_VERT_SHADER_HEADER$"
-    "//PointSpriteShader pickingVertexShaderStr\n"
-    "$TP_GLSL_IN_V$vec4 inColor;\n"
-    "$TP_GLSL_IN_V$vec3 inPosition;\n"
-    "$TP_GLSL_IN_V$vec3 inOffset;\n"
-    "$TP_GLSL_IN_V$vec2 inTexture;\n"
-    "uniform mat4 matrix;\n"
-    "uniform vec2 scaleFactor;\n"
-    "uniform uint pickingID;\n"
-    "$TP_GLSL_OUT_V$vec2 texCoordinate;\n"
-    "$TP_GLSL_OUT_V$vec4 picking;\n"
-    "void main()\n"
-    "{\n"
-    "  gl_Position = (matrix * vec4(inPosition, 1.0));\n"
-    "  gl_Position = vec4(gl_Position.xyz * (1.0/gl_Position.w), 1.0) + vec4(inOffset.x*scaleFactor.x, inOffset.y*scaleFactor.y, 0.0, 0.0);\n"
-    "  texCoordinate = inTexture;\n"
-    "  uint id = pickingID + (uint(gl_VertexID)/4u);\n"
-    "  uint r = (id & 0x000000FFu) >>  0u;\n"
-    "  uint g = (id & 0x0000FF00u) >>  8u;\n"
-    "  uint b = (id & 0x00FF0000u) >> 16u;\n"
-    "  picking = vec4(r,g,b,255.0)/255.0;\n"
-    "}\n";
-
-ShaderString pickingFragmentShaderStr =
-    "$TP_FRAG_SHADER_HEADER$"
-    "//PointSpriteShader pickingFragmentShaderStr\n"
-    "uniform sampler2D textureSampler;\n"
-    "$TP_GLSL_IN_F$vec2 texCoordinate;\n"
-    "$TP_GLSL_IN_F$vec4 picking;\n"
-    "$TP_GLSL_GLFRAGCOLOR_DEF$"
-    "void main()\n"
-    "{\n"
-    "  $TP_GLSL_GLFRAGCOLOR$ = picking;\n"
-    "  if($TP_GLSL_TEXTURE$(textureSampler, texCoordinate).a < 0.001)\n"
-    "    discard;\n"
-    "}\n";
+ShaderResource vertShaderStrPicking{"/tp_maps/PointSpriteShader.picking.vert"};
+ShaderResource fragShaderStrPicking{"/tp_maps/PointSpriteShader.picking.frag"};
 #endif
 
 //There will be 4 of these generated for each PointSprite.
@@ -172,9 +104,9 @@ PointSpriteShader::PointSpriteShader(tp_maps::OpenGLProfile openGLProfile):
     shaderType);
   };
 
-  compileShader( renderVertexShaderStr.data(openGLProfile),  renderFragmentShaderStr.data(openGLProfile),  "PointSpriteShader_render", ShaderType:: Render, d-> renderMatrixLoc, d-> renderScaleFactorLoc, nullptr);
+  compileShader(vertShaderStr.data(openGLProfile), fragShaderStr.data(openGLProfile), "PointSpriteShader_render", ShaderType:: Render, d-> renderMatrixLoc, d-> renderScaleFactorLoc, nullptr);
 #ifdef TP_GLSL_PICKING_SUPPORTED
-  compileShader(pickingVertexShaderStr.data(openGLProfile), pickingFragmentShaderStr.data(openGLProfile), "PointSpriteShader_picking", ShaderType::Picking, d->pickingMatrixLoc, d->pickingScaleFactorLoc, &d->pickingIDLoc);
+  compileShader(vertShaderStrPicking.data(openGLProfile), fragShaderStrPicking.data(openGLProfile), "PointSpriteShader_picking", ShaderType::Picking, d->pickingMatrixLoc, d->pickingScaleFactorLoc, &d->pickingIDLoc);
 #else
   //Point sprite picking is not implemented on this platform.
 #endif

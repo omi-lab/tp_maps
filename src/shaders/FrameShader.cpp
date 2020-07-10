@@ -10,46 +10,8 @@ namespace tp_maps
 
 namespace
 {
-
-ShaderString vertexShaderStr =
-    "$TP_VERT_SHADER_HEADER$"
-    "//FrameShader vertexShaderStr\n"
-    "$TP_GLSL_IN_V$vec3 inVertexP;\n"
-    "$TP_GLSL_IN_V$vec3 inVertexR;\n"
-    "$TP_GLSL_IN_V$vec3 inNormal;\n"
-    "$TP_GLSL_IN_V$vec2 inTexture;\n"
-    "uniform mat4 matrix;\n"
-    "uniform vec3 scale;\n"
-    "uniform vec4 color;\n"
-    "$TP_GLSL_OUT_V$vec3 lightVector0;\n"
-    "$TP_GLSL_OUT_V$vec3 eyeNormal;\n"
-    "$TP_GLSL_OUT_V$vec2 texCoordinate;\n"
-    "$TP_GLSL_OUT_V$vec4 multColor;\n"
-    "void main()\n"
-    "{\n"
-    "  vec3 inVertex = inVertexP+(inVertexR*scale);\n"
-    "  gl_Position = matrix * vec4(inVertex, 1.0);\n"
-    "  lightVector0 = vec3(1.0, 1.0, 1.0);\n"
-    "  eyeNormal = inNormal;\n"
-    "  texCoordinate = inTexture;\n"
-    "  multColor = color;\n"
-    "}\n";
-
-ShaderString fragmentShaderStr =
-    "$TP_FRAG_SHADER_HEADER$"
-    "//FrameShader fragmentShaderStr\n"
-    "$TP_GLSL_IN_F$vec3 lightVector0;\n"
-    "$TP_GLSL_IN_F$vec3 eyeNormal;\n"
-    "$TP_GLSL_IN_F$vec2 texCoordinate;\n"
-    "$TP_GLSL_IN_F$vec4 multColor;\n"
-    "uniform sampler2D textureSampler;\n"
-    "$TP_GLSL_GLFRAGCOLOR_DEF$"
-    "void main()\n"
-    "{\n"
-    "  $TP_GLSL_GLFRAGCOLOR$ = $TP_GLSL_TEXTURE$(textureSampler, texCoordinate)*multColor;\n"
-    "  if($TP_GLSL_GLFRAGCOLOR$.a < 0.01)\n"
-    "    discard;\n"
-    "}\n";
+ShaderResource vertShaderStr{"/tp_maps/FrameShader.vert"};
+ShaderResource fragShaderStr{"/tp_maps/FrameShader.frag"};
 }
 
 //##################################################################################################
@@ -83,10 +45,10 @@ FrameShader::FrameShader(tp_maps::OpenGLProfile openGLProfile, const char* verte
   d(new Private())
 {
   if(!vertexShader)
-    vertexShader = vertexShaderStr.data(openGLProfile);
+    vertexShader = vertShaderStr.data(openGLProfile);
 
   if(!fragmentShader)
-    fragmentShader = fragmentShaderStr.data(openGLProfile);
+    fragmentShader = fragShaderStr.data(openGLProfile);
 
   compile(vertexShader,
           fragmentShader,

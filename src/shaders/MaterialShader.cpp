@@ -12,109 +12,8 @@ namespace tp_maps
 
 namespace
 {
-
-ShaderString vertexShaderStr =
-    "$TP_VERT_SHADER_HEADER$"
-    "//MaterialShader vertexShaderStr\n"
-    "\n"
-    "$TP_GLSL_IN_V$vec3 inVertex;\n"
-    "$TP_GLSL_IN_V$vec3 inNormal;\n"
-    "$TP_GLSL_IN_V$vec2 inTexture;\n"
-    "\n"
-    "$TP_GLSL_IN_V$vec3 positionWorldspace;\n"
-    "\n"
-    "$TP_GLSL_OUT_V$vec3 lightVector0;\n"
-    "$TP_GLSL_OUT_V$vec3 EyeNormal;\n"
-    "$TP_GLSL_OUT_V$vec2 texCoordinate;\n"
-    "$TP_GLSL_OUT_V$vec3 normal;\n"
-    "$TP_GLSL_OUT_V$vec3 fragPos;\n"
-    "\n"
-    "uniform mat4 m;\n"
-    // "uniform mat4 v;\n"
-    // "uniform mat4 p;\n"
-    "uniform mat4 mvp;\n"
-    //"uniform mat4 vp;\n"
-    "void main()\n"
-    "{\n"
-    "  gl_Position = mvp * vec4(inVertex, 1.0);\n"
-    "  fragPos = mat3(m)*inVertex;\n"
-    "  lightVector0 = vec3(0.0, 0.0, 1.0);\n"
-    "  normal = mat3(m)*inNormal;\n"
-    "  texCoordinate = inTexture;\n"
-    "}\n";
-
-ShaderString fragmentShaderStr =
-    "$TP_FRAG_SHADER_HEADER$"
-    "//MaterialShader fragmentShaderStr\n"
-    "\n"
-    "struct Material\n"
-    "{\n"
-    "  vec3 ambient;\n"
-    "  vec3 diffuse;\n"
-    "  vec3 specular;\n"
-    "  float shininess;\n"
-    "  float alpha;\n"
-    "};\n"
-    "\n"
-    "struct Light\n"
-    "{\n"
-    "  vec3 position;\n"
-    "  vec3 ambient;\n"
-    "  vec3 diffuse;\n"
-    "  vec3 specular;\n"
-    "  float diffuseScale;\n"
-    "  float diffuseTranslate;\n"
-    "};\n"
-    "\n"
-    "$TP_GLSL_IN_F$vec3 fragPos;\n"
-    "$TP_GLSL_IN_F$vec3 normal;\n"
-    "$TP_GLSL_IN_F$vec2 texCoordinate;\n"
-    "\n"
-    "uniform sampler2D ambientTexture;\n"
-    "uniform sampler2D diffuseTexture;\n"
-    "uniform sampler2D specularTexture;\n"
-    "uniform sampler2D bumpTexture;\n"
-    "\n"
-    "uniform vec3 cameraOriginNear;\n"
-    "uniform vec3 cameraOriginFar;\n"
-    "uniform Material material;\n"
-    "uniform Light light;\n"
-    "uniform float picking;\n"
-    "uniform vec4 pickingID;\n"
-    "\n"
-    "$TP_GLSL_IN_F$vec3 lightVector0;\n"
-    "$TP_GLSL_IN_F$vec3 EyeNormal;\n"
-    "$TP_GLSL_GLFRAGCOLOR_DEF$"
-    "\n"
-    "void main()\n"
-    "{\n"
-    "  vec3 ambientTex = $TP_GLSL_TEXTURE$(ambientTexture, texCoordinate).xyz;\n"
-    "  vec3 diffuseTex = $TP_GLSL_TEXTURE$(diffuseTexture, texCoordinate).xyz;\n"
-    "  vec3 specularTex = $TP_GLSL_TEXTURE$(specularTexture, texCoordinate).xyz;\n"
-    "  vec3 bumpTex = $TP_GLSL_TEXTURE$(bumpTexture, texCoordinate).xyz;\n"
-    "\n"
-//    "  vec3 norm = normalize(normal);\n"
-    "  vec3 norm = normalize(bumpTex * 2.0 - 1.0);\n"
-    "\n"
-    "  // Ambient\n"
-    "  vec3 ambient = light.ambient * (ambientTex+material.ambient);\n"
-    "  \n"
-    "  // Diffuse\n"
-    "  float diff = max((dot(norm, lightVector0)+light.diffuseTranslate)*light.diffuseScale, 0.0);\n"
-    "  vec3 diffuse = light.diffuse * (diff * (diffuseTex+material.diffuse));\n"
-    "  \n"
-    "  // Specular\n"
-    "  vec3 incidenceVector = -lightVector0;\n" //a unit vector
-    "  vec3 reflectionVector = reflect(incidenceVector, norm);\n" //also a unit vector
-    "  vec3 surfaceToCamera = normalize(cameraOriginNear - cameraOriginFar);\n" //also a unit vector
-    "  float cosAngle = max(0.0, dot(surfaceToCamera, reflectionVector));\n"
-    "  float specularCoefficient = pow(cosAngle, material.shininess);\n"
-    "  vec3 specular = specularCoefficient * light.specular * (specularTex+material.specular);\n"
-    "  \n"
-    "  vec3 result = ambient + diffuse + specular;\n"
-    "  $TP_GLSL_GLFRAGCOLOR$ = vec4(result, material.alpha);\n"
-    "  $TP_GLSL_GLFRAGCOLOR$ = (picking*pickingID) + ((1.0-picking)*$TP_GLSL_GLFRAGCOLOR$);"
-    "}\n";
+ShaderResource vertShaderStr{"/tp_maps/MaterialShader.vert"};
+ShaderResource fragShaderStr{"/tp_maps/MaterialShader.frag"};
 }
 
 //##################################################################################################
@@ -127,6 +26,7 @@ struct MaterialShader::Private
   GLint mMatrixLocation          {0};
   // GLint vMatrixLocation          {0};
   // GLint pMatrixLocation          {0};
+  GLint mvMatrixLocation         {0};
   GLint mvpMatrixLocation        {0};
   // GLint vpMatrixLocation         {0};
 
@@ -175,7 +75,7 @@ MaterialShader::MaterialShader(tp_maps::OpenGLProfile openGLProfile, bool compil
   d(new Private())
 {
   if(compileShader)
-    compile(vertexShaderStr.data(openGLProfile), fragmentShaderStr.data(openGLProfile), [](auto){}, [](auto){});
+    compile(vertShaderStr.data(openGLProfile), fragShaderStr.data(openGLProfile), [](auto){}, [](auto){});
 }
 
 //##################################################################################################
@@ -185,18 +85,20 @@ MaterialShader::~MaterialShader()
 }
 
 //################################################################################################
-void MaterialShader::compile(const char* vertexShaderStr,
-                             const char* fragmentShaderStr,
+void MaterialShader::compile(const char* vertShaderStr,
+                             const char* fragShaderStr,
                              const std::function<void(GLuint)>& bindLocations,
                              const std::function<void(GLuint)>& getLocations)
 {
-  Shader::compile(vertexShaderStr,
-                  fragmentShaderStr,
+  Shader::compile(vertShaderStr,
+                  fragShaderStr,
                   [&](GLuint program)
   {
     glBindAttribLocation(program, 0, "inVertex");
     glBindAttribLocation(program, 1, "inNormal");
-    glBindAttribLocation(program, 2, "inTexture");
+    glBindAttribLocation(program, 2, "inTangent");
+    glBindAttribLocation(program, 3, "inBitangent");
+    glBindAttribLocation(program, 4, "inTexture");
     bindLocations(program);
   },
   [&](GLuint program)
@@ -204,6 +106,7 @@ void MaterialShader::compile(const char* vertexShaderStr,
     d->mMatrixLocation             = glGetUniformLocation(program, "m");
     // d->vMatrixLocation             = glGetUniformLocation(program, "v");
     // d->pMatrixLocation             = glGetUniformLocation(program, "p");
+    d->mvMatrixLocation            = glGetUniformLocation(program, "mv");
     d->mvpMatrixLocation           = glGetUniformLocation(program, "mvp");
     // d->vpMatrixLocation            = glGetUniformLocation(program, "vp");
 
@@ -227,8 +130,6 @@ void MaterialShader::compile(const char* vertexShaderStr,
     d->pickingLocation           = glGetUniformLocation(program, "picking");
     d->pickingIDLocation         = glGetUniformLocation(program, "pickingID");
 
-
-
     d->ambientTextureLocation = glGetUniformLocation(program, "ambientTexture");
     d->diffuseTextureLocation = glGetUniformLocation(program, "diffuseTexture");
     d->specularTextureLocation = glGetUniformLocation(program, "specularTexture");
@@ -239,6 +140,7 @@ void MaterialShader::compile(const char* vertexShaderStr,
     if(d->mMatrixLocation  <0)tpWarning() << shaderName << " mMatrixLocation  : " << d->mMatrixLocation  ;
     // if(d->vMatrixLocation  <0)tpWarning() << shaderName << " vMatrixLocation  : " << d->vMatrixLocation  ;
     // if(d->pMatrixLocation  <0)tpWarning() << shaderName << " pMatrixLocation  : " << d->pMatrixLocation  ;
+    if(d->mvMatrixLocation<0)tpWarning() << shaderName << " mvMatrixLocation: " << d->mvMatrixLocation;
     if(d->mvpMatrixLocation<0)tpWarning() << shaderName << " mvpMatrixLocation: " << d->mvpMatrixLocation;
     // if(d->vpMatrixLocation <0)tpWarning() << shaderName << " vpMatrixLocation : " << d->vpMatrixLocation ;
 
@@ -293,10 +195,12 @@ void MaterialShader::setCameraRay(const glm::vec3& near, const glm::vec3& far)
 void MaterialShader::setMatrix(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p)
 {
   glm::mat4 mvp = p*v*m;
+  glm::mat3 mv = v*m;
   // glm::mat4 vp = p*v;
   glUniformMatrix4fv(d->mMatrixLocation  , 1, GL_FALSE, glm::value_ptr(m));
   // glUniformMatrix4fv(d->vMatrixLocation  , 1, GL_FALSE, glm::value_ptr(v));
   // glUniformMatrix4fv(d->pMatrixLocation  , 1, GL_FALSE, glm::value_ptr(p));
+  glUniformMatrix3fv(d->mvMatrixLocation,  1, GL_FALSE, glm::value_ptr(mv));
   glUniformMatrix4fv(d->mvpMatrixLocation, 1, GL_FALSE, glm::value_ptr(mvp));
   // glUniformMatrix4fv(d->vpMatrixLocation , 1, GL_FALSE, glm::value_ptr(vp));
 }

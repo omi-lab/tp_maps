@@ -135,7 +135,7 @@ void GeometryLayer::render(RenderInfo& renderInfo)
           {
             const glm::vec3& v = c.vertices.at(n);
             indexes.push_back(GLuint(n));
-            verts.push_back(Geometry3DShader::Vertex(v, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}));
+            verts.push_back(Geometry3DShader::Vertex(v, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}));
           }
 
           std::pair<GLenum, MaterialShader::VertexBuffer*> p;

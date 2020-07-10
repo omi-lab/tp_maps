@@ -133,7 +133,7 @@ struct Geometry3DLayer::Private
             {
               const auto& v = shape.geometry.verts.at(size_t(idx));
               indexes.push_back(GLuint(n));
-              verts.emplace_back(MaterialShader::Vertex(v.vert, v.normal, v.texture));
+              verts.emplace_back(MaterialShader::Vertex(v.vert, v.normal, v.tangent, v.bitangent, v.texture));
             }
           }
 

@@ -1,6 +1,8 @@
 TARGET = tp_maps
 TEMPLATE = lib
 
+TP_RC += src/tp_maps.qrc
+
 DEFINES += TP_MAPS_LIBRARY
 
 SOURCES += src/Globals.cpp
