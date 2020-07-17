@@ -3,8 +3,6 @@
 
 #include "tp_maps/Globals.h"
 
-#include "glm/glm.hpp"
-
 #include <functional>
 
 namespace tp_maps

@@ -54,25 +54,21 @@ struct Map::Private
   std::function<void(RenderInfo&)> custom4Start;
   std::function<void(RenderInfo&)> custom4End;
 
-  // Screen space reflection and similar effects are expensive because they require that the scene
-  // is rendered to a texture for the Background, Normal, and Transparency passes and then blitted
-  // to the screen for the Reflection pass. So by default we don't use a Reflection pass and we turn
-  // reflection off here.
-  bool reflectionIsOn{false};
-
   RenderInfo renderInfo;
 
   int width{1};
   int height{1};
   glm::vec3 backgroundColor{0.0f, 0.0f, 0.0f};
 
-  GLuint reflectionFrameBuffer{0};
-  GLuint reflectionFrameBufferTexture{0};
-  GLuint reflectionFrameBufferDepth{0};
-  int reflectionFrameBufferWidth{1};
-  int reflectionFrameBufferHeight{1};
-
   OpenGLProfile openGLProfile{TP_DEFAULT_PROFILE};
+
+  FBO reflectionBuffer;
+
+  std::vector<Light> lights{Light()};
+  std::vector<FBO> lightTextures;
+
+  FBO pickingBuffer;
+  FBO renderToImageBuffer;
 
   bool initialized{false};
   bool preDeleteCalled{false};
@@ -94,6 +90,90 @@ struct Map::Private
     for(; l<lMax; l++)
       if((*l)->visible())
         (*l)->render(renderInfo);
+  }
+
+  //################################################################################################
+  bool prepareBuffer(FBO& buffer, int width, int height)
+  {
+    if(buffer.width!=width || buffer.height!=height)
+      deleteBuffer(buffer);
+
+    if(!buffer.frameBuffer)
+    {
+      glGenFramebuffers(1, &buffer.frameBuffer);
+      buffer.width  = width;
+      buffer.height = height;
+    }
+
+    glBindFramebuffer(TP_GL_DRAW_FRAMEBUFFER, buffer.frameBuffer);
+
+    if(!buffer.textureID)
+    {
+      glGenTextures(1, &buffer.textureID);
+      glBindTexture(GL_TEXTURE_2D, buffer.textureID);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer.textureID, 0);
+
+      glGenTextures(1, &buffer.depthID);
+      glBindTexture(GL_TEXTURE_2D, buffer.depthID);
+      glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
+
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+      glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+
+      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.depthID, 0);
+    }
+
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+      tpWarning() << "Error Map::Private::prepareBuffer frame buffer not complete!";
+      return false;
+    }
+
+    glViewport(0, 0, width, height);
+
+    glDepthMask(true);
+    glClearDepthf(1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    return true;
+  }
+
+  //################################################################################################
+  void deleteBuffer(FBO& buffer)
+  {
+    if(buffer.frameBuffer)
+    {
+      glDeleteFramebuffers(1, &buffer.frameBuffer);
+      buffer.frameBuffer = 0;
+    }
+
+    if(buffer.textureID)
+    {
+      glDeleteTextures(1, &buffer.textureID);
+      buffer.textureID = 0;
+    }
+
+    if(buffer.depthID)
+    {
+      glDeleteTextures(1, &buffer.depthID);
+      buffer.depthID = 0;
+    }
+  }
+
+  //################################################################################################
+  void invalidateBuffer(FBO& buffer)
+  {
+    buffer.frameBuffer = 0;
+    buffer.textureID   = 0;
+    buffer.depthID     = 0;
   }
 };
 
@@ -129,6 +209,13 @@ void Map::preDelete()
 
   while(!d->fontRenderers.empty())
     delete tpTakeFirst(d->fontRenderers);
+
+  d->deleteBuffer(d->reflectionBuffer);
+  d->deleteBuffer(d->pickingBuffer);
+  d->deleteBuffer(d->renderToImageBuffer);
+
+  for(auto& lightBuffer : d->lightTextures)
+    d->deleteBuffer(lightBuffer);
 
   d->preDeleteCalled = true;
 }
@@ -218,8 +305,6 @@ glm::vec3 Map::backgroundColor()const
 void Map::setRenderPasses(const std::vector<RenderPass>& renderPasses)
 {
   d->renderPasses = renderPasses;
-  d->reflectionIsOn = tpContains(d->renderPasses, RenderPass::Reflection);
-
   update();
 }
 
@@ -259,6 +344,19 @@ void Map::setCustomRenderPass(RenderPass renderPass,
   default:
     break;
   }
+}
+
+//##################################################################################################
+void Map::setLights(const std::vector<Light>& lights)
+{
+  d->lights = lights;
+  update();
+}
+
+//##################################################################################################
+const std::vector<Light>& Map::lights()const
+{
+  return d->lights;
 }
 
 //##################################################################################################
@@ -476,55 +574,22 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
   const int pickingSize=9;
   const int left=pickingSize/2;
 
-  if(width()<pickingSize || height()<pickingSize)
+  if(d->width<pickingSize || d->height<pickingSize)
     return nullptr;
 
   makeCurrent();
 
+  GLint originalFrameBuffer = 0;
+  glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
+
   //------------------------------------------------------------------------------------------------
   // Configure the frame buffer that the picking values will be rendered to.
-  GLuint frameBuffer = 0;
-  glGenFramebuffers(1, &frameBuffer);
-  glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-
-  GLuint frameBufferTexture = 0;
-  glGenTextures(1, &frameBufferTexture);
-  glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, d->width, d->height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-  GLuint frameBufferDepth = 0;
-  glGenRenderbuffers(1, &frameBufferDepth);
-  glBindRenderbuffer(GL_RENDERBUFFER, frameBufferDepth);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, d->width, d->height);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, frameBufferDepth);
-
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameBufferTexture, 0);
-
-  if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-  {
-    tpWarning() << "Error Map::performPicking frame buffer not complete!";
-
-    if(frameBuffer)
-      glDeleteFramebuffers(1, &frameBuffer);
-
-    if(frameBufferTexture)
-      glDeleteTextures(1, &frameBufferTexture);
-
-    if(frameBufferDepth)
-      glDeleteRenderbuffers(1, &frameBufferDepth);
-
+  if(!d->prepareBuffer(d->renderToImageBuffer, d->width, d->height))
     return nullptr;
-  }
-
-  glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-  glViewport(0, 0, d->width, d->height);
 
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glClearColor(d->backgroundColor.x, d->backgroundColor.y, d->backgroundColor.z, 1.0f);
-
 
   //------------------------------------------------------------------------------------------------
   // Execute a picking render pass.
@@ -535,7 +600,6 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
 
   d->render();
 
-
   //------------------------------------------------------------------------------------------------
   // Read the small patch from around the picking position and then free up the frame buffers.
 
@@ -545,11 +609,7 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
   std::vector<unsigned char> pixels(pickingSize*pickingSize*4);
   glReadPixels(windowX, windowY, pickingSize, pickingSize, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glDeleteFramebuffers(1, &frameBuffer);
-  glDeleteTextures(1, &frameBufferTexture);
-  glDeleteRenderbuffers(1, &frameBufferDepth);
-
+  glBindFramebuffer(GL_FRAMEBUFFER, originalFrameBuffer);
 
   //------------------------------------------------------------------------------------------------
   // Iterate over the 9x9 patch of picking data and find the most appropriate result. We favor
@@ -606,48 +666,22 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
     return false;
   }
 
+  auto originalWidth  = d->width;
+  auto originalHeight = d->height;
+
   makeCurrent();
 
-  //------------------------------------------------------------------------------------------------
+  GLint originalFrameBuffer = 0;
+  glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
+
   // Configure the frame buffer that the image will be rendered to.
-  GLuint frameBuffer = 0;
-  glGenFramebuffers(1, &frameBuffer);
-  TP_CLEANUP([&]{if(frameBuffer)glDeleteFramebuffers(1, &frameBuffer);});
-  glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-
-  GLuint frameBufferTexture = 0;
-  glGenTextures(1, &frameBufferTexture);
-  TP_CLEANUP([&]{if(frameBufferTexture)glDeleteTextures(1, &frameBufferTexture);});
-  glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, int(width), int(height), 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-  GLuint frameBufferDepth = 0;
-  glGenRenderbuffers(1, &frameBufferDepth);
-  TP_CLEANUP([&]{if(frameBufferDepth)glDeleteRenderbuffers(1, &frameBufferDepth);});
-  glBindRenderbuffer(GL_RENDERBUFFER, frameBufferDepth);
-
-  glRenderbufferStorage(GL_RENDERBUFFER, TP_GL_DEPTH_COMPONENT32, int(width), int(height));
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, frameBufferDepth);
-
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameBufferTexture, 0);
-
-  if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-  {
-    tpWarning() << "Error Map::renderToImage frame buffer not complete!";
+  if(!d->prepareBuffer(d->renderToImageBuffer, int(width), int(height)))
     return false;
-  }
-
-  glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-  TP_CLEANUP([&]{glBindFramebuffer(GL_FRAMEBUFFER, 0);});
-
-  glViewport(0, 0, int(width), int(height));
-  TP_CLEANUP([&]{glViewport(0, 0, d->width, d->height);});
 
   // Execute a render passes.
   paintGLNoMakeCurrent();
 
+  // Read the texture that we just generated
   glReadPixels(0, 0, int(width), int(height), GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
   if(swapY)
@@ -667,6 +701,12 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
     }
   }
 
+  // Return to the original viewport settings
+  d->width  = originalWidth;
+  d->height = originalHeight;
+  glBindFramebuffer(GL_FRAMEBUFFER, originalFrameBuffer);
+  glViewport(0, 0, d->width, d->height);
+
   return true;
 }
 
@@ -680,13 +720,19 @@ void Map::deleteTexture(GLuint id)
 //##################################################################################################
 GLuint Map::reflectionTexture() const
 {
-  return d->reflectionFrameBufferTexture;
+  return d->reflectionBuffer.textureID;
 }
 
 //##################################################################################################
 GLuint Map::reflectionDepth() const
 {
-  return d->reflectionFrameBufferDepth;
+  return d->reflectionBuffer.depthID;
+}
+
+//##################################################################################################
+const std::vector<FBO>& Map::lightTextures() const
+{
+  return d->lightTextures;
 }
 
 //##################################################################################################
@@ -702,7 +748,7 @@ int Map::height() const
 }
 
 //##################################################################################################
-glm::vec2 Map::screenSize()const
+glm::vec2 Map::screenSize() const
 {
   return {d->width, d->height};
 }
@@ -735,9 +781,10 @@ void Map::initializeGL()
     }
     d->shaders.clear();
 
-    d->reflectionFrameBuffer        = 0;
-    d->reflectionFrameBufferTexture = 0;
-    d->reflectionFrameBufferDepth   = 0;
+    d->invalidateBuffer(d->reflectionBuffer);
+    d->invalidateBuffer(d->pickingBuffer);
+    d->invalidateBuffer(d->renderToImageBuffer);
+    d->lightTextures.clear();
 
     for(auto i : d->layers)
       i->invalidateBuffers();
@@ -774,79 +821,9 @@ void Map::paintGL()
 //##################################################################################################
 void Map::paintGLNoMakeCurrent()
 {
-#ifdef TP_REFLECTION_SUPPORTED
+#ifdef TP_FBO_SUPPORTED
   GLint originalFrameBuffer = 0;
-
-  // If we are using reflection enable the reflection FBO for the first few passes, then in the
-  // reflection pass blit it to the screen and make the texture available so that layers can use it
-  // to render screen space reflections.
-  if(d->reflectionIsOn)
-  {
-    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
-
-    if((d->reflectionFrameBuffer || d->reflectionFrameBufferTexture) &&
-       (d->reflectionFrameBufferWidth != d->width || d->reflectionFrameBufferHeight != d->height))
-    {
-      if(d->reflectionFrameBuffer)
-      {
-        glDeleteFramebuffers(1, &d->reflectionFrameBuffer);
-        d->reflectionFrameBuffer = 0;
-      }
-
-      if(d->reflectionFrameBuffer)
-      {
-        glDeleteTextures(1, &d->reflectionFrameBuffer);
-        d->reflectionFrameBuffer = 0;
-      }
-
-      if(d->reflectionFrameBufferDepth)
-      {
-        glDeleteTextures(1, &d->reflectionFrameBufferDepth);
-        d->reflectionFrameBufferDepth = 0;
-      }
-    }
-
-    if(!d->reflectionFrameBuffer)
-    {
-      glGenFramebuffers(1, &d->reflectionFrameBuffer);
-      d->reflectionFrameBufferWidth  = d->width;
-      d->reflectionFrameBufferHeight = d->height;
-    }
-
-    glBindFramebuffer(TP_GL_DRAW_FRAMEBUFFER, d->reflectionFrameBuffer);
-
-    if(!d->reflectionFrameBufferTexture)
-    {
-      glGenTextures(1, &d->reflectionFrameBufferTexture);
-      glBindTexture(GL_TEXTURE_2D, d->reflectionFrameBufferTexture);
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, d->width, d->height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, d->reflectionFrameBufferTexture, 0);
-
-      glGenTextures(1, &d->reflectionFrameBufferDepth);
-      glBindTexture(GL_TEXTURE_2D, d->reflectionFrameBufferDepth);
-      glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, d->width, d->height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
-
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-      glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-
-      //glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, 1280, 720, 0,GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
-      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, d->reflectionFrameBufferDepth, 0);
-      //glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D, m_FBOdepth_textura,0);
-    }
-
-    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    {
-      tpWarning() << "Error Map::paintGLNoMakeCurrent frame buffer not complete!";
-      return;
-    }
-  }
+  glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
 #endif
 
 #if 0
@@ -862,7 +839,49 @@ void Map::paintGLNoMakeCurrent()
     d->renderInfo.pass = renderPass;
     switch(renderPass)
     {
-    case RenderPass::Background:
+    case RenderPass::LightFBOs: //------------------------------------------------------------------
+    {
+#ifdef TP_FBO_SUPPORTED
+      while(d->lightTextures.size() < d->lights.size())
+        d->lightTextures.emplace_back();
+
+      while(d->lightTextures.size() > d->lights.size())
+      {
+        auto buffer = tpTakeLast(d->lightTextures);
+        d->deleteBuffer(buffer);
+      }
+
+      glEnable(GL_DEPTH_TEST);
+      glDepthFunc(GL_LESS);
+      glDepthMask(true);
+
+      for(size_t i=0; i< d->lightTextures.size(); i++)
+      {
+        const auto& light = d->lights.at(i);
+        auto& lightBuffer = d->lightTextures.at(i);
+
+        if(!d->prepareBuffer(lightBuffer, 1024, 1024))
+          return;
+
+        d->controller->setCurrentLight(light);
+        d->render();
+      }
+      glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
+#endif
+      break;
+    }
+
+    case RenderPass::ReflectionFBO: //--------------------------------------------------------------
+    {
+#ifdef TP_FBO_SUPPORTED
+      glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
+      if(!d->prepareBuffer(d->reflectionBuffer, d->width, d->height))
+        return;
+#endif
+      break;
+    }
+
+    case RenderPass::Background: //-----------------------------------------------------------------
     {
       glDisable(GL_DEPTH_TEST);
       glDepthMask(false);
@@ -870,7 +889,7 @@ void Map::paintGLNoMakeCurrent()
       break;
     }
 
-    case RenderPass::Normal:
+    case RenderPass::Normal: //---------------------------------------------------------------------
     {
       glEnable(GL_DEPTH_TEST);
       glDepthFunc(GL_LESS);
@@ -879,7 +898,7 @@ void Map::paintGLNoMakeCurrent()
       break;
     }
 
-    case RenderPass::Transparency:
+    case RenderPass::Transparency: //---------------------------------------------------------------
     {
       glEnable(GL_DEPTH_TEST);
       glDepthFunc(GL_LESS);
@@ -888,11 +907,11 @@ void Map::paintGLNoMakeCurrent()
       break;
     }
 
-    case RenderPass::Reflection:
+    case RenderPass::Reflection: //-----------------------------------------------------------------
     {
-#ifdef TP_REFLECTION_SUPPORTED
+#ifdef TP_FBO_SUPPORTED
       glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
-      glBindFramebuffer(GL_READ_FRAMEBUFFER, d->reflectionFrameBuffer);
+      glBindFramebuffer(GL_READ_FRAMEBUFFER, d->reflectionBuffer.frameBuffer);
 
 #if 1
       glBlitFramebuffer(0, 0, d->width, d->height,
@@ -911,6 +930,7 @@ void Map::paintGLNoMakeCurrent()
                         GL_LINEAR);
 #endif
 
+      // Call this again to replace GL_READ_FRAMEBUFFER
       glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
 
       glEnable(GL_DEPTH_TEST);
@@ -921,7 +941,7 @@ void Map::paintGLNoMakeCurrent()
       break;
     }
 
-    case RenderPass::Text:
+    case RenderPass::Text: //-----------------------------------------------------------------------
     {
       glDisable(GL_DEPTH_TEST);
       glDepthMask(false);
@@ -929,7 +949,7 @@ void Map::paintGLNoMakeCurrent()
       break;
     }
 
-    case RenderPass::GUI:
+    case RenderPass::GUI: //------------------------------------------------------------------------
     {
       glEnable(GL_SCISSOR_TEST);
       glDisable(GL_DEPTH_TEST);
@@ -941,13 +961,13 @@ void Map::paintGLNoMakeCurrent()
       break;
     }
 
-    case RenderPass::Picking:
+    case RenderPass::Picking: //--------------------------------------------------------------------
     {
       tpWarning() << "Error: Performing a picking render pass in paintGL does not make sense.";
       break;
     }
 
-    case RenderPass::Custom1:
+    case RenderPass::Custom1: //--------------------------------------------------------------------
     {
       if(d->custom1Start)
         d->custom1Start(d->renderInfo);
@@ -960,7 +980,7 @@ void Map::paintGLNoMakeCurrent()
       break;
     }
 
-    case RenderPass::Custom2:
+    case RenderPass::Custom2: //--------------------------------------------------------------------
     {
       if(d->custom2Start)
         d->custom2Start(d->renderInfo);
@@ -973,7 +993,7 @@ void Map::paintGLNoMakeCurrent()
       break;
     }
 
-    case RenderPass::Custom3:
+    case RenderPass::Custom3: //--------------------------------------------------------------------
     {
       if(d->custom3Start)
         d->custom3Start(d->renderInfo);
@@ -986,7 +1006,7 @@ void Map::paintGLNoMakeCurrent()
       break;
     }
 
-    case RenderPass::Custom4:
+    case RenderPass::Custom4: //--------------------------------------------------------------------
     {
       if(d->custom4Start)
         d->custom4Start(d->renderInfo);

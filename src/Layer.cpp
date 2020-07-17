@@ -128,7 +128,7 @@ bool Layer::textInputEvent(const TextInputEvent& event)
 //##################################################################################################
 void Layer::animate(double timestampMS)
 {
-  TP_UNUSED(timestampMS);
+  animateCallbacks(timestampMS);
 }
 
 //##################################################################################################

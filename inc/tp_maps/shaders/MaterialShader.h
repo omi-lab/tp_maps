@@ -30,43 +30,12 @@ public:
   void use(ShaderType shaderType = ShaderType::Render) override;
 
   //################################################################################################
-  struct Material
-  {
-    glm::vec3 ambient{1.0f, 0.0f, 0.0f};
-    glm::vec3 diffuse{0.4f, 0.0f, 0.0f};
-    glm::vec3 specular{0.1f, 0.1f, 0.1f};
-    float shininess{32.0f};
-    float alpha{1.0f};
-
-    tp_utils::StringID ambientTexture;
-    tp_utils::StringID diffuseTexture;
-    tp_utils::StringID specularTexture;
-    tp_utils::StringID alphaTexture;
-    tp_utils::StringID bumpTexture;
-  };
-
-  //################################################################################################
-  struct Light
-  {
-    glm::vec3 position{0.0f, 0.0f, 20.0f};
-    glm::vec3 ambient{0.4f, 0.4f, 0.4f};
-    glm::vec3 diffuse{0.6f, 0.6f, 0.6f};
-    glm::vec3 specular{1.0f, 1.0f, 1.0f};
-    float diffuseScale{0.5f};              //! Multiplied with the diffuse lighting calculation.
-    float diffuseTranslate{1.0f};          //! Added to the diffuse lighting calculation.
-  };
-
-  //################################################################################################
   //! Call this to set the material before drawing the geometry
   void setMaterial(const Material& material);
 
   //################################################################################################
-  //! Call this to set the light before drawing the geometry
-  void setLight(const Light& light);
-
-  //################################################################################################
-  //! Call this to set the camera origin before drawing the geometry
-  void setCameraRay(const glm::vec3& near, const glm::vec3& far);
+  //! Call this to set the lights before drawing the geometry
+  void setLights(const std::vector<Light>& lights);
 
   //################################################################################################
   //! Call this to set the model, view, and projection matrices before drawing the geometry.

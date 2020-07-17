@@ -71,7 +71,9 @@ public:
                      TPGLenum target,
                      TPGLenum format,
                      GLint magFilterOption,
-                     GLint minFilterOption);
+                     GLint minFilterOption,
+                     GLint textureWrapS = GL_CLAMP_TO_EDGE,
+                     GLint textureWrapT = GL_CLAMP_TO_EDGE);
 
   //################################################################################################
   glm::vec2 textureDims()const override;

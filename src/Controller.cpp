@@ -1,6 +1,8 @@
 #include "tp_maps/Controller.h"
 #include "tp_maps/Map.h"
 
+#include "glm/gtx/transform.hpp"
+
 #include <unordered_map>
 
 namespace tp_maps
@@ -16,6 +18,9 @@ struct Controller::Private
   std::unordered_map<tp_utils::StringID, Matrices> matrices;
   std::unordered_map<tp_utils::StringID, Scissor> scissor;
   std::function<void(const MouseEvent&)> mouseClickCallback;
+
+  Light currentLight;
+  Matrices lightMatrices;
 
   //################################################################################################
   Private(Map* map_):
@@ -39,9 +44,45 @@ glm::mat4 Controller::matrix(const tp_utils::StringID& coordinateSystem)const
 }
 
 //##################################################################################################
-Controller::Matrices Controller::matrices(const tp_utils::StringID& coordinateSystem)const
+Matrices Controller::matrices(const tp_utils::StringID& coordinateSystem)const
 {
   return tpGetMapValue(d->matrices, coordinateSystem);
+}
+
+//##################################################################################################
+void Controller::setCurrentLight(const Light& light)
+{
+  d->currentLight = light;
+
+  float distance = 10.0f;
+
+  glm::mat4 view = glm::lookAt(d->currentLight.position, d->currentLight.position + d->currentLight.direction, glm::vec3(0.0f, 1.0f, 0.0f));
+  glm::mat4 projection = glm::ortho(-distance,        // <- Left
+                                    distance,         // <- Right
+                                    -distance,        // <- Bottom
+                                    distance,         // <- Top
+                                    -100.0f*distance, // <- Near
+                                    100.0f*distance); // <- Far
+  Matrices vp;
+  vp.p  = projection;
+  vp.v  = view;
+  vp.vp = projection * view;
+  {
+    glm::vec4 origin = glm::inverse(vp.vp) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    vp.cameraOriginNear = origin / origin.w;
+  }
+  {
+    glm::vec4 origin = glm::inverse(vp.vp) * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+    vp.cameraOriginFar = origin / origin.w;
+  }
+
+  d->lightMatrices = vp;
+}
+
+//##################################################################################################
+Matrices Controller::lightMatrices()
+{
+  return d->lightMatrices;
 }
 
 //##################################################################################################

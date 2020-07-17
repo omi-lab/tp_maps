@@ -3,8 +3,6 @@
 
 #include "tp_maps/Globals.h"
 
-#include "lib_platform/Polyfill.h"
-
 #include <functional>
 
 namespace tp_maps

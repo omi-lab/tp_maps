@@ -28,6 +28,7 @@ struct LinesLayer::Private
 
   LinesLayer* q;
   std::vector<Lines> lines;
+  glm::mat4 objectMatrix{1.0f};
 
   //Processed geometry ready for rendering
   bool updateVertexBuffer{true};
@@ -85,6 +86,53 @@ void LinesLayer::setLines(const std::vector<Lines>& lines)
 }
 
 //##################################################################################################
+void LinesLayer::setLinesFromGeometryNormals(const std::vector<Geometry3D>& geometry, float scale)
+{
+  std::vector<tp_maps::Lines> lines;
+  lines.resize(3);
+  auto& r = lines.at(0);
+  auto& g = lines.at(1);
+  auto& b = lines.at(2);
+
+  r.color = {1.0f, 0.0f, 0.0f, 1.0f};
+  g.color = {0.0f, 1.0f, 0.0f, 1.0f};
+  b.color = {0.0f, 0.0f, 1.0f, 1.0f};
+
+  r.mode = GL_LINES;
+  g.mode = GL_LINES;
+  b.mode = GL_LINES;
+
+  for(const auto& m : geometry)
+  {
+    for(const auto& v : m.geometry.verts)
+    {
+      r.lines.push_back(v.vert);
+      g.lines.push_back(v.vert);
+      b.lines.push_back(v.vert);
+
+      r.lines.push_back(v.vert + (v.tangent  * scale));
+      g.lines.push_back(v.vert + (v.bitangent* scale));
+      b.lines.push_back(v.vert + (v.normal   * scale));
+    }
+  }
+
+  setLines(lines);
+}
+
+//##################################################################################################
+const glm::mat4& LinesLayer::objectMatrix()const
+{
+  return d->objectMatrix;
+}
+
+//##################################################################################################
+void LinesLayer::setObjectMatrix(const glm::mat4& objectMatrix)
+{
+  d->objectMatrix = objectMatrix;
+  update();
+}
+
+//##################################################################################################
 float LinesLayer::lineWidth()const
 {
   return d->lineWidth;
@@ -100,7 +148,7 @@ void LinesLayer::setLineWidth(float lineWidth)
 //##################################################################################################
 glm::mat4 LinesLayer::calculateMatrix() const
 {
-  return map()->controller()->matrix(coordinateSystem());
+  return map()->controller()->matrix(coordinateSystem()) * d->objectMatrix;
 }
 
 //##################################################################################################

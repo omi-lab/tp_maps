@@ -19,7 +19,7 @@ namespace
 struct GeometryDetails_lt
 {
   std::vector<std::pair<GLenum, MaterialShader::VertexBuffer*>> vertexBuffers;
-  MaterialShader::Material material;
+  Material material;
 };
 }
 //##################################################################################################
@@ -31,7 +31,6 @@ struct GeometryLayer::Private
   GeometryLayer* q;
 
   std::vector<Geometry> geometry;
-  MaterialShader::Light light;
 
   //Processed geometry ready for rendering
   std::vector<GeometryDetails_lt> processedGeometry;
@@ -85,13 +84,6 @@ void GeometryLayer::setGeometry(const std::vector<Geometry>& geometry)
 {
   d->geometry = geometry;
   d->updateVertexBuffer = true;
-  update();
-}
-
-//##################################################################################################
-void GeometryLayer::setLight(const MaterialShader::Light& light)
-{
-  d->light = light;
   update();
 }
 
@@ -154,7 +146,7 @@ void GeometryLayer::render(RenderInfo& renderInfo)
     auto m = map()->controller()->matrices(coordinateSystem());
     shader->setMatrix(glm::mat4(1.0f), m.v, m.p);
   }
-  shader->setLight(d->light);
+  shader->setLights(map()->lights());
 
   if(renderInfo.pass==RenderPass::Picking)
   {

@@ -98,6 +98,9 @@ HEADERS += inc/tp_maps/shaders/ImageShader.h
 SOURCES += src/shaders/YUVImageShader.cpp
 HEADERS += inc/tp_maps/shaders/YUVImageShader.h
 
+SOURCES += src/shaders/DepthImageShader.cpp
+HEADERS += inc/tp_maps/shaders/DepthImageShader.h
+
 SOURCES += src/shaders/MaterialShader.cpp
 HEADERS += inc/tp_maps/shaders/MaterialShader.h
 
@@ -135,6 +138,9 @@ HEADERS += inc/tp_maps/layers/FrustumLayer.h
 
 SOURCES += src/layers/PlaneLayer.cpp
 HEADERS += inc/tp_maps/layers/PlaneLayer.h
+
+SOURCES += src/layers/FBOLayer.cpp
+HEADERS += inc/tp_maps/layers/FBOLayer.h
 
 
 #-- Textures ---------------------------------------------------------------------------------------

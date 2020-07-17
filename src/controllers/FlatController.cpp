@@ -265,7 +265,7 @@ void FlatController::updateMatrices()
                                     fh*d->distance,      // <- Top
                                     -100.0f*d->distance, // <- Near
                                     100.0f*d->distance); // <- Far
-  Controller::Matrices vp;
+  Matrices vp;
   vp.p  = projection;
   vp.v  = view;
   vp.vp = projection * view;

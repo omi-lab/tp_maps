@@ -223,7 +223,7 @@ void GraphController::updateMatrices()
                                     float(fh*d->distanceY),  // <- Top
                                     -1.0f,            // <- Near
                                     1.0f);            // <- Far
-  Controller::Matrices vp;
+  Matrices vp;
   vp.dp  = projection;
   vp.dv  = view;
   vp.dvp = projection * view;

@@ -5,6 +5,7 @@
 #include "tp_maps/RenderInfo.h"
 
 #include "tp_utils/StringID.h"
+#include "tp_utils/CallbackCollection.h"
 
 #include <unordered_map>
 
@@ -119,6 +120,9 @@ public:
   //################################################################################################
   //! Set the render pass that this layer should do most of its rendering in.
   void setDefaultRenderPass(RenderPass defaultRenderPass);
+
+  //################################################################################################
+  tp_utils::CallbackCollection<void(double)> animateCallbacks;
 
 protected:
   //################################################################################################

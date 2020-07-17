@@ -2,22 +2,12 @@
 #define tp_maps_Geometry3DLayer_h
 
 #include "tp_maps/Layer.h"
-#include "tp_maps/shaders/MaterialShader.h"
-
-#include "tp_math_utils/Geometry3D.h"
 
 #include "tp_utils/RefCount.h"
 
 namespace tp_maps
 {
 class Texture;
-
-//##################################################################################################
-struct TP_MAPS_SHARED_EXPORT Geometry3D
-{
-  tp_math_utils::Geometry3D geometry;
-  MaterialShader::Material material;
-};
 
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT Geometry3DLayer: public Layer
@@ -53,12 +43,8 @@ public:
   void setObjectMatrix(const glm::mat4& objectMatrix);
 
   //################################################################################################
-  //! Call this to set the lighting.
-  void setLight(const MaterialShader::Light& light);
-
-  //################################################################################################
   //! Call this to set the material of all geometry.
-  void setMaterial(const MaterialShader::Material& material);
+  void setMaterial(const Material& material);
 
   //################################################################################################
   enum class ShaderType

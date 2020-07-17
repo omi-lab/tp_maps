@@ -21,7 +21,7 @@ namespace
 struct GeometryDetails_lt
 {
   std::vector<std::pair<GLenum, MaterialShader::VertexBuffer*>> vertexBuffers;
-  MaterialShader::Material material;
+  Material material;
 
   GLuint ambientTextureID{0};
   GLuint diffuseTextureID{0};
@@ -30,6 +30,7 @@ struct GeometryDetails_lt
   GLuint bumpTextureID{0};
 };
 }
+
 //##################################################################################################
 struct Geometry3DLayer::Private
 {
@@ -40,16 +41,17 @@ struct Geometry3DLayer::Private
 
   //-- Input data ----------------------------------------------------------------------------------
   std::vector<Geometry3D> geometry;
-  MaterialShader::Light light;
   std::unordered_map<tp_utils::StringID, Texture*> textures;
   ShaderType shaderType{ShaderType::Material};
   glm::mat4 objectMatrix{1.0f};
   std::unique_ptr<BasicTexture> emptyTexture;
+  std::unique_ptr<BasicTexture> emptyNormalTexture;
 
   //-- Preprocessed data ---------------------------------------------------------------------------
   std::vector<GeometryDetails_lt> processedGeometry;
   std::unordered_map<tp_utils::StringID, GLuint> textureIDs;
   GLuint emptyTextureID{0};
+  GLuint emptyNormalTextureID{0};
 
   bool updateVertexBuffer{true};
   bool bindBeforeRender{true};
@@ -104,7 +106,7 @@ struct Geometry3DLayer::Private
           GeometryDetails_lt details;
           details.material = shape.material;
 
-          auto selectTexture = [&](const tp_utils::StringID& name, GLuint& textureID, glm::vec3& color)
+          auto selectTexture = [&](const tp_utils::StringID& name, GLuint& textureID, glm::vec3& color, GLuint emptyID)
           {
             if(auto i=textureIDs.find(name); i!=textureIDs.end())
             {
@@ -113,16 +115,17 @@ struct Geometry3DLayer::Private
             }
             else
             {
-              textureID = emptyTextureID;
+              textureID = emptyID;
             }
           };
 
           glm::vec3 tmpNormal{0.0f, 0.0f, 1.0f};
-          selectTexture(details.material.ambientTexture, details.ambientTextureID, details.material.ambient);
-          selectTexture(details.material.diffuseTexture, details.diffuseTextureID, details.material.diffuse);
-          selectTexture(details.material.specularTexture, details.specularTextureID, details.material.specular);
+          selectTexture(details.material.ambientTexture, details.ambientTextureID, details.material.ambient, emptyTextureID);
+          selectTexture(details.material.diffuseTexture, details.diffuseTextureID, details.material.diffuse, emptyTextureID);
+          selectTexture(details.material.specularTexture, details.specularTextureID, details.material.specular, emptyTextureID);
           details.alphaTextureID = emptyTextureID;
-          selectTexture(details.material.bumpTexture, details.bumpTextureID, tmpNormal);
+          selectTexture(details.material.bumpTexture, details.bumpTextureID, tmpNormal, emptyNormalTextureID);
+          //details.bumpTextureID = emptyNormalTextureID;
 
           std::vector<GLuint> indexes;
           std::vector<MaterialShader::Vertex> verts;
@@ -208,14 +211,7 @@ void Geometry3DLayer::setObjectMatrix(const glm::mat4& objectMatrix)
 }
 
 //##################################################################################################
-void Geometry3DLayer::setLight(const MaterialShader::Light& light)
-{
-  d->light = light;
-  update();
-}
-
-//##################################################################################################
-void Geometry3DLayer::setMaterial(const MaterialShader::Material& material)
+void Geometry3DLayer::setMaterial(const Material& material)
 {
   for(auto& g : d->geometry)
     g.material = material;
@@ -242,7 +238,9 @@ Geometry3DLayer::ShaderType Geometry3DLayer::shaderType() const
 //##################################################################################################
 void Geometry3DLayer::render(RenderInfo& renderInfo)
 {
-  if(renderInfo.pass != defaultRenderPass() && renderInfo.pass != RenderPass::Picking)
+  if(renderInfo.pass != defaultRenderPass() &&
+     renderInfo.pass != RenderPass::LightFBOs &&
+     renderInfo.pass != RenderPass::Picking)
     return;
 
   //== Bind Textures ===============================================================================
@@ -259,6 +257,10 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     if(d->emptyTextureID)
       map()->deleteTexture(d->emptyTextureID);
     d->emptyTextureID = 0;
+
+    if(d->emptyNormalTextureID)
+      map()->deleteTexture(d->emptyNormalTextureID);
+    d->emptyNormalTextureID = 0;
 
     for(auto i : d->textures)
     {
@@ -282,8 +284,26 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
       d->emptyTexture = std::make_unique<BasicTexture>(map(), textureData);
     }
 
+    if(!d->emptyNormalTexture)
+    {
+      TPPixel up{127, 127, 255, 255};
+      TextureData textureData;
+      textureData.w = 1;
+      textureData.h = 1;
+      textureData.data = &up;
+      d->emptyNormalTexture = std::make_unique<BasicTexture>(map(), textureData);
+    }
+
     d->emptyTextureID = d->emptyTexture->bindTexture();
+    d->emptyNormalTextureID = d->emptyNormalTexture->bindTexture();
   }
+
+  //== Get matrices ================================================================================
+  Matrices m;
+  if(renderInfo.pass == RenderPass::LightFBOs)
+    m = map()->controller()->lightMatrices();
+  else
+    m = map()->controller()->matrices(coordinateSystem());
 
   //== Common ======================================================================================
   auto render = [&](auto s,
@@ -332,14 +352,11 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
   //== MaterialShader ==============================================================================
   if(d->shaderType == ShaderType::Material)
   {
-
     render(static_cast<MaterialShader*>(nullptr), [&](auto shader) //-- use ------------------------
     {
       shader->use();
-      auto m = map()->controller()->matrices(coordinateSystem());
       shader->setMatrix(d->objectMatrix, m.v, m.p);
-      shader->setCameraRay(m.cameraOriginNear, m.cameraOriginFar);
-      shader->setLight(d->light);
+      shader->setLights(map()->lights());
     },
     [&](auto, const auto&) //-- setMaterialPicking -------------------------------------------------
     {
@@ -371,7 +388,6 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     render(static_cast<ImageShader*>(nullptr), [&](auto shader) //-- use ---------------------------
     {
       shader->use();
-      auto m = map()->controller()->matrices(coordinateSystem());
       shader->setMatrix(m.vp * d->objectMatrix);
     },
     [&](auto shader, const auto& details) //-- setMaterialPicking ----------------------------------

@@ -4,8 +4,6 @@
 #include "tp_maps/Globals.h"
 #include "tp_maps/textures/BasicTexture.h"
 
-#include "glm/glm.hpp"
-
 #include <string>
 #include <vector>
 
@@ -93,6 +91,12 @@ public:
   void setCustomRenderPass(RenderPass renderPass,
                            const std::function<void(RenderInfo&)>& start,
                            const std::function<void(RenderInfo&)>& end=std::function<void(RenderInfo&)>());
+
+  //################################################################################################
+  void setLights(const std::vector<Light>& lights);
+
+  //################################################################################################
+  const std::vector<Light>& lights()const;
 
   //################################################################################################
   //! Add a layer to the map
@@ -224,6 +228,10 @@ public:
   GLuint reflectionDepth() const;
 
   //################################################################################################
+  //! Returns the depth textures for each light.
+  const std::vector<FBO>& lightTextures() const;
+
+  //################################################################################################
   //! Return the map's window width
   /*!
   \return the width of the window
@@ -238,7 +246,7 @@ public:
   int height() const;
 
   //################################################################################################
-  glm::vec2 screenSize()const;
+  glm::vec2 screenSize() const;
 
   //################################################################################################
   //! Make the GL context of this map current

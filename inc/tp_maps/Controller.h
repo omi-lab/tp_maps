@@ -5,8 +5,6 @@
 
 #include "json.hpp"
 
-#include "glm/glm.hpp"
-
 #include <functional>
 
 namespace tp_maps
@@ -31,23 +29,6 @@ public:
   Controller(Map* map);
 
   //################################################################################################
-  struct Matrices
-  {
-    glm::mat4 v{1.0f};
-    glm::mat4 p{1.0f};
-
-    glm::mat4 vp{1.0f};
-
-    glm::dmat4 dv{1.0f};
-    glm::dmat4 dp{1.0f};
-
-    glm::dmat4 dvp{1.0f};
-
-    glm::vec3 cameraOriginNear{0.0f, 0.0f, 0.0f};
-    glm::vec3 cameraOriginFar {0.0f, 0.0f, 1.0f};
-  };
-
-  //################################################################################################
   //! Returns the camera matrix for a given coordinate system
   /*!
   It is possible to have multiple coordinate systems in use on a single map. For example you always
@@ -68,6 +49,13 @@ public:
   //################################################################################################
   //! This is basically the same as matrix however it returns the view and projection separatly.
   Matrices matrices(const tp_utils::StringID& coordinateSystem)const;
+
+  //################################################################################################
+  //! Sets the light that is currently being rendered in the LightFBOs pass.
+  void setCurrentLight(const Light& light);
+
+  //################################################################################################
+  Matrices lightMatrices();
 
   //################################################################################################
   struct Scissor

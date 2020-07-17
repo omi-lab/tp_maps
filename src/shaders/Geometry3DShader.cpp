@@ -87,11 +87,15 @@ void Geometry3DShader::VertexBuffer::bindVBO() const
   glBindBuffer(GL_ARRAY_BUFFER, vboID);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Geometry3DShader::Vertex), tpVoidLiteral( 0));
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Geometry3DShader::Vertex), tpVoidLiteral(12));
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Geometry3DShader::Vertex), tpVoidLiteral(24));
+  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Geometry3DShader::Vertex), tpVoidLiteral(24));
+  glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Geometry3DShader::Vertex), tpVoidLiteral(36));
+  glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(Geometry3DShader::Vertex), tpVoidLiteral(48));
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);
-  glDisableVertexAttribArray(3);
+  glEnableVertexAttribArray(3);
+  glEnableVertexAttribArray(4);
+  //glDisableVertexAttribArray(3);
 
 #ifdef TP_VERTEX_ARRAYS_SUPPORTED
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID);

@@ -15,6 +15,7 @@
         <file alias="PointSpriteShader.picking.frag">resources/shaders/PointSpriteShader.picking.frag</file>
         <file alias="PointSpriteShader.picking.vert">resources/shaders/PointSpriteShader.picking.vert</file>
         <file alias="YUVImageShader.frag">resources/shaders/YUVImageShader.frag</file>
+        <file alias="DepthImageShader.frag">resources/shaders/DepthImageShader.frag</file>
     </qresource>
 </RCC>
 

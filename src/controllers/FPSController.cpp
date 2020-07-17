@@ -256,7 +256,7 @@ void FPSController::updateMatrices()
 
   glm::mat4 projection = glm::perspective(glm::radians(63.0f), fw/fh, d->near, d->far);
 
-  Controller::Matrices vp;
+  Matrices vp;
   vp.p  = projection;
   vp.v  = view;
   vp.vp = projection * view;

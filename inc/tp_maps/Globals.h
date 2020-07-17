@@ -3,6 +3,10 @@
 
 #include "tp_utils/StringID.h"
 
+#include "tp_math_utils/Geometry3D.h"
+
+#include "glm/glm.hpp"
+
 #include <unordered_map>
 
 #if defined(TP_MAPS_LIBRARY)
@@ -61,7 +65,7 @@
 #  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
 
 #  define TP_GLSL_PICKING_SUPPORTED
-#  define TP_REFLECTION_SUPPORTED
+#  define TP_FBO_SUPPORTED
 
 #  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
 #  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24
@@ -106,7 +110,7 @@ using TPGLenum = GLenum;
 #  define TP_GL_DRAW_FRAMEBUFFER GL_DRAW_FRAMEBUFFER
 
 #  define TP_GLSL_PICKING_SUPPORTED
-#  define TP_REFLECTION_SUPPORTED
+#  define TP_FBO_SUPPORTED
 
 using TPGLsize = GLsizei;
 using TPGLfloat = float;
@@ -124,23 +128,26 @@ TP_DECLARE_ID(                  imageShaderSID,                     "Image shade
 TP_DECLARE_ID(            pointSpriteShaderSID,              "Point sprite shader");
 TP_DECLARE_ID(               materialShaderSID,                  "Material shader");
 TP_DECLARE_ID(               yuvImageShaderSID,                 "YUV image shader");
+TP_DECLARE_ID(             depthImageShaderSID,               "Depth image shader");
 TP_DECLARE_ID(                   fontShaderSID,                      "Font shader");
 TP_DECLARE_ID(                  frameShaderSID,                     "Frame shader");
 
 //##################################################################################################
 enum class RenderPass
 {
-  Background,
-  Normal,
-  Transparency,
-  Reflection,
-  Text,
-  GUI,
-  Picking,
-  Custom1,
-  Custom2,
-  Custom3,
-  Custom4
+  LightFBOs,     //!< Render depth maps from the point of view of lights to FBOs.
+  ReflectionFBO, //!< Enable reflection FBO before rendering (Background, Normal, Transparency).
+  Background,    //!< Render background without writing to the depth buffer.
+  Normal,        //!< Render normal 3D geometry.
+  Transparency,  //!< Render transparent 3D geometry.
+  Reflection,    //!< Render reflective surfaces, map->reflectionTexture() should now be valid.
+  Text,          //!< Render text on top of scene.
+  GUI,           //!< Render UI on top of scene and text.
+  Picking,       //!< Picking render.
+  Custom1,       //!< See map->setCustomRenderPass() for further details.
+  Custom2,       //!< See map->setCustomRenderPass() for further details.
+  Custom3,       //!< See map->setCustomRenderPass() for further details.
+  Custom4        //!< See map->setCustomRenderPass() for further details.
 };
 
 //##################################################################################################
@@ -191,14 +198,14 @@ enum class OpenGLDepth
 };
 
 //##################################################################################################
-struct OpenGLConfig
+struct TP_MAPS_SHARED_EXPORT OpenGLConfig
 {
   OpenGLProfile profile{TP_DEFAULT_PROFILE};
   OpenGLDepth depth{OpenGLDepth::ON_24};
 };
 
 //##################################################################################################
-struct ShaderString
+struct TP_MAPS_SHARED_EXPORT ShaderString
 {
   TP_NONCOPYABLE(ShaderString);
   ShaderString(const char* text);
@@ -210,7 +217,7 @@ private:
 };
 
 //##################################################################################################
-struct ShaderResource
+struct TP_MAPS_SHARED_EXPORT ShaderResource
 {
   TP_NONCOPYABLE(ShaderResource);
   ShaderResource(const std::string& resourceName);
@@ -220,6 +227,92 @@ private:
   const std::string m_resourceName;
   std::unordered_map<OpenGLProfile, std::string> m_parsed;
 };
+
+//################################################################################################
+struct Matrices
+{
+  glm::mat4 v{1.0f};    //!< View matrix.
+  glm::mat4 p{1.0f};    //!< Projection matrix.
+
+  glm::mat4 vp{1.0f};   //!< Projection * View matrix.
+
+  // The double precision matrices are not always set.
+  glm::dmat4 dv{1.0f};  //!< View matrix. (double)
+  glm::dmat4 dp{1.0f};  //!< Projection matrix. (double)
+
+  glm::dmat4 dvp{1.0f}; //!< Projection * View matrix. (double)
+
+  glm::vec3 cameraOriginNear{0.0f, 0.0f, 0.0f};
+  glm::vec3 cameraOriginFar {0.0f, 0.0f, 1.0f};
+};
+
+//##################################################################################################
+struct TP_MAPS_SHARED_EXPORT Material
+{
+  glm::vec3 ambient{1.0f, 0.0f, 0.0f};  //!< mtl: Ka
+  glm::vec3 diffuse{0.4f, 0.0f, 0.0f};  //!< mtl: Kd
+  glm::vec3 specular{0.1f, 0.1f, 0.1f}; //!< mtl: Ks
+  float shininess{32.0f};               //!< mtl: Ns
+  float alpha{1.0f};                    //!< mtl: d
+
+  tp_utils::StringID ambientTexture;    //!< mtl: map_Ka
+  tp_utils::StringID diffuseTexture;    //!< mtl: map_Kd
+  tp_utils::StringID specularTexture;   //!< mtl: map_Ks
+  tp_utils::StringID alphaTexture;      //!< mtl: map_d
+  tp_utils::StringID bumpTexture;       //!< mtl: map_Bump
+};
+
+//##################################################################################################
+enum class LightType
+{
+  Directional,
+  Point,
+  Spot
+};
+
+//##################################################################################################
+struct TP_MAPS_SHARED_EXPORT Light
+{
+  LightType type{LightType::Directional};
+
+  glm::vec3 position{0.0f, 0.0f, 20.0f}; //!< World coord of Point and Spot lights.
+
+  glm::vec3 direction{0.0f, 0.0f, -1.0f}; //!< Unit vector for the direction of the light. Points away from light.
+
+  glm::vec3 ambient {0.4f, 0.4f, 0.4f};
+  glm::vec3 diffuse {0.6f, 0.6f, 0.6f};
+  glm::vec3 specular{1.0f, 1.0f, 1.0f};
+
+  float diffuseScale{0.5f};              //! Multiplied with the diffuse lighting calculation.
+  float diffuseTranslate{1.0f};          //! Added to the diffuse lighting calculation.
+};
+
+//##################################################################################################
+struct FBO
+{
+  GLuint frameBuffer{0};
+  GLuint textureID{0};
+  GLuint depthID{0};
+  int width{1};
+  int height{1};
+
+  glm::mat4 worldToTexture{1}; //!< For lighting this is used to map world coords onto the texture.
+};
+
+//##################################################################################################
+struct TP_MAPS_SHARED_EXPORT Geometry
+{
+  std::vector<glm::vec3> geometry;
+  Material material;
+};
+
+//##################################################################################################
+struct TP_MAPS_SHARED_EXPORT Geometry3D
+{
+  tp_math_utils::Geometry3D geometry;
+  Material material;
+};
+
 }
 
 #endif

@@ -170,7 +170,9 @@ GLuint BasicTexture::bindTexture(const TextureData& img,
                                  TPGLenum target,
                                  TPGLenum format,
                                  GLint magFilterOption,
-                                 GLint minFilterOption)
+                                 GLint minFilterOption,
+                                 GLint textureWrapS,
+                                 GLint textureWrapT)
 {
   if(!map()->initialized())
   {
@@ -197,8 +199,8 @@ GLuint BasicTexture::bindTexture(const TextureData& img,
 
   glTexParameteri(target, GL_TEXTURE_MAG_FILTER, magFilterOption);
   glTexParameteri(target, GL_TEXTURE_MIN_FILTER, minFilterOption);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, textureWrapS);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, textureWrapT);
 
   return txId;
 }

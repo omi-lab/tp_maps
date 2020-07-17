@@ -5,8 +5,6 @@
 
 #include "tp_utils/RefCount.h"
 
-#include "glm/glm.hpp"
-
 #include <vector>
 #include <array>
 #include <functional>

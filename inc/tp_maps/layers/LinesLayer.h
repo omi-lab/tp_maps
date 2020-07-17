@@ -1,8 +1,9 @@
 #ifndef tp_maps_LinesLayer_h
 #define tp_maps_LinesLayer_h
 
-#include "tp_maps/Layer.h"
-#include "tp_maps/shaders/MaterialShader.h"
+#include "tp_maps/layers/Geometry3DLayer.h"
+
+#include "tp_math_utils/Geometry3D.h"
 
 #include "glm/glm.hpp"
 
@@ -34,6 +35,15 @@ public:
 
   //################################################################################################
   void setLines(const std::vector<Lines>& lines);
+
+  //################################################################################################
+  void setLinesFromGeometryNormals(const std::vector<Geometry3D>& geometry, float scale);
+
+  //################################################################################################
+  const glm::mat4& objectMatrix()const;
+
+  //################################################################################################
+  void setObjectMatrix(const glm::mat4& objectMatrix);
 
   //################################################################################################
   float lineWidth()const;
