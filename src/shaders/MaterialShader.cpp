@@ -26,6 +26,8 @@ struct MaterialShader::Private
   GLint mMatrixLocation          {0};
   GLint mvpMatrixLocation        {0};
 
+  GLint worldToLight0Location    {0};
+
   GLint cameraOriginLocation     {0};
 
   GLint materialAmbientLocation  {0};
@@ -49,6 +51,8 @@ struct MaterialShader::Private
   GLint specularTextureLocation{0};
   //GLint alphaTextureIDLocation {0};
   GLint bumpTextureIDLocation  {0};
+
+  GLint light0TextureIDLocation{0};
 
   //################################################################################################
   void draw(GLenum mode, MaterialShader::VertexBuffer* vertexBuffer)
@@ -101,6 +105,8 @@ void MaterialShader::compile(const char* vertShaderStr,
     d->mMatrixLocation             = glGetUniformLocation(program, "m");
     d->mvpMatrixLocation           = glGetUniformLocation(program, "mvp");
 
+    d->worldToLight0Location       = glGetUniformLocation(program, "worldToLight0");
+
     d->cameraOriginLocation        = glGetUniformLocation(program, "cameraOrigin_world");
 
     d->materialAmbientLocation   = glGetUniformLocation(program, "material.ambient");
@@ -124,10 +130,13 @@ void MaterialShader::compile(const char* vertShaderStr,
     d->specularTextureLocation = glGetUniformLocation(program, "specularTexture");
     //d->alphaTextureIDLocation = glGetUniformLocation(program, "ambientTexture");
     d->bumpTextureIDLocation = glGetUniformLocation(program, "bumpTexture");
+    d->light0TextureIDLocation = glGetUniformLocation(program, "light0Texture");
 
     const char* shaderName = "MaterialShader";
     if(d->mMatrixLocation  <0)tpWarning() << shaderName << " mMatrixLocation  : " << d->mMatrixLocation  ;
     if(d->mvpMatrixLocation<0)tpWarning() << shaderName << " mvpMatrixLocation: " << d->mvpMatrixLocation;
+
+    if(d->worldToLight0Location<0)tpWarning() << shaderName << " worldToLight0Location  : " << d->worldToLight0Location  ;
 
     if(d->cameraOriginLocation<0)tpWarning() << shaderName << " cameraOriginLocation: " << d->cameraOriginLocation;
 
@@ -160,7 +169,7 @@ void MaterialShader::setMaterial(const Material& material)
 }
 
 //##################################################################################################
-void MaterialShader::setLights(const std::vector<Light>& lights)
+void MaterialShader::setLights(const std::vector<Light>& lights, const std::vector<FBO>& lightBuffers)
 {
   if(!lights.empty())
   {
@@ -170,6 +179,16 @@ void MaterialShader::setLights(const std::vector<Light>& lights)
     glUniform3fv(d->lightSpecularLocation, 1,    &light.specular.x      );
     glUniform1f(d->lightDiffuseScaleLocation,     light.diffuseScale    );
     glUniform1f(d->lightDiffuseTranslateLocation, light.diffuseTranslate);
+  }
+
+  if(!lightBuffers.empty())
+  {
+    const auto& lightBuffer = lightBuffers.front();
+    glUniformMatrix4fv(d->worldToLight0Location, 1, GL_FALSE, glm::value_ptr(lightBuffer.worldToTexture));
+
+    glActiveTexture(GL_TEXTURE5);
+    glBindTexture(GL_TEXTURE_2D, lightBuffer.depthID);
+    glUniform1i(d->light0TextureIDLocation, 5);
   }
 }
 

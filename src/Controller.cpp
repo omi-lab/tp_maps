@@ -61,8 +61,8 @@ void Controller::setCurrentLight(const Light& light)
                                     distance,         // <- Right
                                     -distance,        // <- Bottom
                                     distance,         // <- Top
-                                    -100.0f*distance, // <- Near
-                                    100.0f*distance); // <- Far
+                                    0.0f/*-100.0f*distance*/, // <- Near
+                                    25.0f/*100.0f*distance*/); // <- Far
   Matrices vp;
   vp.p  = projection;
   vp.v  = view;

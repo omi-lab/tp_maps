@@ -21,6 +21,8 @@ class TP_MAPS_SHARED_EXPORT Texture
   Map* m_map;
   GLint m_magFilterOption{GL_LINEAR};
   GLint m_minFilterOption{GL_LINEAR_MIPMAP_LINEAR};
+  GLint m_textureWrapS{GL_CLAMP_TO_EDGE};
+  GLint m_textureWrapT{GL_CLAMP_TO_EDGE};
   std::function<void()> m_callback;
 public:
   //################################################################################################
@@ -51,10 +53,22 @@ public:
   void setMinFilterOption(GLint minFilterOption);
 
   //################################################################################################
+  void setTextureWrapS(GLint textureWrapS);
+
+  //################################################################################################
+  void setTextureWrapT(GLint textureWrapT);
+
+  //################################################################################################
   GLint magFilterOption()const;
 
   //################################################################################################
   GLint minFilterOption()const;
+
+  //################################################################################################
+  GLint textureWrapS()const;
+
+  //################################################################################################
+  GLint textureWrapT()const;
 
   //################################################################################################
   //! Returns the percentage of the texture that the image occupies

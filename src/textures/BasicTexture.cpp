@@ -161,7 +161,9 @@ GLuint BasicTexture::bindTexture()
                                GL_TEXTURE_2D,
                                GL_RGBA,
                                magFilterOption(),
-                               minFilterOption());
+                               minFilterOption(),
+                               textureWrapS(),
+                               textureWrapT());
   return texture;
 }
 

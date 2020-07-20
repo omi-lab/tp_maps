@@ -21,7 +21,7 @@ void main()
   depth = 2.0 * near * far / (far + near - (2.0 * depth - 1.0) * (far - near));
 
   // Scale again into the depth range that we are interested in rendering.
-  depth = depth / 1.0;
+  //depth = depth / 0.1;
 
   $TP_GLSL_GLFRAGCOLOR$ = vec4(depth,depth,depth,1.0);
 }

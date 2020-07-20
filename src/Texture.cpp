@@ -33,6 +33,18 @@ void Texture::setMinFilterOption(GLint minFilterOption)
 }
 
 //##################################################################################################
+void Texture::setTextureWrapS(GLint textureWrapS)
+{
+  m_textureWrapS = textureWrapS;
+}
+
+//##################################################################################################
+void Texture::setTextureWrapT(GLint textureWrapT)
+{
+  m_textureWrapT = textureWrapT;
+}
+
+//##################################################################################################
 GLint Texture::magFilterOption()const
 {
   return m_magFilterOption;
@@ -42,6 +54,18 @@ GLint Texture::magFilterOption()const
 GLint Texture::minFilterOption()const
 {
   return m_minFilterOption;
+}
+
+//##################################################################################################
+GLint Texture::textureWrapS()const
+{
+  return m_textureWrapS;
+}
+
+//##################################################################################################
+GLint Texture::textureWrapT()const
+{
+  return m_textureWrapT;
 }
 
 //##################################################################################################

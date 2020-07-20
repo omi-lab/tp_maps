@@ -146,7 +146,7 @@ void GeometryLayer::render(RenderInfo& renderInfo)
     auto m = map()->controller()->matrices(coordinateSystem());
     shader->setMatrix(glm::mat4(1.0f), m.v, m.p);
   }
-  shader->setLights(map()->lights());
+  shader->setLights(map()->lights(), map()->lightTextures());
 
   if(renderInfo.pass==RenderPass::Picking)
   {

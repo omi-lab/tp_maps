@@ -356,7 +356,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     {
       shader->use();
       shader->setMatrix(d->objectMatrix, m.v, m.p);
-      shader->setLights(map()->lights());
+      shader->setLights(map()->lights(), map()->lightTextures());
     },
     [&](auto, const auto&) //-- setMaterialPicking -------------------------------------------------
     {
