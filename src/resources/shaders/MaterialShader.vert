@@ -21,7 +21,7 @@ $TP_GLSL_OUT_V$vec4 fragPos_light0;
 
 void main()
 {
-  vec3 light0Direction_world = vec3(0.0, 0.0, -1.0);
+  vec3 light0Direction_world = vec3(-0.276, 0.276, -0.92);
 
   // Calculate the Tangent,Bitangent,Normal matrix
   // We use this to convert world coords into tangent space coords

@@ -275,9 +275,9 @@ struct TP_MAPS_SHARED_EXPORT Light
 {
   LightType type{LightType::Directional};
 
-  glm::vec3 position{0.0f, 0.0f, 20.0f}; //!< World coord of Point and Spot lights.
+  glm::vec3 position{5.52f, -5.52f, 18.4f}; //!< World coord of Point and Spot lights.
 
-  glm::vec3 direction{0.0f, 0.0f, -1.0f}; //!< Unit vector for the direction of the light. Points away from light.
+  glm::vec3 direction{-0.276, 0.276, -0.92}; //!< Unit vector for the direction of the light. Points away from light.
 
   glm::vec3 ambient {0.4f, 0.4f, 0.4f};
   glm::vec3 diffuse {0.6f, 0.6f, 0.6f};

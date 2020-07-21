@@ -875,7 +875,7 @@ void Map::paintGLNoMakeCurrent()
         const auto& light = d->lights.at(i);
         auto& lightBuffer = d->lightTextures.at(i);
 
-        if(!d->prepareBuffer(lightBuffer, 1024, 1024))
+        if(!d->prepareBuffer(lightBuffer, 4096, 4096))
           return;
 
         d->controller->setCurrentLight(light);        

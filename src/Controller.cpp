@@ -54,7 +54,7 @@ void Controller::setCurrentLight(const Light& light)
 {
   d->currentLight = light;
 
-  float distance = 10.0f;
+  float distance = 5.0f;
 
   glm::mat4 view = glm::lookAt(d->currentLight.position, d->currentLight.position + d->currentLight.direction, glm::vec3(0.0f, 1.0f, 0.0f));
   glm::mat4 projection = glm::ortho(-distance,        // <- Left
@@ -62,7 +62,7 @@ void Controller::setCurrentLight(const Light& light)
                                     -distance,        // <- Bottom
                                     distance,         // <- Top
                                     0.0f/*-100.0f*distance*/, // <- Near
-                                    25.0f/*100.0f*distance*/); // <- Far
+                                    100.0f/*100.0f*distance*/); // <- Far
   Matrices vp;
   vp.p  = projection;
   vp.v  = view;

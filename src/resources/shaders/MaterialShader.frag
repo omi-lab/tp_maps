@@ -46,8 +46,6 @@ void main()
   vec3 specularTex = $TP_GLSL_TEXTURE$(specularTexture, uv_tangent).xyz;
   vec3     bumpTex = $TP_GLSL_TEXTURE$(    bumpTexture, uv_tangent).xyz;
 
-  float light0Depth = $TP_GLSL_TEXTURE$( light0Texture, fragPos_light0.xy).x;
-
   vec3 norm = normalize(bumpTex*2-1);
 
   // Ambient
@@ -66,9 +64,24 @@ void main()
   float specularCoefficient = pow(cosAngle, material.shininess);
   vec3 specular = specularCoefficient * light.specular * (specularTex+material.specular);
 
-  vec3 result = ambient + diffuse + specular;
+  float light = 0.0;
+  float bias = 0.0009;//max(0.0005, (1.0-cosTheta)*0.05);
+  vec2 texelSize = 2.0 / textureSize(light0Texture, 0);
+  float biasedDepth = min(fragPos_light0.z-bias,1.0);
+  for(int x = -1; x <= 1; ++x)
+  {
+    for(int y = -1; y <= 1; ++y)
+    {
+      float light0Depth = $TP_GLSL_TEXTURE$(light0Texture, fragPos_light0.xy + (vec2(x, y)*texelSize)).x;
+      light += (light0Depth<biasedDepth)?0.4:1.0;
+    }
+  }
+  light /= 9.0;
+
+  vec3 result = ambient + ((diffuse + specular) * light);
   $TP_GLSL_GLFRAGCOLOR$ = vec4(result, material.alpha);
   $TP_GLSL_GLFRAGCOLOR$ = (picking*pickingID) + ((1.0-picking)*$TP_GLSL_GLFRAGCOLOR$);
 
-  $TP_GLSL_GLFRAGCOLOR$.x = (fragPos_light0.z>light0Depth)?0.0:1.0;
+  if($TP_GLSL_GLFRAGCOLOR$.a<0.01)
+    discard;
 }
