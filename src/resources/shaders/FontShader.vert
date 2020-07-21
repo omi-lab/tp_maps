@@ -1,4 +1,4 @@
-﻿$TP_VERT_SHADER_HEADER$
+$TP_VERT_SHADER_HEADER$
 
 $TP_GLSL_IN_V$vec3 inVertex;
 $TP_GLSL_IN_V$vec3 inNormal;

@@ -133,6 +133,9 @@ TP_DECLARE_ID(                   fontShaderSID,                      "Font shade
 TP_DECLARE_ID(                  frameShaderSID,                     "Frame shader");
 
 //##################################################################################################
+int staticInit();
+
+//##################################################################################################
 enum class RenderPass
 {
   LightFBOs,     //!< Render depth maps from the point of view of lights to FBOs.

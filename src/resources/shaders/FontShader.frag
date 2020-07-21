@@ -1,4 +1,4 @@
-﻿$TP_FRAG_SHADER_HEADER$
+$TP_FRAG_SHADER_HEADER$
 
 $TP_GLSL_IN_F$vec2 texCoordinate;
 uniform sampler2D textureSampler;

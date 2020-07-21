@@ -4,3 +4,5 @@ INCLUDEPATHS += tp_maps/inc/
 LIBRARIES    += tp_maps
 TP_DEPENDENCIES += opengl
 
+TP_STATIC_INIT += tp_maps
+

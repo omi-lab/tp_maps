@@ -1,4 +1,4 @@
-﻿$TP_FRAG_SHADER_HEADER$
+$TP_FRAG_SHADER_HEADER$
 
 struct Material
 {

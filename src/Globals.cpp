@@ -15,6 +15,15 @@ TP_DEFINE_ID(             depthImageShaderSID,               "Depth image shader
 TP_DEFINE_ID(                   fontShaderSID,                      "Font shader");
 TP_DEFINE_ID(                  frameShaderSID,                     "Frame shader");
 
+//##################################################################################################
+int tp_rc();
+int staticInit()
+{
+  // Hack to make sure that resources are loaded on OSX, this shoul be part of the default static
+  // init as part of the build system.
+  return tp_rc();
+}
+
 namespace
 {
 //##################################################################################################
