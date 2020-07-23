@@ -21,19 +21,24 @@ struct FBOLayer::Private
   TP_REF_COUNT_OBJECTS("tp_maps::FBOLayer::Private");
   TP_NONCOPYABLE(Private);
 
-  glm::vec2 origin{0.75f, 0.75f};
-  glm::vec2 size  {0.20f, 0.20f};
-
   FBOLayerSource source;
   size_t index;
+
+  glm::vec2 origin{0.75f, 0.75f};
+  glm::vec2 size  {0.20f, 0.20f};
 
   ImageShader::VertexBuffer* vertexBuffer{nullptr};
   bool updateVertexBuffer{true};
 
   //################################################################################################
-  Private(FBOLayerSource source_, size_t index_):
+  Private(FBOLayerSource source_,
+          size_t index_,
+          const glm::vec2& origin_,
+          const glm::vec2& size_):
     source(source_),
-    index(index_)
+    index(index_),
+    origin(origin_),
+    size(size_)
   {
 
   }
@@ -47,8 +52,11 @@ struct FBOLayer::Private
 };
 
 //##################################################################################################
-FBOLayer::FBOLayer(FBOLayerSource source, size_t index):
-  d(new Private(source, index))
+FBOLayer::FBOLayer(FBOLayerSource source,
+                   size_t index,
+                   const glm::vec2& origin,
+                   const glm::vec2& size):
+  d(new Private(source, index, origin, size))
 {
   setDefaultRenderPass(RenderPass::GUI);
 }

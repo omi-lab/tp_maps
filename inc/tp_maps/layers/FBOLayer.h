@@ -26,7 +26,10 @@ class TP_MAPS_SHARED_EXPORT FBOLayer: public Layer
   TP_REF_COUNT_OBJECTS("FBOLayer");
 public:
   //################################################################################################
-  FBOLayer(FBOLayerSource source=FBOLayerSource::ReflectionColor, size_t index=0);
+  FBOLayer(FBOLayerSource source=FBOLayerSource::ReflectionColor,
+           size_t index=0,
+           const glm::vec2& origin={0.75f, 0.75f},
+           const glm::vec2& size={0.20f, 0.20f});
 
   //################################################################################################
   ~FBOLayer()override;

@@ -14,6 +14,20 @@ namespace
 {
 ShaderResource vertShaderStr{"/tp_maps/MaterialShader.vert"};
 ShaderResource fragShaderStr{"/tp_maps/MaterialShader.frag"};
+
+struct LightLocations_lt
+{
+  GLint worldToLightLocation         {0}; // The matrix that transforms world coords onto the light texture.
+
+  GLint lightPositionLocation        {0};
+  GLint lightAmbientLocation         {0};
+  GLint lightDiffuseLocation         {0};
+  GLint lightSpecularLocation        {0};
+  GLint lightDiffuseScaleLocation    {0};
+  GLint lightDiffuseTranslateLocation{0};
+
+  GLint lightTextureIDLocation       {0};
+};
 }
 
 //##################################################################################################
@@ -26,8 +40,6 @@ struct MaterialShader::Private
   GLint mMatrixLocation          {0};
   GLint mvpMatrixLocation        {0};
 
-  GLint worldToLight0Location    {0};
-
   GLint cameraOriginLocation     {0};
 
   GLint materialAmbientLocation  {0};
@@ -35,13 +47,6 @@ struct MaterialShader::Private
   GLint materialSpecularLocation {0};
   GLint materialShininessLocation{0};
   GLint materialAlphaLocation    {0};
-
-  GLint lightPositionLocation        {0};
-  GLint lightAmbientLocation         {0};
-  GLint lightDiffuseLocation         {0};
-  GLint lightSpecularLocation        {0};
-  GLint lightDiffuseScaleLocation    {0};
-  GLint lightDiffuseTranslateLocation{0};
 
   GLint pickingLocation          {0};
   GLint pickingIDLocation        {0};
@@ -52,7 +57,7 @@ struct MaterialShader::Private
   //GLint alphaTextureIDLocation {0};
   GLint bumpTextureIDLocation  {0};
 
-  GLint light0TextureIDLocation{0};
+  std::array<LightLocations_lt, 2> lightLocations;
 
   //################################################################################################
   void draw(GLenum mode, MaterialShader::VertexBuffer* vertexBuffer)
@@ -105,8 +110,6 @@ void MaterialShader::compile(const char* vertShaderStr,
     d->mMatrixLocation             = glGetUniformLocation(program, "m");
     d->mvpMatrixLocation           = glGetUniformLocation(program, "mvp");
 
-    d->worldToLight0Location       = glGetUniformLocation(program, "worldToLight0");
-
     d->cameraOriginLocation        = glGetUniformLocation(program, "cameraOrigin_world");
 
     d->materialAmbientLocation   = glGetUniformLocation(program, "material.ambient");
@@ -114,13 +117,6 @@ void MaterialShader::compile(const char* vertShaderStr,
     d->materialSpecularLocation  = glGetUniformLocation(program, "material.specular");
     d->materialShininessLocation = glGetUniformLocation(program, "material.shininess");
     d->materialAlphaLocation     = glGetUniformLocation(program, "material.alpha");
-
-    d->lightPositionLocation         = glGetUniformLocation(program, "light.position");
-    d->lightAmbientLocation          = glGetUniformLocation(program, "light.ambient");
-    d->lightDiffuseLocation          = glGetUniformLocation(program, "light.diffuse");
-    d->lightSpecularLocation         = glGetUniformLocation(program, "light.specular");
-    d->lightDiffuseScaleLocation     = glGetUniformLocation(program, "light.diffuseScale");
-    d->lightDiffuseTranslateLocation = glGetUniformLocation(program, "light.diffuseTranslate");
 
     d->pickingLocation           = glGetUniformLocation(program, "picking");
     d->pickingIDLocation         = glGetUniformLocation(program, "pickingID");
@@ -130,15 +126,34 @@ void MaterialShader::compile(const char* vertShaderStr,
     d->specularTextureLocation = glGetUniformLocation(program, "specularTexture");
     //d->alphaTextureIDLocation = glGetUniformLocation(program, "ambientTexture");
     d->bumpTextureIDLocation = glGetUniformLocation(program, "bumpTexture");
-    d->light0TextureIDLocation = glGetUniformLocation(program, "light0Texture");
 
-    const char* shaderName = "MaterialShader";
-    if(d->mMatrixLocation  <0)tpWarning() << shaderName << " mMatrixLocation  : " << d->mMatrixLocation  ;
-    if(d->mvpMatrixLocation<0)tpWarning() << shaderName << " mvpMatrixLocation: " << d->mvpMatrixLocation;
+    for(size_t i=0; i<d->lightLocations.size(); i++)
+    {
+      auto& lightLocations = d->lightLocations.at(i);
 
-    if(d->worldToLight0Location<0)tpWarning() << shaderName << " worldToLight0Location  : " << d->worldToLight0Location  ;
+      auto ii = std::to_string(i);
+      auto replace = [&](std::string result)
+      {
+        size_t pos = result.find('%');
+        while(pos != std::string::npos)
+        {
+          result.replace(pos, 1, ii);
+          pos = result.find('%', pos + ii.size());
+        }
+        return result;
+      };
 
-    if(d->cameraOriginLocation<0)tpWarning() << shaderName << " cameraOriginLocation: " << d->cameraOriginLocation;
+      lightLocations.worldToLightLocation          = glGetUniformLocation(program, replace("worldToLight%").c_str());
+
+      lightLocations.lightPositionLocation         = glGetUniformLocation(program, replace("light%.position").c_str());
+      lightLocations.lightAmbientLocation          = glGetUniformLocation(program, replace("light%.ambient").c_str());
+      lightLocations.lightDiffuseLocation          = glGetUniformLocation(program, replace("light%.diffuse").c_str());
+      lightLocations.lightSpecularLocation         = glGetUniformLocation(program, replace("light%.specular").c_str());
+      lightLocations.lightDiffuseScaleLocation     = glGetUniformLocation(program, replace("light%.diffuseScale").c_str());
+      lightLocations.lightDiffuseTranslateLocation = glGetUniformLocation(program, replace("light%.diffuseTranslate").c_str());
+
+      lightLocations.lightTextureIDLocation        = glGetUniformLocation(program, replace("light%Texture").c_str());
+    }
 
     getLocations(program);
   });
@@ -171,24 +186,33 @@ void MaterialShader::setMaterial(const Material& material)
 //##################################################################################################
 void MaterialShader::setLights(const std::vector<Light>& lights, const std::vector<FBO>& lightBuffers)
 {
-  if(!lights.empty())
   {
-    const auto& light = lights.front();
-    glUniform3fv(d->lightAmbientLocation , 1,    &light.ambient.x       );
-    glUniform3fv(d->lightDiffuseLocation , 1,    &light.diffuse.x       );
-    glUniform3fv(d->lightSpecularLocation, 1,    &light.specular.x      );
-    glUniform1f(d->lightDiffuseScaleLocation,     light.diffuseScale    );
-    glUniform1f(d->lightDiffuseTranslateLocation, light.diffuseTranslate);
+    size_t iMax = tpMin(lights.size(), d->lightLocations.size());
+    for(size_t i=0; i<iMax; i++)
+    {
+      const auto& light = lights.at(i);
+      const auto& lightLocations = d->lightLocations.at(i);
+
+      glUniform3fv(lightLocations.lightAmbientLocation , 1,     &light.ambient.x       );
+      glUniform3fv(lightLocations.lightDiffuseLocation , 1,     &light.diffuse.x       );
+      glUniform3fv(lightLocations.lightSpecularLocation, 1,     &light.specular.x      );
+      glUniform1f (lightLocations.lightDiffuseScaleLocation,     light.diffuseScale    );
+      glUniform1f (lightLocations.lightDiffuseTranslateLocation, light.diffuseTranslate);
+    }
   }
 
-  if(!lightBuffers.empty())
   {
-    const auto& lightBuffer = lightBuffers.front();
-    glUniformMatrix4fv(d->worldToLight0Location, 1, GL_FALSE, glm::value_ptr(lightBuffer.worldToTexture));
+    size_t iMax = tpMin(lightBuffers.size(), d->lightLocations.size());
+    for(size_t i=0; i<iMax; i++)
+    {
+      const auto& lightBuffer = lightBuffers.at(i);
+      const auto& lightLocations = d->lightLocations.at(i);
+      glUniformMatrix4fv(lightLocations.worldToLightLocation, 1, GL_FALSE, glm::value_ptr(lightBuffer.worldToTexture));
 
-    glActiveTexture(GL_TEXTURE5);
-    glBindTexture(GL_TEXTURE_2D, lightBuffer.depthID);
-    glUniform1i(d->light0TextureIDLocation, 5);
+      glActiveTexture(GL_TEXTURE5 + i);
+      glBindTexture(GL_TEXTURE_2D, lightBuffer.depthID);
+      glUniform1i(lightLocations.lightTextureIDLocation, 5 + i);
+    }
   }
 }
 

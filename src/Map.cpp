@@ -64,7 +64,7 @@ struct Map::Private
 
   FBO reflectionBuffer;
 
-  std::vector<Light> lights{Light()};
+  std::vector<Light> lights;
   std::vector<FBO> lightTextures;
 
   FBO pickingBuffer;
@@ -77,6 +77,30 @@ struct Map::Private
   Private(Map* q_):
     q(q_)
   {
+    {
+      Light light;
+      light.position = {5.52f, -5.52f, 18.4f};
+      light.direction = {-0.276, 0.276, -0.92};
+
+      light.ambient  = {0.2f, 0.2f, 0.2f};
+      light.diffuse  = {0.3f, 0.3f, 0.3f};
+      light.specular = {1.0f, 1.0f, 1.0f};
+
+      lights.push_back(light);
+    }
+
+    {
+      Light light;
+      light.position = {-5.52f, -5.52f, 18.4f};
+      light.direction = {0.276, 0.276, -0.92};
+
+      light.ambient  = {0.2f, 0.2f, 0.2f};
+      light.diffuse  = {0.3f, 0.3f, 0.3f};
+      light.specular = {1.0f, 1.0f, 1.0f};
+
+      lights.push_back(light);
+    }
+
     renderInfo.map = q;
   }
 
@@ -119,31 +143,27 @@ struct Map::Private
       glGenTextures(1, &buffer.depthID);
       glBindTexture(GL_TEXTURE_2D, buffer.depthID);
       glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
-      //glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-      // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-      // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-
-
-
-      // glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
-      //
-      // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-      // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-      // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      //
-      // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-      // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-
-
-glBindTexture(GL_TEXTURE_2D, 0);
+      glBindTexture(GL_TEXTURE_2D, 0);
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.depthID, 0);
+
+
+
+      //glGenTextures( 1, &tex );
+      //glBindTexture( GL_TEXTURE_2D_MULTISAMPLE, tex );
+      //glTexImage2DMultisample( GL_TEXTURE_2D_MULTISAMPLE, num_samples, GL_RGBA8, width, height, false );
+      //
+      //glGenFramebuffers( 1, &fbo );
+      //glBindFramebuffer( GL_FRAMEBUFFER, fbo );
+      //glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, tex, 0 );
+      //
+      //GLenum status = glCheckFramebufferStatus( target );
+
     }
 
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -820,6 +840,10 @@ void Map::initializeGL()
   glFrontFace(GL_CCW);
   glCullFace(GL_BACK);
 
+#ifdef TP_ENABLE_MULTISAMPLE
+  glEnable(GL_MULTISAMPLE);
+#endif
+
   glClearColor(d->backgroundColor.x, d->backgroundColor.y, d->backgroundColor.z, 1.0f);
   d->initialized = true;
 
@@ -870,7 +894,7 @@ void Map::paintGLNoMakeCurrent()
       glDepthFunc(GL_LESS);
       glDepthMask(true);
 
-      for(size_t i=0; i< d->lightTextures.size(); i++)
+      for(size_t i=0; i<d->lightTextures.size(); i++)
       {
         const auto& light = d->lights.at(i);
         auto& lightBuffer = d->lightTextures.at(i);
@@ -882,6 +906,8 @@ void Map::paintGLNoMakeCurrent()
         lightBuffer.worldToTexture = d->controller->lightMatrices().vp;
         d->render();
       }
+
+      glViewport(0, 0, d->width, d->height);
       glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
 #endif
       break;

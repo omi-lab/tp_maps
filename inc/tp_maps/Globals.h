@@ -52,8 +52,10 @@
 
 #else //--------------------------------------------------------------------------------------------
 #  include <GLES3/gl3.h>
+#  include <GL/gl.h>
 #  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_130
 #  define TP_GL3
+#  define TP_ENABLE_MULTISAMPLE
 
 #endif //-------------------------------------------------------------------------------------------
 
@@ -288,6 +290,10 @@ struct TP_MAPS_SHARED_EXPORT Light
 
   float diffuseScale{0.5f};              //! Multiplied with the diffuse lighting calculation.
   float diffuseTranslate{1.0f};          //! Added to the diffuse lighting calculation.
+
+  float constant{1.0f};
+  float linear{0.1f};
+  float quadratic{0.1f};
 };
 
 //##################################################################################################
