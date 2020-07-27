@@ -13,29 +13,6 @@
 namespace tp_maps
 {
 
-namespace
-{
-const int32_t      UP_KEY = 82;
-const int32_t      LEFT_KEY = 80;
-const int32_t      RIGHT_KEY = 79;
-const int32_t      DOWN_KEY = 81;
-
-const int32_t      W_KEY = 26;
-const int32_t      A_KEY = 4;
-const int32_t      S_KEY = 22;
-const int32_t      D_KEY = 7;
-
-const int32_t      SPACE_KEY = 44;
-
-const int32_t      L_SHIFT_KEY = 229;
-const int32_t      R_SHIFT_KEY = 225;
-
-const int32_t      L_CTRL_KEY = 224;
-
-const int32_t      PAGE_UP_KEY = 75;
-const int32_t      PAGE_DOWN_KEY = 78;
-}
-
 //##################################################################################################
 struct FPSController::Private
 {

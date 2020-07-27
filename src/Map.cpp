@@ -412,6 +412,7 @@ void Map::insertLayer(size_t i, Layer *layer)
 
   d->layers.insert(d->layers.begin()+int(i), layer);
   layer->setMap(this);
+  update();
 }
 
 //##################################################################################################
