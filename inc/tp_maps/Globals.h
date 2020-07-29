@@ -276,6 +276,7 @@ struct Matrices
 //##################################################################################################
 struct TP_MAPS_SHARED_EXPORT Material
 {
+  std::string name;
   glm::vec3 ambient{1.0f, 0.0f, 0.0f};  //!< mtl: Ka
   glm::vec3 diffuse{0.4f, 0.0f, 0.0f};  //!< mtl: Kd
   glm::vec3 specular{0.1f, 0.1f, 0.1f}; //!< mtl: Ks

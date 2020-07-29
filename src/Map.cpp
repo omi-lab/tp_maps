@@ -1147,6 +1147,7 @@ void Map::stopTextInput()
 void Map::mapLayerDestroyed(Layer* layer)
 {
   tpRemoveOne(d->layers, layer);
+  update();
 }
 
 //##################################################################################################
