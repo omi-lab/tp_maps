@@ -142,6 +142,9 @@ HEADERS += inc/tp_maps/layers/PlaneLayer.h
 SOURCES += src/layers/FBOLayer.cpp
 HEADERS += inc/tp_maps/layers/FBOLayer.h
 
+SOURCES += src/layers/LightsLayer.cpp
+HEADERS += inc/tp_maps/layers/LightsLayer.h
+
 
 #-- Textures ---------------------------------------------------------------------------------------
 SOURCES += src/textures/BasicTexture.cpp
