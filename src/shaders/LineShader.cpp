@@ -43,8 +43,8 @@ struct LineShader::Private
 };
 
 //##################################################################################################
-LineShader::LineShader(tp_maps::OpenGLProfile openGLProfile):
-  Shader(openGLProfile),
+LineShader::LineShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
+  Shader(map, openGLProfile),
   d(new Private())
 {
   compile(vertShaderStr.data(openGLProfile),

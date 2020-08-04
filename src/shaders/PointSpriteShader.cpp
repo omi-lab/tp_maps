@@ -67,8 +67,8 @@ struct PointSpriteShader::Private
 };
 
 //##################################################################################################
-PointSpriteShader::PointSpriteShader(tp_maps::OpenGLProfile openGLProfile):
-  Shader(openGLProfile),
+PointSpriteShader::PointSpriteShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
+  Shader(map, openGLProfile),
   d(new Private())
 {
   //We compile 2 shaders one for picking and the other for normal rendering

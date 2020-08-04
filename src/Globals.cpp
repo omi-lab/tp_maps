@@ -24,8 +24,6 @@ int staticInit()
   return tp_rc();
 }
 
-namespace
-{
 //##################################################################################################
 std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfile)
 {
@@ -284,7 +282,6 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
 
   return result;
 }
-}
 
 //##################################################################################################
 ShaderString::ShaderString(const char* text):
@@ -320,6 +317,35 @@ const char* ShaderResource::data(OpenGLProfile openGLProfile)
     parsed = parseShaderString(tp_utils::resource(m_resourceName).data, openGLProfile);
 
   return parsed.c_str();
+}
+
+//##################################################################################################
+std::vector<std::string> lightTypes()
+{
+  return {"Directional", "Spot"};
+}
+
+//##################################################################################################
+LightType lightTypeFromString(const std::string& lightType)
+{
+  if(lightType == "Directional")
+    return LightType::Directional;
+
+  if(lightType == "Spot")
+    return LightType::Spot;
+
+  return LightType::Directional;
+}
+
+//##################################################################################################
+std::string lightTypeToString(LightType lightType)
+{
+  switch(lightType)
+  {
+  case LightType::Directional: return "Directional";
+  case LightType::Spot:        return "Spot";
+  }
+  return "Directional";
 }
 
 }

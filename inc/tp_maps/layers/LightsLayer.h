@@ -18,14 +18,15 @@ public:
   LightsLayer();
 
   //################################################################################################
-  ~LightsLayer()override;
+  ~LightsLayer() override;
 
 protected:
+
   //################################################################################################
   void render(RenderInfo& renderInfo) override;
 
   //################################################################################################
-  void invalidateBuffers() override;
+  void lightsChanged(LightingModelChanged lightingModelChanged) override;
 
 private:
   struct Private;

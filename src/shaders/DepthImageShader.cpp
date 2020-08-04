@@ -9,8 +9,8 @@ ShaderResource fragShaderStr{"/tp_maps/DepthImageShader.frag"};
 }
 
 //##################################################################################################
-DepthImageShader::DepthImageShader(tp_maps::OpenGLProfile openGLProfile):
-  ImageShader(openGLProfile, nullptr, fragShaderStr.data(openGLProfile))
+DepthImageShader::DepthImageShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
+  ImageShader(map, openGLProfile, nullptr, fragShaderStr.data(openGLProfile))
 {
 
 }

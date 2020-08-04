@@ -16,19 +16,10 @@ $TP_GLSL_OUT_V$vec2 uv_tangent;
 $TP_GLSL_OUT_V$vec3 fragPos_tangent;
 $TP_GLSL_OUT_V$vec3 cameraOrigin_tangent;
 
-uniform mat4 worldToLight0;
-$TP_GLSL_OUT_V$vec3 light0Direction_tangent;
-$TP_GLSL_OUT_V$vec4 fragPos_light0;
-
-uniform mat4 worldToLight1;
-$TP_GLSL_OUT_V$vec3 light1Direction_tangent;
-$TP_GLSL_OUT_V$vec4 fragPos_light1;
+$LIGHT_VERT_VARS$
 
 void main()
 {
-  vec3 light0Direction_world = vec3(-0.276, 0.276, -0.92);
-  vec3 light1Direction_world = vec3( 0.276, 0.276, -0.92);
-
   // Calculate the Tangent,Bitangent,Normal matrix
   // We use this to convert world coords into tangent space coords
   vec3 tangentCameraSpace   = (mat3(m) * inTangent  );
@@ -39,12 +30,11 @@ void main()
   gl_Position = mvp * vec4(inVertex, 1.0);
 
   fragPos_world = (m * vec4(inVertex, 1.0)).xyz;
-  fragPos_light0 = (vec4(0.5, 0.5, 0.5, 1) * ((worldToLight0 * m) * vec4(inVertex, 1.0))) + vec4(0.5, 0.5, 0.5, 0);
-  fragPos_light1 = (vec4(0.5, 0.5, 0.5, 1) * ((worldToLight1 * m) * vec4(inVertex, 1.0))) + vec4(0.5, 0.5, 0.5, 0);
 
   uv_tangent = inTexture;
-  light0Direction_tangent = TBN * light0Direction_world;
-  light1Direction_tangent = TBN * light1Direction_world;
+
+  $LIGHT_VERT_CALC$
+
   cameraOrigin_tangent = TBN * cameraOrigin_world;
   fragPos_tangent = TBN * fragPos_world;
 }

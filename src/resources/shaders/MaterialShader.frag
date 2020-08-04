@@ -45,15 +45,7 @@ $TP_GLSL_IN_F$vec2 uv_tangent;
 $TP_GLSL_IN_F$vec3 cameraOrigin_tangent;
 $TP_GLSL_IN_F$vec3 fragPos_tangent;
 
-uniform sampler2D light0Texture;
-$TP_GLSL_IN_F$vec3 light0Direction_tangent;
-uniform Light light0;
-$TP_GLSL_IN_F$vec4 fragPos_light0;
-
-uniform sampler2D light1Texture;
-$TP_GLSL_IN_F$vec3 light1Direction_tangent;
-uniform Light light1;
-$TP_GLSL_IN_F$vec4 fragPos_light1;
+$LIGHT_FRAG_VARS$
 
 $TP_GLSL_GLFRAGCOLOR_DEF$
 
@@ -66,7 +58,7 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
 
   // Diffuse
   float cosTheta = clamp(dot(norm, normalize(-lightDirection_tangent)), 0, 1);
-  float diff = max((cosTheta+light.diffuseTranslate)*light.diffuseScale, 0);
+  float diff = (cosTheta+light.diffuseTranslate)*light.diffuseScale;
   r.diffuse = light.diffuse * diff;
 
   // Specular
@@ -79,75 +71,33 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
 
   // Shadow
   float shadow = 0.0;
-  float bias = 0.0009;//max(0.0005, (1.0-cosTheta)*0.05);
-  vec2 texelSize = 2.0 / textureSize(lightTexture, 0);
-  float biasedDepth = min(fragPos_light.z-bias,1.0);
-  for(int x = -1; x <= 1; ++x)
+  float bias = dot(norm, normalize(-lightDirection_tangent));
+  if(bias>0.0)
   {
-    for(int y = -1; y <= 1; ++y)
+    bias = max(0.0001, (1.0 - bias)*0.0005);
+    vec2 texelSize = 2.0 / textureSize(lightTexture, 0);
+    float biasedDepth = min(fragPos_light.z-bias,1.0);
+    for(int x = -1; x <= 1; ++x)
     {
-      float lightDepth = $TP_GLSL_TEXTURE$(lightTexture, fragPos_light.xy + (vec2(x, y)*texelSize)).x;
-      shadow += (lightDepth<biasedDepth)?0.0:1.0;
+      for(int y = -1; y <= 1; ++y)
+      {
+        vec2 coord = fragPos_light.xy + (vec2(x, y)*texelSize);
+        if(coord.x<0.0 || coord.x>1.0 || coord.y<0.0 || coord.y>1.0)
+        {
+          shadow += 1.0;
+        }
+        else
+        {
+          float lightDepth = $TP_GLSL_TEXTURE$(lightTexture, coord).x;
+          shadow += (lightDepth<biasedDepth)?0.0:1.0;
+        }
+      }
     }
+    shadow /= 9.0;
   }
-  shadow /= 9.0;
 
   r.diffuse *= shadow;
   r.specular *= shadow;
-
-  return r;
-}
-
-LightResult pointLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampler2D lightTexture, vec4 fragPos_light)
-{
-  LightResult r;
-
-  // Ambient
-  r.ambient = light.ambient;
-
-  // Diffuse
-  float cosTheta = clamp(dot(norm, normalize(-lightDirection_tangent)), 0, 1);
-  float diff = max((cosTheta+light.diffuseTranslate)*light.diffuseScale, 0);
-  r.diffuse = light.diffuse * diff;
-
-  // Specular
-  vec3 incidenceVector = normalize(lightDirection_tangent);
-  vec3 reflectionVector = reflect(incidenceVector, norm);
-  vec3 surfaceToCamera = normalize(cameraOrigin_tangent-fragPos_tangent);
-  float cosAngle = max(0.0, dot(surfaceToCamera, reflectionVector));
-  float specularCoefficient = pow(cosAngle, material.shininess);
-  r.specular = specularCoefficient * light.specular;
-
-  // Shadow
-  float shadow = 0.0;
-  float bias = 0.0009;//max(0.0005, (1.0-cosTheta)*0.05);
-  vec2 texelSize = 2.0 / textureSize(lightTexture, 0);
-  float biasedDepth = min(fragPos_light.z-bias,1.0);
-  for(int x = -1; x <= 1; ++x)
-  {
-    for(int y = -1; y <= 1; ++y)
-    {
-      float lightDepth = $TP_GLSL_TEXTURE$(lightTexture, fragPos_light.xy + (vec2(x, y)*texelSize)).x;
-      shadow += (lightDepth<biasedDepth)?0.0:1.0;
-    }
-  }
-  shadow /= 9.0;
-
-  float constant=1.0;
-  float linear=0.1;
-  float quadratic=0.1;
-
-  // attenuation
-  float distance    = length(light.position - fragPos_world);
-  float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance));
-  //float attenuation = 1.0 / (1.0 + 0.1*distance + 0.01*distance*distance);
-
-  r.diffuse *= shadow;
-  r.specular *= shadow;
-
-  r.ambient  *= attenuation;
-  r.diffuse  *= attenuation;
-  r.specular *= attenuation;
 
   return r;
 }
@@ -174,7 +124,8 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampl
 
   // Shadow
   float shadow = 0.0;
-  float bias = 0.0009;//max(0.0005, (1.0-cosTheta)*0.05);
+  //float bias = 0.0009;
+  float bias = max(0.0, (1.0-cosTheta)*0.05);
   vec2 texelSize = 2.0 / textureSize(lightTexture, 0);
   float biasedDepth = min(fragPos_light.z-bias,1.0);
   for(int x = -1; x <= 1; ++x)
@@ -219,19 +170,7 @@ void main()
   vec3 diffuse  = vec3(0,0,0);
   vec3 specular = vec3(0,0,0);
 
-  {
-    LightResult r = directionalLight(norm, light0, light0Direction_tangent, light0Texture, fragPos_light0);
-    ambient  += r.ambient;
-    diffuse  += r.diffuse;
-    specular += r.specular;
-  }
-
-  {
-    LightResult r = spotLight(norm, light1, light1Direction_tangent, light1Texture, fragPos_light1);
-    ambient  += r.ambient;
-    diffuse  += r.diffuse;
-    specular += r.specular;
-  }
+  $LIGHT_FRAG_CALC$
 
   ambient  *= (ambientTex+material.ambient);
   diffuse  *= (diffuseTex+material.diffuse);

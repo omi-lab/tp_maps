@@ -5,8 +5,8 @@ namespace tp_maps
 {
 
 //##################################################################################################
-Geometry3DShader::Geometry3DShader(tp_maps::OpenGLProfile openGLProfile):
-  Shader(openGLProfile)
+Geometry3DShader::Geometry3DShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
+  Shader(map, openGLProfile)
 {
 
 }

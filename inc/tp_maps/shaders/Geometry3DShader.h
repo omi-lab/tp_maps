@@ -14,7 +14,7 @@ class TP_MAPS_SHARED_EXPORT Geometry3DShader: public Shader
 {
 public:
   //################################################################################################
-  Geometry3DShader(tp_maps::OpenGLProfile openGLProfile);
+  Geometry3DShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
 
   //################################################################################################
   struct Vertex

@@ -17,7 +17,7 @@ class TP_MAPS_SHARED_EXPORT PointSpriteShader: public Shader
 {
 public:
   //################################################################################################
-  PointSpriteShader(tp_maps::OpenGLProfile openGLProfile);
+  PointSpriteShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
 
   //################################################################################################
   ~PointSpriteShader() override;

@@ -232,6 +232,9 @@ struct TP_MAPS_SHARED_EXPORT OpenGLConfig
 };
 
 //##################################################################################################
+std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfile);
+
+//##################################################################################################
 struct TP_MAPS_SHARED_EXPORT ShaderString
 {
   TP_NONCOPYABLE(ShaderString);
@@ -294,9 +297,17 @@ struct TP_MAPS_SHARED_EXPORT Material
 enum class LightType
 {
   Directional,
-  Point,
   Spot
 };
+
+//##################################################################################################
+std::vector<std::string> lightTypes();
+
+//##################################################################################################
+LightType lightTypeFromString(const std::string& lightType);
+
+//##################################################################################################
+std::string lightTypeToString(LightType lightType);
 
 //##################################################################################################
 struct TP_MAPS_SHARED_EXPORT Light
@@ -317,6 +328,19 @@ struct TP_MAPS_SHARED_EXPORT Light
   float constant{1.0f};
   float linear{0.1f};
   float quadratic{0.1f};
+};
+
+//##################################################################################################
+//! Use to describe if the lighting calculation has changed or just its variables.
+/*!
+For efficiency the calculations for each light get compiled into the shaders as a result if we
+change the numbers of lights or the type of any light we will need to recompile the shaders. If we
+are just changing the parameters of a light then we do not need to recompile the shaders.
+*/
+enum class LightingModelChanged
+{
+  Yes, //!< The number of lights or the types of lights used changed.
+  No   //!< Just the parameters of the lights changed.
 };
 
 //##################################################################################################

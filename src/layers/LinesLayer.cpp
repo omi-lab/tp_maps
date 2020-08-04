@@ -86,6 +86,88 @@ void LinesLayer::setLines(const std::vector<Lines>& lines)
 }
 
 //##################################################################################################
+void LinesLayer::setLinesFromGeometry(const std::vector<Geometry3D>& geometry)
+{
+  std::vector<Lines> lines;
+
+  for(const auto& g : geometry)
+  {
+    for(const auto& m : g.geometry.indexes)
+    {
+      auto& l = lines.emplace_back();
+      l.color = glm::vec4(g.material.ambient, 1.0f);
+      l.mode = GL_LINES;
+
+      if(!m.indexes.empty())
+      {
+        auto getVert = [&](size_t ii)
+        {
+          return g.geometry.verts.at(size_t(m.indexes.at(ii))).vert;
+        };
+
+        switch(m.type)
+        {
+        case GL_TRIANGLE_FAN:
+        {
+          l.lines.reserve(m.indexes.size()*2 - 2);
+          auto first = getVert(0);
+          for(size_t i=1; i<m.indexes.size(); i++)
+          {
+            l.lines.push_back(first);
+            l.lines.push_back(getVert(i));
+          }
+          break;
+        }
+
+        case GL_TRIANGLE_STRIP:
+        {
+          l.lines.reserve(m.indexes.size()*2 - 1);
+          for(size_t i=1; i<m.indexes.size(); i++)
+          {
+            l.lines.push_back(getVert(i-1));
+            l.lines.push_back(getVert(i));
+          }
+
+          for(size_t i=3; i<m.indexes.size(); i+=2)
+          {
+            l.lines.push_back(getVert(i-2));
+            l.lines.push_back(getVert(i));
+          }
+
+          for(size_t i=2; i<m.indexes.size(); i+=2)
+          {
+            l.lines.push_back(getVert(i-2));
+            l.lines.push_back(getVert(i));
+          }
+
+          break;
+        }
+
+        case GL_TRIANGLES:
+        {
+          l.lines.reserve(m.indexes.size()*2);
+          for(size_t i=2; i<m.indexes.size(); i+=3)
+          {
+            l.lines.push_back(getVert(i-2));
+            l.lines.push_back(getVert(i-1));
+
+            l.lines.push_back(getVert(i-1));
+            l.lines.push_back(getVert(i));
+
+            l.lines.push_back(getVert(i));
+            l.lines.push_back(getVert(i-2));
+          }
+          break;
+        }
+        }
+      }
+    }
+  }
+
+  setLines(lines);
+}
+
+//##################################################################################################
 void LinesLayer::setLinesFromGeometryNormals(const std::vector<Geometry3D>& geometry, float scale)
 {
   std::vector<tp_maps::Lines> lines;

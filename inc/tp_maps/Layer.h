@@ -124,7 +124,42 @@ public:
   //################################################################################################
   tp_utils::CallbackCollection<void(double)> animateCallbacks;
 
+  //################################################################################################
+  //! Add a child layer
+  /*!
+  The default implementation simply appends the layer to the vector of layers and then calls
+  setMap() on the layer.
+
+  \note The layer will take ownership of the child layer.
+
+  \param layer The child layer to add.
+  */
+  virtual void addChildLayer(Layer* layer);
+
+  //################################################################################################
+  //! Insert a child layer at a given position
+  void insertChildLayer(size_t i, Layer* layer);
+
+  //################################################################################################
+  //! Remove a child layer
+  /*!
+  \param layer The child layer to remove
+  */
+  void removeChildLayer(Layer* layer);
+
+  //################################################################################################
+  //! Remove and delete all child layers
+  void clearChildLayers();
+
+  //################################################################################################
+  //! Return the list of child layers
+  const std::vector<Layer*>& childLayers()const;
+
 protected:
+  //################################################################################################
+  //! Return the list of child layers
+  std::vector<Layer*>& childLayers();
+
   //################################################################################################
   //! This is called to get the layer to render.
   /*!
@@ -168,16 +203,23 @@ protected:
   virtual void animate(double timestampMS);
 
   //################################################################################################
+  virtual void lightsChanged(LightingModelChanged lightingModelChanged);
+
+  //################################################################################################
   //! Calls update on the map
   void update();
 
-private:
+private:  
   //################################################################################################
-  //! Called by the Map
-  void setMap(Map* map);
+  //! Called when a child layer is deleted.
+  void childLayerDestroyed(Layer* layer);
 
   //################################################################################################
-  //! Called by the Map
+  //! Called by the Map.
+  void setMap(Map* map, Layer* parent);
+
+  //################################################################################################
+  //! Called by the Map.
   void clearMap();
 
   struct Private;

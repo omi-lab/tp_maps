@@ -30,10 +30,13 @@ class TP_MAPS_SHARED_EXPORT Shader
   friend class Map;
 public:
   //################################################################################################
-  Shader(tp_maps::OpenGLProfile openGLProfile);
+  Shader(Map* map, tp_maps::OpenGLProfile openGLProfile);
 
   //################################################################################################
   virtual ~Shader();
+
+  //################################################################################################
+  Map* map() const;
 
   //################################################################################################
   tp_maps::OpenGLProfile openGLProfile() const;

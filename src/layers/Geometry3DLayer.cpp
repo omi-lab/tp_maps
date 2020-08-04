@@ -419,4 +419,11 @@ void Geometry3DLayer::invalidateBuffers()
   d->textureIDs.clear();
 }
 
+////##################################################################################################
+//void Geometry3DLayer::lightsChanged(LightingModelChanged lightingModelChanged)
+//{
+//  if(lightingModelChanged==LightingModelChanged::Yes)
+//    d->updateModels = true;
+//}
+
 }

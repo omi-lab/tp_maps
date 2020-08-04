@@ -42,8 +42,8 @@ struct ImageShader::Private
 };
 
 //##################################################################################################
-ImageShader::ImageShader(tp_maps::OpenGLProfile openGLProfile, const char* vertexShader, const char* fragmentShader):
-  Geometry3DShader(openGLProfile),
+ImageShader::ImageShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const char* vertexShader, const char* fragmentShader):
+  Geometry3DShader(map, openGLProfile),
   d(new Private())
 {
   if(!vertexShader)

@@ -116,8 +116,8 @@ struct FontShader::PreparedString::Private
 };
 
 //##################################################################################################
-FontShader::FontShader(tp_maps::OpenGLProfile openGLProfile, const char* vertexShader, const char* fragmentShader):
-  Shader(openGLProfile),
+FontShader::FontShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const char* vertexShader, const char* fragmentShader):
+  Shader(map, openGLProfile),
   d(new Private())
 {
   if(!vertexShader)

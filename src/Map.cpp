@@ -79,6 +79,8 @@ struct Map::Private
   {
     {
       Light light;
+      light.type = LightType::Directional;
+
       light.position = {5.52f, -5.52f, 18.4f};
       light.direction = {-0.276, 0.276, -0.92};
 
@@ -91,6 +93,8 @@ struct Map::Private
 
     {
       Light light;
+      light.type = LightType::Directional;
+
       light.position = {-5.52f, -5.52f, 18.4f};
       light.direction = {0.276, 0.276, -0.92};
 
@@ -109,11 +113,9 @@ struct Map::Private
   {
     controller->updateMatrices();
 
-    Layer** l = layers.data();
-    Layer** lMax = l + layers.size();
-    for(; l<lMax; l++)
-      if((*l)->visible())
-        (*l)->render(renderInfo);
+    for(auto l : layers)
+      if(l->visible())
+        l->render(renderInfo);
   }
 
   //################################################################################################
@@ -151,19 +153,6 @@ struct Map::Private
 
       glBindTexture(GL_TEXTURE_2D, 0);
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.depthID, 0);
-
-
-
-      //glGenTextures( 1, &tex );
-      //glBindTexture( GL_TEXTURE_2D_MULTISAMPLE, tex );
-      //glTexImage2DMultisample( GL_TEXTURE_2D_MULTISAMPLE, num_samples, GL_RGBA8, width, height, false );
-      //
-      //glGenFramebuffers( 1, &fbo );
-      //glBindFramebuffer( GL_FRAMEBUFFER, fbo );
-      //glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, tex, 0 );
-      //
-      //GLenum status = glCheckFramebufferStatus( target );
-
     }
 
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -304,10 +293,8 @@ void Map::animate(double timestampMS)
 {
   d->controller->animate(timestampMS);
 
-  Layer** l = d->layers.data();
-  Layer** lMax = l + d->layers.size();
-  for(; l<lMax; l++)
-    (*l)->animate(timestampMS);
+  for(auto l : d->layers)
+    l->animate(timestampMS);
 }
 
 //##################################################################################################
@@ -384,7 +371,37 @@ void Map::setCustomRenderPass(RenderPass renderPass,
 //##################################################################################################
 void Map::setLights(const std::vector<Light>& lights)
 {
+  LightingModelChanged lightingModelChanged=LightingModelChanged::No;
+
+  if(d->lights.size() != lights.size())
+    lightingModelChanged=LightingModelChanged::Yes;
+  else
+  {
+    for(size_t i=0; i<lights.size(); i++)
+    {
+      if(d->lights.at(i).type != lights.at(i).type)
+      {
+        lightingModelChanged=LightingModelChanged::Yes;
+        break;
+      }
+    }
+  }
+
   d->lights = lights;
+
+  if(lightingModelChanged==LightingModelChanged::Yes)
+  {
+    makeCurrent();
+
+    for(const auto& i : d->shaders)
+      delete i.second;
+
+    d->shaders.clear();
+  }
+
+  for(auto l : d->layers)
+    l->lightsChanged(lightingModelChanged);
+
   update();
 }
 
@@ -411,7 +428,7 @@ void Map::insertLayer(size_t i, Layer *layer)
   }
 
   d->layers.insert(d->layers.begin()+int(i), layer);
-  layer->setMap(this);
+  layer->setMap(this, nullptr);
   update();
 }
 
@@ -1144,7 +1161,7 @@ void Map::stopTextInput()
 }
 
 //##################################################################################################
-void Map::mapLayerDestroyed(Layer* layer)
+void Map::layerDestroyed(Layer* layer)
 {
   tpRemoveOne(d->layers, layer);
   update();

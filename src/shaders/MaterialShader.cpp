@@ -15,11 +15,13 @@ namespace
 ShaderResource vertShaderStr{"/tp_maps/MaterialShader.vert"};
 ShaderResource fragShaderStr{"/tp_maps/MaterialShader.frag"};
 
+//##################################################################################################
 struct LightLocations_lt
 {
   GLint worldToLightLocation         {0}; // The matrix that transforms world coords onto the light texture.
 
   GLint lightPositionLocation        {0};
+  GLint lightDirectionLocation       {0};
   GLint lightAmbientLocation         {0};
   GLint lightDiffuseLocation         {0};
   GLint lightSpecularLocation        {0};
@@ -28,6 +30,18 @@ struct LightLocations_lt
 
   GLint lightTextureIDLocation       {0};
 };
+
+//##################################################################################################
+std::string replaceLight(const std::string& ii, std::string result)
+{
+  size_t pos = result.find('%');
+  while(pos != std::string::npos)
+  {
+    result.replace(pos, 1, ii);
+    pos = result.find('%', pos + ii.size());
+  }
+  return result;
+}
 }
 
 //##################################################################################################
@@ -57,7 +71,7 @@ struct MaterialShader::Private
   //GLint alphaTextureIDLocation {0};
   GLint bumpTextureIDLocation  {0};
 
-  std::array<LightLocations_lt, 2> lightLocations;
+  std::vector<LightLocations_lt> lightLocations;
 
   //################################################################################################
   void draw(GLenum mode, MaterialShader::VertexBuffer* vertexBuffer)
@@ -74,12 +88,82 @@ struct MaterialShader::Private
 };
 
 //##################################################################################################
-MaterialShader::MaterialShader(tp_maps::OpenGLProfile openGLProfile, bool compileShader):
-  Geometry3DShader(openGLProfile),
+MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, bool compileShader):
+  Geometry3DShader(map, openGLProfile),
   d(new Private())
 {
   if(compileShader)
-    compile(vertShaderStr.data(openGLProfile), fragShaderStr.data(openGLProfile), [](auto){}, [](auto){});
+  {
+    std::string LIGHT_VERT_VARS;
+    std::string LIGHT_VERT_CALC;
+
+    std::string LIGHT_FRAG_VARS;
+    std::string LIGHT_FRAG_CALC;
+
+    {
+      auto lights = map->lights();
+      for(size_t i=0; i<lights.size(); i++)
+      {
+        const auto& light = lights.at(i);
+        auto ii = std::to_string(i);
+
+        LIGHT_VERT_VARS += replaceLight(ii, "uniform mat4 worldToLight%;\n");
+        LIGHT_VERT_VARS += replaceLight(ii, "uniform vec3 light%Direction_world;\n");
+        LIGHT_VERT_VARS += replaceLight(ii, "$TP_GLSL_OUT_V$vec3 light%Direction_tangent;\n");
+        LIGHT_VERT_VARS += replaceLight(ii, "$TP_GLSL_OUT_V$vec4 fragPos_light%;\n\n");
+
+        LIGHT_VERT_CALC += replaceLight(ii, "  fragPos_light% = (vec4(0.5, 0.5, 0.5, 1) * ((worldToLight% * m) * vec4(inVertex, 1.0))) + vec4(0.5, 0.5, 0.5, 0);\n");
+        LIGHT_VERT_CALC += replaceLight(ii, "  light%Direction_tangent = TBN * light%Direction_world;\n\n");
+
+        LIGHT_FRAG_VARS += replaceLight(ii, "uniform sampler2D light%Texture;\n");
+        LIGHT_FRAG_VARS += replaceLight(ii, "$TP_GLSL_IN_F$vec3 light%Direction_tangent;\n");
+        LIGHT_FRAG_VARS += replaceLight(ii, "uniform Light light%;\n");
+        LIGHT_FRAG_VARS += replaceLight(ii, "$TP_GLSL_IN_F$vec4 fragPos_light%;\n\n");
+
+        LIGHT_FRAG_CALC += "  {\n";
+        switch(light.type)
+        {
+        case LightType::Directional:
+          LIGHT_FRAG_CALC += replaceLight(ii, "    LightResult r = directionalLight(norm, light%, light%Direction_tangent, light%Texture, fragPos_light%);\n");
+          break;
+
+        case LightType::Spot:
+          LIGHT_FRAG_CALC += replaceLight(ii, "    LightResult r = spotLight(norm, light%, light%Direction_tangent, light%Texture, fragPos_light%);\n");
+          break;
+        }
+
+        LIGHT_FRAG_CALC += "    ambient  += r.ambient;\n";
+        LIGHT_FRAG_CALC += "    diffuse  += r.diffuse;\n";
+        LIGHT_FRAG_CALC += "    specular += r.specular;\n";
+        LIGHT_FRAG_CALC += "  }\n\n";
+      }
+    }
+
+    LIGHT_VERT_VARS = parseShaderString(LIGHT_VERT_VARS, openGLProfile);
+    LIGHT_VERT_CALC = parseShaderString(LIGHT_VERT_CALC, openGLProfile);
+    LIGHT_FRAG_VARS = parseShaderString(LIGHT_FRAG_VARS, openGLProfile);
+    LIGHT_FRAG_CALC = parseShaderString(LIGHT_FRAG_CALC, openGLProfile);
+
+    std::string vertStr = vertShaderStr.data(openGLProfile);
+    std::string fragStr = fragShaderStr.data(openGLProfile);
+
+    auto replace = [&](std::string& result, const std::string& key, const std::string& value)
+    {
+      size_t pos = result.find(key);
+      while(pos != std::string::npos)
+      {
+        result.replace(pos, key.size(), value);
+        pos = result.find(key, pos + value.size());
+      }
+    };
+
+    replace(vertStr, "$LIGHT_VERT_VARS$", LIGHT_VERT_VARS);
+    replace(vertStr, "$LIGHT_VERT_CALC$", LIGHT_VERT_CALC);
+    replace(fragStr, "$LIGHT_FRAG_VARS$", LIGHT_FRAG_VARS);
+    replace(fragStr, "$LIGHT_FRAG_CALC$", LIGHT_FRAG_CALC);
+
+    compile(vertStr.c_str(), fragStr.c_str(), [](auto){}, [](auto){});
+  }
 }
 
 //##################################################################################################
@@ -127,32 +211,24 @@ void MaterialShader::compile(const char* vertShaderStr,
     //d->alphaTextureIDLocation = glGetUniformLocation(program, "ambientTexture");
     d->bumpTextureIDLocation = glGetUniformLocation(program, "bumpTexture");
 
+    d->lightLocations.resize(map()->lights().size());
     for(size_t i=0; i<d->lightLocations.size(); i++)
     {
       auto& lightLocations = d->lightLocations.at(i);
 
       auto ii = std::to_string(i);
-      auto replace = [&](std::string result)
-      {
-        size_t pos = result.find('%');
-        while(pos != std::string::npos)
-        {
-          result.replace(pos, 1, ii);
-          pos = result.find('%', pos + ii.size());
-        }
-        return result;
-      };
 
-      lightLocations.worldToLightLocation          = glGetUniformLocation(program, replace("worldToLight%").c_str());
+      lightLocations.worldToLightLocation          = glGetUniformLocation(program, replaceLight(ii, "worldToLight%").c_str());
 
-      lightLocations.lightPositionLocation         = glGetUniformLocation(program, replace("light%.position").c_str());
-      lightLocations.lightAmbientLocation          = glGetUniformLocation(program, replace("light%.ambient").c_str());
-      lightLocations.lightDiffuseLocation          = glGetUniformLocation(program, replace("light%.diffuse").c_str());
-      lightLocations.lightSpecularLocation         = glGetUniformLocation(program, replace("light%.specular").c_str());
-      lightLocations.lightDiffuseScaleLocation     = glGetUniformLocation(program, replace("light%.diffuseScale").c_str());
-      lightLocations.lightDiffuseTranslateLocation = glGetUniformLocation(program, replace("light%.diffuseTranslate").c_str());
+      lightLocations.lightPositionLocation         = glGetUniformLocation(program, replaceLight(ii, "light%.position").c_str());
+      lightLocations.lightDirectionLocation        = glGetUniformLocation(program, replaceLight(ii, "light%Direction_world").c_str());
+      lightLocations.lightAmbientLocation          = glGetUniformLocation(program, replaceLight(ii, "light%.ambient").c_str());
+      lightLocations.lightDiffuseLocation          = glGetUniformLocation(program, replaceLight(ii, "light%.diffuse").c_str());
+      lightLocations.lightSpecularLocation         = glGetUniformLocation(program, replaceLight(ii, "light%.specular").c_str());
+      lightLocations.lightDiffuseScaleLocation     = glGetUniformLocation(program, replaceLight(ii, "light%.diffuseScale").c_str());
+      lightLocations.lightDiffuseTranslateLocation = glGetUniformLocation(program, replaceLight(ii, "light%.diffuseTranslate").c_str());
 
-      lightLocations.lightTextureIDLocation        = glGetUniformLocation(program, replace("light%Texture").c_str());
+      lightLocations.lightTextureIDLocation        = glGetUniformLocation(program, replaceLight(ii, "light%Texture").c_str());
     }
 
     getLocations(program);
@@ -193,9 +269,11 @@ void MaterialShader::setLights(const std::vector<Light>& lights, const std::vect
       const auto& light = lights.at(i);
       const auto& lightLocations = d->lightLocations.at(i);
 
-      glUniform3fv(lightLocations.lightAmbientLocation , 1,     &light.ambient.x       );
-      glUniform3fv(lightLocations.lightDiffuseLocation , 1,     &light.diffuse.x       );
-      glUniform3fv(lightLocations.lightSpecularLocation, 1,     &light.specular.x      );
+      glUniform3fv(lightLocations.lightPositionLocation , 1,     &light.position.x     );
+      glUniform3fv(lightLocations.lightDirectionLocation, 1,     &light.direction.x    );
+      glUniform3fv(lightLocations.lightAmbientLocation  , 1,    &light.ambient.x       );
+      glUniform3fv(lightLocations.lightDiffuseLocation  , 1,    &light.diffuse.x       );
+      glUniform3fv(lightLocations.lightSpecularLocation , 1,    &light.specular.x      );
       glUniform1f (lightLocations.lightDiffuseScaleLocation,     light.diffuseScale    );
       glUniform1f (lightLocations.lightDiffuseTranslateLocation, light.diffuseTranslate);
     }

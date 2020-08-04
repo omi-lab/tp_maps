@@ -9,8 +9,8 @@ ShaderResource fragShaderStr{"/tp_maps/YUVImageShader.frag"};
 }
 
 //##################################################################################################
-YUVImageShader::YUVImageShader(tp_maps::OpenGLProfile openGLProfile):
-  ImageShader(openGLProfile, nullptr, fragShaderStr.data(openGLProfile))
+YUVImageShader::YUVImageShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
+  ImageShader(map, openGLProfile, nullptr, fragShaderStr.data(openGLProfile))
 {
 
 }

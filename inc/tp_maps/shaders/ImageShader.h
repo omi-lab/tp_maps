@@ -15,7 +15,7 @@ class TP_MAPS_SHARED_EXPORT ImageShader: public Geometry3DShader
   friend class Map;
 public:
   //################################################################################################
-  ImageShader(tp_maps::OpenGLProfile openGLProfile, const char* vertexShader=nullptr, const char* fragmentShader=nullptr);
+  ImageShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const char* vertexShader=nullptr, const char* fragmentShader=nullptr);
 
   //################################################################################################
   ~ImageShader() override;

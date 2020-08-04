@@ -15,7 +15,7 @@ class TP_MAPS_SHARED_EXPORT FrameShader: public Shader
   friend class Map;
 public:
   //################################################################################################
-  FrameShader(tp_maps::OpenGLProfile openGLProfile, const char* vertexShader=nullptr, const char* fragmentShader=nullptr);
+  FrameShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const char* vertexShader=nullptr, const char* fragmentShader=nullptr);
 
   //################################################################################################
   ~FrameShader() override;

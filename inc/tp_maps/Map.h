@@ -55,6 +55,7 @@ protected:
 
 public:
 
+  //################################################################################################
   OpenGLProfile openGLProfile() const;
 
   //################################################################################################
@@ -126,7 +127,7 @@ public:
   void clearLayers();
 
   //################################################################################################
-  //! Return the vector of map layers
+  //! Return the list of map layers
   const std::vector<Layer*>& layers()const;
 
 protected:
@@ -213,7 +214,7 @@ public:
     T* shader = static_cast<T*>(getShader(name));
     if(!shader)
     {
-      shader = new T(openGLProfile());
+      shader = new T(this, openGLProfile());
       addShader(name, shader);
     }
     return shader;
@@ -310,7 +311,7 @@ public:
 private:
   //################################################################################################
   //! Called by the Layer when it is destroyed
-  void mapLayerDestroyed(Layer* layer);
+  void layerDestroyed(Layer* layer);
 
   //################################################################################################
   //! New Controller's add them selves to the MapWidget replacing existing controllers

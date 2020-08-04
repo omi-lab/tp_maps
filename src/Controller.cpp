@@ -57,12 +57,29 @@ void Controller::setCurrentLight(const Light& light)
   float distance = 5.0f;
 
   glm::mat4 view = glm::lookAt(d->currentLight.position, d->currentLight.position + d->currentLight.direction, glm::vec3(0.0f, 1.0f, 0.0f));
-  glm::mat4 projection = glm::ortho(-distance,        // <- Left
-                                    distance,         // <- Right
-                                    -distance,        // <- Bottom
-                                    distance,         // <- Top
-                                    0.0f/*-100.0f*distance*/, // <- Near
-                                    100.0f/*100.0f*distance*/); // <- Far
+  glm::mat4 projection;
+
+
+  switch(light.type)
+  {
+  case LightType::Directional:
+  {
+    projection = glm::ortho(-distance,        // <- Left
+                            distance,         // <- Right
+                            -distance,        // <- Bottom
+                            distance,         // <- Top
+                            0.0f/*-100.0f*distance*/, // <- Near
+                            100.0f/*100.0f*distance*/); // <- Far
+    break;
+  }
+
+  case LightType::Spot:
+  {
+    projection = glm::perspective(glm::radians(30.0f), 1.0f, 0.01f, 30.0f);
+    break;
+  }
+  }
+
   Matrices vp;
   vp.p  = projection;
   vp.v  = view;

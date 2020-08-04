@@ -14,7 +14,7 @@ class TP_MAPS_SHARED_EXPORT DepthImageShader: public ImageShader
 {
 public:
   //################################################################################################
-  DepthImageShader(tp_maps::OpenGLProfile openGLProfile);
+  DepthImageShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
 
   //################################################################################################
   static inline const tp_utils::StringID& name(){return depthImageShaderSID();}

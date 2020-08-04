@@ -37,6 +37,11 @@ public:
   void setLines(const std::vector<Lines>& lines);
 
   //################################################################################################
+  //! Render a wire frame of the geometry.
+  void setLinesFromGeometry(const std::vector<Geometry3D>& geometry);
+
+  //################################################################################################
+  //! Render the normals, tangents, and bitangents of the geometry.
   void setLinesFromGeometryNormals(const std::vector<Geometry3D>& geometry, float scale);
 
   //################################################################################################

@@ -22,11 +22,13 @@ struct Shader::Private
   TP_REF_COUNT_OBJECTS("tp_maps::Shader::Private");
   TP_NONCOPYABLE(Private);
 
+  Map* map;
   tp_maps::OpenGLProfile openGLProfile;
   std::unordered_map<ShaderType, ShaderDetails_lt> shaders;
   bool error{false};
 
-  Private(tp_maps::OpenGLProfile profile_):
+  Private(Map* map_, tp_maps::OpenGLProfile profile_):
+    map(map_),
     openGLProfile(profile_)
   {
 
@@ -34,8 +36,9 @@ struct Shader::Private
 };
 
 //##################################################################################################
-Shader::Shader(tp_maps::OpenGLProfile openGLProfile):
-  d(new Private(openGLProfile))
+Shader::Shader(Map* map,
+               tp_maps::OpenGLProfile openGLProfile):
+  d(new Private(map, openGLProfile))
 {
 
 }
@@ -59,6 +62,12 @@ Shader::~Shader()
   }
 
   delete d;
+}
+
+//##################################################################################################
+Map* Shader::map() const
+{
+  return d->map;
 }
 
 //##################################################################################################
