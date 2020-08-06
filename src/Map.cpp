@@ -7,6 +7,7 @@
 #include "tp_maps/Texture.h"
 #include "tp_maps/MouseEvent.h"
 #include "tp_maps/FontRenderer.h"
+#include "tp_maps/textures/DefaultSpritesTexture.h"
 
 #include "tp_math_utils/Plane.h"
 #include "tp_math_utils/Ray.h"
@@ -67,6 +68,9 @@ struct Map::Private
   std::vector<Light> lights;
   std::vector<FBO> lightTextures;
 
+  Texture* spotLightTexture{nullptr};
+  GLuint spotLightTextureID{0};
+
   FBO pickingBuffer;
   FBO renderToImageBuffer;
 
@@ -79,9 +83,9 @@ struct Map::Private
   {
     {
       Light light;
-      light.type = LightType::Directional;
+      light.type = LightType::Spot;
 
-      light.position = {5.52f, -5.52f, 18.4f};
+      light.position = {1.52f, -1.52f, 5.4f};
       light.direction = {-0.276, 0.276, -0.92};
 
       light.ambient  = {0.2f, 0.2f, 0.2f};
@@ -91,19 +95,19 @@ struct Map::Private
       lights.push_back(light);
     }
 
-    {
-      Light light;
-      light.type = LightType::Directional;
+//    {
+//      Light light;
+//      light.type = LightType::Directional;
 
-      light.position = {-5.52f, -5.52f, 18.4f};
-      light.direction = {0.276, 0.276, -0.92};
+//      light.position = {-5.52f, -5.52f, 18.4f};
+//      light.direction = {0.276, 0.276, -0.92};
 
-      light.ambient  = {0.2f, 0.2f, 0.2f};
-      light.diffuse  = {0.3f, 0.3f, 0.3f};
-      light.specular = {1.0f, 1.0f, 1.0f};
+//      light.ambient  = {0.2f, 0.2f, 0.2f};
+//      light.diffuse  = {0.3f, 0.3f, 0.3f};
+//      light.specular = {1.0f, 1.0f, 1.0f};
 
-      lights.push_back(light);
-    }
+//      lights.push_back(light);
+//    }
 
     renderInfo.map = q;
   }
@@ -240,6 +244,15 @@ void Map::preDelete()
 
   for(auto& lightBuffer : d->lightTextures)
     d->deleteBuffer(lightBuffer);
+
+  if(d->spotLightTextureID)
+  {
+    deleteTexture(d->spotLightTextureID);
+    d->spotLightTextureID = 0;
+  }
+
+  delete d->spotLightTexture;
+  d->spotLightTexture=nullptr;
 
   d->preDeleteCalled = true;
 }
@@ -409,6 +422,19 @@ void Map::setLights(const std::vector<Light>& lights)
 const std::vector<Light>& Map::lights()const
 {
   return d->lights;
+}
+
+//##################################################################################################
+void Map::setSpotLightTexture(Texture* spotLightTexture)
+{
+  delete d->spotLightTexture;
+  d->spotLightTexture = spotLightTexture;
+  if(d->spotLightTextureID)
+  {
+    makeCurrent();
+    deleteTexture(d->spotLightTextureID);
+    d->spotLightTextureID = 0;
+  }
 }
 
 //##################################################################################################
@@ -789,6 +815,18 @@ const std::vector<FBO>& Map::lightTextures() const
 }
 
 //##################################################################################################
+GLuint Map::spotLightTexture() const
+{
+  if(!d->spotLightTexture || !d->spotLightTexture->imageReady())
+    d->spotLightTexture = new DefaultSpritesTexture(d->q);
+
+  if(!d->spotLightTextureID)
+    d->spotLightTextureID = d->spotLightTexture->bindTexture();
+
+  return d->spotLightTextureID;
+}
+
+//##################################################################################################
 int Map::width() const
 {
   return d->width;
@@ -838,6 +876,8 @@ void Map::initializeGL()
     d->invalidateBuffer(d->pickingBuffer);
     d->invalidateBuffer(d->renderToImageBuffer);
     d->lightTextures.clear();
+
+    d->spotLightTextureID = 0;
 
     for(auto i : d->layers)
       i->invalidateBuffers();

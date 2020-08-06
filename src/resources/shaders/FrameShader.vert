@@ -1,18 +1,18 @@
-$TP_VERT_SHADER_HEADER$
+/*TP_VERT_SHADER_HEADER*/
 
-$TP_GLSL_IN_V$vec3 inVertexP;
-$TP_GLSL_IN_V$vec3 inVertexR;
-$TP_GLSL_IN_V$vec3 inNormal;
-$TP_GLSL_IN_V$vec2 inTexture;
+/*TP_GLSL_IN_V*/vec3 inVertexP;
+/*TP_GLSL_IN_V*/vec3 inVertexR;
+/*TP_GLSL_IN_V*/vec3 inNormal;
+/*TP_GLSL_IN_V*/vec2 inTexture;
 
 uniform mat4 matrix;
 uniform vec3 scale;
 uniform vec4 color;
 
-$TP_GLSL_OUT_V$vec3 lightVector0;
-$TP_GLSL_OUT_V$vec3 eyeNormal;
-$TP_GLSL_OUT_V$vec2 texCoordinate;
-$TP_GLSL_OUT_V$vec4 multColor;
+/*TP_GLSL_OUT_V*/vec3 lightVector0;
+/*TP_GLSL_OUT_V*/vec3 eyeNormal;
+/*TP_GLSL_OUT_V*/vec2 texCoordinate;
+/*TP_GLSL_OUT_V*/vec4 multColor;
 
 void main()
 {

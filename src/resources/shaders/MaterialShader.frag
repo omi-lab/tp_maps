@@ -1,4 +1,4 @@
-$TP_FRAG_SHADER_HEADER$
+/*TP_FRAG_SHADER_HEADER*/
 
 struct Material
 {
@@ -21,6 +21,9 @@ struct Light
   float constant;
   float linear;
   float quadratic;
+
+  vec2 spotLightUV;
+  vec2 spotLightWH;
 };
 
 struct LightResult
@@ -34,20 +37,21 @@ uniform sampler2D ambientTexture;
 uniform sampler2D diffuseTexture;
 uniform sampler2D specularTexture;
 uniform sampler2D bumpTexture;
+uniform sampler2D spotLightTexture;
 
 uniform Material material;
 uniform float picking;
 uniform vec4 pickingID;
 
-$TP_GLSL_IN_F$vec3 fragPos_world;
+/*TP_GLSL_IN_F*/vec3 fragPos_world;
 
-$TP_GLSL_IN_F$vec2 uv_tangent;
-$TP_GLSL_IN_F$vec3 cameraOrigin_tangent;
-$TP_GLSL_IN_F$vec3 fragPos_tangent;
+/*TP_GLSL_IN_F*/vec2 uv_tangent;
+/*TP_GLSL_IN_F*/vec3 cameraOrigin_tangent;
+/*TP_GLSL_IN_F*/vec3 fragPos_tangent;
 
-$LIGHT_FRAG_VARS$
+/*LIGHT_FRAG_VARS*/
 
-$TP_GLSL_GLFRAGCOLOR_DEF$
+/*TP_GLSL_GLFRAGCOLOR_DEF*/
 
 LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampler2D lightTexture, vec4 fragPos_light)
 {
@@ -74,7 +78,7 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
   float bias = dot(norm, normalize(-lightDirection_tangent));
   if(bias>0.0)
   {
-    bias = max(0.0001, (1.0 - bias)*0.0005);
+    bias = 0.001;//max(0.0001, (1.0 - bias)*0.0005);
     vec2 texelSize = 2.0 / textureSize(lightTexture, 0);
     float biasedDepth = min(fragPos_light.z-bias,1.0);
     for(int x = -1; x <= 1; ++x)
@@ -88,7 +92,7 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
         }
         else
         {
-          float lightDepth = $TP_GLSL_TEXTURE$(lightTexture, coord).x;
+          float lightDepth = /*TP_GLSL_TEXTURE*/(lightTexture, coord).x;
           shadow += (lightDepth<biasedDepth)?0.0:1.0;
         }
       }
@@ -124,31 +128,41 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampl
 
   // Shadow
   float shadow = 0.0;
-  //float bias = 0.0009;
-  float bias = max(0.0, (1.0-cosTheta)*0.05);
-  vec2 texelSize = 2.0 / textureSize(lightTexture, 0);
-  float biasedDepth = min(fragPos_light.z-bias,1.0);
-  for(int x = -1; x <= 1; ++x)
+  vec3 shadowTex = vec3(0.0, 0.0, 0.0);
+  float bias = dot(norm, normalize(-lightDirection_tangent));
+  if(bias>0.0 && fragPos_light.z>0.0 && fragPos_light.z<1.0)
   {
-    for(int y = -1; y <= 1; ++y)
+    bias = max(0.0001, (1.0 - bias)*0.0005);
+    vec2 texelSize = 2.0 / textureSize(lightTexture, 0);
+    float biasedDepth = min(fragPos_light.z-bias,1.0);
+    for(int x = -1; x <= 1; ++x)
     {
-      float lightDepth = $TP_GLSL_TEXTURE$(lightTexture, fragPos_light.xy + (vec2(x, y)*texelSize)).x;
-      shadow += (lightDepth<biasedDepth)?0.0:1.0;
+      for(int y = -1; y <= 1; ++y)
+      {
+        vec2 coord = fragPos_light.xy + (vec2(x, y)*texelSize);
+        if(coord.x<0.0 || coord.x>1.0 || coord.y<0.0 || coord.y>1.0)
+        {
+          shadow += 0.0;
+        }
+        else
+        {
+          float lightDepth = /*TP_GLSL_TEXTURE*/(lightTexture, coord).x;
+          shadow += (lightDepth<biasedDepth)?0.0:1.0;
+        }
+      }
     }
+    shadow /= 9.0;    
+
+    vec2 spotTexCoord = (fragPos_light.xy*light.spotLightWH) + light.spotLightUV;
+    shadowTex = /*TP_GLSL_TEXTURE*/(spotLightTexture, spotTexCoord).xyz * shadow;
   }
-  shadow /= 9.0;
 
-  float constant=1.0;
-  float linear=0.1;
-  float quadratic=0.1;
-
-  // attenuation
+  // Attenuation
   float distance    = length(light.position - fragPos_world);
-  float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance));
-  //float attenuation = 1.0 / (1.0 + 0.1*distance + 0.01*distance*distance);
+  float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
 
-  r.diffuse *= shadow;
-  r.specular *= shadow;
+  r.diffuse *= shadowTex;
+  r.specular *= shadowTex;
 
   r.ambient  *= attenuation;
   r.diffuse  *= attenuation;
@@ -159,10 +173,10 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampl
 
 void main()
 {
-  vec3  ambientTex = $TP_GLSL_TEXTURE$( ambientTexture, uv_tangent).xyz;
-  vec3  diffuseTex = $TP_GLSL_TEXTURE$( diffuseTexture, uv_tangent).xyz;
-  vec3 specularTex = $TP_GLSL_TEXTURE$(specularTexture, uv_tangent).xyz;
-  vec3     bumpTex = $TP_GLSL_TEXTURE$(    bumpTexture, uv_tangent).xyz;
+  vec3  ambientTex = /*TP_GLSL_TEXTURE*/( ambientTexture, uv_tangent).xyz;
+  vec3  diffuseTex = /*TP_GLSL_TEXTURE*/( diffuseTexture, uv_tangent).xyz;
+  vec3 specularTex = /*TP_GLSL_TEXTURE*/(specularTexture, uv_tangent).xyz;
+  vec3     bumpTex = /*TP_GLSL_TEXTURE*/(    bumpTexture, uv_tangent).xyz;
 
   vec3 norm = normalize(bumpTex*2-1);
 
@@ -170,16 +184,16 @@ void main()
   vec3 diffuse  = vec3(0,0,0);
   vec3 specular = vec3(0,0,0);
 
-  $LIGHT_FRAG_CALC$
+  /*LIGHT_FRAG_CALC*/
 
   ambient  *= (ambientTex+material.ambient);
   diffuse  *= (diffuseTex+material.diffuse);
   specular *= (specularTex+material.specular);
 
   vec3 result = ambient + diffuse + specular;
-  $TP_GLSL_GLFRAGCOLOR$ = vec4(result, material.alpha);
-  $TP_GLSL_GLFRAGCOLOR$ = (picking*pickingID) + ((1.0-picking)*$TP_GLSL_GLFRAGCOLOR$);
+  /*TP_GLSL_GLFRAGCOLOR*/ = vec4(result, material.alpha);
+  /*TP_GLSL_GLFRAGCOLOR*/ = (picking*pickingID) + ((1.0-picking)*/*TP_GLSL_GLFRAGCOLOR*/);
 
-  if($TP_GLSL_GLFRAGCOLOR$.a<0.01)
+  if(/*TP_GLSL_GLFRAGCOLOR*/.a<0.01)
     discard;
 }

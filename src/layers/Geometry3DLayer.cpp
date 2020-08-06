@@ -373,7 +373,8 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
                           details.diffuseTextureID,
                           details.specularTextureID,
                           details.alphaTextureID,
-                          details.bumpTextureID);
+                          details.bumpTextureID,
+                          map()->spotLightTexture());
     },
     [&](auto shader, auto first, auto second) //-- draw --------------------------------------------
     {

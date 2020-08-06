@@ -7,6 +7,8 @@
 
 #include "glm/glm.hpp"
 
+#include "json.hpp"
+
 #include <unordered_map>
 
 #if defined(TP_MAPS_LIBRARY)
@@ -297,6 +299,7 @@ struct TP_MAPS_SHARED_EXPORT Material
 enum class LightType
 {
   Directional,
+  Global,
   Spot
 };
 
@@ -325,9 +328,32 @@ struct TP_MAPS_SHARED_EXPORT Light
   float diffuseScale{0.5f};              //! Multiplied with the diffuse lighting calculation.
   float diffuseTranslate{1.0f};          //! Added to the diffuse lighting calculation.
 
+  // Used to calculate the fall off in brightness as we get further from a point light.
   float constant{1.0f};
   float linear{0.1f};
   float quadratic{0.1f};
+
+  // Spot light textures can contain multiple shapes, this is used to select what to use. The
+  // default image contains only a single shape.
+  glm::vec2 spotLightUV{0.0f, 0.0f}; //!< The origin of the spot light texture.
+  glm::vec2 spotLightWH{1.0f, 1.0f}; //!< The size of the spot light texture as a fraction.
+
+  float near{0.1f};        //!< Near plane of the light frustum.
+  float far{100.0f};       //!< Far plane of the light frustum.
+  float fov{50.0f};        //!< Field of view for spot lights.
+  float orthoRadius{10.0f}; //!< The radius of fixed directional light ortho projection.
+
+  //################################################################################################
+  nlohmann::json saveState() const;
+
+  //################################################################################################
+  void loadState(const nlohmann::json& j);
+
+  //################################################################################################
+  static nlohmann::json saveLights(const std::vector<Light>& lights);
+
+  //################################################################################################
+  static std::vector<Light> loadLights(const nlohmann::json& j);
 };
 
 //##################################################################################################

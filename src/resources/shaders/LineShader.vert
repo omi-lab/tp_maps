@@ -1,8 +1,8 @@
-$TP_VERT_SHADER_HEADER$
+/*TP_VERT_SHADER_HEADER*/
 
 uniform mat4 matrix;
 
-$TP_GLSL_IN_V$vec3 position;
+/*TP_GLSL_IN_V*/vec3 position;
 
 void main()
 {

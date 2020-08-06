@@ -54,28 +54,28 @@ void Controller::setCurrentLight(const Light& light)
 {
   d->currentLight = light;
 
-  float distance = 5.0f;
+  float distance = light.orthoRadius;
 
   glm::mat4 view = glm::lookAt(d->currentLight.position, d->currentLight.position + d->currentLight.direction, glm::vec3(0.0f, 1.0f, 0.0f));
   glm::mat4 projection;
 
-
   switch(light.type)
   {
+  case LightType::Global: [[fallthrough]];
   case LightType::Directional:
   {
-    projection = glm::ortho(-distance,        // <- Left
-                            distance,         // <- Right
-                            -distance,        // <- Bottom
-                            distance,         // <- Top
-                            0.0f/*-100.0f*distance*/, // <- Near
-                            100.0f/*100.0f*distance*/); // <- Far
+    projection = glm::ortho(-distance,  // <- Left
+                            distance,   // <- Right
+                            -distance,  // <- Bottom
+                            distance,   // <- Top
+                            light.near, // <- Near
+                            light.far); // <- Far
     break;
   }
 
   case LightType::Spot:
   {
-    projection = glm::perspective(glm::radians(30.0f), 1.0f, 0.01f, 30.0f);
+    projection = glm::perspective(glm::radians(light.fov), 1.0f, light.near, light.far);
     break;
   }
   }
@@ -84,14 +84,6 @@ void Controller::setCurrentLight(const Light& light)
   vp.p  = projection;
   vp.v  = view;
   vp.vp = projection * view;
-  {
-    glm::vec4 origin = glm::inverse(vp.vp) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    vp.cameraOriginNear = origin / origin.w;
-  }
-  {
-    glm::vec4 origin = glm::inverse(vp.vp) * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
-    vp.cameraOriginFar = origin / origin.w;
-  }
 
   d->lightMatrices = vp;
 }

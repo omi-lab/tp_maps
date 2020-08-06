@@ -46,7 +46,8 @@ public:
                    GLuint diffuseTextureID,
                    GLuint specularTextureID,
                    GLuint alphaTextureID,
-                   GLuint bumpTextureID);
+                   GLuint bumpTextureID,
+                   GLuint spotLightTextureID);
 
   //################################################################################################
   //! Call this to draw the image
