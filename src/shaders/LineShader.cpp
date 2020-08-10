@@ -73,6 +73,7 @@ void LineShader::use(ShaderType shaderType)
 
   switch(shaderType)
   {
+  case ShaderType::Light: [[fallthrough]];
   case ShaderType::Render:
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

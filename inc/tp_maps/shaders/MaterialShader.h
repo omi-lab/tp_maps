@@ -23,7 +23,8 @@ public:
   void compile(const char* vertexShaderStr,
                const char* fragmentShaderStr,
                const std::function<void(GLuint)>& bindLocations,
-               const std::function<void(GLuint)>& getLocations);
+               const std::function<void(GLuint)>& getLocations,
+               ShaderType shaderType = ShaderType::Render);
 
   //################################################################################################
   //! Prepare OpenGL for rendering

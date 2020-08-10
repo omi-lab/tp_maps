@@ -42,7 +42,7 @@ struct Geometry3DLayer::Private
   //-- Input data ----------------------------------------------------------------------------------
   std::vector<Geometry3D> geometry;
   std::unordered_map<tp_utils::StringID, Texture*> textures;
-  ShaderType shaderType{ShaderType::Material};
+  ShaderSelection shaderSelection{ShaderSelection::Material};
   glm::mat4 objectMatrix{1.0f};
   std::unique_ptr<BasicTexture> emptyTexture;
   std::unique_ptr<BasicTexture> emptyNormalTexture;
@@ -223,16 +223,16 @@ void Geometry3DLayer::setMaterial(const Material& material)
 }
 
 //##################################################################################################
-void Geometry3DLayer::setShaderType(ShaderType shaderType)
+void Geometry3DLayer::setShaderSelection(ShaderSelection shaderSelection)
 {
-  d->shaderType = shaderType;
+  d->shaderSelection = shaderSelection;
   update();
 }
 
 //##################################################################################################
-Geometry3DLayer::ShaderType Geometry3DLayer::shaderType() const
+Geometry3DLayer::ShaderSelection Geometry3DLayer::shaderType() const
 {
-  return d->shaderType;
+  return d->shaderSelection;
 }
 
 //##################################################################################################
@@ -242,6 +242,10 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
      renderInfo.pass != RenderPass::LightFBOs &&
      renderInfo.pass != RenderPass::Picking)
     return;
+
+  auto shaderSelection = (renderInfo.pass == RenderPass::LightFBOs)?
+        ShaderType::Light:
+        ShaderType::Render;
 
   //== Bind Textures ===============================================================================
   if(d->bindBeforeRender)
@@ -350,11 +354,11 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
   };
 
   //== MaterialShader ==============================================================================
-  if(d->shaderType == ShaderType::Material)
+  if(d->shaderSelection == ShaderSelection::Material)
   {
     render(static_cast<MaterialShader*>(nullptr), [&](auto shader) //-- use ------------------------
     {
-      shader->use();
+      shader->use(shaderSelection);
       shader->setMatrix(d->objectMatrix, m.v, m.p);
       shader->setLights(map()->lights(), map()->lightTextures());
     },
@@ -384,7 +388,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
   }
 
   //== ImageShader =================================================================================
-  else if(d->shaderType == ShaderType::Image)
+  else if(d->shaderSelection == ShaderSelection::Image)
   {
     render(static_cast<ImageShader*>(nullptr), [&](auto shader) //-- use ---------------------------
     {

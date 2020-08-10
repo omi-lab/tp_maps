@@ -10,7 +10,8 @@ namespace tp_maps
 enum class ShaderType
 {
   Render,
-  Picking
+  Picking,
+  Light
 };
 
 }

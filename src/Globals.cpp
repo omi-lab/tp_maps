@@ -361,6 +361,8 @@ nlohmann::json Light::saveState() const
 {
   nlohmann::json j;
 
+  j["name"] = name;
+
   j["type"] = lightTypeToString(type);
 
   j["position"] = tp_math_utils::vec3ToJSON(position);
@@ -391,6 +393,8 @@ nlohmann::json Light::saveState() const
 //##################################################################################################
 void Light::loadState(const nlohmann::json& j)
 {
+  name = TPJSONString(j, "name");
+
   type = lightTypeFromString(TPJSONString(j, "type"));
 
   position = tp_math_utils::vec3FromJSON(TPJSON(j, "position"));

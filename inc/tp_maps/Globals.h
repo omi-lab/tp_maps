@@ -315,6 +315,8 @@ std::string lightTypeToString(LightType lightType);
 //##################################################################################################
 struct TP_MAPS_SHARED_EXPORT Light
 {
+  std::string name; //!< User visible for the light.
+
   LightType type{LightType::Directional};
 
   glm::vec3 position{5.52f, -5.52f, 18.4f}; //!< World coord of Point and Spot lights.

@@ -81,9 +81,9 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
     bias = 0.001;//max(0.0001, (1.0 - bias)*0.0005);
     vec2 texelSize = 2.0 / textureSize(lightTexture, 0);
     float biasedDepth = min(fragPos_light.z-bias,1.0);
-    for(int x = -1; x <= 1; ++x)
+    for(int x = -4; x <= 4; ++x)
     {
-      for(int y = -1; y <= 1; ++y)
+      for(int y = -4; y <= 4; ++y)
       {
         vec2 coord = fragPos_light.xy + (vec2(x, y)*texelSize);
         if(coord.x<0.0 || coord.x>1.0 || coord.y<0.0 || coord.y>1.0)
@@ -97,7 +97,7 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
         }
       }
     }
-    shadow /= 9.0;
+    shadow /= 81.0;
   }
 
   r.diffuse *= shadow;
@@ -135,9 +135,9 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampl
     bias = max(0.0001, (1.0 - bias)*0.0005);
     vec2 texelSize = 2.0 / textureSize(lightTexture, 0);
     float biasedDepth = min(fragPos_light.z-bias,1.0);
-    for(int x = -1; x <= 1; ++x)
+    for(int x = -4; x <= 4; ++x)
     {
-      for(int y = -1; y <= 1; ++y)
+      for(int y = -4; y <= 4; ++y)
       {
         vec2 coord = fragPos_light.xy + (vec2(x, y)*texelSize);
         if(coord.x<0.0 || coord.x>1.0 || coord.y<0.0 || coord.y>1.0)
@@ -151,7 +151,7 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampl
         }
       }
     }
-    shadow /= 9.0;    
+    shadow /= 81.0;
 
     vec2 spotTexCoord = (fragPos_light.xy*light.spotLightWH) + light.spotLightUV;
     shadowTex = /*TP_GLSL_TEXTURE*/(spotLightTexture, spotTexCoord).xyz * shadow;
@@ -161,7 +161,8 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampl
   float distance    = length(light.position - fragPos_world);
   float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
 
-  r.diffuse *= shadowTex;
+  r.ambient  *= shadowTex;
+  r.diffuse  *= shadowTex;
   r.specular *= shadowTex;
 
   r.ambient  *= attenuation;
