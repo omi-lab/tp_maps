@@ -191,9 +191,9 @@ void ImageLayer::render(RenderInfo& renderInfo)
   map()->controller()->enableScissor(coordinateSystem());
   if(renderInfo.pass==RenderPass::Picking)
   {
-    auto pickingID = renderInfo.pickingIDMat(PickingDetails(0, [](const PickingResult& r)
+    auto pickingID = renderInfo.pickingIDMat(PickingDetails(0, [&](const PickingResult& r)
     {
-      return new ImagePickingResult(r.pickingType, r.details, r.renderInfo, 0, 0);
+      return new ImagePickingResult(r.pickingType, r.details, r.renderInfo, this, 0, 0);
     }));
     shader->drawPicking(GL_TRIANGLE_FAN,
                              d->vertexBuffer,

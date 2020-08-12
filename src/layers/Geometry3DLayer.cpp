@@ -230,7 +230,7 @@ void Geometry3DLayer::setShaderSelection(ShaderSelection shaderSelection)
 }
 
 //##################################################################################################
-Geometry3DLayer::ShaderSelection Geometry3DLayer::shaderType() const
+Geometry3DLayer::ShaderSelection Geometry3DLayer::shaderSelection() const
 {
   return d->shaderSelection;
 }
@@ -243,9 +243,20 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
      renderInfo.pass != RenderPass::Picking)
     return;
 
-  auto shaderSelection = (renderInfo.pass == RenderPass::LightFBOs)?
-        ShaderType::Light:
-        ShaderType::Render;
+  ShaderType shaderType{ShaderType::Render};
+  switch(renderInfo.pass)
+  {
+    case RenderPass::LightFBOs:
+    shaderType = ShaderType::Light;
+    break;
+
+  case RenderPass::Picking:
+    shaderType = ShaderType::Picking;
+    break;
+
+  default:
+    break;
+  };
 
   //== Bind Textures ===============================================================================
   if(d->bindBeforeRender)
@@ -332,9 +343,9 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
       for(size_t i=0; i<iMax; i++)
       {
         const GeometryDetails_lt& details = d->processedGeometry.at(i);
-        auto pickingID = renderInfo.pickingIDMat(PickingDetails(i, [](const PickingResult& r)
+        auto pickingID = renderInfo.pickingIDMat(PickingDetails(i, [&](const PickingResult& r)
         {
-          return new GeometryPickingResult(r.pickingType, r.details, r.renderInfo);
+          return new GeometryPickingResult(r.pickingType, r.details, r.renderInfo, this);
         }));
 
         setMaterialPicking(shader, details);
@@ -358,9 +369,13 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
   {
     render(static_cast<MaterialShader*>(nullptr), [&](auto shader) //-- use ------------------------
     {
-      shader->use(shaderSelection);
+      map()->printOpenGLError("A");
+      shader->use(shaderType);
+      map()->printOpenGLError("B");
       shader->setMatrix(d->objectMatrix, m.v, m.p);
+      map()->printOpenGLError("C");
       shader->setLights(map()->lights(), map()->lightTextures());
+      map()->printOpenGLError("D");
     },
     [&](auto, const auto&) //-- setMaterialPicking -------------------------------------------------
     {
@@ -368,10 +383,13 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     },
     [&](auto shader, auto first, auto second, auto pickingID) //-- drawPicking ---------------------
     {
+      map()->printOpenGLError("E");
       shader->drawPicking(first, second, pickingID);
+      map()->printOpenGLError("F");
     },
     [&](auto shader, const auto& details) //-- setMaterial -----------------------------------------
     {
+      map()->printOpenGLError("G");
       shader->setMaterial(details.material);
       shader->setTextures(details.ambientTextureID,
                           details.diffuseTextureID,
@@ -379,10 +397,13 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
                           details.alphaTextureID,
                           details.bumpTextureID,
                           map()->spotLightTexture());
+      map()->printOpenGLError("H");
     },
     [&](auto shader, auto first, auto second) //-- draw --------------------------------------------
     {
+      map()->printOpenGLError("I");
       shader->draw(first, second);
+      map()->printOpenGLError("J");
     },
     renderInfo);
   }
@@ -423,12 +444,5 @@ void Geometry3DLayer::invalidateBuffers()
   d->bindBeforeRender = true;
   d->textureIDs.clear();
 }
-
-////##################################################################################################
-//void Geometry3DLayer::lightsChanged(LightingModelChanged lightingModelChanged)
-//{
-//  if(lightingModelChanged==LightingModelChanged::Yes)
-//    d->updateModels = true;
-//}
 
 }

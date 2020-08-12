@@ -136,6 +136,8 @@ TP_DECLARE_ID(               yuvImageShaderSID,                 "YUV image shade
 TP_DECLARE_ID(             depthImageShaderSID,               "Depth image shader");
 TP_DECLARE_ID(                   fontShaderSID,                      "Font shader");
 TP_DECLARE_ID(                  frameShaderSID,                     "Frame shader");
+TP_DECLARE_ID(               postSSAOShaderSID,                 "Post ssao shader");
+TP_DECLARE_ID(                   gizmoLayerSID,                      "Gizmo layer");
 
 const int32_t      UP_KEY        = 82;
 const int32_t      LEFT_KEY      = 80;

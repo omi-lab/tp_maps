@@ -15,7 +15,8 @@ public:
   //################################################################################################
   GeometryPickingResult(const tp_utils::StringID& pickingType_,
                         const PickingDetails& details_,
-                        const RenderInfo& renderInfo_);
+                        const RenderInfo& renderInfo_,
+                        Layer* layer_);
 
   //################################################################################################
   ~GeometryPickingResult()override;

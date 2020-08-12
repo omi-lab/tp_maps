@@ -54,10 +54,10 @@ public:
   };
 
   //################################################################################################
-  void setShaderSelection(ShaderSelection shaderType);
+  void setShaderSelection(ShaderSelection shaderSelection);
 
   //################################################################################################
-  ShaderSelection shaderType() const;
+  ShaderSelection shaderSelection() const;
 
 protected:
   //################################################################################################

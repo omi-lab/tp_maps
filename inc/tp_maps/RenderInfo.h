@@ -55,9 +55,6 @@ public:
   //! The map that the render is happening in
   Map* map;
 
-  //! The layer that the render is happening in
-  Layer* layer;
-
   //! The render method will get called multiple times for different purposes
   RenderPass pass;
 

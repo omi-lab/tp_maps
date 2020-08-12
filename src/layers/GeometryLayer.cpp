@@ -154,9 +154,9 @@ void GeometryLayer::render(RenderInfo& renderInfo)
     for(size_t i=0; i<iMax; i++)
     {
       const GeometryDetails_lt& details = d->processedGeometry.at(i);
-      auto pickingID = renderInfo.pickingIDMat(PickingDetails(i, [](const PickingResult& r)
+      auto pickingID = renderInfo.pickingIDMat(PickingDetails(i, [&](const PickingResult& r)
       {
-        return new GeometryPickingResult(r.pickingType, r.details, r.renderInfo);
+        return new GeometryPickingResult(r.pickingType, r.details, r.renderInfo, this);
       }));
       for(const std::pair<GLenum, MaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
         shader->drawPicking(buff.first, buff.second, pickingID);

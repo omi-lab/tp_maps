@@ -2,6 +2,7 @@
 #include "tp_maps/layers/Geometry3DLayer.h"
 #include "tp_maps/layers/LinesLayer.h"
 #include "tp_maps/layers/FrustumLayer.h"
+#include "tp_maps/layers/GizmoLayer.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/Controller.h"
 #include "tp_maps/RenderInfo.h"
@@ -26,6 +27,8 @@ struct LightsLayer::Private
 
   LinesLayer* bulbs{nullptr};
   FrustumLayer* frustums{nullptr};
+
+  std::vector<GizmoLayer*> gizmoLayers;
 
   bool updateModels{true};
 };
@@ -73,6 +76,38 @@ void LightsLayer::render(RenderInfo& renderInfo)
       for(const auto& light : map()->lightTextures())
         lights.push_back(light.worldToTexture);
       d->frustums->setCameraMatrices(lights);
+    }
+
+    {
+      const auto& lights = map()->lights();
+      while(d->gizmoLayers.size()<lights.size())
+      {
+        size_t i=d->gizmoLayers.size();
+        auto gizmoLayer = new GizmoLayer();
+        d->gizmoLayers.push_back(gizmoLayer);
+        addChildLayer(gizmoLayer);
+
+        gizmoLayer->changed.addCallback([&, i]
+        {
+          auto lights = map()->lights();
+          if(i<lights.size() && i<d->gizmoLayers.size())
+          {
+            auto gizmoLayer = d->gizmoLayers.at(i);
+            auto m = glm::mat3(gizmoLayer->objectMatrix());
+            lights.at(i).direction = -glm::normalize(m*glm::vec3(0,0,1));
+            map()->setLights(lights);
+          }
+        });
+      }
+
+      for(size_t i=0; i<lights.size(); i++)
+      {
+        const auto& light = lights.at(i);
+        auto gizmoLayer = d->gizmoLayers.at(i);
+
+        glm::mat4 m = glm::lookAt(light.position, light.position + light.direction, glm::vec3(0.0f, 1.0f, 0.0f));
+        gizmoLayer->setObjectMatrix(glm::inverse(m));
+      }
     }
   }
 

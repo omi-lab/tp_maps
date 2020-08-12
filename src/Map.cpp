@@ -135,7 +135,8 @@ struct Map::Private
       buffer.height = height;
     }
 
-    glBindFramebuffer(TP_GL_DRAW_FRAMEBUFFER, buffer.frameBuffer);
+    //glBindFramebuffer(TP_GL_DRAW_FRAMEBUFFER, buffer.frameBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
 
     if(!buffer.textureID)
     {
@@ -686,8 +687,9 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
   int windowX = tpBound(0, pos.x-left, width()-(pickingSize+1));
   int windowY = tpBound(0, (d->height-pos.y)-left, height()-(pickingSize+1));
   std::vector<unsigned char> pixels(pickingSize*pickingSize*4);
-  glReadPixels(windowX, windowY, pickingSize, pickingSize, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
 
+  glReadBuffer(GL_COLOR_ATTACHMENT0);
+  glReadPixels(windowX, windowY, pickingSize, pickingSize, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
   glBindFramebuffer(GL_FRAMEBUFFER, originalFrameBuffer);
 
   //------------------------------------------------------------------------------------------------
@@ -697,7 +699,6 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
   static const std::vector<glm::ivec2> testOrder(generateTestOrder(pickingSize));
   for(const auto& point : testOrder)
   {
-
     unsigned char* p = pixels.data() + (((point.y*9)+point.x)*4);
 
     uint32_t r = p[0];
@@ -719,7 +720,7 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
         {
           pickingDetails.index += size_t(index);
           return (pickingDetails.callback)?
-                pickingDetails.callback(PickingResult(pickingType, pickingDetails, d->renderInfo)):
+                pickingDetails.callback(PickingResult(pickingType, pickingDetails, d->renderInfo, nullptr)):
                 nullptr;
         }
       }

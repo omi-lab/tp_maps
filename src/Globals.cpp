@@ -18,6 +18,8 @@ TP_DEFINE_ID(               yuvImageShaderSID,                 "YUV image shader
 TP_DEFINE_ID(             depthImageShaderSID,               "Depth image shader");
 TP_DEFINE_ID(                   fontShaderSID,                      "Font shader");
 TP_DEFINE_ID(                  frameShaderSID,                     "Frame shader");
+TP_DEFINE_ID(               postSSAOShaderSID,                 "Post ssao shader");
+TP_DEFINE_ID(                   gizmoLayerSID,                      "Gizmo layer");
 
 //##################################################################################################
 int tp_rc();

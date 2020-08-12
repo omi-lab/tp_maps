@@ -110,6 +110,9 @@ HEADERS += inc/tp_maps/shaders/FontShader.h
 SOURCES += src/shaders/FrameShader.cpp
 HEADERS += inc/tp_maps/shaders/FrameShader.h
 
+SOURCES += src/shaders/PostSSAOShader.cpp
+HEADERS += inc/tp_maps/shaders/PostSSAOShader.h
+
 
 #-- Layers -----------------------------------------------------------------------------------------
 SOURCES += src/layers/GridLayer.cpp
@@ -144,6 +147,15 @@ HEADERS += inc/tp_maps/layers/FBOLayer.h
 
 SOURCES += src/layers/LightsLayer.cpp
 HEADERS += inc/tp_maps/layers/LightsLayer.h
+
+SOURCES += src/layers/GizmoLayer.cpp
+HEADERS += inc/tp_maps/layers/GizmoLayer.h
+
+
+#-- Post Processing Layers -------------------------------------------------------------------------
+
+SOURCES += src/layers/PostSSAOLayer.cpp
+HEADERS += inc/tp_maps/layers/PostSSAOLayer.h
 
 
 #-- Textures ---------------------------------------------------------------------------------------

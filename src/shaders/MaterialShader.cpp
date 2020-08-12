@@ -12,10 +12,12 @@ namespace tp_maps
 
 namespace
 {
-ShaderResource vertShaderStr{"/tp_maps/MaterialShader.vert"};
-ShaderResource fragShaderStr{"/tp_maps/MaterialShader.frag"};
-ShaderResource vertShaderStrLight{"/tp_maps/MaterialShader.light.vert"};
-ShaderResource fragShaderStrLight{"/tp_maps/MaterialShader.light.frag"};
+ShaderResource vertShaderStr       {"/tp_maps/MaterialShader.vert"        };
+ShaderResource fragShaderStr       {"/tp_maps/MaterialShader.frag"        };
+ShaderResource vertShaderStrPicking{"/tp_maps/MaterialShader.picking.vert"};
+ShaderResource fragShaderStrPicking{"/tp_maps/MaterialShader.picking.frag"};
+ShaderResource vertShaderStrLight  {"/tp_maps/MaterialShader.light.vert"  };
+ShaderResource fragShaderStrLight  {"/tp_maps/MaterialShader.light.frag"  };
 
 //##################################################################################################
 struct LightLocations_lt
@@ -62,7 +64,6 @@ struct MaterialShader::Private
 
   GLint mMatrixLocation          {0};
   GLint mvpMatrixLocation        {0};
-  GLint lightMVPMatrixLocation   {0};
 
   GLint cameraOriginLocation     {0};
 
@@ -72,15 +73,17 @@ struct MaterialShader::Private
   GLint materialShininessLocation{0};
   GLint materialAlphaLocation    {0};
 
-  GLint pickingLocation          {0};
-  GLint pickingIDLocation        {0};
-
   GLint ambientTextureLocation   {0};
   GLint diffuseTextureLocation   {0};
   GLint specularTextureLocation  {0};
   //GLint alphaTextureLocation   {0};
   GLint bumpTextureLocation      {0};
   GLint spotLightTextureLocation {0};
+
+  GLint pickingMVPMatrixLocation {0};
+  GLint pickingIDLocation        {0};
+
+  GLint lightMVPMatrixLocation   {0};
 
   std::vector<LightLocations_lt> lightLocations;
 
@@ -179,6 +182,7 @@ MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, b
     replace(fragStr, "/*LIGHT_FRAG_CALC*/", LIGHT_FRAG_CALC);
 
     compile(vertStr.c_str(), fragStr.c_str(), [](auto){}, [](auto){});
+    compile(vertShaderStrPicking.data(openGLProfile), fragShaderStrPicking.data(openGLProfile), [](auto){}, [](auto){}, ShaderType::Picking);
     compile(vertShaderStrLight.data(openGLProfile), fragShaderStrLight.data(openGLProfile), [](auto){}, [](auto){}, ShaderType::Light);
   }
 }
@@ -202,7 +206,6 @@ void MaterialShader::compile(const char* vertShaderStr,
   {
     switch(shaderType)
     {
-    case ShaderType::Picking: [[fallthrough]];
     case ShaderType::Render:
     {
       glBindAttribLocation(program, 0, "inVertex");
@@ -214,6 +217,7 @@ void MaterialShader::compile(const char* vertShaderStr,
       break;
     }
 
+    case ShaderType::Picking: [[fallthrough]];
     case ShaderType::Light:
     {
       glBindAttribLocation(program, 0, "inVertex");
@@ -226,7 +230,6 @@ void MaterialShader::compile(const char* vertShaderStr,
   {
     switch(shaderType)
     {
-    case ShaderType::Picking: [[fallthrough]];
     case ShaderType::Render:
     {
       d->mMatrixLocation           = glGetUniformLocation(program, "m");
@@ -239,9 +242,6 @@ void MaterialShader::compile(const char* vertShaderStr,
       d->materialSpecularLocation  = glGetUniformLocation(program, "material.specular");
       d->materialShininessLocation = glGetUniformLocation(program, "material.shininess");
       d->materialAlphaLocation     = glGetUniformLocation(program, "material.alpha");
-
-      d->pickingLocation           = glGetUniformLocation(program, "picking");
-      d->pickingIDLocation         = glGetUniformLocation(program, "pickingID");
 
       d->ambientTextureLocation   = glGetUniformLocation(program, "ambientTexture");
       d->diffuseTextureLocation   = glGetUniformLocation(program, "diffuseTexture");
@@ -278,6 +278,13 @@ void MaterialShader::compile(const char* vertShaderStr,
       break;
     }
 
+    case ShaderType::Picking:
+    {
+      d->pickingMVPMatrixLocation = glGetUniformLocation(program, "mvp");
+      d->pickingIDLocation         = glGetUniformLocation(program, "pickingID");
+      break;
+    }
+
     case ShaderType::Light:
     {
       d->lightMVPMatrixLocation = glGetUniformLocation(program, "mvp");
@@ -301,18 +308,12 @@ void MaterialShader::use(ShaderType shaderType)
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
 
   Shader::use(shaderType);
-
-  if(shaderType != ShaderType::Light)
-  {
-    glUniform1f(d->pickingLocation, 0.0f);
-    glUniform4f(d->pickingIDLocation, 0.0f, 0.0f, 0.0f, 0.0f);
-  }
 }
 
 //##################################################################################################
 void MaterialShader::setMaterial(const Material& material)
 {
-  if(d->shaderType == ShaderType::Light)
+  if(d->shaderType != ShaderType::Render)
     return;
 
   glUniform3fv(d->materialAmbientLocation,  1, &material.ambient.x  );
@@ -325,7 +326,7 @@ void MaterialShader::setMaterial(const Material& material)
 //##################################################################################################
 void MaterialShader::setLights(const std::vector<Light>& lights, const std::vector<FBO>& lightBuffers)
 {
-  if(d->shaderType == ShaderType::Light)
+  if(d->shaderType != ShaderType::Render)
     return;
 
   {
@@ -372,7 +373,6 @@ void MaterialShader::setMatrix(const glm::mat4& m, const glm::mat4& v, const glm
 
   switch(d->shaderType)
   {
-  case ShaderType::Picking: [[fallthrough]];
   case ShaderType::Render:
   {
     glUniformMatrix4fv(d->mMatrixLocation  , 1, GL_FALSE, glm::value_ptr(m));
@@ -380,6 +380,12 @@ void MaterialShader::setMatrix(const glm::mat4& m, const glm::mat4& v, const glm
 
     glm::vec3 cameraOrigin_world = glm::inverse(v) * glm::vec4(0,0,0,1);
     glUniform3fv(d->cameraOriginLocation, 1, &cameraOrigin_world.x);
+    break;
+  }
+
+  case ShaderType::Picking:
+  {
+    glUniformMatrix4fv(d->pickingMVPMatrixLocation, 1, GL_FALSE, glm::value_ptr(mvp));
     break;
   }
 
@@ -403,7 +409,6 @@ void MaterialShader::drawPicking(GLenum mode,
                                  const glm::vec4& pickingID)
 {
   glDisable(GL_BLEND);
-  glUniform1f(d->pickingLocation, 1.0f);
   glUniform4fv(d->pickingIDLocation, 1, &pickingID.x);
   d->draw(mode, vertexBuffer);
 }
@@ -422,7 +427,7 @@ void MaterialShader::setTextures(GLuint ambientTextureID,
                                  GLuint bumpTextureID,
                                  GLuint spotLightTextureID)
 {  
-  if(d->shaderType == ShaderType::Light)
+  if(d->shaderType != ShaderType::Render)
     return;
 
   glActiveTexture(GL_TEXTURE0);

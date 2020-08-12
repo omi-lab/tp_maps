@@ -40,8 +40,6 @@ uniform sampler2D bumpTexture;
 uniform sampler2D spotLightTexture;
 
 uniform Material material;
-uniform float picking;
-uniform vec4 pickingID;
 
 /*TP_GLSL_IN_F*/vec3 fragPos_world;
 
@@ -52,6 +50,32 @@ uniform vec4 pickingID;
 /*LIGHT_FRAG_VARS*/
 
 /*TP_GLSL_GLFRAGCOLOR_DEF*/
+
+// Taken from: https://github.com/BennyQBD/3DEngineCpp/blob/master/res/shaders/sampling.glh
+// https://youtu.be/yn5UJzMqxj0
+float sampleShadowMap(sampler2D shadowMap, vec2 coords, float compare)
+{
+  return step(compare, texture2D(shadowMap, coords.xy).r);
+}
+
+// Taken from: https://github.com/BennyQBD/3DEngineCpp/blob/master/res/shaders/sampling.glh
+// https://youtu.be/yn5UJzMqxj0
+float sampleShadowMapLinear(sampler2D shadowMap, vec2 coords, float compare, vec2 texelSize)
+{
+  vec2 pixelPos = coords/texelSize + vec2(0.5);
+  vec2 fracPart = fract(pixelPos);
+  vec2 startTexel = (pixelPos - fracPart) * texelSize;
+
+  float blTexel = sampleShadowMap(shadowMap, startTexel, compare);
+  float brTexel = sampleShadowMap(shadowMap, startTexel + vec2(texelSize.x, 0.0), compare);
+  float tlTexel = sampleShadowMap(shadowMap, startTexel + vec2(0.0, texelSize.y), compare);
+  float trTexel = sampleShadowMap(shadowMap, startTexel + texelSize, compare);
+
+  float mixA = mix(blTexel, tlTexel, fracPart.y);
+  float mixB = mix(brTexel, trTexel, fracPart.y);
+
+  return mix(mixA, mixB, fracPart.x);
+}
 
 LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampler2D lightTexture, vec4 fragPos_light)
 {
@@ -81,9 +105,9 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
     bias = 0.001;//max(0.0001, (1.0 - bias)*0.0005);
     vec2 texelSize = 2.0 / textureSize(lightTexture, 0);
     float biasedDepth = min(fragPos_light.z-bias,1.0);
-    for(int x = -4; x <= 4; ++x)
+    for(int x = -1; x <= 1; ++x)
     {
-      for(int y = -4; y <= 4; ++y)
+      for(int y = -1; y <= 1; ++y)
       {
         vec2 coord = fragPos_light.xy + (vec2(x, y)*texelSize);
         if(coord.x<0.0 || coord.x>1.0 || coord.y<0.0 || coord.y>1.0)
@@ -92,12 +116,11 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
         }
         else
         {
-          float lightDepth = /*TP_GLSL_TEXTURE*/(lightTexture, coord).x;
-          shadow += (lightDepth<biasedDepth)?0.0:1.0;
+          shadow += sampleShadowMapLinear(lightTexture, coord, biasedDepth, texelSize);
         }
       }
     }
-    shadow /= 81.0;
+    shadow /= 9.0;
   }
 
   r.diffuse *= shadow;
@@ -135,9 +158,9 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampl
     bias = max(0.0001, (1.0 - bias)*0.0005);
     vec2 texelSize = 2.0 / textureSize(lightTexture, 0);
     float biasedDepth = min(fragPos_light.z-bias,1.0);
-    for(int x = -4; x <= 4; ++x)
+    for(int x = -1; x <= 1; ++x)
     {
-      for(int y = -4; y <= 4; ++y)
+      for(int y = -1; y <= 1; ++y)
       {
         vec2 coord = fragPos_light.xy + (vec2(x, y)*texelSize);
         if(coord.x<0.0 || coord.x>1.0 || coord.y<0.0 || coord.y>1.0)
@@ -146,12 +169,11 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampl
         }
         else
         {
-          float lightDepth = /*TP_GLSL_TEXTURE*/(lightTexture, coord).x;
-          shadow += (lightDepth<biasedDepth)?0.0:1.0;
+          shadow += sampleShadowMapLinear(lightTexture, coord, biasedDepth, texelSize);
         }
       }
     }
-    shadow /= 81.0;
+    shadow /= 9.0;
 
     vec2 spotTexCoord = (fragPos_light.xy*light.spotLightWH) + light.spotLightUV;
     shadowTex = /*TP_GLSL_TEXTURE*/(spotLightTexture, spotTexCoord).xyz * shadow;
@@ -193,7 +215,6 @@ void main()
 
   vec3 result = ambient + diffuse + specular;
   /*TP_GLSL_GLFRAGCOLOR*/ = vec4(result, material.alpha);
-  /*TP_GLSL_GLFRAGCOLOR*/ = (picking*pickingID) + ((1.0-picking)*/*TP_GLSL_GLFRAGCOLOR*/);
 
   if(/*TP_GLSL_GLFRAGCOLOR*/.a<0.01)
     discard;

@@ -7,6 +7,7 @@ namespace tp_maps
 {
 struct PickingDetails;
 class RenderInfo;
+class Layer;
 
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT PickingResult
@@ -15,14 +16,16 @@ public:
   //################################################################################################
   PickingResult(const tp_utils::StringID& pickingType_,
                 const PickingDetails& details_,
-                const RenderInfo& renderInfo_);
+                const RenderInfo& renderInfo_,
+                Layer* layer_);
 
   //################################################################################################
   virtual ~PickingResult()=default;
 
   const tp_utils::StringID& pickingType;
   const PickingDetails& details;
-  const RenderInfo& renderInfo;
+  const RenderInfo& renderInfo;  
+  Layer* layer;
 };
 
 }

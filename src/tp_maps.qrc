@@ -12,12 +12,16 @@
         <file alias="MaterialShader.vert">resources/shaders/MaterialShader.vert</file>
         <file alias="MaterialShader.light.frag">resources/shaders/MaterialShader.light.frag</file>
         <file alias="MaterialShader.light.vert">resources/shaders/MaterialShader.light.vert</file>
+        <file alias="MaterialShader.picking.frag">resources/shaders/MaterialShader.picking.frag</file>
+        <file alias="MaterialShader.picking.vert">resources/shaders/MaterialShader.picking.vert</file>
         <file alias="PointSpriteShader.frag">resources/shaders/PointSpriteShader.frag</file>
         <file alias="PointSpriteShader.vert">resources/shaders/PointSpriteShader.vert</file>
         <file alias="PointSpriteShader.picking.frag">resources/shaders/PointSpriteShader.picking.frag</file>
         <file alias="PointSpriteShader.picking.vert">resources/shaders/PointSpriteShader.picking.vert</file>
         <file alias="YUVImageShader.frag">resources/shaders/YUVImageShader.frag</file>
         <file alias="DepthImageShader.frag">resources/shaders/DepthImageShader.frag</file>
+        <file alias="PostSSAOShader.frag">resources/shaders/PostSSAOShader.frag</file>
+        <file alias="PostSSAOShader.vert">resources/shaders/PostSSAOShader.vert</file>
     </qresource>
 </RCC>
 
