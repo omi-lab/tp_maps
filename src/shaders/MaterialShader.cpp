@@ -336,8 +336,11 @@ void MaterialShader::setLights(const std::vector<Light>& lights, const std::vect
       const auto& light = lights.at(i);
       const auto& lightLocations = d->lightLocations.at(i);
 
-      glUniform3fv(lightLocations.positionLocation , 1,    &light.position.x      );
-      glUniform3fv(lightLocations.directionLocation, 1,    &light.direction.x     );
+      glm::vec3 position = light.position();
+      glm::vec3 direction = light.direction();
+
+      glUniform3fv(lightLocations.positionLocation , 1,    &position.x            );
+      glUniform3fv(lightLocations.directionLocation, 1,    &direction.x           );
       glUniform3fv(lightLocations.ambientLocation  , 1,    &light.ambient.x       );
       glUniform3fv(lightLocations.diffuseLocation  , 1,    &light.diffuse.x       );
       glUniform3fv(lightLocations.specularLocation , 1,    &light.specular.x      );

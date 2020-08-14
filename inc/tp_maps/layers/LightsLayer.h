@@ -4,6 +4,7 @@
 #include "tp_maps/Layer.h"
 
 #include "tp_utils/RefCount.h"
+#include "tp_utils/CallbackCollection.h"
 
 namespace tp_maps
 {
@@ -19,6 +20,9 @@ public:
 
   //################################################################################################
   ~LightsLayer() override;
+
+  //################################################################################################
+  tp_utils::CallbackCollection<void()> lightsEdited;
 
 protected:
 

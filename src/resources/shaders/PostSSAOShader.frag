@@ -26,14 +26,17 @@ void main()
     {
       for(float z=-1.0; z<=1.0; z+=0.2)
       {
-        vec4 clipCoord = projectionMatrix * (viewCoord+vec4(x*0.02, y*0.02, z*0.02, 0.0));
+        vec4 clipCoord = projectionMatrix * (viewCoord+vec4(x*0.08, y*0.08, z*0.08, 0.0));
         clipCoord /= clipCoord.w;
         clipCoord.xyz = (clipCoord.xyz*0.5) + 0.5;
 
         if(clipCoord.x>=0.0 && clipCoord.y>=0.0 && clipCoord.x<=1.0 && clipCoord.y<=1.0)
         {
           float d = /*TP_GLSL_TEXTURE*/(depthSampler, clipCoord.xy).x;
-          if(clipCoord.z>(d+0.00001))
+          //float fraction = d / clipCoord.z;
+          //if(clipCoord.z>d && fraction>0.999)
+          //   occlusions++;
+          if(clipCoord.z>d)
             occlusions++;
           count++;
         }
@@ -41,7 +44,7 @@ void main()
     }
   }
 
-  float dim = clamp((1.0 - occlusions/count)*2.0, 0.1, 1.0);
+  float dim = clamp((1.0 - occlusions/count)*3.0, 0.95, 1.0);
 
 
   /*TP_GLSL_GLFRAGCOLOR*/ = vec4(/*TP_GLSL_TEXTURE*/(textureSampler, texCoordinate).xyz*dim, 1.0);

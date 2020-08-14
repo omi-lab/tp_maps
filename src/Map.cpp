@@ -85,8 +85,8 @@ struct Map::Private
       Light light;
       light.type = LightType::Spot;
 
-      light.position = {1.52f, -1.52f, 5.4f};
-      light.direction = {-0.276, 0.276, -0.92};
+      light.setPosition({1.52f, -1.52f, 5.4f});
+      light.setDirection({-0.276, 0.276, -0.92});
 
       light.ambient  = {0.2f, 0.2f, 0.2f};
       light.diffuse  = {0.3f, 0.3f, 0.3f};
@@ -95,19 +95,19 @@ struct Map::Private
       lights.push_back(light);
     }
 
-//    {
-//      Light light;
-//      light.type = LightType::Directional;
+    {
+      Light light;
+      light.type = LightType::Directional;
 
-//      light.position = {-5.52f, -5.52f, 18.4f};
-//      light.direction = {0.276, 0.276, -0.92};
+      light.setPosition({-5.52f, -5.52f, 18.4f});
+      light.setDirection({0.276, 0.276, -0.92});
 
-//      light.ambient  = {0.2f, 0.2f, 0.2f};
-//      light.diffuse  = {0.3f, 0.3f, 0.3f};
-//      light.specular = {1.0f, 1.0f, 1.0f};
+      light.ambient  = {0.2f, 0.2f, 0.2f};
+      light.diffuse  = {0.3f, 0.3f, 0.3f};
+      light.specular = {1.0f, 1.0f, 1.0f};
 
-//      lights.push_back(light);
-//    }
+      lights.push_back(light);
+    }
 
     renderInfo.map = q;
   }
@@ -143,8 +143,8 @@ struct Map::Private
       glGenTextures(1, &buffer.textureID);
       glBindTexture(GL_TEXTURE_2D, buffer.textureID);
       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer.textureID, 0);
 
       glGenTextures(1, &buffer.depthID);
@@ -678,6 +678,10 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
   d->renderInfo.pickingType = pickingType;
   d->renderInfo.pos = pos;
 
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
+  glDepthMask(true);
+
   d->render();
 
   //------------------------------------------------------------------------------------------------
@@ -976,7 +980,7 @@ void Map::paintGLNoMakeCurrent()
     {
 #ifdef TP_FBO_SUPPORTED
       glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
-      if(!d->prepareBuffer(d->reflectionBuffer, d->width, d->height))
+      if(!d->prepareBuffer(d->reflectionBuffer, d->width*2, d->height*2))
         return;
 #endif
       break;
@@ -1011,28 +1015,29 @@ void Map::paintGLNoMakeCurrent()
     case RenderPass::Reflection: //-----------------------------------------------------------------
     {
 #ifdef TP_FBO_SUPPORTED
+      glViewport(0, 0, d->width, d->height);
       glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
-      glBindFramebuffer(GL_READ_FRAMEBUFFER, d->reflectionBuffer.frameBuffer);
+//      glBindFramebuffer(GL_READ_FRAMEBUFFER, d->reflectionBuffer.frameBuffer);
 
-#if 1
-      glBlitFramebuffer(0, 0, d->width, d->height,
-                        0, 0, d->width, d->height,
-                        GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
-                        GL_NEAREST);
-#else
-      glBlitFramebuffer(0, 0, d->width, d->height,
-                        0, 0, d->width, d->height,
-                        GL_DEPTH_BUFFER_BIT,
-                        GL_NEAREST);
+//#if 1
+//      glBlitFramebuffer(0, 0, d->reflectionBuffer.width, d->reflectionBuffer.height,
+//                        0, 0, d->width, d->height,
+//                        GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
+//                        GL_NEAREST);
+//#else
+//      glBlitFramebuffer(0, 0, d->width, d->height,
+//                        0, 0, d->width, d->height,
+//                        GL_DEPTH_BUFFER_BIT,
+//                        GL_NEAREST);
 
-      glBlitFramebuffer(0, 0, d->width, d->height,
-                        0, 0, d->width, d->height,
-                        GL_COLOR_BUFFER_BIT ,
-                        GL_LINEAR);
-#endif
+//      glBlitFramebuffer(0, 0, d->width, d->height,
+//                        0, 0, d->width, d->height,
+//                        GL_COLOR_BUFFER_BIT ,
+//                        GL_LINEAR);
+//#endif
 
-      // Call this again to replace GL_READ_FRAMEBUFFER
-      glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
+//      // Call this again to replace GL_READ_FRAMEBUFFER
+//      glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
 
       glEnable(GL_DEPTH_TEST);
       glDepthFunc(GL_LESS);

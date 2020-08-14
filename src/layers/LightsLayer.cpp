@@ -65,7 +65,7 @@ void LightsLayer::render(RenderInfo& renderInfo)
         auto& g = geometry.emplace_back();
         g.geometry = bulb;
         glm::mat4 m{1.0f};
-        m = glm::translate(m, light.position);
+        m = glm::translate(m, light.position());
         g.geometry.transform(m);
       }
       d->bulbs->setLinesFromGeometry(geometry);
@@ -93,20 +93,21 @@ void LightsLayer::render(RenderInfo& renderInfo)
           if(i<lights.size() && i<d->gizmoLayers.size())
           {
             auto gizmoLayer = d->gizmoLayers.at(i);
-            auto m = glm::mat3(gizmoLayer->objectMatrix());
-            lights.at(i).direction = -glm::normalize(m*glm::vec3(0,0,1));
-            map()->setLights(lights);
+            lights.at(i).viewMatrix = glm::inverse(gizmoLayer->objectMatrix());
+            map()->setLights(lights);            
+            lightsEdited();
           }
         });
       }
+
+      while(d->gizmoLayers.size()>lights.size())
+        delete tpTakeLast(d->gizmoLayers);
 
       for(size_t i=0; i<lights.size(); i++)
       {
         const auto& light = lights.at(i);
         auto gizmoLayer = d->gizmoLayers.at(i);
-
-        glm::mat4 m = glm::lookAt(light.position, light.position + light.direction, glm::vec3(0.0f, 1.0f, 0.0f));
-        gizmoLayer->setObjectMatrix(glm::inverse(m));
+        gizmoLayer->setObjectMatrix(glm::inverse(light.viewMatrix));
       }
     }
   }

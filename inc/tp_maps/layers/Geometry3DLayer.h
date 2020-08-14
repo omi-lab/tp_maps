@@ -66,9 +66,6 @@ protected:
   //################################################################################################
   void invalidateBuffers() override;
 
-//  //################################################################################################
-//  void lightsChanged(LightingModelChanged lightingModelChanged) override;
-
 private:
   struct Private;
   Private* d;

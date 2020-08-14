@@ -56,7 +56,9 @@ void Controller::setCurrentLight(const Light& light)
 
   float distance = light.orthoRadius;
 
-  glm::mat4 view = glm::lookAt(d->currentLight.position, d->currentLight.position + d->currentLight.direction, glm::vec3(0.0f, 1.0f, 0.0f));
+  //glm::mat4 view = glm::lookAt(d->currentLight.position, d->currentLight.position + d->currentLight.direction, glm::vec3(0.0f, 1.0f, 0.0f));
+  glm::mat4 view = d->currentLight.viewMatrix;
+
   glm::mat4 projection;
 
   switch(light.type)

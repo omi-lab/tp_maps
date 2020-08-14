@@ -321,16 +321,14 @@ struct TP_MAPS_SHARED_EXPORT Light
 
   LightType type{LightType::Directional};
 
-  glm::vec3 position{5.52f, -5.52f, 18.4f}; //!< World coord of Point and Spot lights.
-
-  glm::vec3 direction{-0.276, 0.276, -0.92}; //!< Unit vector for the direction of the light. Points away from light.
+  glm::mat4 viewMatrix{1.0}; //!< World to light
 
   glm::vec3 ambient {0.4f, 0.4f, 0.4f};
   glm::vec3 diffuse {0.6f, 0.6f, 0.6f};
   glm::vec3 specular{1.0f, 1.0f, 1.0f};
 
-  float diffuseScale{0.5f};              //! Multiplied with the diffuse lighting calculation.
-  float diffuseTranslate{1.0f};          //! Added to the diffuse lighting calculation.
+  float diffuseScale{1.0f};              //! Multiplied with the diffuse lighting calculation.
+  float diffuseTranslate{0.5f};          //! Added to the diffuse lighting calculation.
 
   // Used to calculate the fall off in brightness as we get further from a point light.
   float constant{1.0f};
@@ -346,6 +344,18 @@ struct TP_MAPS_SHARED_EXPORT Light
   float far{100.0f};       //!< Far plane of the light frustum.
   float fov{50.0f};        //!< Field of view for spot lights.
   float orthoRadius{10.0f}; //!< The radius of fixed directional light ortho projection.
+
+  //################################################################################################
+  void setPosition(const glm::vec3& position);
+
+  //################################################################################################
+  glm::vec3 position() const;
+
+  //################################################################################################
+  void setDirection(const glm::vec3& direction);
+
+  //################################################################################################
+  glm::vec3 direction() const;
 
   //################################################################################################
   nlohmann::json saveState() const;

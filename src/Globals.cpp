@@ -359,6 +359,32 @@ std::string lightTypeToString(LightType lightType)
 }
 
 //##################################################################################################
+void Light::setPosition(const glm::vec3& position)
+{
+  auto m = glm::inverse(viewMatrix);
+  m[3] = glm::vec4(position, 1.0f);
+  viewMatrix = glm::inverse(m);
+}
+
+//##################################################################################################
+glm::vec3 Light::position() const
+{
+  return glm::inverse(viewMatrix)[3];
+}
+
+//##################################################################################################
+void Light::setDirection(const glm::vec3& direction)
+{
+  viewMatrix = glm::lookAt(position(), position() + direction, glm::vec3(0.0f, 1.0f, 0.0f));
+}
+
+//##################################################################################################
+glm::vec3 Light::direction() const
+{
+  return glm::mat3(glm::inverse(viewMatrix))*glm::vec3(0.0f, 0.0f, -1.0f);
+}
+
+//##################################################################################################
 nlohmann::json Light::saveState() const
 {
   nlohmann::json j;
@@ -367,8 +393,7 @@ nlohmann::json Light::saveState() const
 
   j["type"] = lightTypeToString(type);
 
-  j["position"] = tp_math_utils::vec3ToJSON(position);
-  j["direction"] = tp_math_utils::vec3ToJSON(direction);
+  j["viewMatrix"] = tp_math_utils::mat4ToJSON(viewMatrix);
 
   j["ambient"] = tp_math_utils::vec3ToJSON(ambient);
   j["diffuse"] = tp_math_utils::vec3ToJSON(diffuse);
@@ -399,8 +424,7 @@ void Light::loadState(const nlohmann::json& j)
 
   type = lightTypeFromString(TPJSONString(j, "type"));
 
-  position = tp_math_utils::vec3FromJSON(TPJSON(j, "position"));
-  direction = tp_math_utils::vec3FromJSON(TPJSON(j, "direction"));
+  viewMatrix = tp_math_utils::mat4FromJSON(TPJSON(j, "viewMatrix"));
 
   ambient = tp_math_utils::vec3FromJSON(TPJSON(j, "ambient"));
   diffuse = tp_math_utils::vec3FromJSON(TPJSON(j, "diffuse"));
