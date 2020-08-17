@@ -128,6 +128,12 @@ void ImageLayer::setShader(const std::function<ImageShader*(Map*)>& getShader)
 }
 
 //##################################################################################################
+void ImageLayer::bindTextureInNextRender()
+{
+  d->bindBeforeRender = true;
+}
+
+//##################################################################################################
 void ImageLayer::render(RenderInfo& renderInfo)
 {
   if(!d->texture->imageReady())

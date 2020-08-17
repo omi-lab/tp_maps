@@ -17,7 +17,7 @@ class TP_MAPS_SHARED_EXPORT ImageLayer: public Layer
 public:
   //################################################################################################
   /*!
-  \param texture The image in OpenGL coordinate system (0,0) in bottom left.
+  \param texture The image in OpenGL coordinate system (0,0) in bottom left. This takes ownership.
   */
   ImageLayer(Texture* texture);
 
@@ -39,6 +39,10 @@ public:
 
   //################################################################################################
   void setShader(const std::function<ImageShader*(Map*)>& getShader);
+
+  //################################################################################################
+  //! Bind the texture in the next render pass without triggering an update.
+  void bindTextureInNextRender();
 
 protected:
   //################################################################################################
