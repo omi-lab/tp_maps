@@ -256,7 +256,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
 
   default:
     break;
-  };
+  }
 
   //== Bind Textures ===============================================================================
   if(d->bindBeforeRender)
@@ -369,13 +369,9 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
   {
     render(static_cast<MaterialShader*>(nullptr), [&](auto shader) //-- use ------------------------
     {
-      map()->printOpenGLError("A");
       shader->use(shaderType);
-      map()->printOpenGLError("B");
       shader->setMatrix(d->objectMatrix, m.v, m.p);
-      map()->printOpenGLError("C");
       shader->setLights(map()->lights(), map()->lightTextures());
-      map()->printOpenGLError("D");
     },
     [&](auto, const auto&) //-- setMaterialPicking -------------------------------------------------
     {
@@ -383,13 +379,10 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     },
     [&](auto shader, auto first, auto second, auto pickingID) //-- drawPicking ---------------------
     {
-      map()->printOpenGLError("E");
       shader->drawPicking(first, second, pickingID);
-      map()->printOpenGLError("F");
     },
     [&](auto shader, const auto& details) //-- setMaterial -----------------------------------------
     {
-      map()->printOpenGLError("G");
       shader->setMaterial(details.material);
       shader->setTextures(details.ambientTextureID,
                           details.diffuseTextureID,
@@ -397,13 +390,10 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
                           details.alphaTextureID,
                           details.bumpTextureID,
                           map()->spotLightTexture());
-      map()->printOpenGLError("H");
     },
     [&](auto shader, auto first, auto second) //-- draw --------------------------------------------
     {
-      map()->printOpenGLError("I");
       shader->draw(first, second);
-      map()->printOpenGLError("J");
     },
     renderInfo);
   }

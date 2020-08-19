@@ -465,4 +465,10 @@ std::vector<Light> Light::loadLights(const nlohmann::json& j)
   return lights;
 }
 
+//##################################################################################################
+std::string Geometry3D::getName() const
+{
+  return (!geometry.comments.empty())?geometry.comments.front():material.name;
+}
+
 }

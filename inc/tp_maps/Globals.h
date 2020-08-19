@@ -287,7 +287,7 @@ struct TP_MAPS_SHARED_EXPORT Material
   glm::vec3 ambient{1.0f, 0.0f, 0.0f};  //!< mtl: Ka
   glm::vec3 diffuse{0.4f, 0.0f, 0.0f};  //!< mtl: Kd
   glm::vec3 specular{0.1f, 0.1f, 0.1f}; //!< mtl: Ks
-  float shininess{32.0f};               //!< mtl: Ns
+  float shininess{32.0f};               //!< mtl: Ns 0 -> 128, 0=diffuse 128=sharp shiny reflections
   float alpha{1.0f};                    //!< mtl: d
 
   tp_utils::StringID ambientTexture;    //!< mtl: map_Ka
@@ -407,6 +407,9 @@ struct TP_MAPS_SHARED_EXPORT Geometry3D
 {
   tp_math_utils::Geometry3D geometry;
   Material material;
+
+  //################################################################################################
+  std::string getName() const;
 };
 
 }

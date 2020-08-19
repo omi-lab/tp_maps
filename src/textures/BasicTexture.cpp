@@ -164,6 +164,7 @@ GLuint BasicTexture::bindTexture()
                                minFilterOption(),
                                textureWrapS(),
                                textureWrapT());
+
   return texture;
 }
 

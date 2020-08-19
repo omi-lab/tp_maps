@@ -965,7 +965,7 @@ void Map::paintGLNoMakeCurrent()
         if(!d->prepareBuffer(lightBuffer, 8192, 8192))
           return;
 
-        d->controller->setCurrentLight(light);        
+        d->controller->setCurrentLight(light);
         lightBuffer.worldToTexture = d->controller->lightMatrices().vp;
         d->render();
       }
