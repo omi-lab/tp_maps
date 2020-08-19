@@ -182,7 +182,7 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
     glm::ivec2 delta = event.pos - d->previousPos;
     d->previousPos = event.pos;
 
-    glm::vec3 axis;
+    glm::vec3 axis{1,0,0};
     switch(d->activeModification)
     {
     case Modify_lt::RotateX: axis = {1,0,0}; break;
