@@ -339,7 +339,9 @@ void MaterialShader::setLights(const std::vector<Light>& lights, const std::vect
       glm::vec3 position = light.position();
       glm::vec3 direction = light.direction();
 
-      glUniform3fv(lightLocations.positionLocation , 1,    &position.x            );
+      if(lightLocations.positionLocation>=0)
+        glUniform3fv(lightLocations.positionLocation , 1,    &position.x            );
+        
       glUniform3fv(lightLocations.directionLocation, 1,    &direction.x           );
       glUniform3fv(lightLocations.ambientLocation  , 1,    &light.ambient.x       );
       glUniform3fv(lightLocations.diffuseLocation  , 1,    &light.diffuse.x       );

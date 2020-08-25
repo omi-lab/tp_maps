@@ -55,7 +55,7 @@ uniform Material material;
 // https://youtu.be/yn5UJzMqxj0
 float sampleShadowMap(sampler2D shadowMap, vec2 coords, float compare)
 {
-  return step(compare, texture2D(shadowMap, coords.xy).r);
+  return step(compare, /*TP_GLSL_TEXTURE*/(shadowMap, coords.xy).r);
 }
 
 // Taken from: https://github.com/BennyQBD/3DEngineCpp/blob/master/res/shaders/sampling.glh
@@ -85,7 +85,7 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
   r.ambient = light.ambient;
 
   // Diffuse
-  float cosTheta = clamp(dot(norm, normalize(-lightDirection_tangent)), 0, 1);
+  float cosTheta = clamp(dot(norm, normalize(-lightDirection_tangent)), 0.0, 1.0);
   float diff = (cosTheta+light.diffuseTranslate)*light.diffuseScale;
   r.diffuse = light.diffuse * diff;
 
@@ -103,7 +103,7 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
   if(bias>0.0)
   {
     bias = 0.001;//max(0.0001, (1.0 - bias)*0.0005);
-    vec2 texelSize = 2.0 / textureSize(lightTexture, 0);
+    vec2 texelSize = vec2(2.0, 2.0) / vec2(textureSize(lightTexture, 0));
     float biasedDepth = min(fragPos_light.z-bias,1.0);
     for(int x = -1; x <= 1; ++x)
     {
@@ -137,8 +137,8 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampl
   r.ambient = light.ambient;
 
   // Diffuse
-  float cosTheta = clamp(dot(norm, normalize(-lightDirection_tangent)), 0, 1);
-  float diff = max((cosTheta+light.diffuseTranslate)*light.diffuseScale, 0);
+  float cosTheta = clamp(dot(norm, normalize(-lightDirection_tangent)), 0.0, 1.0);
+  float diff = max((cosTheta+light.diffuseTranslate)*light.diffuseScale, 0.0);
   r.diffuse = light.diffuse * diff;
 
   // Specular
@@ -156,7 +156,7 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampl
   if(bias>0.0 && fragPos_light.z>0.0 && fragPos_light.z<1.0)
   {
     bias = max(0.0001, (1.0 - bias)*0.0005);
-    vec2 texelSize = 2.0 / textureSize(lightTexture, 0);
+    vec2 texelSize = vec2(2.0, 2.0) / vec2(textureSize(lightTexture, 0));
     float biasedDepth = min(fragPos_light.z-bias,1.0);
     for(int x = -1; x <= 1; ++x)
     {
@@ -201,7 +201,7 @@ void main()
   vec3 specularTex = /*TP_GLSL_TEXTURE*/(specularTexture, uv_tangent).xyz;
   vec3     bumpTex = /*TP_GLSL_TEXTURE*/(    bumpTexture, uv_tangent).xyz;
 
-  vec3 norm = normalize(bumpTex*2-1);
+  vec3 norm = normalize(bumpTex*2.0-1.0);
 
   vec3 ambient  = vec3(0,0,0);
   vec3 diffuse  = vec3(0,0,0);

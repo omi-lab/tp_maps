@@ -36,6 +36,7 @@
 #  define TP_GLES3
 
 #elif defined(TP_EMSCRIPTEN) //---------------------------------------------------------------------
+#  include <GLES3/gl3.h>
 #  define TP_GLES3
 
 #elif defined(TP_ANDROID) //------------------------------------------------------------------------
