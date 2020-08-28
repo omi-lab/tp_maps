@@ -389,7 +389,7 @@ nlohmann::json Light::saveState() const
 {
   nlohmann::json j;
 
-  j["name"] = name;
+  j["name"] = name.keyString();
 
   j["type"] = lightTypeToString(type);
 
@@ -466,9 +466,9 @@ std::vector<Light> Light::loadLights(const nlohmann::json& j)
 }
 
 //##################################################################################################
-std::string Geometry3D::getName() const
+tp_utils::StringID Geometry3D::getName() const
 {
-  return (!geometry.comments.empty())?geometry.comments.front():material.name;
+  return (!geometry.comments.empty())?tp_utils::StringID(geometry.comments.front()):material.name;
 }
 
 }

@@ -870,7 +870,7 @@ void Map::initializeGL()
 
   //Invalidate old state before initializing new state
   {
-    for(auto i : d->shaders)
+    for(auto& i : d->shaders)
     {
       i.second->invalidate();
       delete i.second;

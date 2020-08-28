@@ -284,7 +284,7 @@ struct Matrices
 //##################################################################################################
 struct TP_MAPS_SHARED_EXPORT Material
 {
-  std::string name;
+  tp_utils::StringID name;
   glm::vec3 ambient{1.0f, 0.0f, 0.0f};  //!< mtl: Ka
   glm::vec3 diffuse{0.4f, 0.0f, 0.0f};  //!< mtl: Kd
   glm::vec3 specular{0.1f, 0.1f, 0.1f}; //!< mtl: Ks
@@ -318,7 +318,7 @@ std::string lightTypeToString(LightType lightType);
 //##################################################################################################
 struct TP_MAPS_SHARED_EXPORT Light
 {
-  std::string name; //!< User visible for the light.
+  tp_utils::StringID name; //!< User visible for the light.
 
   LightType type{LightType::Directional};
 
@@ -410,7 +410,7 @@ struct TP_MAPS_SHARED_EXPORT Geometry3D
   Material material;
 
   //################################################################################################
-  std::string getName() const;
+  tp_utils::StringID getName() const;
 };
 
 }

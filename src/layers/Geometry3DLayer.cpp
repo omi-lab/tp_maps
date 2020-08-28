@@ -69,12 +69,12 @@ struct Geometry3DLayer::Private
     if(!textureIDs.empty())
     {
       q->map()->makeCurrent();
-      for(auto i : textureIDs)
+      for(const auto& i : textureIDs)
         if(i.second)
           q->map()->deleteTexture(i.second);
     }
 
-    for(auto i : textures)
+    for(const auto& i : textures)
       delete i.second;
     textures.clear();
 
@@ -168,11 +168,11 @@ Geometry3DLayer::~Geometry3DLayer()
 //##################################################################################################
 void Geometry3DLayer::setTextures(const std::unordered_map<tp_utils::StringID, Texture*>& textures)
 {
-  for(auto i : d->textures)
+  for(const auto& i : d->textures)
     delete i.second;
   d->textures = textures;
 
-  for(auto i : d->textures)
+  for(const auto& i : d->textures)
   {
     i.second->setImageChangedCallback([this]()
     {
@@ -264,7 +264,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     d->bindBeforeRender=false;
     d->updateVertexBuffer=true;
 
-    for(auto i : d->textureIDs)
+    for(const auto& i : d->textureIDs)
       if(i.second)
         map()->deleteTexture(i.second);
     d->textureIDs.clear();
@@ -277,7 +277,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
       map()->deleteTexture(d->emptyNormalTextureID);
     d->emptyNormalTextureID = 0;
 
-    for(auto i : d->textures)
+    for(const auto& i : d->textures)
     {
       if(!i.second->imageReady())
         continue;
