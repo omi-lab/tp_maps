@@ -22,11 +22,24 @@ struct PostSSAOShader::Private
   Private() = default;
 
   GLuint vboID{0};
+
+#ifdef TP_VERTEX_ARRAYS_SUPPORTED
+  GLuint vaoID{0};
+#endif
+
   GLint textureLocation{0};
   GLint depthLocation  {0};
 
   GLint projectionMatrixLocation   {0};
   GLint invProjectionMatrixLocation{0};
+
+  //################################################################################################
+  void bindVBO()
+  {
+    glBindBuffer(GL_ARRAY_BUFFER, vboID);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), tpVoidLiteral(0));
+    glEnableVertexAttribArray(0);
+  }
 };
 
 //##################################################################################################
@@ -61,6 +74,13 @@ PostSSAOShader::PostSSAOShader(Map* map, tp_maps::OpenGLProfile openGLProfile, c
   glBindBuffer(GL_ARRAY_BUFFER, d->vboID);
   glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(verts.size()*sizeof(glm::vec2)), verts.data(), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+#ifdef TP_VERTEX_ARRAYS_SUPPORTED
+  tpGenVertexArrays(1, &d->vaoID);
+  tpBindVertexArray(d->vaoID);
+  d->bindVBO();
+  tpBindVertexArray(0);
+#endif
 }
 
 //##################################################################################################
@@ -98,10 +118,15 @@ void PostSSAOShader::setProjectionMatrix(const glm::mat4& projectionMatrix)
 //##################################################################################################
 void PostSSAOShader::draw()
 {
-  glBindBuffer(GL_ARRAY_BUFFER, d->vboID);
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), tpVoidLiteral( 0));
-  glEnableVertexAttribArray(0);
-  glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+#ifdef TP_VERTEX_ARRAYS_SUPPORTED
+    tpBindVertexArray(d->vaoID);
+    //tpDrawElements(GL_TRIANGLE_FAN, vertexBuffer->indexCount, GL_UNSIGNED_INT, nullptr);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    tpBindVertexArray(0);
+#else
+    vertexBuffer->bindVBO();
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+#endif
 }
 
 

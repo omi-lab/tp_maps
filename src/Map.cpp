@@ -923,6 +923,12 @@ void Map::paintGL()
 //##################################################################################################
 void Map::paintGLNoMakeCurrent()
 {
+#ifdef TP_MAPS_DEBUG
+#  define DEBUG_printOpenGLError(A) printOpenGLError(A)
+#else
+#  define DEBUG_printOpenGLError(A) do{}while(false)
+#endif
+
 #ifdef TP_FBO_SUPPORTED
   GLint originalFrameBuffer = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
@@ -943,6 +949,7 @@ void Map::paintGLNoMakeCurrent()
     {
     case RenderPass::LightFBOs: //------------------------------------------------------------------
     {
+      DEBUG_printOpenGLError("RenderPass::LightFBOs start");
 #ifdef TP_FBO_SUPPORTED
       while(d->lightTextures.size() < d->lights.size())
         d->lightTextures.emplace_back();
@@ -952,10 +959,12 @@ void Map::paintGLNoMakeCurrent()
         auto buffer = tpTakeLast(d->lightTextures);
         d->deleteBuffer(buffer);
       }
+      DEBUG_printOpenGLError("RenderPass::LightFBOs delete buffers");
 
       glEnable(GL_DEPTH_TEST);
       glDepthFunc(GL_LESS);
       glDepthMask(true);
+      DEBUG_printOpenGLError("RenderPass::LightFBOs enable depth");
 
       for(size_t i=0; i<d->lightTextures.size(); i++)
       {
@@ -969,51 +978,65 @@ void Map::paintGLNoMakeCurrent()
         lightBuffer.worldToTexture = d->controller->lightMatrices().vp;
         d->render();
       }
+      DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers");
 
       glViewport(0, 0, d->width, d->height);
       glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
+      DEBUG_printOpenGLError("RenderPass::LightFBOs bind default buffer");
 #endif
       break;
     }
 
     case RenderPass::ReflectionFBO: //--------------------------------------------------------------
     {
+      DEBUG_printOpenGLError("RenderPass::ReflectionFBO start");
 #ifdef TP_FBO_SUPPORTED
       glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
       if(!d->prepareBuffer(d->reflectionBuffer, d->width*2, d->height*2))
+      {
+        printOpenGLError("RenderPass::ReflectionFBO");
         return;
+      }
 #endif
+      DEBUG_printOpenGLError("RenderPass::ReflectionFBO end");
       break;
     }
 
     case RenderPass::Background: //-----------------------------------------------------------------
     {
+      DEBUG_printOpenGLError("RenderPass::Background start");
       glDisable(GL_DEPTH_TEST);
       glDepthMask(false);
       d->render();
+      DEBUG_printOpenGLError("RenderPass::Background end");
       break;
     }
 
     case RenderPass::Normal: //---------------------------------------------------------------------
     {
+      DEBUG_printOpenGLError("RenderPass::Normal start");
       glEnable(GL_DEPTH_TEST);
       glDepthFunc(GL_LESS);
       glDepthMask(true);
       d->render();
+      DEBUG_printOpenGLError("RenderPass::Normal end");
       break;
     }
 
     case RenderPass::Transparency: //---------------------------------------------------------------
     {
+      DEBUG_printOpenGLError("RenderPass::Transparency start");
       glEnable(GL_DEPTH_TEST);
       glDepthFunc(GL_LESS);
       glDepthMask(false);
       d->render();
+      DEBUG_printOpenGLError("RenderPass::Transparency end");
       break;
     }
 
     case RenderPass::Reflection: //-----------------------------------------------------------------
     {
+      DEBUG_printOpenGLError("RenderPass::Reflection start");
 #ifdef TP_FBO_SUPPORTED
       glViewport(0, 0, d->width, d->height);
       glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
@@ -1044,19 +1067,23 @@ void Map::paintGLNoMakeCurrent()
       glDepthMask(false);
       d->render();
 #endif
+      DEBUG_printOpenGLError("RenderPass::Reflection end");
       break;
     }
 
     case RenderPass::Text: //-----------------------------------------------------------------------
     {
+      DEBUG_printOpenGLError("RenderPass::Text start");
       glDisable(GL_DEPTH_TEST);
       glDepthMask(false);
       d->render();
+      DEBUG_printOpenGLError("RenderPass::Text end");
       break;
     }
 
     case RenderPass::GUI: //------------------------------------------------------------------------
     {
+      DEBUG_printOpenGLError("RenderPass::GUI start");
       glEnable(GL_SCISSOR_TEST);
       glDisable(GL_DEPTH_TEST);
       auto s = pixelScale();
@@ -1064,6 +1091,7 @@ void Map::paintGLNoMakeCurrent()
       glDepthMask(false);
       d->render();
       glDisable(GL_SCISSOR_TEST);
+      DEBUG_printOpenGLError("RenderPass::GUI end");
       break;
     }
 
@@ -1075,6 +1103,7 @@ void Map::paintGLNoMakeCurrent()
 
     case RenderPass::Custom1: //--------------------------------------------------------------------
     {
+      DEBUG_printOpenGLError("RenderPass::Custom1 start");
       if(d->custom1Start)
         d->custom1Start(d->renderInfo);
 
@@ -1083,11 +1112,13 @@ void Map::paintGLNoMakeCurrent()
       if(d->custom1End)
         d->custom1End(d->renderInfo);
 
+      DEBUG_printOpenGLError("RenderPass::Custom1 end");
       break;
     }
 
     case RenderPass::Custom2: //--------------------------------------------------------------------
     {
+      DEBUG_printOpenGLError("RenderPass::Custom2 start");
       if(d->custom2Start)
         d->custom2Start(d->renderInfo);
 
@@ -1096,11 +1127,13 @@ void Map::paintGLNoMakeCurrent()
       if(d->custom2End)
         d->custom2End(d->renderInfo);
 
+      DEBUG_printOpenGLError("RenderPass::Custom2 end");
       break;
     }
 
     case RenderPass::Custom3: //--------------------------------------------------------------------
     {
+      DEBUG_printOpenGLError("RenderPass::Custom3 start");
       if(d->custom3Start)
         d->custom3Start(d->renderInfo);
 
@@ -1109,11 +1142,13 @@ void Map::paintGLNoMakeCurrent()
       if(d->custom3End)
         d->custom3End(d->renderInfo);
 
+      DEBUG_printOpenGLError("RenderPass::Custom3 end");
       break;
     }
 
     case RenderPass::Custom4: //--------------------------------------------------------------------
     {
+      DEBUG_printOpenGLError("RenderPass::Custom4 start");
       if(d->custom4Start)
         d->custom4Start(d->renderInfo);
 
@@ -1122,6 +1157,7 @@ void Map::paintGLNoMakeCurrent()
       if(d->custom4End)
         d->custom4End(d->renderInfo);
 
+      DEBUG_printOpenGLError("RenderPass::Custom4 end");
       break;
     }
     }
