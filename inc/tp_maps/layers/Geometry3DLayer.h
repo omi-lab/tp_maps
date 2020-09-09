@@ -26,7 +26,7 @@ public:
   specify the textures by name to use for that mesh. The names in the material corrospond to the
   keys in this map.
 
-  \param textures The make of name to texture, this will take ownership.
+  \param textures The map of name to texture, this will take ownership.
   */
   void setTextures(const std::unordered_map<tp_utils::StringID, Texture*>& textures);
 

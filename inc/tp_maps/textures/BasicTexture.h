@@ -13,9 +13,9 @@ namespace tp_maps
 struct TP_MAPS_SHARED_EXPORT TextureData
 {
   // Note that 0,0 is in the bottom left.
-
   size_t w{0};
   size_t h{0};
+
   //Used for textures that have been padded to make them a power of 2.
   //These will be a value between 0.5f and 1.0f.
   float fw{1.0f};
