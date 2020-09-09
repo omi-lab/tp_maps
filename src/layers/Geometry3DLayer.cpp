@@ -181,6 +181,7 @@ void Geometry3DLayer::setTextures(const std::unordered_map<tp_utils::StringID, T
     });
   }
   d->bindBeforeRender = true;
+  update();
 }
 
 //##################################################################################################
