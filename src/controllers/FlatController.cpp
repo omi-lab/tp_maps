@@ -38,6 +38,10 @@ struct FlatController::Private
   glm::ivec2 previousPos{0,0};
   glm::ivec2 previousPos2{0,0};
   Button mouseInteraction{Button::NoButton};
+
+  Button rotateButton{Button::RightButton};
+  Button translateButton{Button::LeftButton};
+
   bool mouseMoved{false};
 
   //################################################################################################
@@ -201,6 +205,13 @@ void FlatController::setRotationFactor(float rotationFactor)
 }
 
 //##################################################################################################
+void FlatController::assignMouseButtons(Button rotateButton, Button translateButton)
+{
+  d->rotateButton = rotateButton;
+  d->translateButton = translateButton;
+}
+
+//##################################################################################################
 nlohmann::json FlatController::saveState()const
 {
   nlohmann::json j;
@@ -318,7 +329,7 @@ bool FlatController::mouseEvent(const MouseEvent& event)
     d->previousPos2 = d->previousPos;
     d->previousPos = pos;
 
-    if(d->mouseInteraction == Button::RightButton)
+    if(d->mouseInteraction == d->rotateButton)
     {
       if(d->variableViewAngle)
       {
@@ -342,7 +353,7 @@ bool FlatController::mouseEvent(const MouseEvent& event)
       }
       map()->update();
     }
-    else if(d->mouseInteraction == Button::LeftButton && d->allowTranslation)
+    else if(d->mouseInteraction == d->translateButton && d->allowTranslation)
     {
       translate(dx, dy, 1);
       map()->update();
