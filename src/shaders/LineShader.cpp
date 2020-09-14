@@ -10,8 +10,8 @@ namespace tp_maps
 
 namespace
 {
-ShaderResource vertShaderStr{"/tp_maps/LineShader.vert"};
-ShaderResource fragShaderStr{"/tp_maps/LineShader.frag"};
+ShaderResource& vertShaderStr(){static ShaderResource s{"/tp_maps/LineShader.vert"}; return s;}
+ShaderResource& fragShaderStr(){static ShaderResource s{"/tp_maps/LineShader.frag"}; return s;}
 }
 
 //##################################################################################################
@@ -47,8 +47,8 @@ LineShader::LineShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
   Shader(map, openGLProfile),
   d(new Private())
 {
-  compile(vertShaderStr.data(openGLProfile),
-          fragShaderStr.data(openGLProfile),
+  compile(vertShaderStr().data(openGLProfile),
+          fragShaderStr().data(openGLProfile),
           [](GLuint program)
   {
     glBindAttribLocation(program, 0, "position");

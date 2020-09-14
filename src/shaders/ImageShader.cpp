@@ -10,8 +10,8 @@ namespace tp_maps
 
 namespace
 {
-ShaderResource vertShaderStr{"/tp_maps/ImageShader.vert"};
-ShaderResource fragShaderStr{"/tp_maps/ImageShader.frag"};
+ShaderResource& vertShaderStr(){static ShaderResource s{"/tp_maps/ImageShader.vert"}; return s;}
+ShaderResource& fragShaderStr(){static ShaderResource s{"/tp_maps/ImageShader.frag"}; return s;}
 }
 
 //##################################################################################################
@@ -47,10 +47,10 @@ ImageShader::ImageShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const c
   d(new Private())
 {
   if(!vertexShader)
-    vertexShader = vertShaderStr.data(openGLProfile);
+    vertexShader = vertShaderStr().data(openGLProfile);
 
   if(!fragmentShader)
-    fragmentShader = fragShaderStr.data(openGLProfile);
+    fragmentShader = fragShaderStr().data(openGLProfile);
 
   compile(vertexShader,
           fragmentShader,

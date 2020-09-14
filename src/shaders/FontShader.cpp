@@ -16,8 +16,8 @@ namespace tp_maps
 namespace
 {
 
-ShaderResource vertShaderStr{"/tp_maps/FontShader.vert"};
-ShaderResource fragShaderStr{"/tp_maps/FontShader.frag"};
+ShaderResource& vertShaderStr(){static ShaderResource s{"/tp_maps/FontShader.vert"}; return s;}
+ShaderResource& fragShaderStr(){static ShaderResource s{"/tp_maps/FontShader.frag"}; return s;}
 
 //##################################################################################################
 struct Vertex_lt
@@ -121,10 +121,10 @@ FontShader::FontShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const cha
   d(new Private())
 {
   if(!vertexShader)
-    vertexShader = vertShaderStr.data(openGLProfile);
+    vertexShader = vertShaderStr().data(openGLProfile);
 
   if(!fragmentShader)
-    fragmentShader = fragShaderStr.data(openGLProfile);
+    fragmentShader = fragShaderStr().data(openGLProfile);
 
   compile(vertexShader,
           fragmentShader,

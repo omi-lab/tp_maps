@@ -10,12 +10,12 @@ namespace tp_maps
 
 namespace
 {
-ShaderResource vertShaderStr{"/tp_maps/PointSpriteShader.vert"};
-ShaderResource fragShaderStr{"/tp_maps/PointSpriteShader.frag"};
+ShaderResource& vertShaderStr(){static ShaderResource s{"/tp_maps/PointSpriteShader.vert"}; return s;}
+ShaderResource& fragShaderStr(){static ShaderResource s{"/tp_maps/PointSpriteShader.frag"}; return s;}
 
 #ifdef TP_GLSL_PICKING_SUPPORTED
-ShaderResource vertShaderStrPicking{"/tp_maps/PointSpriteShader.picking.vert"};
-ShaderResource fragShaderStrPicking{"/tp_maps/PointSpriteShader.picking.frag"};
+ShaderResource& vertShaderStrPicking(){static ShaderResource s{"/tp_maps/PointSpriteShader.picking.vert"}; return s;}
+ShaderResource& fragShaderStrPicking(){static ShaderResource s{"/tp_maps/PointSpriteShader.picking.frag"}; return s;}
 #endif
 
 //There will be 4 of these generated for each PointSprite.
@@ -104,9 +104,9 @@ PointSpriteShader::PointSpriteShader(Map* map, tp_maps::OpenGLProfile openGLProf
     shaderType);
   };
 
-  compileShader(vertShaderStr.data(openGLProfile), fragShaderStr.data(openGLProfile), "PointSpriteShader_render", ShaderType:: Render, d-> renderMatrixLoc, d-> renderScaleFactorLoc, nullptr);
+  compileShader(vertShaderStr().data(openGLProfile), fragShaderStr().data(openGLProfile), "PointSpriteShader_render", ShaderType:: Render, d-> renderMatrixLoc, d-> renderScaleFactorLoc, nullptr);
 #ifdef TP_GLSL_PICKING_SUPPORTED
-  compileShader(vertShaderStrPicking.data(openGLProfile), fragShaderStrPicking.data(openGLProfile), "PointSpriteShader_picking", ShaderType::Picking, d->pickingMatrixLoc, d->pickingScaleFactorLoc, &d->pickingIDLoc);
+  compileShader(vertShaderStrPicking().data(openGLProfile), fragShaderStrPicking().data(openGLProfile), "PointSpriteShader_picking", ShaderType::Picking, d->pickingMatrixLoc, d->pickingScaleFactorLoc, &d->pickingIDLoc);
 #else
   //Point sprite picking is not implemented on this platform.
 #endif

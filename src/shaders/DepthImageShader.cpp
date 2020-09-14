@@ -5,12 +5,12 @@ namespace tp_maps
 
 namespace
 {
-ShaderResource fragShaderStr{"/tp_maps/DepthImageShader.frag"};
+ShaderResource& fragShaderStr(){static ShaderResource s{"/tp_maps/DepthImageShader.frag"}; return s;}
 }
 
 //##################################################################################################
 DepthImageShader::DepthImageShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
-  ImageShader(map, openGLProfile, nullptr, fragShaderStr.data(openGLProfile))
+  ImageShader(map, openGLProfile, nullptr, fragShaderStr().data(openGLProfile))
 {
 
 }

@@ -12,12 +12,13 @@ namespace tp_maps
 
 namespace
 {
-ShaderResource vertShaderStr       {"/tp_maps/MaterialShader.vert"        };
-ShaderResource fragShaderStr       {"/tp_maps/MaterialShader.frag"        };
-ShaderResource vertShaderStrPicking{"/tp_maps/MaterialShader.picking.vert"};
-ShaderResource fragShaderStrPicking{"/tp_maps/MaterialShader.picking.frag"};
-ShaderResource vertShaderStrLight  {"/tp_maps/MaterialShader.light.vert"  };
-ShaderResource fragShaderStrLight  {"/tp_maps/MaterialShader.light.frag"  };
+
+ShaderResource& vertShaderStr()       {static ShaderResource s{"/tp_maps/MaterialShader.vert"};         return s;}
+ShaderResource& fragShaderStr()       {static ShaderResource s{"/tp_maps/MaterialShader.frag"};         return s;}
+ShaderResource& vertShaderStrPicking(){static ShaderResource s{"/tp_maps/MaterialShader.picking.vert"}; return s;}
+ShaderResource& fragShaderStrPicking(){static ShaderResource s{"/tp_maps/MaterialShader.picking.frag"}; return s;}
+ShaderResource& vertShaderStrLight()  {static ShaderResource s{"/tp_maps/MaterialShader.light.vert"};   return s;}
+ShaderResource& fragShaderStrLight()  {static ShaderResource s{"/tp_maps/MaterialShader.light.frag"};   return s;}
 
 //##################################################################################################
 struct LightLocations_lt
@@ -163,8 +164,8 @@ MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, b
     LIGHT_FRAG_VARS = parseShaderString(LIGHT_FRAG_VARS, openGLProfile);
     LIGHT_FRAG_CALC = parseShaderString(LIGHT_FRAG_CALC, openGLProfile);
 
-    std::string vertStr = vertShaderStr.data(openGLProfile);
-    std::string fragStr = fragShaderStr.data(openGLProfile);
+    std::string vertStr = vertShaderStr().data(openGLProfile);
+    std::string fragStr = fragShaderStr().data(openGLProfile);
 
     auto replace = [&](std::string& result, const std::string& key, const std::string& value)
     {
@@ -182,8 +183,8 @@ MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, b
     replace(fragStr, "/*LIGHT_FRAG_CALC*/", LIGHT_FRAG_CALC);
 
     compile(vertStr.c_str(), fragStr.c_str(), [](auto){}, [](auto){});
-    compile(vertShaderStrPicking.data(openGLProfile), fragShaderStrPicking.data(openGLProfile), [](auto){}, [](auto){}, ShaderType::Picking);
-    compile(vertShaderStrLight.data(openGLProfile), fragShaderStrLight.data(openGLProfile), [](auto){}, [](auto){}, ShaderType::Light);
+    compile(vertShaderStrPicking().data(openGLProfile), fragShaderStrPicking().data(openGLProfile), [](auto){}, [](auto){}, ShaderType::Picking);
+    compile(vertShaderStrLight().data(openGLProfile), fragShaderStrLight().data(openGLProfile), [](auto){}, [](auto){}, ShaderType::Light);
   }
 }
 
