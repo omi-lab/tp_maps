@@ -14,7 +14,7 @@ enum class MouseEventType
   Release,
   Wheel,
   DoubleClick,
-  Click        //!< A single click and release, only implemented by controllers.
+  Click        //!< A single click and release, only used for Controller::setMouseClickCallback.
 };
 
 //##################################################################################################

@@ -26,7 +26,14 @@ public:
   void setObjectMatrix(const glm::mat4& objectMatrix);
 
   //################################################################################################
+  void setEnableRotation(bool x, bool y, bool z);
+
+  //################################################################################################
+  void setScale(const glm::vec3& scale);
+
+  //################################################################################################
   tp_utils::CallbackCollection<void()> changed;
+
 
 protected:
 
