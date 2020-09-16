@@ -72,6 +72,37 @@ public:
   Map* map()const;
 
   //################################################################################################
+  //! Returns the parent layer or nullptr.
+  Layer* parentLayer() const;
+
+  //################################################################################################
+  //! Transforms from model coords to parent coords
+  /*!
+  This if the matrix that transforms this layers coords into its parents coordinate system, if this
+  layer has a parentLayer this will transform to the coordinate system of parentLayer else it
+  transforms into the maps coordinate system aka world coords.
+
+  If you want to transform from model to world coords use modelToWorldMatrix this will multiply all
+  parent matricies for you.
+
+  \return The model matrix.
+  */
+  const glm::mat4& modelMatrix()const;
+
+  //################################################################################################
+  void setModelMatrix(const glm::mat4& modelMatrix);
+
+  //################################################################################################
+  //! Returns a matrix that transforms from this models coordinate system to world coords.
+  /*!
+  This will multiply the model matricies of this layer and all its parents to produce a matrix that
+  transforms model coords into world coords.
+
+  \return The model to world matrix for this layer.
+  */
+  glm::mat4 modelToWorldMatrix()const;
+
+  //################################################################################################
   //! Sets the coordinate system that this layer uses
   /*!
   A map can be configured to use multiple coordinate systems. See \link

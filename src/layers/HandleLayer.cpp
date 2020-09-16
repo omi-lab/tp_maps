@@ -44,9 +44,10 @@ struct HandleLayer::Private
 
   SpriteTexture* spriteTexture;
 
+  tp_math_utils::Plane plane{{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}};
+
   //The raw data passed to this class
   std::vector<HandleDetails*> handles;
-  tp_math_utils::Plane plane{glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)};
 
   //Processed geometry ready for rendering
   bool updateVertexBuffer{true};
@@ -171,18 +172,6 @@ void HandleLayer::clearHandles()
 }
 
 //##################################################################################################
-const tp_math_utils::Plane& HandleLayer::plane()const
-{
-  return d->plane;
-}
-
-//##################################################################################################
-void HandleLayer::setPlane(const tp_math_utils::Plane& plane)
-{
-  d->plane = plane;
-}
-
-//##################################################################################################
 void HandleLayer::setHandleMovedCallback(const std::function<void(void)>& handleMovedCallback)
 {
   d->handleMovedCallback = handleMovedCallback;
@@ -239,8 +228,11 @@ void HandleLayer::render(RenderInfo& renderInfo)
     d->updateVertexBuffer=false;
   }
 
-  shader->use();
-  shader->setMatrix(map()->controller()->matrix(coordinateSystem()));
+  shader->use(renderInfo.pass==RenderPass::Picking?ShaderType::Picking:ShaderType::Render);
+
+  glm::mat4 m = map()->controller()->matrix(coordinateSystem()) * modelToWorldMatrix();
+
+  shader->setMatrix(m);
   shader->setScreenSize(map()->screenSize());
   shader->setTexture(d->textureID);
 
@@ -255,7 +247,7 @@ void HandleLayer::render(RenderInfo& renderInfo)
         return new HandlePickingResult(r.pickingType, r.details, r.renderInfo, handle);
       }
       return nullptr;
-    }));
+    }, d->handles.size()));
     shader->drawPointSpritesPicking(d->vertexBuffer, pickingID);
   }
   else
@@ -277,7 +269,7 @@ void HandleLayer::invalidateBuffers()
 //##################################################################################################
 bool HandleLayer::mouseEvent(const MouseEvent& event)
 {
-  glm::mat4x4 cameraMatrix = map()->controller()->matrix(coordinateSystem());
+  glm::mat4 m = map()->controller()->matrix(coordinateSystem()) * modelToWorldMatrix();
 
   switch(event.type)
   {
@@ -286,6 +278,24 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
     if(event.button != Button::LeftButton)
       return false;
 
+    PickingResult* result = map()->performPicking(gizmoLayerSID(), event.pos);
+    TP_CLEANUP([&]{delete result;});
+
+    auto pickingResult = dynamic_cast<HandlePickingResult*>(result);
+
+    if(pickingResult)
+    {
+      for(size_t i=0; i<d->handles.size(); i++)
+      {
+        if(d->handles.at(i) == pickingResult->handle)
+        {
+          d->currentHandle = int(i);
+          return true;
+        }
+      }
+    }
+
+#if 0 //If not picking ....
     float width   = float(map()->width());
     float height  = float(map()->height());
     float xOffset = width  / 2.0f;
@@ -296,7 +306,7 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
     {
       const glm::vec3& position = d->handles.at(h)->position;
 
-      glm::vec4 screenCoord = cameraMatrix * glm::vec4(position, 1.0f);
+      glm::vec4 screenCoord = m * glm::vec4(position, 1.0f);
       screenCoord.x = screenCoord.x * xOffset + xOffset;
       screenCoord.y = height - (screenCoord.y * yOffset + yOffset);
 
@@ -311,6 +321,8 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
         return true;
       }
     }
+#endif
+
     break;
   }
 
@@ -319,7 +331,7 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
     if(d->currentHandle>=0 && d->currentHandle<int(d->handles.size()))
     {
       glm::vec3 newPosition;
-      if(map()->unProject(event.pos, newPosition, d->plane, cameraMatrix))
+      if(map()->unProject(event.pos, newPosition, d->plane, m))
       {
         moveHandle(d->handles[size_t(d->currentHandle)], newPosition);
         return true;
@@ -352,7 +364,7 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
       break;
 
     glm::vec3 p3;
-    if(!map()->unProject(event.pos, p3, d->plane, cameraMatrix))
+    if(!map()->unProject(event.pos, p3, d->plane, m))
       break;
 
     glm::vec2 p(p3.x, p3.y);

@@ -125,9 +125,10 @@ void GeometryLayer::render(RenderInfo& renderInfo)
           std::vector<MaterialShader::Vertex> verts;
           for(size_t n=0; n<c.vertices.size(); n++)
           {
-            const glm::vec3& v = c.vertices.at(n);
-            indexes.push_back(GLuint(n));
-            verts.push_back(Geometry3DShader::Vertex(v, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}));
+            const auto& v = c.vertices.at(n);
+            indexes.push_back(GLuint(n));            
+            glm::vec4 vv = shape.transform * glm::vec4(v.x, v.y, 0.0f, 1.0f);
+            verts.push_back(Geometry3DShader::Vertex(glm::vec3(vv) / vv.w, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}));
           }
 
           std::pair<GLenum, MaterialShader::VertexBuffer*> p;
@@ -141,10 +142,11 @@ void GeometryLayer::render(RenderInfo& renderInfo)
     }
   }
 
-  shader->use();
+  shader->use(renderInfo.pass==RenderPass::Picking?ShaderType::Picking:ShaderType::Render);
+
   {
     auto m = map()->controller()->matrices(coordinateSystem());
-    shader->setMatrix(glm::mat4(1.0f), m.v, m.p);
+    shader->setMatrix(modelToWorldMatrix(), m.v, m.p);
   }
   shader->setLights(map()->lights(), map()->lightTextures());
 

@@ -43,7 +43,6 @@ struct Geometry3DLayer::Private
   std::vector<Geometry3D> geometry;
   std::unordered_map<tp_utils::StringID, Texture*> textures;
   ShaderSelection shaderSelection{ShaderSelection::Material};
-  glm::mat4 objectMatrix{1.0f};
   std::unique_ptr<BasicTexture> emptyTexture;
   std::unique_ptr<BasicTexture> emptyNormalTexture;
 
@@ -195,19 +194,6 @@ void Geometry3DLayer::setGeometry(const std::vector<Geometry3D>& geometry)
 {
   d->geometry = geometry;
   d->updateVertexBuffer = true;
-  update();
-}
-
-//##################################################################################################
-const glm::mat4& Geometry3DLayer::objectMatrix()const
-{
-  return d->objectMatrix;
-}
-
-//##################################################################################################
-void Geometry3DLayer::setObjectMatrix(const glm::mat4& objectMatrix)
-{
-  d->objectMatrix = objectMatrix;
   update();
 }
 
@@ -371,7 +357,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     render(static_cast<MaterialShader*>(nullptr), [&](auto shader) //-- use ------------------------
     {
       shader->use(shaderType);
-      shader->setMatrix(d->objectMatrix, m.v, m.p);
+      shader->setMatrix(modelToWorldMatrix(), m.v, m.p);
       shader->setLights(map()->lights(), map()->lightTextures());
     },
     [&](auto, const auto&) //-- setMaterialPicking -------------------------------------------------
@@ -405,7 +391,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     render(static_cast<ImageShader*>(nullptr), [&](auto shader) //-- use ---------------------------
     {
       shader->use();
-      shader->setMatrix(m.vp * d->objectMatrix);
+      shader->setMatrix(m.vp * modelToWorldMatrix());
     },
     [&](auto shader, const auto& details) //-- setMaterialPicking ----------------------------------
     {

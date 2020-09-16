@@ -18,6 +18,7 @@ struct Layer::Private
   Map* map{nullptr};
   Layer* parent{nullptr};
   std::vector<Layer*> layers;
+  glm::mat4 modelMatrix{1.0f};
   tp_utils::StringID coordinateSystem{defaultSID()};
   RenderPass defaultRenderPass{RenderPass::Normal};
   bool visible{true};
@@ -53,6 +54,36 @@ Layer::~Layer()
 Map* Layer::map()const
 {
   return d->map;
+}
+
+//##################################################################################################
+Layer* Layer::parentLayer() const
+{
+  return d->parent;
+}
+
+//##################################################################################################
+const glm::mat4& Layer::modelMatrix()const
+{
+  return d->modelMatrix;
+}
+
+//##################################################################################################
+void Layer::setModelMatrix(const glm::mat4& modelMatrix)
+{
+  d->modelMatrix = modelMatrix;
+  update();
+}
+
+//##################################################################################################
+glm::mat4 Layer::modelToWorldMatrix()const
+{
+  glm::mat4 m=d->modelMatrix;
+
+  for(Layer* p=d->parent; p; p = p->d->parent)
+    m = p->d->modelMatrix * m;
+
+  return m;
 }
 
 //##################################################################################################

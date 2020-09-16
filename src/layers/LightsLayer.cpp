@@ -93,7 +93,7 @@ void LightsLayer::render(RenderInfo& renderInfo)
           if(i<lights.size() && i<d->gizmoLayers.size())
           {
             auto gizmoLayer = d->gizmoLayers.at(i);
-            lights.at(i).viewMatrix = glm::inverse(gizmoLayer->objectMatrix());
+            lights.at(i).viewMatrix = glm::inverse(gizmoLayer->modelMatrix());
             map()->setLights(lights);            
             lightsEdited();
           }
@@ -107,7 +107,7 @@ void LightsLayer::render(RenderInfo& renderInfo)
       {
         const auto& light = lights.at(i);
         auto gizmoLayer = d->gizmoLayers.at(i);
-        gizmoLayer->setObjectMatrix(glm::inverse(light.viewMatrix));
+        gizmoLayer->setModelMatrix(glm::inverse(light.viewMatrix));
       }
     }
   }

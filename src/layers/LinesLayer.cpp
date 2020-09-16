@@ -28,7 +28,6 @@ struct LinesLayer::Private
 
   LinesLayer* q;
   std::vector<Lines> lines;
-  glm::mat4 objectMatrix{1.0f};
 
   //Processed geometry ready for rendering
   bool updateVertexBuffer{true};
@@ -202,19 +201,6 @@ void LinesLayer::setLinesFromGeometryNormals(const std::vector<Geometry3D>& geom
 }
 
 //##################################################################################################
-const glm::mat4& LinesLayer::objectMatrix()const
-{
-  return d->objectMatrix;
-}
-
-//##################################################################################################
-void LinesLayer::setObjectMatrix(const glm::mat4& objectMatrix)
-{
-  d->objectMatrix = objectMatrix;
-  update();
-}
-
-//##################################################################################################
 float LinesLayer::lineWidth()const
 {
   return d->lineWidth;
@@ -230,7 +216,7 @@ void LinesLayer::setLineWidth(float lineWidth)
 //##################################################################################################
 glm::mat4 LinesLayer::calculateMatrix() const
 {
-  return map()->controller()->matrix(coordinateSystem()) * d->objectMatrix;
+  return map()->controller()->matrix(coordinateSystem()) * modelToWorldMatrix();
 }
 
 //##################################################################################################

@@ -139,20 +139,6 @@ GizmoLayer::~GizmoLayer()
 }
 
 //##################################################################################################
-const glm::mat4& GizmoLayer::objectMatrix()const
-{
-  return d->rotateXGeometryLayer->objectMatrix();
-}
-
-//##################################################################################################
-void GizmoLayer::setObjectMatrix(const glm::mat4& objectMatrix)
-{
-  d->rotateXGeometryLayer->setObjectMatrix(objectMatrix);
-  d->rotateYGeometryLayer->setObjectMatrix(objectMatrix);
-  d->rotateZGeometryLayer->setObjectMatrix(objectMatrix);
-}
-
-//##################################################################################################
 void GizmoLayer::setEnableRotation(bool x, bool y, bool z)
 {
   d->rotateXGeometryLayer->setVisible(x);
@@ -230,7 +216,7 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
     default: break;
     }
 
-    auto mat = d->rotateXGeometryLayer->objectMatrix();
+    auto mat = modelMatrix();
 
     float angle = float((std::abs(delta.y)>std::abs(delta.x))?delta.y:delta.x) / 3.0f;
     mat = glm::rotate(mat, glm::radians(angle), axis);
@@ -241,7 +227,7 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
     mat[2] = glm::vec4(glm::cross(glm::vec3(mat[0]), glm::vec3(mat[1])), 0.0f);
     mat[1] = glm::vec4(glm::cross(glm::vec3(mat[2]), glm::vec3(mat[0])), 0.0f);
 
-    setObjectMatrix(mat);
+    setModelMatrix(mat);
     changed();
 
     return true;

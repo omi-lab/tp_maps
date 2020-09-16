@@ -37,12 +37,6 @@ public:
   void setGeometry(const std::vector<Geometry3D>& geometry);
 
   //################################################################################################
-  const glm::mat4& objectMatrix()const;
-
-  //################################################################################################
-  void setObjectMatrix(const glm::mat4& objectMatrix);
-
-  //################################################################################################
   //! Call this to set the material of all geometry.
   void setMaterial(const Material& material);
 

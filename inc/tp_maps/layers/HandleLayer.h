@@ -49,11 +49,19 @@ public:
 };
 
 //##################################################################################################
+//! A layer for rendering movable handles.
+/*!
+This layer allows the user to move handles on the x,y plane. The model matrix can be used to change
+the plane that the handles are moved on.
+*/
 class TP_MAPS_SHARED_EXPORT HandleLayer: public Layer
 {
   friend class HandleDetails;
 public:
   //################################################################################################
+  /*!
+  \param spriteTexture The sprites used to draw the handles, this takes ownership.
+  */
   HandleLayer(SpriteTexture* spriteTexture);
 
   //################################################################################################
@@ -64,14 +72,6 @@ public:
 
   //################################################################################################
   void clearHandles();
-
-  //################################################################################################
-  //! Returns the plane that handles move on
-  const tp_math_utils::Plane& plane()const;
-
-  //################################################################################################
-  //! Sets the plane that handles move on
-  void setPlane(const tp_math_utils::Plane& plane);
 
   //################################################################################################
   void setHandleMovedCallback(const std::function<void(void)>& handleMovedCallback);
