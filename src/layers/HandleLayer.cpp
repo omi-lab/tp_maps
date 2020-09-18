@@ -62,6 +62,7 @@ struct HandleLayer::Private
   std::function<void(void)> handleMovedCallback;
 
   bool doubleClickToAdd{true};
+  bool doubleClickToRemove{true};
 
   //################################################################################################
   Private(HandleLayer* q_, SpriteTexture* spriteTexture_):
@@ -283,7 +284,7 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
 
     auto pickingResult = dynamic_cast<HandlePickingResult*>(result);
 
-    if(pickingResult)
+    if(pickingResult && pickingResult->layer == this)
     {
       for(size_t i=0; i<d->handles.size(); i++)
       {
@@ -357,54 +358,77 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
 
   case MouseEventType::DoubleClick: //--------------------------------------------------------------
   {
-    if(!d->doubleClickToAdd)
-      break;
-
-    if(d->handles.size()<2)
-      break;
-
-    glm::vec3 p3;
-    if(!map()->unProject(event.pos, p3, d->plane, m))
-      break;
-
-    glm::vec2 p(p3.x, p3.y);
-
-    float dist=1000000.0f;
-    int index=-1;
-    glm::vec2 closest;
-    auto calc = [p, &dist, &index, &closest](const glm::vec3& a3, const glm::vec3& b3, int j)
+    if(event.button == Button::LeftButton)
     {
-      glm::vec2 a(a3.x, a3.y);
-      glm::vec2 b(b3.x, b3.y);
+      if(!d->doubleClickToAdd)
+        break;
 
-      glm::vec2 c = closestPointOnLine(a, b, p);
-      glm::vec2 v = p-c;
-      float distSq = v.x*v.x + v.y*v.y;
+      if(d->handles.size()<2)
+        break;
 
-      if(distSq<dist)
+      glm::vec3 p3;
+      if(!map()->unProject(event.pos, p3, d->plane, m))
+        break;
+
+      glm::vec2 p(p3.x, p3.y);
+
+      float dist=1000000.0f;
+      int index=-1;
+      glm::vec2 closest;
+      auto calc = [p, &dist, &index, &closest](const glm::vec3& a3, const glm::vec3& b3, int j)
       {
-        dist = distSq;
-        index = j;
-        closest = c;
+        glm::vec2 a(a3.x, a3.y);
+        glm::vec2 b(b3.x, b3.y);
+
+        glm::vec2 c = closestPointOnLine(a, b, p);
+        glm::vec2 v = p-c;
+        float distSq = v.x*v.x + v.y*v.y;
+
+        if(distSq<dist)
+        {
+          dist = distSq;
+          index = j;
+          closest = c;
+        }
+      };
+
+      for(int i=1; i<int(d->handles.size()); i++)
+        calc(d->handles.at(size_t(i-1))->position, d->handles.at(size_t(i))->position, i);
+
+      calc(d->handles.at(d->handles.size()-1)->position, d->handles.at(0)->position, int(d->handles.size()));
+
+      if(index>=0)
+      {
+        HandleDetails* style = d->handles.at(0);
+        HandleDetails* handle = new HandleDetails(this,
+                                                  glm::vec3(p.x, p.y, 0.0f),
+                                                  style->color,
+                                                  style->sprite,
+                                                  style->radius,
+                                                  index);
+        moveHandle(handle, handle->position);
       }
-    };
-
-    for(int i=1; i<int(d->handles.size()); i++)
-      calc(d->handles.at(size_t(i-1))->position, d->handles.at(size_t(i))->position, i);
-
-    calc(d->handles.at(d->handles.size()-1)->position, d->handles.at(0)->position, int(d->handles.size()));
-
-    if(index>=0)
-    {
-      HandleDetails* style = d->handles.at(0);
-      HandleDetails* handle = new HandleDetails(this,
-                                                glm::vec3(p.x, p.y, 0.0f),
-                                                style->color,
-                                                style->sprite,
-                                                style->radius,
-                                                index);
-      moveHandle(handle, handle->position);
     }
+
+    else if(event.button == Button::RightButton)
+    {
+      if(!d->doubleClickToRemove)
+        break;
+
+      PickingResult* result = map()->performPicking(gizmoLayerSID(), event.pos);
+      TP_CLEANUP([&]{delete result;});
+
+      auto pickingResult = dynamic_cast<HandlePickingResult*>(result);
+
+      if(pickingResult && pickingResult->layer == this && d->handles.size()>3)
+      {
+        delete pickingResult->handle;
+
+        if(d->handleMovedCallback)
+          d->handleMovedCallback();
+      }
+    }
+
     break;
   }
 

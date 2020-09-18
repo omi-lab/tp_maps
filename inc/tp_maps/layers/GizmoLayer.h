@@ -23,11 +23,20 @@ public:
   void setEnableRotation(bool x, bool y, bool z);
 
   //################################################################################################
+  void setEnableTranslation(bool x, bool y, bool z);
+
+  //################################################################################################
   void setScale(const glm::vec3& scale);
 
   //################################################################################################
-  tp_utils::CallbackCollection<void()> changed;
+  //! The thickness of rings
+  void setRingHeight(float ringHeight=0.01f);
 
+  //################################################################################################
+  void setRingRadius(float outerRadius=1.00f, float innerRadius=0.95f, float spikeRadius=0.90f);
+
+  //################################################################################################
+  tp_utils::CallbackCollection<void()> changed;
 
 protected:
 
