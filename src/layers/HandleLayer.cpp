@@ -12,6 +12,7 @@
 #include "tp_utils/DebugUtils.h"
 
 #include "glm/gtc/type_ptr.hpp"
+#include "glm/gtx/norm.hpp"
 
 #include <vector>
 
@@ -375,7 +376,7 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
       float dist=1000000.0f;
       int index=-1;
       glm::vec2 closest;
-      auto calc = [p, &dist, &index, &closest](const glm::vec3& a3, const glm::vec3& b3, int j)
+      auto calc = [&](const glm::vec3& a3, const glm::vec3& b3, int j)
       {
         glm::vec2 a(a3.x, a3.y);
         glm::vec2 b(b3.x, b3.y);
@@ -386,9 +387,15 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
 
         if(distSq<dist)
         {
-          dist = distSq;
-          index = j;
-          closest = c;
+          glm::vec2 cScreen;
+          map()->project(glm::vec3(c, 0.0f), cScreen, m);
+          constexpr float maxDistance2 = (6.0f*6.0f);
+          if(glm::distance2(glm::vec2(event.pos), cScreen) < maxDistance2)
+          {
+            dist = distSq;
+            index = j;
+            closest = c;
+          }
         }
       };
 
@@ -407,6 +414,8 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
                                                   style->radius,
                                                   index);
         moveHandle(handle, handle->position);
+
+        return true;
       }
     }
 

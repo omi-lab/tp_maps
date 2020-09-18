@@ -81,6 +81,9 @@ HEADERS += inc/tp_maps/controllers/FixedController.h
 SOURCES += src/controllers/GraphController.cpp
 HEADERS += inc/tp_maps/controllers/GraphController.h
 
+SOURCES += src/controllers/CADController.cpp
+HEADERS += inc/tp_maps/controllers/CADController.h
+
 
 #-- Shaders ----------------------------------------------------------------------------------------
 SOURCES += src/shaders/LineShader.cpp
