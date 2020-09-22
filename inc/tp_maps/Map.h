@@ -59,7 +59,7 @@ public:
   OpenGLProfile openGLProfile() const;
 
   //################################################################################################
-  bool initialized()const;
+  bool initialized() const;
 
   //################################################################################################
   //! Print OpenGL errors
@@ -74,7 +74,7 @@ public:
 
   //################################################################################################
   //! Returns the background clear color
-  glm::vec3 backgroundColor()const;
+  glm::vec3 backgroundColor() const;
 
   //################################################################################################
   void setRenderPasses(const std::vector<RenderPass>& renderPasses);
@@ -97,7 +97,7 @@ public:
   void setLights(const std::vector<Light>& lights);
 
   //################################################################################################
-  const std::vector<Light>& lights()const;
+  const std::vector<Light>& lights() const;
 
   //################################################################################################
   //! This will take ownership.
@@ -132,7 +132,7 @@ public:
 
   //################################################################################################
   //! Return the list of map layers
-  const std::vector<Layer*>& layers()const;
+  const std::vector<Layer*>& layers() const;
 
 protected:
   //################################################################################################
@@ -334,7 +334,7 @@ private:
 
   //################################################################################################
   //! Return the shader for name or nullptr if it does not exist
-  Shader* getShader(const tp_utils::StringID& name)const;
+  Shader* getShader(const tp_utils::StringID& name) const;
 
   //################################################################################################
   //! Add a shader to the map of shaders

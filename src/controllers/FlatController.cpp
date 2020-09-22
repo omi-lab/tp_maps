@@ -93,7 +93,7 @@ FlatController::FlatController(Map* map):
 }
 
 //##################################################################################################
-glm::vec3 FlatController::focalPoint()const
+glm::vec3 FlatController::focalPoint() const
 {
   return d->focalPoint;
 }
@@ -106,7 +106,7 @@ void FlatController::setFocalPoint(const glm::vec3& focalPoint)
 }
 
 //##################################################################################################
-float FlatController::distance()const
+float FlatController::distance() const
 {
   return d->distance;
 }
@@ -119,7 +119,7 @@ void FlatController::setDistance(float distance)
 }
 
 //##################################################################################################
-bool FlatController::allowRotation()const
+bool FlatController::allowRotation() const
 {
   return d->allowRotation;
 }
@@ -131,7 +131,7 @@ void FlatController::setAllowRotation(bool allowRotation)
 }
 
 //##################################################################################################
-bool FlatController::variableViewAngle()const
+bool FlatController::variableViewAngle() const
 {
   return d->variableViewAngle;
 }
@@ -143,7 +143,7 @@ void FlatController::setVariableViewAngle(bool variableViewAngle)
 }
 
 //##################################################################################################
-bool FlatController::allowTranslation()const
+bool FlatController::allowTranslation() const
 {
   return d->allowTranslation;
 }
@@ -155,7 +155,7 @@ void FlatController::setAllowTranslation(bool allowTranslation)
 }
 
 //##################################################################################################
-bool FlatController::allowZoom()const
+bool FlatController::allowZoom() const
 {
   return d->allowZoom;
 }
@@ -167,7 +167,7 @@ void FlatController::setAllowZoom(bool allowZoom)
 }
 
 //################################################################################################
-float FlatController::rotationAngle()const
+float FlatController::rotationAngle() const
 {
   return d->rotationAngle;
 }
@@ -180,7 +180,7 @@ void FlatController::setRotationAngle(float rotationAngle)
 }
 
 //################################################################################################
-float FlatController::viewAngle()const
+float FlatController::viewAngle() const
 {
   return d->viewAngle;
 }
@@ -193,7 +193,7 @@ void FlatController::setViewAngle(float viewAngle)
 }
 
 //##################################################################################################
-float FlatController::rotationFactor()const
+float FlatController::rotationFactor() const
 {
   return d->rotationFactor;
 }
@@ -212,7 +212,7 @@ void FlatController::assignMouseButtons(Button rotateButton, Button translateBut
 }
 
 //##################################################################################################
-nlohmann::json FlatController::saveState()const
+nlohmann::json FlatController::saveState() const
 {
   nlohmann::json j;
 

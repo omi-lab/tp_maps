@@ -31,7 +31,7 @@ public:
   void setTextures(const std::unordered_map<tp_utils::StringID, Texture*>& textures);
 
   //################################################################################################
-  const std::vector<Geometry3D>& geometry()const;
+  const std::vector<Geometry3D>& geometry() const;
 
   //################################################################################################
   void setGeometry(const std::vector<Geometry3D>& geometry);

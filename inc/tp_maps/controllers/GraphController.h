@@ -14,25 +14,25 @@ public:
   GraphController(Map* map);
 
   //################################################################################################
-  glm::dvec3 focalPoint()const;
+  glm::dvec3 focalPoint() const;
 
   //################################################################################################
   void setFocalPoint(const glm::dvec3& focalPoint);
 
   //################################################################################################
-  bool allowTranslation()const;
+  bool allowTranslation() const;
 
   //################################################################################################
   void setAllowTranslation(bool allowTranslation);
 
   //################################################################################################
-  bool allowZoom()const;
+  bool allowZoom() const;
 
   //################################################################################################
   void setAllowZoom(bool allowZoom);
 
   //################################################################################################
-  double rotationFactor()const;
+  double rotationFactor() const;
 
   //################################################################################################
   void setRotationFactor(double rotationFactor);
@@ -50,7 +50,7 @@ public:
   void setDistanceY(double distanceY);
 
   //################################################################################################
-  nlohmann::json saveState()const override;
+  nlohmann::json saveState() const override;
 
   //################################################################################################
   void loadState(const nlohmann::json& j)override;

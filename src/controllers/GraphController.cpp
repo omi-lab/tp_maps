@@ -85,7 +85,7 @@ GraphController::GraphController(Map* map):
 }
 
 //##################################################################################################
-glm::dvec3 GraphController::focalPoint()const
+glm::dvec3 GraphController::focalPoint() const
 {
   return d->focalPoint;
 }
@@ -98,7 +98,7 @@ void GraphController::setFocalPoint(const glm::dvec3& focalPoint)
 }
 
 //##################################################################################################
-bool GraphController::allowTranslation()const
+bool GraphController::allowTranslation() const
 {
   return d->allowTranslation;
 }
@@ -110,7 +110,7 @@ void GraphController::setAllowTranslation(bool allowTranslation)
 }
 
 //##################################################################################################
-bool GraphController::allowZoom()const
+bool GraphController::allowZoom() const
 {
   return d->allowZoom;
 }
@@ -122,7 +122,7 @@ void GraphController::setAllowZoom(bool allowZoom)
 }
 
 //##################################################################################################
-double GraphController::rotationFactor()const
+double GraphController::rotationFactor() const
 {
   return d->rotationFactor;
 }
@@ -160,7 +160,7 @@ void GraphController::setDistanceY(double distanceY)
 }
 
 //##################################################################################################
-nlohmann::json GraphController::saveState()const
+nlohmann::json GraphController::saveState() const
 {
   nlohmann::json j;
 

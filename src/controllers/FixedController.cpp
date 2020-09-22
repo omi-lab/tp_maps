@@ -10,7 +10,7 @@ FixedController::FixedController(Map* map):
 }
 
 //##################################################################################################
-nlohmann::json FixedController::saveState()const
+nlohmann::json FixedController::saveState() const
 {
   return nlohmann::json();
 }

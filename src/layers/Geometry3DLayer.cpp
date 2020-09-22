@@ -184,7 +184,7 @@ void Geometry3DLayer::setTextures(const std::unordered_map<tp_utils::StringID, T
 }
 
 //##################################################################################################
-const std::vector<Geometry3D>& Geometry3DLayer::geometry()const
+const std::vector<Geometry3D>& Geometry3DLayer::geometry() const
 {
   return d->geometry;
 }
@@ -278,21 +278,14 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
 
     if(!d->emptyTexture)
     {
-      TPPixel white{0, 0, 0, 255};
-      TextureData textureData;
-      textureData.w = 1;
-      textureData.h = 1;
-      textureData.data = &white;
+      ;
+      tp_image_utils::ColorMap textureData{1, 1, nullptr, TPPixel{0, 0, 0, 255}};
       d->emptyTexture = std::make_unique<BasicTexture>(map(), textureData);
     }
 
     if(!d->emptyNormalTexture)
     {
-      TPPixel up{127, 127, 255, 255};
-      TextureData textureData;
-      textureData.w = 1;
-      textureData.h = 1;
-      textureData.data = &up;
+      tp_image_utils::ColorMap textureData{1, 1, nullptr, TPPixel{127, 127, 255, 255}};
       d->emptyNormalTexture = std::make_unique<BasicTexture>(map(), textureData);
     }
 

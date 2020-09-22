@@ -76,7 +76,7 @@ public:
   //################################################################################################
   VertexBuffer* generateVertexBuffer(Map* map,
                                      const std::vector<GLuint>& indexes,
-                                     const std::vector<Vertex>& verts)const;
+                                     const std::vector<Vertex>& verts) const;
 };
 
 }

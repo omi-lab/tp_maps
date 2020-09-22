@@ -6,6 +6,11 @@
 #include <unordered_set>
 #include <memory>
 
+namespace tp_image_utils
+{
+class ColorMap;
+}
+
 namespace tp_maps
 {
 class Map;
@@ -13,7 +18,6 @@ class Font;
 class PreparedString;
 struct FontGeometry;
 struct Glyph;
-struct TextureData;
 
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT FontRenderer
@@ -59,7 +63,7 @@ protected:
 
   //################################################################################################
   //! Reimplement this if you want to modify the texture.
-  virtual void setTexture(const TextureData& texture);
+  virtual void setTexture(const tp_image_utils::ColorMap& texture);
 
   //################################################################################################
   const std::vector<PreparedString*>& preparedStrings() const;

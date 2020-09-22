@@ -93,7 +93,7 @@ public:
   //################################################################################################
   VertexBuffer* generateVertexBuffer(Map* map,
                                      const std::vector<GLushort>& indexes,
-                                     const std::vector<Vertex>& verts)const;
+                                     const std::vector<Vertex>& verts) const;
 
   //################################################################################################
   //! Call this to draw the image

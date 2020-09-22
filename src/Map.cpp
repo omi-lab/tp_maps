@@ -276,7 +276,7 @@ OpenGLProfile Map::openGLProfile() const
 }
 
 //##################################################################################################
-bool Map::initialized()const
+bool Map::initialized() const
 {
   return d->initialized;
 }
@@ -337,7 +337,7 @@ void Map::setBackgroundColor(const glm::vec3& color)
 }
 
 //##################################################################################################
-glm::vec3 Map::backgroundColor()const
+glm::vec3 Map::backgroundColor() const
 {
   return d->backgroundColor;
 }
@@ -425,7 +425,7 @@ void Map::setLights(const std::vector<Light>& lights)
 }
 
 //##################################################################################################
-const std::vector<Light>& Map::lights()const
+const std::vector<Light>& Map::lights() const
 {
   return d->lights;
 }
@@ -479,7 +479,7 @@ void Map::clearLayers()
 }
 
 //##################################################################################################
-const std::vector<Layer*>& Map::layers()const
+const std::vector<Layer*>& Map::layers() const
 {
   return d->layers;
 }
@@ -1262,7 +1262,7 @@ void Map::setController(Controller* controller)
 }
 
 //##################################################################################################
-Shader* Map::getShader(const tp_utils::StringID& name)const
+Shader* Map::getShader(const tp_utils::StringID& name) const
 {
   return tpGetMapValue(d->shaders, name, nullptr);
 }

@@ -171,7 +171,7 @@ GLuint Shader::loadShader(const char* shaderSrc, GLenum type)
 }
 
 //##################################################################################################
-bool Shader::error()const
+bool Shader::error() const
 {
   return d->error;
 }

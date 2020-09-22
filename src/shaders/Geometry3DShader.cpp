@@ -14,7 +14,7 @@ Geometry3DShader::Geometry3DShader(Map* map, tp_maps::OpenGLProfile openGLProfil
 //##################################################################################################
 Geometry3DShader::VertexBuffer* Geometry3DShader::generateVertexBuffer(Map* map,
                                                                        const std::vector<GLuint>& indexes,
-                                                                       const std::vector<Geometry3DShader::Vertex>& verts)const
+                                                                       const std::vector<Geometry3DShader::Vertex>& verts) const
 {
   auto vertexBuffer = new VertexBuffer(map, this);
 

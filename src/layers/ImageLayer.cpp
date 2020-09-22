@@ -101,7 +101,7 @@ void ImageLayer::setColor(const glm::vec4& color)
 }
 
 //##################################################################################################
-glm::vec4 ImageLayer::color()const
+glm::vec4 ImageLayer::color() const
 {
   return d->color;
 }

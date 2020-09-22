@@ -119,7 +119,7 @@ CADController::CADController(Map* map, bool fullScreen):
 }
 
 //##################################################################################################
-glm::vec3 CADController::cameraOrigin()const
+glm::vec3 CADController::cameraOrigin() const
 {
   return d->cameraOrigin;
 }
@@ -132,7 +132,7 @@ void CADController::setCameraOrigin(const glm::vec3& cameraOrigin)
 }
 
 //##################################################################################################
-bool CADController::allowRotation()const
+bool CADController::allowRotation() const
 {
   return d->allowRotation;
 }
@@ -144,7 +144,7 @@ void CADController::setAllowRotation(bool allowRotation)
 }
 
 //##################################################################################################
-bool CADController::variableViewAngle()const
+bool CADController::variableViewAngle() const
 {
   return d->variableViewAngle;
 }
@@ -156,7 +156,7 @@ void CADController::setVariableViewAngle(bool variableViewAngle)
 }
 
 //################################################################################################
-float CADController::rotationAngle()const
+float CADController::rotationAngle() const
 {
   return d->rotationAngle;
 }
@@ -169,7 +169,7 @@ void CADController::setRotationAngle(float rotationAngle)
 }
 
 //##################################################################################################
-float CADController::rotationFactor()const
+float CADController::rotationFactor() const
 {
   return d->rotationFactor;
 }
@@ -189,7 +189,7 @@ void CADController::setNearAndFar(float near, float far)
 }
 
 //##################################################################################################
-nlohmann::json CADController::saveState()const
+nlohmann::json CADController::saveState() const
 {
   nlohmann::json j;
 
@@ -266,8 +266,8 @@ void CADController::updateMatrices()
 bool CADController::mouseEvent(const MouseEvent& event)
 {
   const int mouseSensitivity=8;
-  constexpr double metersPerSecond = 5.6;
-  constexpr double translationFactor = metersPerSecond / 1000.0;
+  constexpr float metersPerSecond = 5.6f;
+  constexpr float translationFactor = metersPerSecond / 1000.0f;
 
   switch(event.type)
   {
@@ -314,7 +314,7 @@ bool CADController::mouseEvent(const MouseEvent& event)
 
     if(d->mouseInteraction == Button::MiddleButton)
     {
-      d->strafe(dx*translationFactor, dy*translationFactor);
+      d->strafe(dx*float(translationFactor), dy*float(translationFactor));
       map()->update();
     }
     else if(d->fullScreen || d->mouseInteraction == Button::RightButton)

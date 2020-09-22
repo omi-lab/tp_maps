@@ -212,7 +212,7 @@ void PointSpriteShader::VertexBuffer::bindVBO() const
 //##################################################################################################
 PointSpriteShader::VertexBuffer* PointSpriteShader::generateVertexBuffer(Map* map,
                                                                          const std::vector<PointSpriteShader::PointSprite>& pointSptrites,
-                                                                         const std::vector<SpriteCoords>& coords)const
+                                                                         const std::vector<SpriteCoords>& coords) const
 {
   auto* vertexBuffer = new VertexBuffer(map, this);
 
@@ -302,7 +302,7 @@ PointSpriteShader::VertexBuffer* PointSpriteShader::generateVertexBuffer(Map* ma
 }
 
 //##################################################################################################
-void PointSpriteShader::deleteVertexBuffer(PointSpriteShader::VertexBuffer* vertexBuffer)const
+void PointSpriteShader::deleteVertexBuffer(PointSpriteShader::VertexBuffer* vertexBuffer) const
 {
   delete vertexBuffer;
 }

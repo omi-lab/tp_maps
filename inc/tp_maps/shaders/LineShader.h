@@ -66,7 +66,7 @@ public:
   };
 
   //################################################################################################
-  VertexBuffer* generateVertexBuffer(Map* map, const std::vector<glm::vec3>& vertices)const;
+  VertexBuffer* generateVertexBuffer(Map* map, const std::vector<glm::vec3>& vertices) const;
 
   //################################################################################################
   //! Call this to draw the lines

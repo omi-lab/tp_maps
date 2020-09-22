@@ -3,39 +3,41 @@
 
 #include "tp_maps/Texture.h"
 
+#include "tp_image_utils/ColorMap.h"
+
 #include "tp_utils/TPPixel.h"
 #include "tp_utils/RefCount.h"
 
 namespace tp_maps
 {
 
-//##################################################################################################
-struct TP_MAPS_SHARED_EXPORT TextureData
-{
-  // Note that 0,0 is in the bottom left.
-  size_t w{0};
-  size_t h{0};
+////##################################################################################################
+//struct TP_MAPS_SHARED_EXPORT TextureData
+//{
+//  // Note that 0,0 is in the bottom left.
+//  size_t w{0};
+//  size_t h{0};
 
-  //Used for textures that have been padded to make them a power of 2.
-  //These will be a value between 0.5f and 1.0f.
-  float fw{1.0f};
-  float fh{1.0f};
-  const TPPixel* data{nullptr};
+//  //Used for textures that have been padded to make them a power of 2.
+//  //These will be a value between 0.5f and 1.0f.
+//  float fw{1.0f};
+//  float fh{1.0f};
+//  const TPPixel* data{nullptr};
 
-  //################################################################################################
-  TextureData clone()const;
+//  //################################################################################################
+//  TextureData clone() const;
 
-  //################################################################################################
-  //! Clone the texture and pad to a power of 2
-  TextureData clone2()const;
+//  //################################################################################################
+//  //! Clone the texture and pad to a power of 2
+//  TextureData clone2() const;
 
-  //################################################################################################
-  //! Clone the texture and pad to a power of 2 into an existing texture
-  void clone2IntoOther(TextureData& clone)const;
+//  //################################################################################################
+//  //! Clone the texture and pad to a power of 2 into an existing texture
+//  void clone2IntoOther(TextureData& clone) const;
 
-  //################################################################################################
-  void destroy();
-};
+//  //################################################################################################
+//  void destroy();
+//};
 
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT BasicTexture : public Texture
@@ -43,13 +45,13 @@ class TP_MAPS_SHARED_EXPORT BasicTexture : public Texture
   TP_REF_COUNT_OBJECTS("BasicTexture");
 public:
   //################################################################################################
-  BasicTexture(Map* map, const TextureData& image=TextureData());
+  BasicTexture(Map* map, const tp_image_utils::ColorMap& image=tp_image_utils::ColorMap());
 
   //################################################################################################
   ~BasicTexture() override;
 
   //################################################################################################
-  void setImage(const TextureData& image, bool quiet=false);
+  void setImage(const tp_image_utils::ColorMap& image, bool quiet=false);
 
   //################################################################################################
   bool imageReady()override;
@@ -67,7 +69,7 @@ public:
   \param minFilterOption: The texture minifying function to use
   \return the id for the new texture
   */
-  GLuint bindTexture(const TextureData& img,
+  GLuint bindTexture(const tp_image_utils::ColorMap& img,
                      TPGLenum target,
                      TPGLenum format,
                      GLint magFilterOption,
@@ -76,10 +78,10 @@ public:
                      GLint textureWrapT = GL_CLAMP_TO_EDGE);
 
   //################################################################################################
-  glm::vec2 textureDims()const override;
+  glm::vec2 textureDims() const override;
 
   //################################################################################################
-  glm::vec2 imageDims()const override;
+  glm::vec2 imageDims() const override;
 
 private:
   struct Private;

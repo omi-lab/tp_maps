@@ -15,57 +15,57 @@ public:
   FlatController(Map* map);
 
   //################################################################################################
-  glm::vec3 focalPoint()const;
+  glm::vec3 focalPoint() const;
 
   //################################################################################################
   void setFocalPoint(const glm::vec3& focalPoint);
 
   //################################################################################################
-  float distance()const;
+  float distance() const;
 
   //################################################################################################
   void setDistance(float distance);
 
   //################################################################################################
-  bool allowRotation()const;
+  bool allowRotation() const;
 
   //################################################################################################
   void setAllowRotation(bool allowRotation);
 
   //################################################################################################
-  bool variableViewAngle()const;
+  bool variableViewAngle() const;
 
   //################################################################################################
   void setVariableViewAngle(bool variableViewAngle);
 
   //################################################################################################
-  bool allowTranslation()const;
+  bool allowTranslation() const;
 
   //################################################################################################
   void setAllowTranslation(bool allowTranslation);
 
   //################################################################################################
-  bool allowZoom()const;
+  bool allowZoom() const;
 
   //################################################################################################
   void setAllowZoom(bool allowZoom);
 
   //################################################################################################
   //! Rotation in degrees
-  float rotationAngle()const;
+  float rotationAngle() const;
 
   //################################################################################################
   void setRotationAngle(float rotationAngle);
 
   //################################################################################################
   //! Rotation in degrees
-  float viewAngle()const;
+  float viewAngle() const;
 
   //################################################################################################
   void setViewAngle(float viewAngle);
 
   //################################################################################################
-  float rotationFactor()const;
+  float rotationFactor() const;
 
   //################################################################################################
   void setRotationFactor(float rotationFactor);
@@ -74,7 +74,7 @@ public:
   void assignMouseButtons(Button rotateButton, Button translateButton);
 
   //################################################################################################
-  nlohmann::json saveState()const override;
+  nlohmann::json saveState() const override;
 
   //################################################################################################
   void loadState(const nlohmann::json& j)override;

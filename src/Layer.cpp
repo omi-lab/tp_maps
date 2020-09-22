@@ -51,7 +51,7 @@ Layer::~Layer()
 }
 
 //##################################################################################################
-Map* Layer::map()const
+Map* Layer::map() const
 {
   return d->map;
 }
@@ -63,7 +63,7 @@ Layer* Layer::parentLayer() const
 }
 
 //##################################################################################################
-const glm::mat4& Layer::modelMatrix()const
+const glm::mat4& Layer::modelMatrix() const
 {
   return d->modelMatrix;
 }
@@ -76,7 +76,7 @@ void Layer::setModelMatrix(const glm::mat4& modelMatrix)
 }
 
 //##################################################################################################
-glm::mat4 Layer::modelToWorldMatrix()const
+glm::mat4 Layer::modelToWorldMatrix() const
 {
   glm::mat4 m=d->modelMatrix;
 
@@ -93,7 +93,7 @@ void Layer::setCoordinateSystem(const tp_utils::StringID& coordinateSystem)
 }
 
 //##################################################################################################
-const tp_utils::StringID& Layer::coordinateSystem()const
+const tp_utils::StringID& Layer::coordinateSystem() const
 {
   return d->coordinateSystem;
 }
@@ -162,7 +162,7 @@ void Layer::clearChildLayers()
 }
 
 //##################################################################################################
-const std::vector<Layer*>& Layer::childLayers()const
+const std::vector<Layer*>& Layer::childLayers() const
 {
   return d->layers;
 }

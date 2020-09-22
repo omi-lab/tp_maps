@@ -14,38 +14,38 @@ public:
   CADController(Map* map, bool fullScreen);
 
   //################################################################################################
-  glm::vec3 cameraOrigin()const;
+  glm::vec3 cameraOrigin() const;
 
   //################################################################################################
   void setCameraOrigin(const glm::vec3& cameraOrigin);
 
   //################################################################################################
-  bool allowRotation()const;
+  bool allowRotation() const;
 
   //################################################################################################
   void setAllowRotation(bool allowRotation);
 
   //################################################################################################
-  bool variableViewAngle()const;
+  bool variableViewAngle() const;
 
   //################################################################################################
   void setVariableViewAngle(bool variableViewAngle);
 
   //################################################################################################
-  bool allowTranslation()const;
+  bool allowTranslation() const;
 
   //################################################################################################
   void setAllowTranslation(bool allowTranslation);
 
   //################################################################################################
   //! Rotation in degrees
-  float rotationAngle()const;
+  float rotationAngle() const;
 
   //################################################################################################
   void setRotationAngle(float rotationAngle);
 
   //################################################################################################
-  float rotationFactor()const;
+  float rotationFactor() const;
 
   //################################################################################################
   void setRotationFactor(float rotationFactor);
@@ -54,7 +54,7 @@ public:
   void setNearAndFar(float near, float far);
 
   //################################################################################################
-  nlohmann::json saveState()const override;
+  nlohmann::json saveState() const override;
 
   //################################################################################################
   void loadState(const nlohmann::json& j) override;

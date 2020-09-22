@@ -44,11 +44,11 @@ public:
   \param coordinateSystem - The type of coordinate system to use.
   \return The requested matrix, or an identity.
   */
-  glm::mat4 matrix(const tp_utils::StringID& coordinateSystem)const;
+  glm::mat4 matrix(const tp_utils::StringID& coordinateSystem) const;
 
   //################################################################################################
   //! This is basically the same as matrix however it returns the view and projection separatly.
-  Matrices matrices(const tp_utils::StringID& coordinateSystem)const;
+  Matrices matrices(const tp_utils::StringID& coordinateSystem) const;
 
   //################################################################################################
   //! Sets the light that is currently being rendered in the LightFBOs pass.
@@ -68,7 +68,7 @@ public:
   };
 
   //################################################################################################
-  Scissor scissor(const tp_utils::StringID& coordinateSystem)const;
+  Scissor scissor(const tp_utils::StringID& coordinateSystem) const;
 
   //################################################################################################
   virtual void enableScissor(const tp_utils::StringID& coordinateSystem);
@@ -84,7 +84,7 @@ public:
 
   \returns The state of the controller serialized to a byte array
   */
-  virtual nlohmann::json saveState()const=0;
+  virtual nlohmann::json saveState() const=0;
 
   //################################################################################################
   //! Load the state of the controller
@@ -104,7 +104,7 @@ public:
   /*!
   This will always return a valid Map
   */
-  Map* map()const;
+  Map* map() const;
 
 protected:
   //################################################################################################

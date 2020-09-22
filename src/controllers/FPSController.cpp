@@ -105,7 +105,7 @@ FPSController::FPSController(Map* map, bool fullScreen):
 }
 
 //##################################################################################################
-glm::vec3 FPSController::cameraOrigin()const
+glm::vec3 FPSController::cameraOrigin() const
 {
   return d->cameraOrigin;
 }
@@ -118,7 +118,7 @@ void FPSController::setCameraOrigin(const glm::vec3& cameraOrigin)
 }
 
 //##################################################################################################
-bool FPSController::allowRotation()const
+bool FPSController::allowRotation() const
 {
   return d->allowRotation;
 }
@@ -130,7 +130,7 @@ void FPSController::setAllowRotation(bool allowRotation)
 }
 
 //##################################################################################################
-bool FPSController::variableViewAngle()const
+bool FPSController::variableViewAngle() const
 {
   return d->variableViewAngle;
 }
@@ -142,7 +142,7 @@ void FPSController::setVariableViewAngle(bool variableViewAngle)
 }
 
 //################################################################################################
-float FPSController::rotationAngle()const
+float FPSController::rotationAngle() const
 {
   return d->rotationAngle;
 }
@@ -155,7 +155,7 @@ void FPSController::setRotationAngle(float rotationAngle)
 }
 
 //##################################################################################################
-float FPSController::rotationFactor()const
+float FPSController::rotationFactor() const
 {
   return d->rotationFactor;
 }
@@ -175,7 +175,7 @@ void FPSController::setNearAndFar(float near, float far)
 }
 
 //##################################################################################################
-nlohmann::json FPSController::saveState()const
+nlohmann::json FPSController::saveState() const
 {
   nlohmann::json j;
 

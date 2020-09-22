@@ -45,31 +45,31 @@ void Texture::setTextureWrapT(GLint textureWrapT)
 }
 
 //##################################################################################################
-GLint Texture::magFilterOption()const
+GLint Texture::magFilterOption() const
 {
   return m_magFilterOption;
 }
 
 //##################################################################################################
-GLint Texture::minFilterOption()const
+GLint Texture::minFilterOption() const
 {
   return m_minFilterOption;
 }
 
 //##################################################################################################
-GLint Texture::textureWrapS()const
+GLint Texture::textureWrapS() const
 {
   return m_textureWrapS;
 }
 
 //##################################################################################################
-GLint Texture::textureWrapT()const
+GLint Texture::textureWrapT() const
 {
   return m_textureWrapT;
 }
 
 //##################################################################################################
-glm::vec2 Texture::textureDims()const
+glm::vec2 Texture::textureDims() const
 {
   return {1.0f, 1.0f};
 }
@@ -81,7 +81,7 @@ void Texture::deleteTexture(GLuint id)
 }
 
 //##################################################################################################
-Map* Texture::map()const
+Map* Texture::map() const
 {
   return m_map;
 }

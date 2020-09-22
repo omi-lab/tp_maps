@@ -38,13 +38,13 @@ Controller::Controller(Map* map):
 }
 
 //##################################################################################################
-glm::mat4 Controller::matrix(const tp_utils::StringID& coordinateSystem)const
+glm::mat4 Controller::matrix(const tp_utils::StringID& coordinateSystem) const
 {
   return tpGetMapValue(d->matrices, coordinateSystem).vp;
 }
 
 //##################################################################################################
-Matrices Controller::matrices(const tp_utils::StringID& coordinateSystem)const
+Matrices Controller::matrices(const tp_utils::StringID& coordinateSystem) const
 {
   return tpGetMapValue(d->matrices, coordinateSystem);
 }
@@ -97,7 +97,7 @@ Matrices Controller::lightMatrices()
 }
 
 //##################################################################################################
-Controller::Scissor Controller::scissor(const tp_utils::StringID& coordinateSystem)const
+Controller::Scissor Controller::scissor(const tp_utils::StringID& coordinateSystem) const
 {
   return tpGetMapValue(d->scissor, coordinateSystem, Controller::Scissor());
 }
@@ -126,7 +126,7 @@ void Controller::setMouseClickCallback(const std::function<void(const MouseEvent
 }
 
 //##################################################################################################
-Map* Controller::map()const
+Map* Controller::map() const
 {
   return d->map;
 }

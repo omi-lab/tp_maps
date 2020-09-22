@@ -13,13 +13,13 @@ SpriteTexture::~SpriteTexture()
 }
 
 //##################################################################################################
-Texture* SpriteTexture::texture()const
+Texture* SpriteTexture::texture() const
 {
   return m_texture;
 }
 
 //##################################################################################################
-const std::vector<SpriteCoords>& SpriteTexture::coords()const
+const std::vector<SpriteCoords>& SpriteTexture::coords() const
 {
   return m_coords;
 }

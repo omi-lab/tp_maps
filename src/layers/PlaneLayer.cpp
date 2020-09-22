@@ -83,7 +83,7 @@ PlaneLayer::~PlaneLayer()
 }
 
 //##################################################################################################
-const tp_math_utils::Plane& PlaneLayer::plane()const
+const tp_math_utils::Plane& PlaneLayer::plane() const
 {
   return d->plane;
 }
@@ -96,7 +96,7 @@ void PlaneLayer::setPlane(const tp_math_utils::Plane& plane)
 }
 
 //##################################################################################################
-const glm::vec4& PlaneLayer::color()const
+const glm::vec4& PlaneLayer::color() const
 {
   return d->color;
 }

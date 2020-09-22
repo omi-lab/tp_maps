@@ -31,7 +31,7 @@ public:
   ~LinesLayer()override;
 
   //################################################################################################
-  const std::vector<Lines>& lines()const;
+  const std::vector<Lines>& lines() const;
 
   //################################################################################################
   void setLines(const std::vector<Lines>& lines);
@@ -45,7 +45,7 @@ public:
   void setLinesFromGeometryNormals(const std::vector<Geometry3D>& geometry, float scale);
 
   //################################################################################################
-  float lineWidth()const;
+  float lineWidth() const;
 
   //################################################################################################
   void setLineWidth(float lineWidth);

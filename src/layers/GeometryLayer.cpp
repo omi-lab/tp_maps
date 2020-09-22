@@ -74,7 +74,7 @@ GeometryLayer::~GeometryLayer()
 }
 
 //##################################################################################################
-const std::vector<Geometry>& GeometryLayer::geometry()const
+const std::vector<Geometry>& GeometryLayer::geometry() const
 {
   return d->geometry;
 }

@@ -39,10 +39,10 @@ public:
 
   //################################################################################################
   //! Returns the texture that belongs to this sprite set
-  Texture* texture()const;
+  Texture* texture() const;
 
   //################################################################################################
-  const std::vector<SpriteCoords>& coords()const;
+  const std::vector<SpriteCoords>& coords() const;
 
   //################################################################################################
   void setCoordsChangedCallback(std::function<void()> callback);

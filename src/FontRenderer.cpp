@@ -337,19 +337,13 @@ void FontRenderer::generate()
   if(overflow)
     return;
 
-  std::vector<TPPixel> pixels;
-  {
-    TPPixel p;
-    p.r = 0;
-    p.g = 0;
-    p.b = 0;
-    p.a = 0;
-    pixels.resize(textureSize*textureSize, p);
-  }
-  TextureData textureData;
-  textureData.w = textureSize;
-  textureData.h = textureSize;
-  textureData.data = pixels.data();
+  TPPixel fillColor;
+  fillColor.r = 0;
+  fillColor.g = 0;
+  fillColor.b = 0;
+  fillColor.a = 0;
+
+  tp_image_utils::ColorMap textureData(textureSize, textureSize, nullptr, fillColor);
 
   //-- Draw glyphs to the texture ------------------------------------------------------------------
   {
@@ -381,7 +375,7 @@ void FontRenderer::generate()
         for(size_t sy=0; sy<glyph->height; sy++, y++)
         {
           const auto src = glyph->data.data() + (sy*glyph->width);
-          auto dst = pixels.data() + ((y*size_t(textureData.w)) + x);
+          auto dst = textureData.data() + ((y*size_t(textureData.width())) + x);
           memcpy(dst, src, bytes);
         }
       }
@@ -427,7 +421,7 @@ void FontRenderer::modifyGlyph(const Glyph& glyph, const std::function<void(cons
 }
 
 //##################################################################################################
-void FontRenderer::setTexture(const TextureData& texture)
+void FontRenderer::setTexture(const tp_image_utils::ColorMap& texture)
 {
   d->texture.setImage(texture);
   d->freeTexture();

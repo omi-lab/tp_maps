@@ -71,7 +71,7 @@ LinesLayer::~LinesLayer()
 }
 
 //##################################################################################################
-const std::vector<Lines>& LinesLayer::lines()const
+const std::vector<Lines>& LinesLayer::lines() const
 {
   return d->lines;
 }
@@ -201,7 +201,7 @@ void LinesLayer::setLinesFromGeometryNormals(const std::vector<Geometry3D>& geom
 }
 
 //##################################################################################################
-float LinesLayer::lineWidth()const
+float LinesLayer::lineWidth() const
 {
   return d->lineWidth;
 }

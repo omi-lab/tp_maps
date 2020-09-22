@@ -10,6 +10,7 @@
 #include "tp_utils/DebugUtils.h"
 
 #include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtx/norm.hpp"
 
 namespace tp_maps
 {
@@ -48,6 +49,9 @@ struct GizmoLayer::Private
   float innerRadius{0.95f};
   float spikeRadius{0.90f};
 
+  bool updateRotationGeometry{true};
+  bool updateTranslationGeometry{true};
+
   //################################################################################################
   void generateRotationGeometry()
   {
@@ -73,7 +77,7 @@ struct GizmoLayer::Private
       out.type = circle.geometry.triangleStrip;
       mid.type = circle.geometry.triangleStrip;
 
-      for(size_t a=0; a<=360; a+=2)
+      for(size_t a=0; a<=360; a+=6)
       {
         float x = std::sin(glm::radians(float(a)));
         float y = std::cos(glm::radians(float(a)));
@@ -236,9 +240,6 @@ GizmoLayer::GizmoLayer():
   d->translateXGeometryLayer = new Geometry3DLayer(); addChildLayer(d->translateXGeometryLayer);
   d->translateYGeometryLayer = new Geometry3DLayer(); addChildLayer(d->translateYGeometryLayer);
   d->translateZGeometryLayer = new Geometry3DLayer(); addChildLayer(d->translateZGeometryLayer);
-
-  d->generateRotationGeometry();
-  d->generateTranslationGeometry();
 }
 
 //##################################################################################################
@@ -266,16 +267,21 @@ void GizmoLayer::setEnableTranslation(bool x, bool y, bool z)
 //##################################################################################################
 void GizmoLayer::setScale(const glm::vec3& scale)
 {
-  d->scale = scale;
-
-  d->generateRotationGeometry();
-  d->generateTranslationGeometry();
+  if(glm::distance2(d->scale, scale) > 0.0001f)
+  {
+    d->scale = scale;
+    d->updateRotationGeometry = true;
+    d->updateTranslationGeometry = true;
+    update();
+  }
 }
 
 //##################################################################################################
 void GizmoLayer::setRingHeight(float ringHeight)
 {
   d->ringHeight = ringHeight;
+  d->updateRotationGeometry = true;
+  update();
 }
 
 //##################################################################################################
@@ -284,6 +290,26 @@ void GizmoLayer::setRingRadius(float outerRadius, float innerRadius, float spike
   d->outerRadius = outerRadius;
   d->innerRadius = innerRadius;
   d->spikeRadius = spikeRadius;
+  d->updateRotationGeometry = true;
+  update();
+}
+
+//##################################################################################################
+void GizmoLayer::render(RenderInfo& renderInfo)
+{
+  if(d->updateRotationGeometry)
+  {
+    d->updateRotationGeometry = false;
+    d->generateRotationGeometry();
+  }
+
+  if(d->updateTranslationGeometry)
+  {
+    d->updateTranslationGeometry = false;
+    d->generateTranslationGeometry();
+  }
+
+  tp_maps::Layer::render(renderInfo);
 }
 
 //##################################################################################################

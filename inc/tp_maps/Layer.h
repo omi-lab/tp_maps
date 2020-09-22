@@ -69,7 +69,7 @@ public:
 
   \return A pointer to the map that this layer is in or nullptr.
   */
-  Map* map()const;
+  Map* map() const;
 
   //################################################################################################
   //! Returns the parent layer or nullptr.
@@ -87,7 +87,7 @@ public:
 
   \return The model matrix.
   */
-  const glm::mat4& modelMatrix()const;
+  const glm::mat4& modelMatrix() const;
 
   //################################################################################################
   void setModelMatrix(const glm::mat4& modelMatrix);
@@ -100,7 +100,7 @@ public:
 
   \return The model to world matrix for this layer.
   */
-  glm::mat4 modelToWorldMatrix()const;
+  glm::mat4 modelToWorldMatrix() const;
 
   //################################################################################################
   //! Sets the coordinate system that this layer uses
@@ -118,7 +118,7 @@ public:
   \sa setCoordinateSystem()
   \return The coordinate system that this layer should use.
   */
-  const tp_utils::StringID& coordinateSystem()const;
+  const tp_utils::StringID& coordinateSystem() const;
 
   //################################################################################################
   //! Returns the visibility of the layer
@@ -184,7 +184,7 @@ public:
 
   //################################################################################################
   //! Return the list of child layers
-  const std::vector<Layer*>& childLayers()const;
+  const std::vector<Layer*>& childLayers() const;
 
 protected:
   //################################################################################################

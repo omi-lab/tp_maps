@@ -18,7 +18,7 @@ public:
   ~GeometryLayer()override;
 
   //################################################################################################
-  const std::vector<Geometry>& geometry()const;
+  const std::vector<Geometry>& geometry() const;
 
   //################################################################################################
   void setGeometry(const std::vector<Geometry>& geometry);

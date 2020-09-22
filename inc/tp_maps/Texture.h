@@ -59,31 +59,31 @@ public:
   void setTextureWrapT(GLint textureWrapT);
 
   //################################################################################################
-  GLint magFilterOption()const;
+  GLint magFilterOption() const;
 
   //################################################################################################
-  GLint minFilterOption()const;
+  GLint minFilterOption() const;
 
   //################################################################################################
-  GLint textureWrapS()const;
+  GLint textureWrapS() const;
 
   //################################################################################################
-  GLint textureWrapT()const;
+  GLint textureWrapT() const;
 
   //################################################################################################
   //! Returns the percentage of the texture that the image occupies
-  virtual glm::vec2 textureDims()const;
+  virtual glm::vec2 textureDims() const;
 
   //################################################################################################
   //! The size of the image in pixels
-  virtual glm::vec2 imageDims()const=0;
+  virtual glm::vec2 imageDims() const=0;
 
   //################################################################################################
   void deleteTexture(GLuint id);
 
 protected:
   //################################################################################################
-  Map* map()const;
+  Map* map() const;
 
   //################################################################################################
   //! This should be called by sub classes when the image changes

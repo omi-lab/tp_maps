@@ -41,6 +41,9 @@ public:
 protected:
 
   //################################################################################################
+  void render(RenderInfo& renderInfo) override;
+
+  //################################################################################################
   bool mouseEvent(const MouseEvent& event) override;
 
 private:

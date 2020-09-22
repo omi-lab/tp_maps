@@ -110,7 +110,7 @@ void FrameShader::setTexture(GLuint textureID)
 //##################################################################################################
 FrameShader::VertexBuffer* FrameShader::generateVertexBuffer(Map* map,
                                                              const std::vector<GLushort>& indexes,
-                                                             const std::vector<FrameShader::Vertex>& verts)const
+                                                             const std::vector<FrameShader::Vertex>& verts) const
 {
   auto vertexBuffer = new VertexBuffer(map, this);
 

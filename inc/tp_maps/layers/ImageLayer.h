@@ -29,7 +29,7 @@ public:
   void setColor(const glm::vec4& color);
 
   //################################################################################################
-  glm::vec4 color()const;
+  glm::vec4 color() const;
 
   //################################################################################################
   void setImageCoords(const glm::vec3& topRight,

@@ -126,7 +126,7 @@ HandleDetails::~HandleDetails()
 }
 
 //##################################################################################################
-HandleLayer* HandleDetails::layer()const
+HandleLayer* HandleDetails::layer() const
 {
   return m_layer;
 }
@@ -161,7 +161,7 @@ HandleLayer::~HandleLayer()
 }
 
 //##################################################################################################
-const std::vector<HandleDetails*>& HandleLayer::handles()const
+const std::vector<HandleDetails*>& HandleLayer::handles() const
 {
   return d->handles;
 }

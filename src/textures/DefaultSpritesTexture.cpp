@@ -7,11 +7,8 @@ namespace tp_maps
 DefaultSpritesTexture::DefaultSpritesTexture(Map* map):
   BasicTexture(map)
 {
-  TextureData texture;
-  auto newData = new TPPixel[32*32];
-  texture.data = newData;
-  texture.w = 32;
-  texture.h = 32;
+  tp_image_utils::ColorMap texture(32, 32, nullptr);
+  auto newData = texture.data();
 
   for(int y=0; y<32; y++)
   {
@@ -31,7 +28,6 @@ DefaultSpritesTexture::DefaultSpritesTexture(Map* map):
   }
 
   setImage(texture);
-  texture.destroy();
 }
 
 }

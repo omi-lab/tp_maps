@@ -95,10 +95,10 @@ public:
   //################################################################################################
   VertexBuffer* generateVertexBuffer(Map* map,
                                      const std::vector<PointSprite>& pointSptrites,
-                                     const std::vector<SpriteCoords>& coords)const;
+                                     const std::vector<SpriteCoords>& coords) const;
 
   //################################################################################################
-  void deleteVertexBuffer(VertexBuffer* vertexBuffer)const;
+  void deleteVertexBuffer(VertexBuffer* vertexBuffer) const;
 
   //################################################################################################
   //! Call this to draw the image

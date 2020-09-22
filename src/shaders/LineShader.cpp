@@ -107,7 +107,7 @@ void LineShader::setColor(const glm::vec4& color)
 }
 
 //##################################################################################################
-LineShader::VertexBuffer* LineShader::generateVertexBuffer(Map* map, const std::vector<glm::vec3>& vertices)const
+LineShader::VertexBuffer* LineShader::generateVertexBuffer(Map* map, const std::vector<glm::vec3>& vertices) const
 {
   auto vertexBuffer = new VertexBuffer(map, this);
 
