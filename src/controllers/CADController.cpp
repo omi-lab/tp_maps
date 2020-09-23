@@ -29,8 +29,8 @@ struct CADController::Private
 
   double timestampMS{0.0};
 
-  float viewAngle{-90.0f};
-  float rotationAngle{0.0f};
+  float viewAngle{-90.0f};   //!< In degrees.
+  float rotationAngle{0.0f}; //!< In degrees.
   glm::vec3 cameraOrigin{0, 0, 1.8f};
   float rotationFactor{0.2f};
 
@@ -185,6 +185,55 @@ void CADController::setNearAndFar(float near, float far)
 {
   d->near = near;
   d->far = far;
+  map()->update();
+}
+
+//##################################################################################################
+glm::vec3 CADController::forward() const
+{
+  glm::mat4 m = glm::inverse(matrix(defaultSID()));
+  glm::vec4 o=m*glm::vec4(0,0,0,1);
+  glm::vec4 f=m*glm::vec4(0,0,1,1);
+  return glm::normalize((glm::vec3(f)/f.w) - (glm::vec3(o)/o.w));
+}
+
+//##################################################################################################
+glm::vec3 CADController::up() const
+{
+  glm::mat4 m = glm::inverse(matrix(defaultSID()));
+  glm::vec4 o=m*glm::vec4(0,0,0,1);
+  glm::vec4 u=m*glm::vec4(0,1,0,1);
+  return glm::normalize((glm::vec3(u)/u.w) - (glm::vec3(o)/o.w));
+}
+
+//##################################################################################################
+void CADController::setOrientation(const glm::vec3& forward, const glm::vec3& up)
+{
+  // Calculate the rotation first
+  {
+    glm::vec2 direction;
+
+    float dotUp = glm::dot(glm::vec3(0,0,1), up);
+    float dotForward = glm::dot(glm::vec3(0,0,1), forward);
+
+    if(std::fabs(dotForward) < std::fabs(dotUp))
+      direction = forward;
+    else
+      direction = glm::vec2(up);
+
+    direction = glm::normalize(direction);
+
+    d->rotationAngle = glm::degrees(std::atan2(direction.x,direction.y));
+    if(d->rotationAngle<0.0f)
+      d->rotationAngle += 360.0f;
+  }
+
+
+  // Then the view angle
+  {
+    d->viewAngle = glm::degrees(std::acos(forward.z))-180.0f;
+  }
+
   map()->update();
 }
 
