@@ -120,6 +120,18 @@ void Controller::disableScissor()
 }
 
 //##################################################################################################
+nlohmann::json Controller::saveState() const
+{
+  return nlohmann::json();
+}
+
+//##################################################################################################
+void Controller::loadState(const nlohmann::json& j)
+{
+  TP_UNUSED(j);
+}
+
+//##################################################################################################
 void Controller::setMouseClickCallback(const std::function<void(const MouseEvent&)>& mouseClickCallback)
 {
   d->mouseClickCallback = mouseClickCallback;
@@ -158,6 +170,20 @@ void Controller::setScissor(const tp_utils::StringID& coordinateSystem, int x, i
   s.y = y;
   s.width = width;
   s.height = height;
+}
+
+//##################################################################################################
+void Controller::mapResized(int w, int h)
+{
+  TP_UNUSED(w);
+  TP_UNUSED(h);
+}
+
+//##################################################################################################
+bool Controller::mouseEvent(const MouseEvent& event)
+{
+  TP_UNUSED(event);
+  return false;
 }
 
 //##################################################################################################
