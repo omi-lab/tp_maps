@@ -156,6 +156,13 @@ public:
   tp_utils::CallbackCollection<void(double)> animateCallbacks;
 
   //################################################################################################
+  //! Called when buffers become invalid.
+  /*!
+  This is called when the OpenGL context becomes invalid, all OpenGL resources should be ignored.
+  */
+  tp_utils::CallbackCollection<void()> invalidateBuffersCallbacks;
+
+  //################################################################################################
   //! Add a child layer
   /*!
   The default implementation simply appends the layer to the vector of layers and then calls

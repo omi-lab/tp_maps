@@ -184,6 +184,8 @@ void Layer::render(RenderInfo& renderInfo)
 //##################################################################################################
 void Layer::invalidateBuffers()
 {
+  invalidateBuffersCallbacks();
+
   for(auto i : d->layers)
     i->invalidateBuffers();
 }

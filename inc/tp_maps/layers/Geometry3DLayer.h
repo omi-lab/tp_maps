@@ -7,7 +7,8 @@
 
 namespace tp_maps
 {
-class Texture;
+class TexturePool;
+class Geometry3DPool;
 
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT Geometry3DLayer: public Layer
@@ -21,24 +22,28 @@ public:
   ~Geometry3DLayer()override;
 
   //################################################################################################
-  /*!
-  When you call setGeometry you also set the material to use for each mesh, in the material you can
-  specify the textures by name to use for that mesh. The names in the material corrospond to the
-  keys in this map.
-
-  \param textures The map of name to texture, this will take ownership.
-  */
-  void setTextures(const std::unordered_map<tp_utils::StringID, Texture*>& textures);
+  void setName(const tp_utils::StringID& name);
 
   //################################################################################################
-  const std::vector<Geometry3D>& geometry() const;
+  const tp_utils::StringID& name() const;
+
+  //################################################################################################
+  void setTexturePool(TexturePool* texturePool);
+
+  //################################################################################################
+  TexturePool* texturePool() const;
+
+  //################################################################################################
+  void setGeometry3DPool(Geometry3DPool* geometry3DPool);
+
+  //################################################################################################
+  Geometry3DPool* geometry3DPool() const;
 
   //################################################################################################
   void setGeometry(const std::vector<Geometry3D>& geometry);
 
   //################################################################################################
-  //! Call this to set the material of all geometry.
-  void setMaterial(const Material& material);
+  void viewGeometry(const std::function<void(const std::vector<Geometry3D>&)>& closure) const;
 
   //################################################################################################
   enum class ShaderSelection
@@ -56,9 +61,6 @@ public:
 protected:
   //################################################################################################
   void render(RenderInfo& renderInfo) override;
-
-  //################################################################################################
-  void invalidateBuffers() override;
 
 private:
   struct Private;

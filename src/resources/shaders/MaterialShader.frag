@@ -77,7 +77,7 @@ float sampleShadowMapLinear(sampler2D shadowMap, vec2 coords, float compare, vec
   return mix(mixA, mixB, fracPart.x);
 }
 
-LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampler2D lightTexture, vec4 fragPos_light)
+LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampler2D lightTexture, vec2 lightTextureSize, vec4 fragPos_light)
 {
   LightResult r;
 
@@ -103,7 +103,7 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
   if(bias>0.0)
   {
     bias = 0.001;//max(0.0001, (1.0 - bias)*0.0005);
-    vec2 texelSize = vec2(2.0, 2.0) / vec2(textureSize(lightTexture, 0));
+    vec2 texelSize = vec2(2.0, 2.0) / lightTextureSize;
     float biasedDepth = min(fragPos_light.z-bias,1.0);
     for(int x = -1; x <= 1; ++x)
     {
@@ -129,7 +129,7 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
   return r;
 }
 
-LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampler2D lightTexture, vec4 fragPos_light)
+LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampler2D lightTexture, vec2 lightTextureSize, vec4 fragPos_light)
 {
   LightResult r;
 
@@ -156,7 +156,7 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampl
   if(bias>0.0 && fragPos_light.z>0.0 && fragPos_light.z<1.0)
   {
     bias = max(0.0001, (1.0 - bias)*0.0005);
-    vec2 texelSize = vec2(2.0, 2.0) / vec2(textureSize(lightTexture, 0));
+    vec2 texelSize = vec2(2.0, 2.0) / lightTextureSize;
     float biasedDepth = min(fragPos_light.z-bias,1.0);
     for(int x = -1; x <= 1; ++x)
     {

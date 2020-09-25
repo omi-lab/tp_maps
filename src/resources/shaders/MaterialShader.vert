@@ -18,6 +18,15 @@ uniform vec3 cameraOrigin_world;
 
 /*LIGHT_VERT_VARS*/
 
+mat3 transposeMat3(mat3 inMatrix)
+{
+  vec3 i0 = inMatrix[0];
+  vec3 i1 = inMatrix[1];
+  vec3 i2 = inMatrix[2];
+
+  return mat3(vec3(i0.x, i1.x, i2.x), vec3(i0.y, i1.y, i2.y), vec3(i0.z, i1.z, i2.z));
+}
+
 void main()
 {
   // Calculate the Tangent,Bitangent,Normal matrix
@@ -25,7 +34,7 @@ void main()
   vec3 tangentCameraSpace   = (mat3(m) * inTangent  );
   vec3 bitangentCameraSpace = (mat3(m) * inBitangent);
   vec3 normalCameraSpace    = (mat3(m) * inNormal   );
-  mat3 TBN = transpose(mat3(tangentCameraSpace, bitangentCameraSpace, normalCameraSpace));
+  mat3 TBN = transposeMat3(mat3(tangentCameraSpace, bitangentCameraSpace, normalCameraSpace));
 
   gl_Position = mvp * vec4(inVertex, 1.0);
 

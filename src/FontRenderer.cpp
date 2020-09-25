@@ -132,9 +132,6 @@ GLuint FontRenderer::textureID()
 //##################################################################################################
 void FontRenderer::prepareFontGeometry(const PreparedString& preparedString, FontGeometry& fontGeometry)
 {
-  tp_utils::ElapsedTimer t;
-  t.start();
-
   d->generate();
 
   float lineSpacing=d->font->lineHeight();

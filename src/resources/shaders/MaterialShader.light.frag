@@ -2,5 +2,5 @@
 
 void main()
 {
-
+  /*TP_GLSL_GLFRAGCOLOR_EMPTY*/
 }

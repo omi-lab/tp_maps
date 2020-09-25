@@ -4,6 +4,8 @@
 #include "tp_maps/Globals.h"
 #include "tp_maps/textures/BasicTexture.h"
 
+#include "tp_utils/CallbackCollection.h"
+
 #include <string>
 #include <vector>
 
@@ -133,6 +135,13 @@ public:
   //################################################################################################
   //! Return the list of map layers
   const std::vector<Layer*>& layers() const;
+
+  //################################################################################################
+  //! Called when buffers become invalid.
+  /*!
+  This is called when the OpenGL context becomes invalid, all OpenGL resources should be ignored.
+  */
+  tp_utils::CallbackCollection<void()> invalidateBuffersCallbacks;
 
 protected:
   //################################################################################################

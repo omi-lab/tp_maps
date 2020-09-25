@@ -49,239 +49,256 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
   {
   case OpenGLProfile::VERSION_110:
   {
-    replace("/*TP_VERT_SHADER_HEADER*/",   "#version 110\n");
-    replace("/*TP_FRAG_SHADER_HEADER*/",   "#version 110\n");
-    replace("/*TP_GLSL_IN_V*/",            "attribute ");
-    replace("/*TP_GLSL_IN_F*/",            "varying ");
-    replace("/*TP_GLSL_OUT_V*/",           "varying ");
-    replace("/*TP_GLSL_OUT_F*/",           "varying ");
-    replace("/*TP_GLSL_GLFRAGCOLOR*/",     "gl_FragColor");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/", "");
-    replace("/*TP_GLSL_TEXTURE*/",         "texture");
+    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 110\n");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 110\n");
+    replace("/*TP_GLSL_IN_V*/",              "attribute ");
+    replace("/*TP_GLSL_IN_F*/",              "varying ");
+    replace("/*TP_GLSL_OUT_V*/",             "varying ");
+    replace("/*TP_GLSL_OUT_F*/",             "varying ");
+    replace("/*TP_GLSL_GLFRAGCOLOR*/",       "gl_FragColor");
+    replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "gl_FragColor=vec4(0,0,0,1);");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "");
+    replace("/*TP_GLSL_TEXTURE*/",           "texture");
     break;
   }
 
   case OpenGLProfile::VERSION_120:
   {
-    replace("/*TP_VERT_SHADER_HEADER*/",   "#version 120\n");
-    replace("/*TP_FRAG_SHADER_HEADER*/",   "#version 120\n");
-    replace("/*TP_GLSL_IN_V*/",            "attribute ");
-    replace("/*TP_GLSL_IN_F*/",            "varying ");
-    replace("/*TP_GLSL_OUT_V*/",           "varying ");
-    replace("/*TP_GLSL_OUT_F*/",           "varying ");
-    replace("/*TP_GLSL_GLFRAGCOLOR*/",     "gl_FragColor");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/", "");
-    replace("/*TP_GLSL_TEXTURE*/",         "texture2D");
+    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 120\n");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 120\n");
+    replace("/*TP_GLSL_IN_V*/",              "attribute ");
+    replace("/*TP_GLSL_IN_F*/",              "varying ");
+    replace("/*TP_GLSL_OUT_V*/",             "varying ");
+    replace("/*TP_GLSL_OUT_F*/",             "varying ");
+    replace("/*TP_GLSL_GLFRAGCOLOR*/",       "gl_FragColor");
+    replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "gl_FragColor=vec4(0,0,0,1);");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "");
+    replace("/*TP_GLSL_TEXTURE*/",           "texture2D");
     break;
   }
 
   case OpenGLProfile::VERSION_130:
   {
-    replace("/*TP_VERT_SHADER_HEADER*/",   "#version 130\nprecision highp float;\n");
-    replace("/*TP_FRAG_SHADER_HEADER*/",   "#version 130\nprecision highp float;\n");
-    replace("/*TP_GLSL_IN_V*/",            "in ");
-    replace("/*TP_GLSL_IN_F*/",            "in ");
-    replace("/*TP_GLSL_OUT_V*/",           "out ");
-    replace("/*TP_GLSL_OUT_F*/",           "out ");
-    replace("/*TP_GLSL_GLFRAGCOLOR*/",     "fragColor");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/", "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",         "texture");
+    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 130\nprecision highp float;\n");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 130\nprecision highp float;\n");
+    replace("/*TP_GLSL_IN_V*/",              "in ");
+    replace("/*TP_GLSL_IN_F*/",              "in ");
+    replace("/*TP_GLSL_OUT_V*/",             "out ");
+    replace("/*TP_GLSL_OUT_F*/",             "out ");
+    replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
+    replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_TEXTURE*/",           "texture");
     break;
   }
 
   case OpenGLProfile::VERSION_140:
   {
-    replace("/*TP_VERT_SHADER_HEADER*/",   "#version 140\nprecision highp float;\n");
-    replace("/*TP_FRAG_SHADER_HEADER*/",   "#version 140\nprecision highp float;\n");
-    replace("/*TP_GLSL_IN_V*/",            "in ");
-    replace("/*TP_GLSL_IN_F*/",            "in ");
-    replace("/*TP_GLSL_OUT_V*/",           "out ");
-    replace("/*TP_GLSL_OUT_F*/",           "out ");
-    replace("/*TP_GLSL_GLFRAGCOLOR*/",     "fragColor");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/", "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",         "texture");
+    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 140\nprecision highp float;\n");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 140\nprecision highp float;\n");
+    replace("/*TP_GLSL_IN_V*/",              "in ");
+    replace("/*TP_GLSL_IN_F*/",              "in ");
+    replace("/*TP_GLSL_OUT_V*/",             "out ");
+    replace("/*TP_GLSL_OUT_F*/",             "out ");
+    replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
+    replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_TEXTURE*/",           "texture");
     break;
   }
 
   case OpenGLProfile::VERSION_150:
   {
-    replace("/*TP_VERT_SHADER_HEADER*/",   "#version 150\nprecision highp float;\n");
-    replace("/*TP_FRAG_SHADER_HEADER*/",   "#version 150\nprecision highp float;\n");
-    replace("/*TP_GLSL_IN_V*/",            "in ");
-    replace("/*TP_GLSL_IN_F*/",            "in ");
-    replace("/*TP_GLSL_OUT_V*/",           "out ");
-    replace("/*TP_GLSL_OUT_F*/",           "out ");
-    replace("/*TP_GLSL_GLFRAGCOLOR*/",     "fragColor");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/", "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",         "texture");
+    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 150\nprecision highp float;\n");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 150\nprecision highp float;\n");
+    replace("/*TP_GLSL_IN_V*/",              "in ");
+    replace("/*TP_GLSL_IN_F*/",              "in ");
+    replace("/*TP_GLSL_OUT_V*/",             "out ");
+    replace("/*TP_GLSL_OUT_F*/",             "out ");
+    replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
+    replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_TEXTURE*/",           "texture");
     break;
   }
 
   case OpenGLProfile::VERSION_330:
   {
-    replace("/*TP_VERT_SHADER_HEADER*/",   "#version 330\nprecision highp float;\n");
-    replace("/*TP_FRAG_SHADER_HEADER*/",   "#version 330\nprecision highp float;\n");
-    replace("/*TP_GLSL_IN_V*/",            "in ");
-    replace("/*TP_GLSL_IN_F*/",            "in ");
-    replace("/*TP_GLSL_OUT_V*/",           "out ");
-    replace("/*TP_GLSL_OUT_F*/",           "out ");
-    replace("/*TP_GLSL_GLFRAGCOLOR*/",     "fragColor");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/", "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",         "texture");
+    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 330\nprecision highp float;\n");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 330\nprecision highp float;\n");
+    replace("/*TP_GLSL_IN_V*/",              "in ");
+    replace("/*TP_GLSL_IN_F*/",              "in ");
+    replace("/*TP_GLSL_OUT_V*/",             "out ");
+    replace("/*TP_GLSL_OUT_F*/",             "out ");
+    replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
+    replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_TEXTURE*/",           "texture");
     break;
   }
 
   case OpenGLProfile::VERSION_400:
   {
-    replace("/*TP_VERT_SHADER_HEADER*/",   "#version 400\nprecision highp float;\n");
-    replace("/*TP_FRAG_SHADER_HEADER*/",   "#version 400\nprecision highp float;\n");
-    replace("/*TP_GLSL_IN_V*/",            "in ");
-    replace("/*TP_GLSL_IN_F*/",            "in ");
-    replace("/*TP_GLSL_OUT_V*/",           "out ");
-    replace("/*TP_GLSL_OUT_F*/",           "out ");
-    replace("/*TP_GLSL_GLFRAGCOLOR*/",     "fragColor");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/", "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",         "texture");
+    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 400\nprecision highp float;\n");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 400\nprecision highp float;\n");
+    replace("/*TP_GLSL_IN_V*/",              "in ");
+    replace("/*TP_GLSL_IN_F*/",              "in ");
+    replace("/*TP_GLSL_OUT_V*/",             "out ");
+    replace("/*TP_GLSL_OUT_F*/",             "out ");
+    replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
+    replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_TEXTURE*/",           "texture");
     break;
   }
 
   case OpenGLProfile::VERSION_410:
   {
-    replace("/*TP_VERT_SHADER_HEADER*/",   "#version 410\nprecision highp float;\n");
-    replace("/*TP_FRAG_SHADER_HEADER*/",   "#version 410\nprecision highp float;\n");
-    replace("/*TP_GLSL_IN_V*/",            "in ");
-    replace("/*TP_GLSL_IN_F*/",            "in ");
-    replace("/*TP_GLSL_OUT_V*/",           "out ");
-    replace("/*TP_GLSL_OUT_F*/",           "out ");
-    replace("/*TP_GLSL_GLFRAGCOLOR*/",     "fragColor");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/", "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",         "texture");
+    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 410\nprecision highp float;\n");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 410\nprecision highp float;\n");
+    replace("/*TP_GLSL_IN_V*/",              "in ");
+    replace("/*TP_GLSL_IN_F*/",              "in ");
+    replace("/*TP_GLSL_OUT_V*/",             "out ");
+    replace("/*TP_GLSL_OUT_F*/",             "out ");
+    replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
+    replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_TEXTURE*/",           "texture");
     break;
   }
 
   case OpenGLProfile::VERSION_420:
   {
-    replace("/*TP_VERT_SHADER_HEADER*/",   "#version 420\nprecision highp float;\n");
-    replace("/*TP_FRAG_SHADER_HEADER*/",   "#version 420\nprecision highp float;\n");
-    replace("/*TP_GLSL_IN_V*/",            "in ");
-    replace("/*TP_GLSL_IN_F*/",            "in ");
-    replace("/*TP_GLSL_OUT_V*/",           "out ");
-    replace("/*TP_GLSL_OUT_F*/",           "out ");
-    replace("/*TP_GLSL_GLFRAGCOLOR*/",     "fragColor");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/", "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",         "texture");
+    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 420\nprecision highp float;\n");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 420\nprecision highp float;\n");
+    replace("/*TP_GLSL_IN_V*/",              "in ");
+    replace("/*TP_GLSL_IN_F*/",              "in ");
+    replace("/*TP_GLSL_OUT_V*/",             "out ");
+    replace("/*TP_GLSL_OUT_F*/",             "out ");
+    replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
+    replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_TEXTURE*/",           "texture");
     break;
   }
 
   case OpenGLProfile::VERSION_430:
   {
-    replace("/*TP_VERT_SHADER_HEADER*/",   "#version 430\nprecision highp float;\n");
-    replace("/*TP_FRAG_SHADER_HEADER*/",   "#version 430\nprecision highp float;\n");
-    replace("/*TP_GLSL_IN_V*/",            "in ");
-    replace("/*TP_GLSL_IN_F*/",            "in ");
-    replace("/*TP_GLSL_OUT_V*/",           "out ");
-    replace("/*TP_GLSL_OUT_F*/",           "out ");
-    replace("/*TP_GLSL_GLFRAGCOLOR*/",     "fragColor");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/", "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",         "texture");
+    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 430\nprecision highp float;\n");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 430\nprecision highp float;\n");
+    replace("/*TP_GLSL_IN_V*/",              "in ");
+    replace("/*TP_GLSL_IN_F*/",              "in ");
+    replace("/*TP_GLSL_OUT_V*/",             "out ");
+    replace("/*TP_GLSL_OUT_F*/",             "out ");
+    replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
+    replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_TEXTURE*/",           "texture");
     break;
   }
 
   case OpenGLProfile::VERSION_440:
   {
-    replace("/*TP_VERT_SHADER_HEADER*/",   "#version 440\nprecision highp float;\n");
-    replace("/*TP_FRAG_SHADER_HEADER*/",   "#version 440\nprecision highp float;\n");
-    replace("/*TP_GLSL_IN_V*/",            "in ");
-    replace("/*TP_GLSL_IN_F*/",            "in ");
-    replace("/*TP_GLSL_OUT_V*/",           "out ");
-    replace("/*TP_GLSL_OUT_F*/",           "out ");
-    replace("/*TP_GLSL_GLFRAGCOLOR*/",     "fragColor");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/", "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",         "texture");
+    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 440\nprecision highp float;\n");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 440\nprecision highp float;\n");
+    replace("/*TP_GLSL_IN_V*/",              "in ");
+    replace("/*TP_GLSL_IN_F*/",              "in ");
+    replace("/*TP_GLSL_OUT_V*/",             "out ");
+    replace("/*TP_GLSL_OUT_F*/",             "out ");
+    replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
+    replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_TEXTURE*/",           "texture");
     break;
   }
 
   case OpenGLProfile::VERSION_450:
   {
-    replace("/*TP_VERT_SHADER_HEADER*/",   "#version 450\nprecision highp float;\n");
-    replace("/*TP_FRAG_SHADER_HEADER*/",   "#version 450\nprecision highp float;\n");
-    replace("/*TP_GLSL_IN_V*/",            "in ");
-    replace("/*TP_GLSL_IN_F*/",            "in ");
-    replace("/*TP_GLSL_OUT_V*/",           "out ");
-    replace("/*TP_GLSL_OUT_F*/",           "out ");
-    replace("/*TP_GLSL_GLFRAGCOLOR*/",     "fragColor");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/", "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",         "texture");
+    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 450\nprecision highp float;\n");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 450\nprecision highp float;\n");
+    replace("/*TP_GLSL_IN_V*/",              "in ");
+    replace("/*TP_GLSL_IN_F*/",              "in ");
+    replace("/*TP_GLSL_OUT_V*/",             "out ");
+    replace("/*TP_GLSL_OUT_F*/",             "out ");
+    replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
+    replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_TEXTURE*/",           "texture");
     break;
   }
 
   case OpenGLProfile::VERSION_460:
   {
-    replace("/*TP_VERT_SHADER_HEADER*/",   "#version 460\nprecision highp float;\n");
-    replace("/*TP_FRAG_SHADER_HEADER*/",   "#version 460\nprecision highp float;\n");
-    replace("/*TP_GLSL_IN_V*/",            "in ");
-    replace("/*TP_GLSL_IN_F*/",            "in ");
-    replace("/*TP_GLSL_OUT_V*/",           "out ");
-    replace("/*TP_GLSL_OUT_F*/",           "out ");
-    replace("/*TP_GLSL_GLFRAGCOLOR*/",     "fragColor");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/", "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",         "texture");
+    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 460\nprecision highp float;\n");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 460\nprecision highp float;\n");
+    replace("/*TP_GLSL_IN_V*/",              "in ");
+    replace("/*TP_GLSL_IN_F*/",              "in ");
+    replace("/*TP_GLSL_OUT_V*/",             "out ");
+    replace("/*TP_GLSL_OUT_F*/",             "out ");
+    replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
+    replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_TEXTURE*/",           "texture");
     break;
   }
 
   case OpenGLProfile::VERSION_100_ES:
   {
-    replace("/*TP_VERT_SHADER_HEADER*/",   "#version 100\nprecision highp float;\n");
-    replace("/*TP_FRAG_SHADER_HEADER*/",   "#version 100\nprecision highp float;\n");
-    replace("/*TP_GLSL_IN_V*/",            "attribute ");
-    replace("/*TP_GLSL_IN_F*/",            "varying ");
-    replace("/*TP_GLSL_OUT_V*/",           "varying ");
-    replace("/*TP_GLSL_OUT_F*/",           "varying ");
-    replace("/*TP_GLSL_GLFRAGCOLOR*/",     "gl_FragColor");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/", "");
-    replace("/*TP_GLSL_TEXTURE*/",         "texture2D");
+    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 100\nprecision highp float;\n");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 100\nprecision highp float;\n");
+    replace("/*TP_GLSL_IN_V*/",              "attribute ");
+    replace("/*TP_GLSL_IN_F*/",              "varying ");
+    replace("/*TP_GLSL_OUT_V*/",             "varying ");
+    replace("/*TP_GLSL_OUT_F*/",             "varying ");
+    replace("/*TP_GLSL_GLFRAGCOLOR*/",       "gl_FragColor");
+    replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "gl_FragColor=vec4(0,0,0,1);");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "");
+    replace("/*TP_GLSL_TEXTURE*/",           "texture2D");
     break;
   }
 
   case OpenGLProfile::VERSION_300_ES:
   {
-    replace("/*TP_VERT_SHADER_HEADER*/",   "#version 300 es\nprecision highp float;");
-    replace("/*TP_FRAG_SHADER_HEADER*/",   "#version 300 es\nprecision highp float;");
-    replace("/*TP_GLSL_IN_V*/",            "in ");
-    replace("/*TP_GLSL_IN_F*/",            "in ");
-    replace("/*TP_GLSL_OUT_V*/",           "out ");
-    replace("/*TP_GLSL_OUT_F*/",           "out ");
-    replace("/*TP_GLSL_GLFRAGCOLOR*/",     "fragColor");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/", "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",         "texture");
+    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 300 es\nprecision highp float;");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 300 es\nprecision highp float;");
+    replace("/*TP_GLSL_IN_V*/",              "in ");
+    replace("/*TP_GLSL_IN_F*/",              "in ");
+    replace("/*TP_GLSL_OUT_V*/",             "out ");
+    replace("/*TP_GLSL_OUT_F*/",             "out ");
+    replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
+    replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_TEXTURE*/",           "texture");
     break;
   }
 
   case OpenGLProfile::VERSION_310_ES:
   {
-    replace("/*TP_VERT_SHADER_HEADER*/",   "#version 310 es\nprecision highp float;");
-    replace("/*TP_FRAG_SHADER_HEADER*/",   "#version 310 es\nprecision highp float;");
-    replace("/*TP_GLSL_IN_V*/",            "in ");
-    replace("/*TP_GLSL_IN_F*/",            "in ");
-    replace("/*TP_GLSL_OUT_V*/",           "out ");
-    replace("/*TP_GLSL_OUT_F*/",           "out ");
-    replace("/*TP_GLSL_GLFRAGCOLOR*/",     "fragColor");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/", "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",         "texture");
+    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 310 es\nprecision highp float;");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 310 es\nprecision highp float;");
+    replace("/*TP_GLSL_IN_V*/",              "in ");
+    replace("/*TP_GLSL_IN_F*/",              "in ");
+    replace("/*TP_GLSL_OUT_V*/",             "out ");
+    replace("/*TP_GLSL_OUT_F*/",             "out ");
+    replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
+    replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_TEXTURE*/",           "texture");
     break;
   }
 
   case OpenGLProfile::VERSION_320_ES:
   {
-    replace("/*TP_VERT_SHADER_HEADER*/",   "#version 320 es\nprecision highp float;");
-    replace("/*TP_FRAG_SHADER_HEADER*/",   "#version 320 es\nprecision highp float;");
-    replace("/*TP_GLSL_IN_V*/",            "in ");
-    replace("/*TP_GLSL_IN_F*/",            "in ");
-    replace("/*TP_GLSL_OUT_V*/",           "out ");
-    replace("/*TP_GLSL_OUT_F*/",           "out ");
-    replace("/*TP_GLSL_GLFRAGCOLOR*/",     "fragColor");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/", "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",         "texture");
+    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 320 es\nprecision highp float;");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 320 es\nprecision highp float;");
+    replace("/*TP_GLSL_IN_V*/",              "in ");
+    replace("/*TP_GLSL_IN_F*/",              "in ");
+    replace("/*TP_GLSL_OUT_V*/",             "out ");
+    replace("/*TP_GLSL_OUT_F*/",             "out ");
+    replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
+    replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_TEXTURE*/",           "texture");
     break;
   }
   }

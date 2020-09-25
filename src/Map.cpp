@@ -15,6 +15,7 @@
 
 #include "tp_utils/StringID.h"
 #include "tp_utils/DebugUtils.h"
+#include "tp_utils/TimeUtils.h"
 #include "tp_utils/StackTrace.h"
 
 #include "glm/glm.hpp"
@@ -67,6 +68,7 @@ struct Map::Private
 
   std::vector<Light> lights;
   std::vector<FBO> lightTextures;
+  int lightTextureSize{1024};
 
   Texture* spotLightTexture{nullptr};
   GLuint spotLightTextureID{0};
@@ -123,7 +125,7 @@ struct Map::Private
   }
 
   //################################################################################################
-  bool prepareBuffer(FBO& buffer, int width, int height)
+  bool prepareBuffer(FBO& buffer, int width, int height, bool createColorBuffer=true)
   {
     if(buffer.width!=width || buffer.height!=height)
       deleteBuffer(buffer);
@@ -138,7 +140,14 @@ struct Map::Private
     //glBindFramebuffer(TP_GL_DRAW_FRAMEBUFFER, buffer.frameBuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
 
-    if(!buffer.textureID)
+    // Some versions of OpenGL must have a color buffer even if we are not going to use it.
+    if(!createColorBuffer)
+    {
+      if(openGLProfile == OpenGLProfile::VERSION_100_ES)
+        createColorBuffer = true;
+    }
+
+    if(createColorBuffer && !buffer.textureID)
     {
       glGenTextures(1, &buffer.textureID);
       glBindTexture(GL_TEXTURE_2D, buffer.textureID);
@@ -146,15 +155,29 @@ struct Map::Private
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer.textureID, 0);
+    }
 
+    if(!buffer.depthID)
+    {
       glGenTextures(1, &buffer.depthID);
       glBindTexture(GL_TEXTURE_2D, buffer.depthID);
 
-      //This was working elsewhere
-      // glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
+      switch(openGLProfile)
+      {
+      case OpenGLProfile::VERSION_100_ES:
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
+        break;
 
-      //This works on WebGL 2.0
-      glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+      case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
+      case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
+      case OpenGLProfile::VERSION_320_ES:
+        glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+        break;
+
+      default:
+        glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
+        break;
+      }
 
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -697,7 +720,16 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
   int windowY = tpBound(0, (d->height-pos.y)-left, height()-(pickingSize+1));
   std::vector<unsigned char> pixels(pickingSize*pickingSize*4);
 
-  glReadBuffer(GL_COLOR_ATTACHMENT0);
+  switch(d->openGLProfile)
+  {
+  case OpenGLProfile::VERSION_100_ES:
+    break;
+
+  default:
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
+    break;
+  }
+
   glReadPixels(windowX, windowY, pickingSize, pickingSize, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
   glBindFramebuffer(GL_FRAMEBUFFER, originalFrameBuffer);
 
@@ -894,6 +926,8 @@ void Map::initializeGL()
 
     for(auto i : d->fontRenderers)
       i->invalidateBuffers();
+
+    invalidateBuffersCallbacks();
   }
 
   // Initialize GL
@@ -976,7 +1010,7 @@ void Map::paintGLNoMakeCurrent()
         const auto& light = d->lights.at(i);
         auto& lightBuffer = d->lightTextures.at(i);
 
-        if(!d->prepareBuffer(lightBuffer, 8192, 8192))
+        if(!d->prepareBuffer(lightBuffer, d->lightTextureSize, d->lightTextureSize, false))
           return;
 
         d->controller->setCurrentLight(light);
@@ -1045,27 +1079,27 @@ void Map::paintGLNoMakeCurrent()
 #ifdef TP_FBO_SUPPORTED
       glViewport(0, 0, d->width, d->height);
       glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
-//      glBindFramebuffer(GL_READ_FRAMEBUFFER, d->reflectionBuffer.frameBuffer);
+      //      glBindFramebuffer(GL_READ_FRAMEBUFFER, d->reflectionBuffer.frameBuffer);
 
-//#if 1
-//      glBlitFramebuffer(0, 0, d->reflectionBuffer.width, d->reflectionBuffer.height,
-//                        0, 0, d->width, d->height,
-//                        GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
-//                        GL_NEAREST);
-//#else
-//      glBlitFramebuffer(0, 0, d->width, d->height,
-//                        0, 0, d->width, d->height,
-//                        GL_DEPTH_BUFFER_BIT,
-//                        GL_NEAREST);
+      //#if 1
+      //      glBlitFramebuffer(0, 0, d->reflectionBuffer.width, d->reflectionBuffer.height,
+      //                        0, 0, d->width, d->height,
+      //                        GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
+      //                        GL_NEAREST);
+      //#else
+      //      glBlitFramebuffer(0, 0, d->width, d->height,
+      //                        0, 0, d->width, d->height,
+      //                        GL_DEPTH_BUFFER_BIT,
+      //                        GL_NEAREST);
 
-//      glBlitFramebuffer(0, 0, d->width, d->height,
-//                        0, 0, d->width, d->height,
-//                        GL_COLOR_BUFFER_BIT ,
-//                        GL_LINEAR);
-//#endif
+      //      glBlitFramebuffer(0, 0, d->width, d->height,
+      //                        0, 0, d->width, d->height,
+      //                        GL_COLOR_BUFFER_BIT ,
+      //                        GL_LINEAR);
+      //#endif
 
-//      // Call this again to replace GL_READ_FRAMEBUFFER
-//      glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
+      //      // Call this again to replace GL_READ_FRAMEBUFFER
+      //      glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
 
       glEnable(GL_DEPTH_TEST);
       glDepthFunc(GL_LESS);

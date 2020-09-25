@@ -39,6 +39,7 @@ struct LightLocations_lt
   GLint spotLightWHLocation     {0};
 
   GLint lightTextureIDLocation  {0};
+  GLint lightTextureSizeLocation{0};
 };
 
 //##################################################################################################
@@ -62,6 +63,8 @@ struct MaterialShader::Private
   Private() = default;
 
   ShaderType shaderType{ShaderType::Render};
+
+  size_t maxLights{1};
 
   GLint mMatrixLocation          {0};
   GLint mvpMatrixLocation        {0};
@@ -116,8 +119,21 @@ MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, b
     std::string LIGHT_FRAG_CALC;
 
     {
-      auto lights = map->lights();
-      for(size_t i=0; i<lights.size(); i++)
+      {
+        //The number of lights we can used is limited by the number of available texture units.
+        d->maxLights=0;
+        GLint textureUnits=8;
+        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &textureUnits);
+
+        //The number of textures used by the shader and the back buffer but excluding lights.
+        int staticTextures = 5 + 1;
+        if(textureUnits>staticTextures)
+          d->maxLights = size_t(textureUnits) - size_t(staticTextures);
+      }
+
+      const auto& lights = map->lights();
+      size_t iMax = tpMin(d->maxLights, lights.size());
+      for(size_t i=0; i<iMax; i++)
       {
         const auto& light = lights.at(i);
         auto ii = std::to_string(i);
@@ -131,6 +147,7 @@ MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, b
         LIGHT_VERT_CALC += replaceLight(ii, "  light%Direction_tangent = TBN * light%Direction_world;\n\n");
 
         LIGHT_FRAG_VARS += replaceLight(ii, "uniform sampler2D light%Texture;\n");
+        LIGHT_FRAG_VARS += replaceLight(ii, "uniform vec2 light%TextureSize;\n");
         LIGHT_FRAG_VARS += replaceLight(ii, "/*TP_GLSL_IN_F*/vec3 light%Direction_tangent;\n");
         LIGHT_FRAG_VARS += replaceLight(ii, "uniform Light light%;\n");
         LIGHT_FRAG_VARS += replaceLight(ii, "/*TP_GLSL_IN_F*/vec4 fragPos_light%;\n\n");
@@ -142,13 +159,13 @@ MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, b
         case LightType::Directional:
           LIGHT_FRAG_CALC += replaceLight(ii, "    vec3 fp = fragPos_light%.xyz;\n");
           LIGHT_FRAG_CALC += replaceLight(ii, "    fp = (vec3(0.5, 0.5, 0.5) * fp) + vec3(0.5, 0.5, 0.5);\n");
-          LIGHT_FRAG_CALC += replaceLight(ii, "    LightResult r = directionalLight(norm, light%, light%Direction_tangent, light%Texture, vec4(fp, 1));\n");
+          LIGHT_FRAG_CALC += replaceLight(ii, "    LightResult r = directionalLight(norm, light%, light%Direction_tangent, light%Texture, light%TextureSize, vec4(fp, 1));\n");
           break;
 
         case LightType::Spot:
           LIGHT_FRAG_CALC += replaceLight(ii, "    vec3 fp = fragPos_light%.xyz / fragPos_light%.w;\n");
           LIGHT_FRAG_CALC += replaceLight(ii, "    fp = (vec3(0.5, 0.5, 0.5) * fp) + vec3(0.5, 0.5, 0.5);\n");
-          LIGHT_FRAG_CALC += replaceLight(ii, "    LightResult r = spotLight(norm, light%, light%Direction_tangent, light%Texture, vec4(fp, 1));\n");
+          LIGHT_FRAG_CALC += replaceLight(ii, "    LightResult r = spotLight(norm, light%, light%Direction_tangent, light%Texture, light%TextureSize, vec4(fp, 1));\n");
           break;
         }
 
@@ -251,7 +268,10 @@ void MaterialShader::compile(const char* vertShaderStr,
       d->bumpTextureLocation      = glGetUniformLocation(program, "bumpTexture");
       d->spotLightTextureLocation = glGetUniformLocation(program, "spotLightTexture");
 
-      d->lightLocations.resize(map()->lights().size());
+      const auto& lights = map()->lights();
+      size_t iMax = tpMin(d->maxLights, lights.size());
+
+      d->lightLocations.resize(iMax);
       for(size_t i=0; i<d->lightLocations.size(); i++)
       {
         auto& lightLocations = d->lightLocations.at(i);
@@ -275,6 +295,7 @@ void MaterialShader::compile(const char* vertShaderStr,
         lightLocations.spotLightWHLocation      = glGetUniformLocation(program, replaceLight(ii, "light%.spotLightWH").c_str());
 
         lightLocations.lightTextureIDLocation   = glGetUniformLocation(program, replaceLight(ii, "light%Texture").c_str());
+        lightLocations.lightTextureSizeLocation = glGetUniformLocation(program, replaceLight(ii, "light%TextureSize").c_str());
       }
       break;
     }
@@ -368,6 +389,9 @@ void MaterialShader::setLights(const std::vector<Light>& lights, const std::vect
       glActiveTexture(GL_TEXTURE6 + i);
       glBindTexture(GL_TEXTURE_2D, lightBuffer.depthID);
       glUniform1i(lightLocations.lightTextureIDLocation, 6 + i);
+
+      glm::vec2 lightTextureSize{lightBuffer.width, lightBuffer.height};
+      glUniform2fv(lightLocations.lightTextureSizeLocation, 1, &lightTextureSize.x);
     }
   }
 }

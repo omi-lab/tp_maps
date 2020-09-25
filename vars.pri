@@ -38,6 +38,9 @@ HEADERS += inc/tp_maps/Layer.h
 SOURCES += src/Texture.cpp
 HEADERS += inc/tp_maps/Texture.h
 
+SOURCES += src/TexturePool.cpp
+HEADERS += inc/tp_maps/TexturePool.h
+
 SOURCES += src/Font.cpp
 HEADERS += inc/tp_maps/Font.h
 
@@ -46,6 +49,9 @@ HEADERS += inc/tp_maps/FontRenderer.h
 
 SOURCES += src/PreparedString.cpp
 HEADERS += inc/tp_maps/PreparedString.h
+
+SOURCES += src/Geometry3DPool.cpp
+HEADERS += inc/tp_maps/Geometry3DPool.h
 
 
 #-- Picking Results --------------------------------------------------------------------------------
