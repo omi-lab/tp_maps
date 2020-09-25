@@ -85,7 +85,7 @@ void LightsLayer::render(RenderInfo& renderInfo)
         size_t i=d->gizmoLayers.size();
         auto gizmoLayer = new GizmoLayer();
         gizmoLayer->setEnableRotation(true, true, true);
-        gizmoLayer->setEnableTranslation(false, false, false);
+        gizmoLayer->setEnableTranslation(true, true, true);
         d->gizmoLayers.push_back(gizmoLayer);
         addChildLayer(gizmoLayer);
 

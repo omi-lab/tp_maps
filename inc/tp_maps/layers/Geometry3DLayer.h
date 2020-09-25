@@ -5,6 +5,11 @@
 
 #include "tp_utils/RefCount.h"
 
+namespace tp_image_utils
+{
+class ColorMap;
+}
+
 namespace tp_maps
 {
 class TexturePool;
@@ -32,6 +37,9 @@ public:
 
   //################################################################################################
   TexturePool* texturePool() const;
+
+  //################################################################################################
+  void setTextures(const std::unordered_map<tp_utils::StringID, tp_image_utils::ColorMap>& textures);
 
   //################################################################################################
   void setGeometry3DPool(Geometry3DPool* geometry3DPool);

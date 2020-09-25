@@ -31,6 +31,8 @@ struct Geometry3DLayer::Private
   tp_utils::StringID name{defaultSID()};
   bool geometrySet{false};
 
+  std::vector<tp_utils::StringID> subscribedTextures;
+
   Geometry3DPool localGeometry3DPool;
   Geometry3DPool* geometry3DPool{&localGeometry3DPool};
 
@@ -47,6 +49,13 @@ struct Geometry3DLayer::Private
   {
     geometry3DPool->setTexturePool(texturePool);
     geometry3DPoolChanged.connect(geometry3DPool->changedCallbacks);
+  }
+
+  //################################################################################################
+  ~Private()
+  {
+    for(const auto& name : subscribedTextures)
+      texturePool->unsubscribe(name);
   }
 
   //################################################################################################
@@ -94,12 +103,37 @@ const tp_utils::StringID& Geometry3DLayer::name() const
 
 //##################################################################################################
 void Geometry3DLayer::setTexturePool(TexturePool* texturePool)
-{
+{  
+  for(const auto& name : d->subscribedTextures)
+    d->texturePool->unsubscribe(name);
+  d->subscribedTextures.clear();
+
   d->texturePool = texturePool;
   d->localGeometry3DPool.setTexturePool(d->texturePool);
   update();
 }
 
+//##################################################################################################
+TexturePool* Geometry3DLayer::texturePool() const
+{
+  return d->texturePool;
+}
+
+//##################################################################################################
+void Geometry3DLayer::setTextures(const std::unordered_map<tp_utils::StringID, tp_image_utils::ColorMap>& textures)
+{
+  std::vector<tp_utils::StringID> subscribedTextures;
+
+  for(const auto& i : textures)
+  {
+    d->texturePool->subscribe(i.first, i.second);
+    subscribedTextures.push_back(i.first);
+  }
+
+  d->subscribedTextures.swap(subscribedTextures);
+  for(const auto& name : subscribedTextures)
+    d->texturePool->unsubscribe(name);
+}
 
 //##################################################################################################
 void Geometry3DLayer::setGeometry3DPool(Geometry3DPool* geometry3DPool)
