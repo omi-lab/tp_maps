@@ -190,7 +190,8 @@ struct Map::Private
 
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
-      tpWarning() << "Error Map::Private::prepareBuffer frame buffer not complete!";
+      tpWarning() << "Error Map::Private::prepareBuffer frame buffer not complete!";      
+      tpWarning() << glGetString(GL_VERSION);
       return false;
     }
 
