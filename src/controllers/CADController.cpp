@@ -4,6 +4,7 @@
 #include "tp_maps/Map.h"
 
 #include "tp_math_utils/JSONUtils.h"
+#include "tp_math_utils/Plane.h"
 
 #include "tp_utils/JSONUtils.h"
 #include "tp_utils/DebugUtils.h"
@@ -14,12 +15,50 @@ namespace tp_maps
 {
 
 //##################################################################################################
+std::vector<std::string> cadControllerModes()
+{
+  return
+  {
+    "Perspective",
+    "OrthoXZ",
+    "OrthoYZ",
+    "OrthoXY"
+  };
+}
+
+//##################################################################################################
+std::string cadControllerModeToString(CADControllerMode mode)
+{
+  switch(mode)
+  {
+  case CADControllerMode::Perspective: return "Perspective";
+  case CADControllerMode::OrthoXZ:     return "OrthoXZ";
+  case CADControllerMode::OrthoYZ:     return "OrthoYZ";
+  case CADControllerMode::OrthoXY:     return "OrthoXY";
+  }
+
+  return "Perspective";
+}
+
+//##################################################################################################
+CADControllerMode cadControllerModeFromString(std::string mode)
+{
+  if(mode == "Perspective")return CADControllerMode::Perspective;
+  if(mode == "OrthoXZ")    return CADControllerMode::OrthoXZ;
+  if(mode == "OrthoYZ")    return CADControllerMode::OrthoYZ;
+  if(mode == "OrthoXY")    return CADControllerMode::OrthoXY;
+  return CADControllerMode::Perspective;
+}
+
+//##################################################################################################
 struct CADController::Private
 {
   TP_REF_COUNT_OBJECTS("tp_maps::CADController::Private");
   TP_NONCOPYABLE(Private);
 
   CADController* q;
+
+  CADControllerMode mode{CADControllerMode::Perspective};
 
   glm::ivec2 previousPos{0,0};
   glm::ivec2 previousPos2{0,0};
@@ -33,6 +72,9 @@ struct CADController::Private
   float rotationAngle{0.0f}; //!< In degrees.
   glm::vec3 cameraOrigin{0, 0, 1.8f};
   float rotationFactor{0.2f};
+
+  float distance{10.0f};     //!< Distance for ortho projections.
+  glm::vec3 focalPoint{0.0f,0.0f,0.0f};
 
   float near{0.01f};
   float far{100.0f};
@@ -101,6 +143,52 @@ struct CADController::Private
   }
 
   //################################################################################################
+  void translate(float dx, float dy)
+  {
+    //The width and height of the map widget
+    float width  = float(q->map()->width());
+    float height = float(q->map()->height());
+
+    dx = dx / width;
+    dy = dy / height;
+
+    float fh = 1.0f;
+    float fw = 1.0f;
+    if(width>height)
+    {
+      fw = width/height;
+    }
+    else
+    {
+      fh = height/width;
+    }
+
+    dx *= fw*distance*2.0f;
+    dy *= fh*distance*2.0f;
+
+    switch(mode)
+    {
+    case CADControllerMode::OrthoXZ:
+      focalPoint.x -= dx;
+      focalPoint.z += dy;
+      break;
+
+    case CADControllerMode::OrthoYZ:
+      focalPoint.y -= dx;
+      focalPoint.z += dy;
+      break;
+
+    case CADControllerMode::OrthoXY:
+      focalPoint.x -= dx;
+      focalPoint.y += dy;
+      break;
+
+    default:
+      break;
+    }
+  }
+
+  //################################################################################################
   void moveForward(float distZ)
   {
     glm::mat4 m = glm::inverse(q->matrix(defaultSID()));
@@ -116,6 +204,19 @@ CADController::CADController(Map* map, bool fullScreen):
   d(new Private(this, fullScreen))
 {
 
+}
+
+//##################################################################################################
+CADControllerMode CADController::mode() const
+{
+  return d->mode;
+}
+
+//##################################################################################################
+void CADController::setMode(CADControllerMode mode)
+{
+  d->mode = mode;
+  map()->update();
 }
 
 //##################################################################################################
@@ -244,7 +345,10 @@ nlohmann::json CADController::saveState() const
 
   j["View angle"]     = d->viewAngle;
   j["Rotation angle"] = d->rotationAngle;
-  j["Camera origin"]    = tp_math_utils::vec3ToJSON(d->cameraOrigin);
+  j["Camera origin"]  = tp_math_utils::vec3ToJSON(d->cameraOrigin);
+  j["Focal point"]    = tp_math_utils::vec3ToJSON(d->focalPoint);
+  j["Distance"]       = d->distance;
+  j["Mode"]           = cadControllerModeToString(d->mode);
 
   return j;
 }
@@ -252,10 +356,12 @@ nlohmann::json CADController::saveState() const
 //##################################################################################################
 void CADController::loadState(const nlohmann::json& j)
 {
-  d->viewAngle     = tp_utils::getJSONValue<float>(j, "View angle"    , d->viewAngle    );
-  d->rotationAngle = tp_utils::getJSONValue<float>(j, "Rotation angle", d->rotationAngle);
-  d->cameraOrigin  = tp_math_utils::getJSONVec3   (j, "Camera origin" , d->cameraOrigin );
-
+  d->viewAngle     =                             TPJSONFloat (j, "View angle"    , d->viewAngle                       );
+  d->rotationAngle =                             TPJSONFloat (j, "Rotation angle", d->rotationAngle                   );
+  d->cameraOrigin  =               tp_math_utils::getJSONVec3(j, "Camera origin" , d->cameraOrigin                    );
+  d->focalPoint    =               tp_math_utils::getJSONVec3(j, "Focal point"   , d->focalPoint                      );
+  d->distance      =                             TPJSONFloat (j, "Distance"      , d->distance                        );
+  d->mode          = cadControllerModeFromString(TPJSONString(j, "Mode"          , cadControllerModeToString(d->mode)));
   map()->update();
 }
 
@@ -289,12 +395,57 @@ void CADController::updateMatrices()
   else
     fh = height/width;
 
-  glm::mat4 view = glm::mat4(1.0f);
-  view = glm::rotate(view, glm::radians(d->viewAngle), glm::vec3(1.0f, 0.0f, 0.0f));
-  view = glm::rotate(view, glm::radians(d->rotationAngle), glm::vec3(0.0f, 0.0f, 1.0f));
-  view = glm::translate(view, -d->cameraOrigin);
+  glm::mat4 view{1.0f};
+  glm::mat4 projection;
 
-  glm::mat4 projection = glm::perspective(glm::radians(63.0f), fw/fh, d->near, d->far);
+  auto makeOrtho = [&]
+  {
+    projection = glm::ortho(-fw*d->distance,     // <- Left
+                            fw*d->distance,      // <- Right
+                            -fh*d->distance,     // <- Bottom
+                            fh*d->distance,      // <- Top
+                            -100.0f*d->distance, // <- Near
+                            100.0f*d->distance); // <- Far
+
+  };
+
+  switch(d->mode)
+  {
+  case CADControllerMode::Perspective:
+  {
+    view = glm::mat4(1.0f);
+    view = glm::rotate(view, glm::radians(d->viewAngle), glm::vec3(1.0f, 0.0f, 0.0f));
+    view = glm::rotate(view, glm::radians(d->rotationAngle), glm::vec3(0.0f, 0.0f, 1.0f));
+    view = glm::translate(view, -d->cameraOrigin);
+
+    projection = glm::perspective(glm::radians(63.0f), fw/fh, d->near, d->far);
+    break;
+  }
+
+  case CADControllerMode::OrthoXZ:
+  {
+    view = glm::rotate(view, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    view = glm::translate(view, -d->focalPoint*glm::vec3(1.0f, 0.0f, 1.0f));
+    makeOrtho();
+    break;
+  }
+
+  case CADControllerMode::OrthoYZ:
+  {
+    view = glm::rotate(view, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    view = glm::rotate(view, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    view = glm::translate(view, -d->focalPoint*glm::vec3(0.0f, 1.0f, 1.0f));
+    makeOrtho();
+    break;
+  }
+
+  case CADControllerMode::OrthoXY:
+  {
+    view = glm::translate(view, -d->focalPoint*glm::vec3(1.0f, 1.0f, 0.0f));
+    makeOrtho();
+    break;
+  }
+  }
 
   Matrices vp;
   vp.p  = projection;
@@ -363,30 +514,36 @@ bool CADController::mouseEvent(const MouseEvent& event)
 
     if(d->mouseInteraction == Button::MiddleButton)
     {
-      d->strafe(dx*float(translationFactor), dy*float(translationFactor));
+      if(d->mode == CADControllerMode::Perspective)
+        d->strafe(dx*float(translationFactor), dy*float(translationFactor));
+      else
+        d->translate(dx, dy);
       map()->update();
     }
     else if(d->fullScreen || d->mouseInteraction == Button::RightButton)
     {
-      if(d->variableViewAngle)
+      if(d->mode == CADControllerMode::Perspective)
       {
-        d->viewAngle += dy*0.2f;
+        if(d->variableViewAngle)
+        {
+          d->viewAngle += dy*0.2f;
 
-        if(d->viewAngle>0)
-          d->viewAngle = 0;
+          if(d->viewAngle>0)
+            d->viewAngle = 0;
 
-        if(d->viewAngle<-180)
-          d->viewAngle = -180;
-      }
+          if(d->viewAngle<-180)
+            d->viewAngle = -180;
+        }
 
-      if(d->allowRotation)
-      {
-        d->rotationAngle += dx*d->rotationFactor;
-        if(d->rotationAngle<0)
-          d->rotationAngle+=360;
+        if(d->allowRotation)
+        {
+          d->rotationAngle += dx*d->rotationFactor;
+          if(d->rotationAngle<0)
+            d->rotationAngle+=360;
 
-        if(d->rotationAngle>360)
-          d->rotationAngle-=360;
+          if(d->rotationAngle>360)
+            d->rotationAngle-=360;
+        }
       }
       map()->update();
     }
@@ -396,7 +553,34 @@ bool CADController::mouseEvent(const MouseEvent& event)
 
   case MouseEventType::Wheel: //--------------------------------------------------------------------
   {
-    d->moveForward(float(event.delta)*translationFactor*0.2f);
+    if(d->mode == CADControllerMode::Perspective)
+    {
+      d->moveForward(float(event.delta)*translationFactor*0.2f);
+    }
+    else
+    {
+      glm::vec3 scenePointA;
+      bool moveOrigin = map()->unProject(event.pos, scenePointA, tp_math_utils::Plane());
+
+
+      if(event.delta<0)
+        d->distance *= 1.1f;
+      else if(event.delta>0)
+        d->distance *= 0.9f;
+      else
+        return true;
+
+      if(moveOrigin)
+      {
+        updateMatrices();
+        glm::vec3 scenePointB;
+        moveOrigin = map()->unProject(event.pos, scenePointB, tp_math_utils::Plane());
+
+        if(moveOrigin)
+          d->focalPoint += scenePointA - scenePointB;
+      }
+    }
+
     map()->update();
     break;
   }
@@ -485,61 +669,65 @@ void CADController::animate(double timestampMS)
   double rotateDegrees   = rotationFactor * delta;
   double translateMeters = translationFactor * delta;
 
-  if(d->keyState[L_SHIFT_KEY] ||d->keyState[R_SHIFT_KEY] )
+  //-- Perspective mode ----------------------------------------------------------------------------
+  if(d->mode == CADControllerMode::Perspective)
   {
-    translateMeters *= 10;
-  }
+    if(d->keyState[L_SHIFT_KEY] ||d->keyState[R_SHIFT_KEY] )
+    {
+      translateMeters *= 10;
+    }
 
-  if(d->keyState[UP_KEY] ||d->keyState[W_KEY] )
-  {
-    d->translate(float(translateMeters));
-    map()->update();
-  }
+    if(d->keyState[UP_KEY] ||d->keyState[W_KEY] )
+    {
+      d->translate(float(translateMeters));
+      map()->update();
+    }
 
-  if(d->keyState[DOWN_KEY]||d->keyState[S_KEY] )
-  {
-    d->translate(-float(translateMeters));
-    map()->update();
-  }
+    if(d->keyState[DOWN_KEY]||d->keyState[S_KEY] )
+    {
+      d->translate(-float(translateMeters));
+      map()->update();
+    }
 
-  if(d->keyState[LEFT_KEY])
-  {
-    d->rotationAngle -= float(rotateDegrees);
-    if(d->rotationAngle<0.0f)
-      d->rotationAngle+=360.0f;
-    map()->update();
-  }
+    if(d->keyState[LEFT_KEY])
+    {
+      d->rotationAngle -= float(rotateDegrees);
+      if(d->rotationAngle<0.0f)
+        d->rotationAngle+=360.0f;
+      map()->update();
+    }
 
-  if(d->keyState[RIGHT_KEY])
-  {
-    d->rotationAngle += float(rotateDegrees);
-    if(d->rotationAngle>360.0f)
-      d->rotationAngle-=360.0f;
-    map()->update();
-  }
+    if(d->keyState[RIGHT_KEY])
+    {
+      d->rotationAngle += float(rotateDegrees);
+      if(d->rotationAngle>360.0f)
+        d->rotationAngle-=360.0f;
+      map()->update();
+    }
 
-  if(d->keyState[A_KEY] )
-  {
-    d->strafe(-float(translateMeters));
-    map()->update();
-  }
+    if(d->keyState[A_KEY] )
+    {
+      d->strafe(-float(translateMeters));
+      map()->update();
+    }
 
-  if(d->keyState[D_KEY] )
-  {
-    d->strafe(float(translateMeters));
-    map()->update();
-  }
+    if(d->keyState[D_KEY] )
+    {
+      d->strafe(float(translateMeters));
+      map()->update();
+    }
 
-  if(d->keyState[PAGE_UP_KEY] || d->keyState[SPACE_KEY])
-  {
-    d->cameraOrigin.z += float(translateMeters);
-    map()->update();
-  }
+    if(d->keyState[PAGE_UP_KEY] || d->keyState[SPACE_KEY])
+    {
+      d->cameraOrigin.z += float(translateMeters);
+      map()->update();
+    }
 
-  if(d->keyState[PAGE_DOWN_KEY]|| d->keyState[L_CTRL_KEY])
-  {
-    d->cameraOrigin.z -= float(translateMeters);
-    map()->update();
+    if(d->keyState[PAGE_DOWN_KEY]|| d->keyState[L_CTRL_KEY])
+    {
+      d->cameraOrigin.z -= float(translateMeters);
+      map()->update();
+    }
   }
 }
 

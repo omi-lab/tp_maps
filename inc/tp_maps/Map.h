@@ -202,7 +202,7 @@ public:
   \param swapY swap rows to convert OpenGL format images to normal images.
   \return True if successful.
   */
-  bool renderToImage(size_t width, size_t height, std::vector<TPPixel>& pixels, bool swapY=true);
+  bool renderToImage(size_t width, size_t height, tp_image_utils::ColorMap& pixels, bool swapY=true);
 
   //################################################################################################
   bool renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY=true);

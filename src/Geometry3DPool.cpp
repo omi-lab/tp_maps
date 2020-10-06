@@ -15,6 +15,7 @@ namespace
 struct PoolDetails_lt
 {
   int count{0};
+  bool overwrite{false};
   std::vector<Geometry3D> geometry;
   std::vector<ProcessedGeometry3D> processedGeometry;
 
@@ -309,8 +310,9 @@ void Geometry3DPool::subscribe(const tp_utils::StringID& name,
 {
   auto& details = d->pools[name];
   details.count++;
-  if(details.count==1 || overwrite)
+  if(details.count==1 || overwrite || details.overwrite)
   {
+    details.overwrite = false;
     details.geometry = geometry;
     details.updateVertexBuffer = true;
   }
@@ -327,6 +329,13 @@ void Geometry3DPool::unsubscribe(const tp_utils::StringID& name)
     i->second.deleteVertexBuffers();
     d->pools.erase(i);
   }
+}
+
+//##################################################################################################
+void Geometry3DPool::invalidate(const tp_utils::StringID& name)
+{
+  if(auto i = d->pools.find(name); i != d->pools.end())
+    i->second.overwrite = true;
 }
 
 //##################################################################################################

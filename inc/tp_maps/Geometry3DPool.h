@@ -50,6 +50,9 @@ public:
   void unsubscribe(const tp_utils::StringID& name);
 
   //################################################################################################
+  void invalidate(const tp_utils::StringID& name);
+
+  //################################################################################################
   void viewProcessedGeometry(const tp_utils::StringID& name,
                              Geometry3DShader* shader,
                              const std::function<void(const std::vector<ProcessedGeometry3D>&)>& closure);
