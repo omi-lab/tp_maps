@@ -1,5 +1,8 @@
 if(IOS)
   list(APPEND TP_LIBRARIES "-framework OpenGLES")
+elseif(APPLE)
+  list(APPEND TP_LIBRARIES "-framework OpenGL")
+  list(APPEND TP_DEFINES "GL_SILENCE_DEPRECATION")
 elseif(ANDROID)
   message("ANDROID_PLATFORM:${ANDROID_PLATFORM}")
   #android-16

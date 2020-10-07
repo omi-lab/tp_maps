@@ -5,4 +5,3 @@ LIBRARIES    += tp_maps
 TP_DEPENDENCIES += tp_maps/dependencies/
 
 TP_STATIC_INIT += tp_maps
-
