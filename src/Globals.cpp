@@ -417,7 +417,6 @@ nlohmann::json Light::saveState() const
   j["specular"] = tp_math_utils::vec3ToJSON(specular);
 
   j["diffuseScale"] = diffuseScale;
-  j["diffuseTranslate"] = diffuseTranslate;
 
   j["constant"] = constant;
   j["linear"] = linear;
@@ -448,7 +447,6 @@ void Light::loadState(const nlohmann::json& j)
   specular = tp_math_utils::vec3FromJSON(TPJSON(j, "specular"));
 
   diffuseScale = TPJSONFloat(j, "diffuseScale", diffuseScale);
-  diffuseTranslate = TPJSONFloat(j, "diffuseTranslate", diffuseTranslate);
 
   constant = TPJSONFloat(j, "constant", constant);
   linear = TPJSONFloat(j, "linear", linear);

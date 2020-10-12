@@ -16,7 +16,6 @@ struct Light
   vec3 diffuse;
   vec3 specular;
   float diffuseScale;
-  float diffuseTranslate;
 
   float constant;
   float linear;
@@ -86,7 +85,7 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
 
   // Diffuse
   float cosTheta = clamp(dot(norm, normalize(-lightDirection_tangent)), 0.0, 1.0);
-  float diff = (cosTheta+light.diffuseTranslate)*light.diffuseScale;
+  float diff = cosTheta*light.diffuseScale;
   r.diffuse = light.diffuse * diff;
 
   // Specular
@@ -138,7 +137,7 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampl
 
   // Diffuse
   float cosTheta = clamp(dot(norm, normalize(-lightDirection_tangent)), 0.0, 1.0);
-  float diff = max((cosTheta+light.diffuseTranslate)*light.diffuseScale, 0.0);
+  float diff = max(cosTheta*light.diffuseScale, 0.0);
   r.diffuse = light.diffuse * diff;
 
   // Specular

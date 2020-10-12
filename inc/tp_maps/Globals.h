@@ -329,7 +329,6 @@ struct TP_MAPS_SHARED_EXPORT Light
   glm::vec3 specular{1.0f, 1.0f, 1.0f};
 
   float diffuseScale{1.0f};              //! Multiplied with the diffuse lighting calculation.
-  float diffuseTranslate{0.0f};          //! Added to the diffuse lighting calculation.
 
   // Used to calculate the fall off in brightness as we get further from a point light.
   float constant{1.0f};

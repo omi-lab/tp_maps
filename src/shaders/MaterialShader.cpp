@@ -31,7 +31,6 @@ struct LightLocations_lt
   GLint diffuseLocation         {0};
   GLint specularLocation        {0};
   GLint diffuseScaleLocation    {0};
-  GLint diffuseTranslateLocation{0};
   GLint constantLocation        {0};
   GLint linearLocation          {0};
   GLint quadraticLocation       {0};
@@ -286,7 +285,6 @@ void MaterialShader::compile(const char* vertShaderStr,
         lightLocations.diffuseLocation          = glGetUniformLocation(program, replaceLight(ii, "light%.diffuse").c_str());
         lightLocations.specularLocation         = glGetUniformLocation(program, replaceLight(ii, "light%.specular").c_str());
         lightLocations.diffuseScaleLocation     = glGetUniformLocation(program, replaceLight(ii, "light%.diffuseScale").c_str());
-        lightLocations.diffuseTranslateLocation = glGetUniformLocation(program, replaceLight(ii, "light%.diffuseTranslate").c_str());
 
         lightLocations.constantLocation         = glGetUniformLocation(program, replaceLight(ii, "light%.constant").c_str());
         lightLocations.linearLocation           = glGetUniformLocation(program, replaceLight(ii, "light%.linear").c_str());
@@ -369,7 +367,6 @@ void MaterialShader::setLights(const std::vector<Light>& lights, const std::vect
       glUniform3fv(lightLocations.diffuseLocation  , 1,    &light.diffuse.x       );
       glUniform3fv(lightLocations.specularLocation , 1,    &light.specular.x      );
       glUniform1f (lightLocations.diffuseScaleLocation,     light.diffuseScale    );
-      glUniform1f (lightLocations.diffuseTranslateLocation, light.diffuseTranslate);
       glUniform1f (lightLocations.constantLocation,         light.constant        );
       glUniform1f (lightLocations.linearLocation,           light.linear          );
       glUniform1f (lightLocations.quadraticLocation,        light.quadratic       );
