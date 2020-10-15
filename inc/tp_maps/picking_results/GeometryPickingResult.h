@@ -19,7 +19,7 @@ public:
                         Layer* layer_);
 
   //################################################################################################
-  ~GeometryPickingResult()override;
+  ~GeometryPickingResult() override;
 
   const int geometryIndex;
 };

@@ -22,7 +22,7 @@ public:
   ImageLayer(Texture* texture);
 
   //################################################################################################
-  ~ImageLayer()override;
+  ~ImageLayer() override;
 
   //################################################################################################
   //! Sets the color that is used to modify the image

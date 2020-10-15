@@ -47,6 +47,8 @@ struct HandleLayer::Private
 
   tp_math_utils::Plane plane{{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}};
 
+  float zOffset{0.0f};
+
   //The raw data passed to this class
   std::vector<HandleDetails*> handles;
 
@@ -161,6 +163,18 @@ HandleLayer::~HandleLayer()
 }
 
 //##################################################################################################
+float HandleLayer::zOffset() const
+{
+  return d->zOffset;
+}
+
+//##################################################################################################
+void HandleLayer::setZOffset(float zOffset)
+{
+  d->zOffset = zOffset;
+}
+
+//##################################################################################################
 const std::vector<HandleDetails*>& HandleLayer::handles() const
 {
   return d->handles;
@@ -222,6 +236,7 @@ void HandleLayer::render(RenderInfo& renderInfo)
         ps.position    = hh->position;
         ps.spriteIndex = 0;
         ps.radius      = hh->radius;
+        ps.offset.z    = d->zOffset;
         pointSprites.push_back(ps);
       }
     }

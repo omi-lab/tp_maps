@@ -113,8 +113,10 @@ struct PoolDetails_lt
 struct Geometry3DPool::Private
 {
   Geometry3DPool* q;
-  Layer* layer;
+  Map* m_map;
+  Layer* m_layer;
 
+  TexturePool ownedTexturePool;
   TexturePool* texturePool{nullptr};
 
   std::unordered_map<tp_utils::StringID, PoolDetails_lt> pools;
@@ -128,11 +130,23 @@ struct Geometry3DPool::Private
   bool bindBeforeRender{true};
 
   //################################################################################################
+  Private(Geometry3DPool* q_, Map* map_):
+    q(q_),
+    m_map(map_),
+    m_layer(nullptr),
+    ownedTexturePool(m_map)
+  {
+    invalidateBuffersCallback.connect(m_map->invalidateBuffersCallbacks);
+  }
+
+  //################################################################################################
   Private(Geometry3DPool* q_, Layer* layer_):
     q(q_),
-    layer(layer_)
+    m_map(nullptr),
+    m_layer(layer_),
+    ownedTexturePool(m_layer)
   {
-    invalidateBuffersCallback.connect(layer->invalidateBuffersCallbacks);
+    invalidateBuffersCallback.connect(m_layer->invalidateBuffersCallbacks);
   }
 
   //################################################################################################
@@ -141,8 +155,14 @@ struct Geometry3DPool::Private
     for(auto& i : pools)
       i.second.deleteVertexBuffers();
 
-    layer->map()->deleteTexture(emptyTextureID);
-    layer->map()->deleteTexture(emptyNormalTextureID);
+    map()->deleteTexture(emptyTextureID);
+    map()->deleteTexture(emptyNormalTextureID);
+  }
+
+  //################################################################################################
+  Map* map()
+  {
+    return m_layer?m_layer->map():m_map;
   }
 
   //################################################################################################
@@ -182,98 +202,27 @@ struct Geometry3DPool::Private
       {
         ;
         tp_image_utils::ColorMap textureData{1, 1, nullptr, TPPixel{0, 0, 0, 255}};
-        emptyTexture = std::make_unique<BasicTexture>(layer->map(), textureData);
+        emptyTexture = std::make_unique<BasicTexture>(map(), textureData);
       }
 
       if(!emptyNormalTexture)
       {
         tp_image_utils::ColorMap textureData{1, 1, nullptr, TPPixel{127, 127, 255, 255}};
-        emptyNormalTexture = std::make_unique<BasicTexture>(layer->map(), textureData);
+        emptyNormalTexture = std::make_unique<BasicTexture>(map(), textureData);
       }
 
       emptyTextureID = emptyTexture->bindTexture();
       emptyNormalTextureID = emptyNormalTexture->bindTexture();
     }
   }
-
-
-
-  //  //################################################################################################
-  //  ~Private()
-  //  {
-  //    //    if(!textureIDs.empty())
-  //    //    {
-  //    //      q->map()->makeCurrent();
-  //    //      for(const auto& i : textureIDs)
-  //    //        if(i.second)
-  //    //          q->map()->deleteTexture(i.second);
-  //    //    }
-
-  //    //    for(const auto& i : textures)
-  //    //      delete i.second;
-  //    //    textures.clear();
-
-  //  }
-
-
-  //      for(const auto& i : textureIDs)
-  //        if(i.second)
-  //          q->map()->deleteTexture(i.second);
-  //      textureIDs.clear();
-
-  //      if(emptyTextureID)
-  //        q->map()->deleteTexture(emptyTextureID);
-  //      emptyTextureID = 0;
-
-  //      if(emptyNormalTextureID)
-  //        q->map()->deleteTexture(emptyNormalTextureID);
-  //      emptyNormalTextureID = 0;
-
-  //      for(const auto& i : textures)
-  //      {
-  //        if(!i.second->imageReady())
-  //          continue;
-
-  //        auto textureID = i.second->bindTexture();
-  //        if(!textureID)
-  //          continue;
-
-  //        textureIDs[i.first] = textureID;
-  //      }
-
-  //-- Preprocessed data ---------------------------------------------------------------------------
-  //
-  // std::unordered_map<tp_utils::StringID, GLuint> textureIDs;
-  // GLuint emptyTextureID{0};
-  // GLuint emptyNormalTextureID{0};
-
-
-  ////##################################################################################################
-  //void Geometry3DLayer::setGeometry(const std::vector<Geometry3D>& geometry)
-  //{
-  //  d->geometry = geometry;
-  //  d->updateVertexBuffer = true;
-  //  update();
-  //}
-
-  ////##################################################################################################
-  //const std::vector<Geometry3D>& Geometry3DLayer::geometry() const
-  //{
-  //  return d->geometry;
-  //}
-
-  ////##################################################################################################
-  //void Geometry3DLayer::setMaterial(const Material& material)
-  //{
-  //  for(auto& g : d->geometry)
-  //    g.material = material;
-
-  //  for(auto& g : d->processedGeometry)
-  //    g.material = material;
-
-  //  update();
-  //}
 };
+
+//##################################################################################################
+Geometry3DPool::Geometry3DPool(Map* map):
+  d(new Private(this, map))
+{
+  setTexturePool(&d->ownedTexturePool);
+}
 
 //##################################################################################################
 Geometry3DPool::Geometry3DPool(Layer* layer):
@@ -348,7 +297,7 @@ void Geometry3DPool::viewProcessedGeometry(const tp_utils::StringID& name,
     return;
 
   d->checkBindTextures();
-  i->second.checkUpdateVertexBuffer(shader, d->layer->map());
+  i->second.checkUpdateVertexBuffer(shader, d->map());
   i->second.checkUpdateVertexBufferTextures(d->texturePool, d->emptyTextureID, d->emptyNormalTextureID);
 
   closure(i->second.processedGeometry);

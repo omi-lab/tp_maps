@@ -26,10 +26,10 @@ public:
   void setImage(const tp_image_utils::ColorMap& image, bool quiet=false);
 
   //################################################################################################
-  bool imageReady()override;
+  bool imageReady() override;
 
   //################################################################################################
-  GLuint bindTexture()override;
+  GLuint bindTexture() override;
 
   //################################################################################################
   //! Creates and binds a texure with the given image

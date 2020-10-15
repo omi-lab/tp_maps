@@ -27,22 +27,22 @@ public:
 
 protected:
   //################################################################################################
-  ~AnimatedFlatController()override;
+  ~AnimatedFlatController() override;
 
   //################################################################################################
-  bool mouseEvent(const MouseEvent& event)override;
+  bool mouseEvent(const MouseEvent& event) override;
 
   //################################################################################################
-  void animate(double timestampMS)override;
+  void animate(double timestampMS) override;
 
   //################################################################################################
-  void translate(float dx, float dy, double msSincePrevious)override;
+  void translate(float dx, float dy, double msSincePrevious) override;
 
   //################################################################################################
-  void translateInteractionFinished()override;
+  void translateInteractionFinished() override;
 
   //################################################################################################
-  void translateInteractionStarted()override;
+  void translateInteractionStarted() override;
 
 private:
   struct Private;

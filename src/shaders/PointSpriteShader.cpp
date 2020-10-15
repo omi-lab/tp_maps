@@ -261,7 +261,9 @@ PointSpriteShader::VertexBuffer* PointSpriteShader::generateVertexBuffer(Map* ma
         PointSprite_lt& ps = verts.emplace_back();
         ps.color    = p->color;
         ps.position = p->position;
-        ps.offset   =(p->offset+offsets.at(i))*p->radius;
+        ps.offset   = p->offset+offsets.at(i);
+        ps.offset.x *=p->radius;
+        ps.offset.y *=p->radius;
         ps.texture  = texCoords.at(i);
       }
     }

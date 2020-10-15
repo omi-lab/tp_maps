@@ -16,7 +16,7 @@ void main()
 {
   gl_Position = (matrix * vec4(inPosition, 1.0));
   clip = (gl_Position.z<-0.9999)?0.0:1.0;
-  gl_Position += vec4((inOffset.x*scaleFactor.x)*gl_Position.w, (inOffset.y*scaleFactor.y)*gl_Position.w, 0.0, 0.0);
+  gl_Position += vec4((inOffset.x*scaleFactor.x)*gl_Position.w, (inOffset.y*scaleFactor.y)*gl_Position.w, inOffset.z, 0.0);
   texCoordinate = inTexture;
   color = inColor;
 }

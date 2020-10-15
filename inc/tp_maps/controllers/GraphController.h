@@ -53,20 +53,20 @@ public:
   nlohmann::json saveState() const override;
 
   //################################################################################################
-  void loadState(const nlohmann::json& j)override;
+  void loadState(const nlohmann::json& j) override;
 
 protected:
   //################################################################################################
-  ~GraphController()override;
+  ~GraphController() override;
 
   //################################################################################################
-   void mapResized(int w, int h)override;
+   void mapResized(int w, int h) override;
 
   //################################################################################################
-  void updateMatrices()override;
+  void updateMatrices() override;
 
   //################################################################################################
-  bool mouseEvent(const MouseEvent& event)override;
+  bool mouseEvent(const MouseEvent& event) override;
 
   //################################################################################################
   virtual void translate(double dx, double dy, double msSincePrevious);

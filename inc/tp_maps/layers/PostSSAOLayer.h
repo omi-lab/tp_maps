@@ -17,7 +17,7 @@ public:
   PostSSAOLayer(Map* map, RenderPass customRenderPass);
 
   //################################################################################################
-  ~PostSSAOLayer()override;
+  ~PostSSAOLayer() override;
 
 protected:
   //################################################################################################

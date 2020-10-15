@@ -17,13 +17,14 @@ DefaultSpritesTexture::DefaultSpritesTexture(Map* map):
     for(int x=0; x<32; x++)
     {
       float fx = float(std::abs(x-16));
-      float f = std::min(255.0f, std::sqrt(fx*fx + fy)*16.0f);
+      float f = std::min(255.0f, std::sqrt(fx*fx + fy));
+      float fc = std::min(255.0f, f*6.0f);
 
       TPPixel& p = newData[y*32+x];
-      p.a = (f>16)?0:255;
-      p.r = uint8_t(255.0f-f);
-      p.g = uint8_t(255.0f-f);
-      p.b = uint8_t(255.0f-f);
+      p.a = (f>=16)?0:255;
+      p.r = uint8_t(255.0f-fc);
+      p.g = uint8_t(255.0f-fc);
+      p.b = uint8_t(255.0f-fc);
     }
   }
 

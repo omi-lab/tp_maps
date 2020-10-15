@@ -22,25 +22,36 @@ struct Details_lt
 //##################################################################################################
 struct TexturePool::Private
 {
-  Layer* layer;
+  Map* m_map;
+  Layer* m_layer;
   std::unordered_map<tp_utils::StringID, Details_lt> images;
 
   //################################################################################################
-  Private(Layer* layer_):
-    layer(layer_)
+  Private(Map* map_, Layer* layer_):
+    m_map(map_),
+    m_layer(layer_)
   {
-    invalidateBuffersCallback.connect(layer->invalidateBuffersCallbacks);
+    if(m_map)
+      invalidateBuffersCallback.connect(m_map->invalidateBuffersCallbacks);
+    else if(m_layer)
+      invalidateBuffersCallback.connect(m_layer->invalidateBuffersCallbacks);
   }
 
   //################################################################################################
   ~Private()
   {
-    if(layer->map())
+    if(map())
     {
-      layer->map()->makeCurrent();
+      map()->makeCurrent();
       for(auto& i : images)
-        layer->map()->deleteTexture(i.second.textureID);
+        map()->deleteTexture(i.second.textureID);
     }
+  }
+
+  //################################################################################################
+  Map* map()
+  {
+    return (m_layer && m_layer->map())?m_layer->map():m_map;
   }
 
   //################################################################################################
@@ -52,8 +63,15 @@ struct TexturePool::Private
 };
 
 //##################################################################################################
+TexturePool::TexturePool(Map* map):
+  d(new Private(map, nullptr))
+{
+
+}
+
+//##################################################################################################
 TexturePool::TexturePool(Layer* layer):
-  d(new Private(layer))
+  d(new Private(nullptr, layer))
 {
 
 }
@@ -63,27 +81,6 @@ TexturePool::~TexturePool()
 {
   delete d;
 }
-
-
-// //##################################################################################################
-// void Geometry3DLayer::setTextures(const std::unordered_map<tp_utils::StringID, Texture*>& textures)
-// {
-//   for(const auto& i : d->textures)
-//     delete i.second;
-//   d->textures = textures;
-//
-//   for(const auto& i : d->textures)
-//   {
-//     i.second->setImageChangedCallback([this]()
-//     {
-//       d->bindBeforeRender = true;
-//       update();
-//     });
-//   }
-//   d->bindBeforeRender = true;
-//   update();
-// }
-
 
 //##################################################################################################
 void TexturePool::subscribe(const tp_utils::StringID& name, const tp_image_utils::ColorMap& image)
@@ -104,8 +101,8 @@ void TexturePool::unsubscribe(const tp_utils::StringID& name)
   i->second.count--;
   if(!i->second.count)
   {
-    if(i->second.textureID && d->layer->map())
-      d->layer->map()->deleteTexture(i->second.textureID);
+    if(i->second.textureID && d->map())
+      d->map()->deleteTexture(i->second.textureID);
     d->images.erase(i);
   }
 }
@@ -118,7 +115,7 @@ GLuint TexturePool::textureID(const tp_utils::StringID& name)
     return 0;
 
   if(!i->second.texture)
-    i->second.texture = new BasicTexture(d->layer->map(), i->second.image);
+    i->second.texture = new BasicTexture(d->map(), i->second.image);
 
   if(!i->second.textureID)
     i->second.textureID = i->second.texture->bindTexture();
