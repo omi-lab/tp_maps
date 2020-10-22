@@ -5,6 +5,7 @@
 #include "tp_maps/picking_results/LinesPickingResult.h"
 
 #include "tp_utils/DebugUtils.h"
+#include "tp_utils/TimeUtils.h"
 
 #include "glm/glm.hpp"
 
@@ -169,11 +170,20 @@ void LinesLayer::setLinesFromGeometry(const std::vector<Geometry3D>& geometry)
 //##################################################################################################
 void LinesLayer::setLinesFromGeometryNormals(const std::vector<Geometry3D>& geometry, float scale)
 {
+  size_t vertCount=0;
+  for(const auto& m : geometry)
+    vertCount += m.geometry.verts.size();
+  vertCount*=2;
+
   std::vector<tp_maps::Lines> lines;
   lines.resize(3);
   auto& r = lines.at(0);
   auto& g = lines.at(1);
   auto& b = lines.at(2);
+
+  r.lines.reserve(vertCount);
+  g.lines.reserve(vertCount);
+  b.lines.reserve(vertCount);
 
   r.color = {1.0f, 0.0f, 0.0f, 1.0f};
   g.color = {0.0f, 1.0f, 0.0f, 1.0f};

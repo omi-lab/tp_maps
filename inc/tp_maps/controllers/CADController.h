@@ -3,6 +3,8 @@
 
 #include "tp_maps/Controller.h"
 
+#include "tp_utils/CallbackCollection.h"
+
 namespace tp_maps
 {
 
@@ -36,6 +38,10 @@ public:
 
   //################################################################################################
   void setMode(CADControllerMode mode);
+
+  //################################################################################################
+  //! Multiplied with translation operations
+  void setSpeedModifier(float speedModifier);
 
   //################################################################################################
   glm::vec3 cameraOrigin() const;
@@ -93,6 +99,12 @@ public:
 
   //################################################################################################
   void loadState(const nlohmann::json& j) override;
+
+  //################################################################################################
+  void copyState(const CADController& other);
+
+  //################################################################################################
+  tp_utils::CallbackCollection<void()> userInteraction;
 
 protected:
   //################################################################################################

@@ -343,6 +343,48 @@ const char* ShaderResource::data(OpenGLProfile openGLProfile)
 }
 
 //##################################################################################################
+nlohmann::json Material::saveState() const
+{
+  nlohmann::json j;
+
+  j["name"] = name.keyString();
+
+  j["ambient"] = tp_math_utils::vec3ToJSON(ambient);
+  j["diffuse"] = tp_math_utils::vec3ToJSON(diffuse);
+  j["specular"] = tp_math_utils::vec3ToJSON(specular);
+
+  j["shininess"] = shininess;
+  j["alpha"] = alpha;
+
+  j["ambientTexture"] = ambientTexture.keyString();
+  j["diffuseTexture"] = diffuseTexture.keyString();
+  j["specularTexture"] = specularTexture.keyString();
+  j["alphaTexture"] = alphaTexture.keyString();
+  j["bumpTexture"] = bumpTexture.keyString();
+
+  return j;
+}
+
+//##################################################################################################
+void Material::loadState(const nlohmann::json& j)
+{
+  name = TPJSONString(j, "name");
+
+  ambient = tp_math_utils::vec3FromJSON(TPJSON(j, "ambient"));
+  diffuse = tp_math_utils::vec3FromJSON(TPJSON(j, "diffuse"));
+  specular = tp_math_utils::vec3FromJSON(TPJSON(j, "specular"));
+
+  shininess = TPJSONFloat(j, "shininess", shininess);
+  alpha = TPJSONFloat(j, "alpha", alpha);
+
+  ambientTexture = TPJSONString(j, "ambientTexture");
+  diffuseTexture = TPJSONString(j, "diffuseTexture");
+  specularTexture = TPJSONString(j, "specularTexture");
+  alphaTexture = TPJSONString(j, "alphaTexture");
+  bumpTexture = TPJSONString(j, "bumpTexture");
+}
+
+//##################################################################################################
 std::vector<std::string> lightTypes()
 {
   return {"Directional", "Global", "Spot"};

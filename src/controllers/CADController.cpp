@@ -58,6 +58,8 @@ struct CADController::Private
 
   CADController* q;
 
+  float speedModifier{1.0f};
+
   CADControllerMode mode{CADControllerMode::Perspective};
 
   glm::ivec2 previousPos{0,0};
@@ -118,8 +120,8 @@ struct CADController::Private
     float radians = glm::radians(rotationAngle);
     float ca = std::cos(radians);
     float sa = std::sin(radians);
-    cameraOrigin.x += dist*sa;
-    cameraOrigin.y += dist*ca;
+    cameraOrigin.x += (dist*sa) * speedModifier;
+    cameraOrigin.y += (dist*ca) * speedModifier;
   }
 
   //################################################################################################
@@ -133,13 +135,13 @@ struct CADController::Private
     glm::vec3 up{0, 0, 1};
     glm::vec right = glm::cross(forward, up);
 
-    cameraOrigin.x += (right.x*distX);
-    cameraOrigin.y += (right.y*distX);
+    cameraOrigin.x += (right.x*distX)*speedModifier;
+    cameraOrigin.y += (right.y*distX)*speedModifier;
 
     glm::mat4 m = glm::inverse(q->matrix(defaultSID()));
     glm::vec4 v1 = m*glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     glm::vec4 v2 = m*glm::vec4(0.0f, -1.0f, 0.0f, 1.0f);
-    cameraOrigin += glm::normalize((glm::vec3(v2)/v2.w) - (glm::vec3(v1)/v1.w)) * distY;
+    cameraOrigin += (glm::normalize((glm::vec3(v2)/v2.w) - (glm::vec3(v1)/v1.w)) * distY) * speedModifier;
   }
 
   //################################################################################################
@@ -163,8 +165,8 @@ struct CADController::Private
       fh = height/width;
     }
 
-    dx *= fw*distance*2.0f;
-    dy *= fh*distance*2.0f;
+    dx *= (fw*distance*2.0f) * speedModifier;
+    dy *= (fh*distance*2.0f) * speedModifier;
 
     switch(mode)
     {
@@ -194,7 +196,7 @@ struct CADController::Private
     glm::mat4 m = glm::inverse(q->matrix(defaultSID()));
     glm::vec4 v1 = m*glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     glm::vec4 v2 = m*glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
-    cameraOrigin += glm::normalize((glm::vec3(v2)/v2.w) - (glm::vec3(v1)/v1.w)) * distZ;
+    cameraOrigin += (glm::normalize((glm::vec3(v2)/v2.w) - (glm::vec3(v1)/v1.w)) * distZ) * speedModifier;
   }
 };
 
@@ -217,6 +219,12 @@ void CADController::setMode(CADControllerMode mode)
 {
   d->mode = mode;
   map()->update();
+}
+
+//##################################################################################################
+void CADController::setSpeedModifier(float speedModifier)
+{
+  d->speedModifier = speedModifier;
 }
 
 //##################################################################################################
@@ -365,6 +373,24 @@ void CADController::loadState(const nlohmann::json& j)
   map()->update();
 }
 
+
+//################################################################################################
+void CADController::copyState(const CADController& other)
+{
+  d->viewAngle      = other.d->viewAngle;
+  d->rotationAngle  = other.d->rotationAngle;
+  d->cameraOrigin   = other.d->cameraOrigin;
+  d->rotationFactor = other.d->rotationFactor;
+
+  d->distance       = other.d->distance;
+  d->focalPoint     = other.d->focalPoint;
+
+  d->near           = other.d->near;
+  d->far            = other.d->far;
+
+  map()->update();
+}
+
 //##################################################################################################
 CADController::~CADController()
 {
@@ -469,6 +495,13 @@ bool CADController::mouseEvent(const MouseEvent& event)
   constexpr float metersPerSecond = 5.6f;
   constexpr float translationFactor = metersPerSecond / 1000.0f;
 
+  bool changed=false;
+  TP_CLEANUP([&]
+  {
+    if(changed)
+      userInteraction();
+  });
+
   switch(event.type)
   {
   case MouseEventType::Press: //--------------------------------------------------------------------
@@ -514,6 +547,7 @@ bool CADController::mouseEvent(const MouseEvent& event)
 
     if(d->mouseInteraction == Button::MiddleButton)
     {
+      changed = true;
       if(d->mode == CADControllerMode::Perspective)
         d->strafe(dx*float(translationFactor), dy*float(translationFactor));
       else
@@ -526,6 +560,7 @@ bool CADController::mouseEvent(const MouseEvent& event)
       {
         if(d->variableViewAngle)
         {
+          changed = true;
           d->viewAngle += dy*0.2f;
 
           if(d->viewAngle>0)
@@ -537,6 +572,7 @@ bool CADController::mouseEvent(const MouseEvent& event)
 
         if(d->allowRotation)
         {
+          changed = true;
           d->rotationAngle += dx*d->rotationFactor;
           if(d->rotationAngle<0)
             d->rotationAngle+=360;
@@ -555,13 +591,14 @@ bool CADController::mouseEvent(const MouseEvent& event)
   {
     if(d->mode == CADControllerMode::Perspective)
     {
+      changed = true;
       d->moveForward(float(event.delta)*translationFactor*0.2f);
     }
     else
     {
+      changed = true;
       glm::vec3 scenePointA;
       bool moveOrigin = map()->unProject(event.pos, scenePointA, tp_math_utils::Plane());
-
 
       if(event.delta<0)
         d->distance *= 1.1f;
@@ -663,6 +700,13 @@ void CADController::animate(double timestampMS)
     return;
   }
 
+  bool changed=false;
+  TP_CLEANUP([&]
+  {
+    if(changed)
+      userInteraction();
+  });
+
   double delta = timestampMS - d->timestampMS;
   d->timestampMS = timestampMS;
 
@@ -674,23 +718,27 @@ void CADController::animate(double timestampMS)
   {
     if(d->keyState[L_SHIFT_KEY] ||d->keyState[R_SHIFT_KEY] )
     {
+      changed = true;
       translateMeters *= 10;
     }
 
     if(d->keyState[UP_KEY] ||d->keyState[W_KEY] )
     {
+      changed = true;
       d->translate(float(translateMeters));
       map()->update();
     }
 
     if(d->keyState[DOWN_KEY]||d->keyState[S_KEY] )
     {
+      changed = true;
       d->translate(-float(translateMeters));
       map()->update();
     }
 
     if(d->keyState[LEFT_KEY])
     {
+      changed = true;
       d->rotationAngle -= float(rotateDegrees);
       if(d->rotationAngle<0.0f)
         d->rotationAngle+=360.0f;
@@ -699,6 +747,7 @@ void CADController::animate(double timestampMS)
 
     if(d->keyState[RIGHT_KEY])
     {
+      changed = true;
       d->rotationAngle += float(rotateDegrees);
       if(d->rotationAngle>360.0f)
         d->rotationAngle-=360.0f;
@@ -707,25 +756,29 @@ void CADController::animate(double timestampMS)
 
     if(d->keyState[A_KEY] )
     {
+      changed = true;
       d->strafe(-float(translateMeters));
       map()->update();
     }
 
     if(d->keyState[D_KEY] )
     {
+      changed = true;
       d->strafe(float(translateMeters));
       map()->update();
     }
 
     if(d->keyState[PAGE_UP_KEY] || d->keyState[SPACE_KEY])
     {
-      d->cameraOrigin.z += float(translateMeters);
+      changed = true;
+      d->cameraOrigin.z += float(translateMeters) * d->speedModifier;
       map()->update();
     }
 
     if(d->keyState[PAGE_DOWN_KEY]|| d->keyState[L_CTRL_KEY])
     {
-      d->cameraOrigin.z -= float(translateMeters);
+      changed = true;
+      d->cameraOrigin.z -= float(translateMeters) * d->speedModifier;
       map()->update();
     }
   }

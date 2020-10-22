@@ -296,6 +296,12 @@ struct TP_MAPS_SHARED_EXPORT Material
   tp_utils::StringID specularTexture;   //!< mtl: map_Ks
   tp_utils::StringID alphaTexture;      //!< mtl: map_d
   tp_utils::StringID bumpTexture;       //!< mtl: map_Bump
+
+  //################################################################################################
+  nlohmann::json saveState() const;
+
+  //################################################################################################
+  void loadState(const nlohmann::json& j);
 };
 
 //##################################################################################################
