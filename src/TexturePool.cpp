@@ -46,6 +46,9 @@ struct TexturePool::Private
       for(auto& i : images)
         map()->deleteTexture(i.second.textureID);
     }
+
+    for(auto& i : images)
+      delete i.second.texture;
   }
 
   //################################################################################################
@@ -102,7 +105,8 @@ void TexturePool::unsubscribe(const tp_utils::StringID& name)
   if(!i->second.count)
   {
     if(i->second.textureID && d->map())
-      d->map()->deleteTexture(i->second.textureID);
+      d->map()->deleteTexture(i->second.textureID);    
+    delete i->second.texture;
     d->images.erase(i);
   }
 }
