@@ -918,6 +918,9 @@ void Map::initializeGL()
     d->invalidateBuffer(d->reflectionBuffer);
     d->invalidateBuffer(d->pickingBuffer);
     d->invalidateBuffer(d->renderToImageBuffer);
+
+    for(auto& lightTexture : d->lightTextures)
+      d->invalidateBuffer(lightTexture);
     d->lightTextures.clear();
 
     d->spotLightTextureID = 0;
