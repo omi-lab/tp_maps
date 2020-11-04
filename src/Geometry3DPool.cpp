@@ -74,7 +74,7 @@ struct PoolDetails_lt
   }
 
   //################################################################################################
-  void checkUpdateVertexBufferTextures(TexturePool* texturePool, GLuint emptyTextureID, GLuint emptyNormalTextureID)
+  void checkUpdateVertexBufferTextures(TexturePool* texturePool, GLuint emptyTextureID, GLuint emptyAlphaTextureID, GLuint emptyNormalTextureID)
   {
     if(updateVertexBufferTextures)
     {
@@ -96,13 +96,14 @@ struct PoolDetails_lt
             textureID = emptyID;
         };
 
+        glm::vec3 tmpAlpha{1.0f, 1.0f, 1.0f};
         glm::vec3 tmpNormal{0.0f, 0.0f, 1.0f};
+
         selectTexture(details.material.ambientTexture, details.ambientTextureID, details.material.ambient, emptyTextureID);
         selectTexture(details.material.diffuseTexture, details.diffuseTextureID, details.material.diffuse, emptyTextureID);
         selectTexture(details.material.specularTexture, details.specularTextureID, details.material.specular, emptyTextureID);
-        details.alphaTextureID = emptyTextureID;
+        selectTexture(details.material.alphaTexture, details.alphaTextureID, tmpAlpha, emptyAlphaTextureID);
         selectTexture(details.material.bumpTexture, details.bumpTextureID, tmpNormal, emptyNormalTextureID);
-        //details.bumpTextureID = emptyNormalTextureID;
       }
     }
   }
@@ -122,9 +123,11 @@ struct Geometry3DPool::Private
   std::unordered_map<tp_utils::StringID, PoolDetails_lt> pools;
 
   std::unique_ptr<BasicTexture> emptyTexture;
+  std::unique_ptr<BasicTexture> emptyAlphaTexture;
   std::unique_ptr<BasicTexture> emptyNormalTexture;
 
   GLuint emptyTextureID{0};
+  GLuint emptyAlphaTextureID{0};
   GLuint emptyNormalTextureID{0};
 
   bool bindBeforeRender{true};
@@ -156,6 +159,7 @@ struct Geometry3DPool::Private
       i.second.deleteVertexBuffers();
 
     map()->deleteTexture(emptyTextureID);
+    map()->deleteTexture(emptyAlphaTextureID);
     map()->deleteTexture(emptyNormalTextureID);
   }
 
@@ -184,7 +188,9 @@ struct Geometry3DPool::Private
       i.second.updateVertexBufferTextures=true;
     }
 
+    bindBeforeRender = true;
     emptyTextureID = 0;
+    emptyAlphaTextureID = 0;
     emptyNormalTextureID = 0;
   };
 
@@ -200,9 +206,14 @@ struct Geometry3DPool::Private
 
       if(!emptyTexture)
       {
-        ;
         tp_image_utils::ColorMap textureData{1, 1, nullptr, TPPixel{0, 0, 0, 255}};
         emptyTexture = std::make_unique<BasicTexture>(map(), textureData);
+      }
+
+      if(!emptyAlphaTexture)
+      {
+        tp_image_utils::ColorMap textureData{1, 1, nullptr, TPPixel{255, 255, 255, 255}};
+        emptyAlphaTexture = std::make_unique<BasicTexture>(map(), textureData);
       }
 
       if(!emptyNormalTexture)
@@ -212,6 +223,7 @@ struct Geometry3DPool::Private
       }
 
       emptyTextureID = emptyTexture->bindTexture();
+      emptyAlphaTextureID = emptyAlphaTexture->bindTexture();
       emptyNormalTextureID = emptyNormalTexture->bindTexture();
     }
   }
@@ -298,7 +310,7 @@ void Geometry3DPool::viewProcessedGeometry(const tp_utils::StringID& name,
 
   d->checkBindTextures();
   i->second.checkUpdateVertexBuffer(shader, d->map());
-  i->second.checkUpdateVertexBufferTextures(d->texturePool, d->emptyTextureID, d->emptyNormalTextureID);
+  i->second.checkUpdateVertexBufferTextures(d->texturePool, d->emptyTextureID, d->emptyAlphaTextureID, d->emptyNormalTextureID);
 
   closure(i->second.processedGeometry);
 }

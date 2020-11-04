@@ -182,6 +182,7 @@ Geometry3DLayer::ShaderSelection Geometry3DLayer::shaderSelection() const
 void Geometry3DLayer::render(RenderInfo& renderInfo)
 {
   if(renderInfo.pass != defaultRenderPass() &&
+     renderInfo.pass != RenderPass::Transparency &&
      renderInfo.pass != RenderPass::LightFBOs &&
      renderInfo.pass != RenderPass::Picking)
     return;
@@ -282,6 +283,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
                           details.alphaTextureID,
                           details.bumpTextureID,
                           map()->spotLightTexture());
+      shader->setDiscardOpacity((renderInfo.pass == RenderPass::Transparency)?0.01f:0.80f);
     },
     [&](auto shader, auto first, auto second) //-- draw --------------------------------------------
     {

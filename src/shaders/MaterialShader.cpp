@@ -59,36 +59,62 @@ struct MaterialShader::Private
 {
   TP_REF_COUNT_OBJECTS("tp_maps::MaterialShader::Private");
   TP_NONCOPYABLE(Private);
-  Private() = default;
+
+  MaterialShader* q;
 
   ShaderType shaderType{ShaderType::Render};
 
   size_t maxLights{1};
 
-  GLint mMatrixLocation          {0};
-  GLint mvpMatrixLocation        {0};
+  GLint           mMatrixLocation{0};
+  GLint         mvpMatrixLocation{0};
 
-  GLint cameraOriginLocation     {0};
+  GLint      cameraOriginLocation{0};
 
-  GLint materialAmbientLocation  {0};
-  GLint materialDiffuseLocation  {0};
-  GLint materialSpecularLocation {0};
+  GLint   materialAmbientLocation{0};
+  GLint   materialDiffuseLocation{0};
+  GLint  materialSpecularLocation{0};
   GLint materialShininessLocation{0};
-  GLint materialAlphaLocation    {0};
+  GLint     materialAlphaLocation{0};
 
-  GLint ambientTextureLocation   {0};
-  GLint diffuseTextureLocation   {0};
-  GLint specularTextureLocation  {0};
-  //GLint alphaTextureLocation   {0};
-  GLint bumpTextureLocation      {0};
-  GLint spotLightTextureLocation {0};
+  GLint    discardOpacityLocation{0};
 
-  GLint pickingMVPMatrixLocation {0};
-  GLint pickingIDLocation        {0};
+  GLint    ambientTextureLocation{0};
+  GLint    diffuseTextureLocation{0};
+  GLint   specularTextureLocation{0};
+  GLint      alphaTextureLocation{0};
+  GLint       bumpTextureLocation{0};
+  GLint  spotLightTextureLocation{0};
 
-  GLint lightMVPMatrixLocation   {0};
+  GLint  pickingMVPMatrixLocation{0};
+  GLint         pickingIDLocation{0};
 
-  std::vector<LightLocations_lt> lightLocations;
+  GLint    lightMVPMatrixLocation{0};
+
+  std::vector<LightLocations_lt> lightLocations;  
+
+  GLuint emptyTextureID{0};
+  GLuint emptyAlphaTextureID{0};
+  GLuint emptyNormalTextureID{0};
+
+  //################################################################################################
+  Private(MaterialShader* q_):
+    q(q_)
+  {
+
+  }
+
+  //################################################################################################
+  ~Private()
+  {
+    if(q->map() && emptyTextureID)
+    {
+      q->map()->makeCurrent();
+      q->map()->deleteTexture(emptyTextureID);
+      q->map()->deleteTexture(emptyAlphaTextureID);
+      q->map()->deleteTexture(emptyNormalTextureID);
+    }
+  }
 
   //################################################################################################
   void draw(GLenum mode, MaterialShader::VertexBuffer* vertexBuffer)
@@ -107,8 +133,19 @@ struct MaterialShader::Private
 //##################################################################################################
 MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, bool compileShader):
   Geometry3DShader(map, openGLProfile),
-  d(new Private())
+  d(new Private(this))
 {
+  auto bindTexture = [&](const TPPixel& color)
+  {
+    tp_image_utils::ColorMap textureData{1, 1, nullptr, color};
+    BasicTexture texture(map, textureData);
+    return texture.bindTexture();
+  };
+
+  d->emptyTextureID       = bindTexture({  0,   0,   0, 255});
+  d->emptyAlphaTextureID  = bindTexture({255, 255, 255, 255});
+  d->emptyNormalTextureID = bindTexture({127, 127, 255, 255});
+
   if(compileShader)
   {
     std::string LIGHT_VERT_VARS;
@@ -217,6 +254,8 @@ void MaterialShader::compile(const char* vertShaderStr,
                              const std::function<void(GLuint)>& getLocations,
                              ShaderType shaderType)
 {
+
+
   Shader::compile(vertShaderStr,
                   fragShaderStr,
                   [&](GLuint program)
@@ -260,10 +299,12 @@ void MaterialShader::compile(const char* vertShaderStr,
       d->materialShininessLocation = glGetUniformLocation(program, "material.shininess");
       d->materialAlphaLocation     = glGetUniformLocation(program, "material.alpha");
 
+      d->discardOpacityLocation    = glGetUniformLocation(program, "discardOpacity");
+
       d->ambientTextureLocation   = glGetUniformLocation(program, "ambientTexture");
       d->diffuseTextureLocation   = glGetUniformLocation(program, "diffuseTexture");
       d->specularTextureLocation  = glGetUniformLocation(program, "specularTexture");
-      //d->alphaTextureIDLocation = glGetUniformLocation(program, "ambientTexture");
+      d->alphaTextureLocation     = glGetUniformLocation(program, "alphaTexture");
       d->bumpTextureLocation      = glGetUniformLocation(program, "bumpTexture");
       d->spotLightTextureLocation = glGetUniformLocation(program, "spotLightTexture");
 
@@ -441,6 +482,16 @@ void MaterialShader::drawPicking(GLenum mode,
 }
 
 //##################################################################################################
+void MaterialShader::invalidate()
+{
+  d->emptyTextureID = 0;
+  d->emptyAlphaTextureID = 0;
+  d->emptyNormalTextureID = 0;
+
+  Geometry3DShader::invalidate();
+}
+
+//##################################################################################################
 void MaterialShader::drawVertexBuffer(GLenum mode, VertexBuffer* vertexBuffer)
 {
   d->draw(mode, vertexBuffer);
@@ -471,7 +522,7 @@ void MaterialShader::setTextures(GLuint ambientTextureID,
 
   glActiveTexture(GL_TEXTURE3);
   glBindTexture(GL_TEXTURE_2D, alphaTextureID);
-  // glUniform1i(d->alphaTextureLocation, 3);
+  glUniform1i(d->alphaTextureLocation, 3);
 
   glActiveTexture(GL_TEXTURE4);
   glBindTexture(GL_TEXTURE_2D, bumpTextureID);
@@ -480,6 +531,26 @@ void MaterialShader::setTextures(GLuint ambientTextureID,
   glActiveTexture(GL_TEXTURE5);
   glBindTexture(GL_TEXTURE_2D, spotLightTextureID);
   glUniform1i(d->spotLightTextureLocation, 5);
+}
+
+//##################################################################################################
+void MaterialShader::setBlankTextures()
+{
+  setTextures(d->emptyTextureID,
+              d->emptyTextureID,
+              d->emptyTextureID,
+              d->emptyAlphaTextureID,
+              d->emptyNormalTextureID,
+              map()->spotLightTexture());
+}
+
+//##################################################################################################
+void MaterialShader::setDiscardOpacity(float discardOpacity)
+{
+  if(d->shaderType != ShaderType::Render)
+    return;
+
+  glUniform1f(d->discardOpacityLocation, discardOpacity);
 }
 
 }

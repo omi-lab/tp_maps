@@ -5,6 +5,8 @@
 
 #include "tp_image_utils/ColorMap.h"
 
+#include "tp_utils/DebugUtils.h"
+
 namespace tp_maps
 {
 
@@ -15,6 +17,7 @@ struct Details_lt
   int count{0};
   tp_image_utils::ColorMap image;
   BasicTexture* texture{nullptr};
+  bool overwrite{false};
   GLuint textureID{0};
 };
 }
@@ -90,6 +93,18 @@ void TexturePool::subscribe(const tp_utils::StringID& name, const tp_image_utils
 {
   auto& details = d->images[name];
   details.count++;
+
+  if(details.overwrite)
+  {
+    details.overwrite = false;
+
+    if(details.textureID && d->map())
+      d->map()->deleteTexture(details.textureID);
+    delete details.texture;
+    details.textureID = 0;
+    details.texture = nullptr;
+  }
+
   if(!details.texture)
   {
     details.image = image;
@@ -109,6 +124,13 @@ void TexturePool::unsubscribe(const tp_utils::StringID& name)
     delete i->second.texture;
     d->images.erase(i);
   }
+}
+
+//##################################################################################################
+void TexturePool::invalidate(const tp_utils::StringID& name)
+{
+  if(auto i = d->images.find(name); i != d->images.end())
+    i->second.overwrite = true;
 }
 
 //##################################################################################################

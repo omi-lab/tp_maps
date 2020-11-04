@@ -51,6 +51,18 @@ public:
                    GLuint spotLightTextureID);
 
   //################################################################################################
+  void setBlankTextures();
+
+  //################################################################################################
+  //! Discard alpha values less than this
+  /*!
+  This can be used to discard alpha values on the normal render but draw them on the transparency
+  pass. Typically 0.99 would be used for render and 0.01 would be used for transparency passes.
+  \param discardOpacity A value between 1 and 0.
+  */
+  void setDiscardOpacity(float discardOpacity);
+
+  //################################################################################################
   //! Call this to draw the image
   /*!
   \param vertices The points that make up the line.
@@ -69,7 +81,9 @@ public:
   //################################################################################################
   static inline const tp_utils::StringID& name(){return materialShaderSID();}
 
-protected:
+protected:  
+  //################################################################################################
+  void invalidate() override;
 
   //################################################################################################
   void drawVertexBuffer(GLenum mode, VertexBuffer* vertexBuffer);

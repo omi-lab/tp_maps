@@ -90,7 +90,9 @@ void GeometryLayer::setGeometry(const std::vector<Geometry>& geometry)
 //##################################################################################################
 void GeometryLayer::render(RenderInfo& renderInfo)
 {
-  if(renderInfo.pass != defaultRenderPass() && renderInfo.pass != RenderPass::Picking)
+  if(renderInfo.pass != defaultRenderPass() &&
+     renderInfo.pass != RenderPass::Transparency &&
+     renderInfo.pass != RenderPass::Picking)
     return;
 
   auto shader = map()->getShader<MaterialShader>();
@@ -169,6 +171,8 @@ void GeometryLayer::render(RenderInfo& renderInfo)
     for(const auto& details : d->processedGeometry)
     {
       shader->setMaterial(details.material);
+      shader->setBlankTextures();
+      shader->setDiscardOpacity((renderInfo.pass == RenderPass::Transparency)?0.01f:0.80f);
       for(const std::pair<GLenum, MaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
         shader->draw(buff.first, buff.second);
     }

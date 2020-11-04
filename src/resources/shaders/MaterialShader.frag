@@ -35,10 +35,13 @@ struct LightResult
 uniform sampler2D ambientTexture;
 uniform sampler2D diffuseTexture;
 uniform sampler2D specularTexture;
+uniform sampler2D alphaTexture;
 uniform sampler2D bumpTexture;
 uniform sampler2D spotLightTexture;
 
 uniform Material material;
+
+uniform float discardOpacity;
 
 /*TP_GLSL_IN_F*/vec3 fragPos_world;
 
@@ -198,6 +201,7 @@ void main()
   vec3  ambientTex = /*TP_GLSL_TEXTURE*/( ambientTexture, uv_tangent).xyz;
   vec3  diffuseTex = /*TP_GLSL_TEXTURE*/( diffuseTexture, uv_tangent).xyz;
   vec3 specularTex = /*TP_GLSL_TEXTURE*/(specularTexture, uv_tangent).xyz;
+  float   alphaTex = /*TP_GLSL_TEXTURE*/(   alphaTexture, uv_tangent).x;
   vec3     bumpTex = /*TP_GLSL_TEXTURE*/(    bumpTexture, uv_tangent).xyz;
 
   vec3 norm = normalize(bumpTex*2.0-1.0);
@@ -213,8 +217,9 @@ void main()
   specular *= (specularTex+material.specular);
 
   vec3 result = ambient + diffuse + specular;
-  /*TP_GLSL_GLFRAGCOLOR*/ = vec4(result, material.alpha);
 
-  if(/*TP_GLSL_GLFRAGCOLOR*/.a<0.01)
+  /*TP_GLSL_GLFRAGCOLOR*/ = vec4(result, material.alpha*alphaTex);
+
+  if(/*TP_GLSL_GLFRAGCOLOR*/.a<discardOpacity)
     discard;
 }

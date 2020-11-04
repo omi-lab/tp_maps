@@ -59,7 +59,7 @@ void PostSSAOLayer::render(RenderInfo& renderInfo)
 
   shader->use();
   shader->setReflectionTextures(map()->reflectionTexture(), map()->reflectionDepth());
-  shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).vp);
+  shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);
   shader->draw();
 }
 

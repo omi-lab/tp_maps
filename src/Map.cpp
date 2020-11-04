@@ -125,7 +125,7 @@ struct Map::Private
   }
 
   //################################################################################################
-  bool prepareBuffer(FBO& buffer, int width, int height, bool createColorBuffer=true)
+  bool prepareBuffer(FBO& buffer, int width, int height, bool createColorBuffer, bool multisample)
   {
     if(buffer.width!=width || buffer.height!=height)
       deleteBuffer(buffer);
@@ -190,10 +190,58 @@ struct Map::Private
 
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
-      tpWarning() << "Error Map::Private::prepareBuffer frame buffer not complete!";      
+      tpWarning() << "Error Map::Private::prepareBuffer frame buffer not complete!";
       tpWarning() << glGetString(GL_VERSION);
       return false;
     }
+
+#ifdef TP_ENABLE_MULTISAMPLE_FBO
+    if(multisample)
+    {
+      glEnable(GL_MULTISAMPLE);
+
+      GLsizei samples = 4;
+
+      if(!buffer.multisampleFrameBuffer)
+        glGenFramebuffers(1, &buffer.multisampleFrameBuffer);
+
+      glBindFramebuffer(GL_FRAMEBUFFER, buffer.multisampleFrameBuffer);
+
+      if(!buffer.multisampleTextureID)
+      {
+        glGenTextures(1, &buffer.multisampleTextureID);
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, buffer.multisampleTextureID);
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA8, width, height, GL_TRUE);
+      }
+
+      if(!buffer.multisampleColorRBO)
+      {
+        glGenRenderbuffers(1, &buffer.multisampleColorRBO);
+        glBindRenderbuffer(GL_RENDERBUFFER, buffer.multisampleColorRBO);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGBA8, width, height);
+        glBindRenderbuffer(GL_RENDERBUFFER, 0);
+      }
+
+      if(!buffer.multisampleDepthRBO)
+      {
+        glGenRenderbuffers(1, &buffer.multisampleDepthRBO);
+        glBindRenderbuffer(GL_RENDERBUFFER, buffer.multisampleDepthRBO);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH_COMPONENT, width, height);
+        glBindRenderbuffer(GL_RENDERBUFFER, 0);
+      }
+
+      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, buffer.multisampleTextureID, 0);
+      glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer.multisampleColorRBO);
+      glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer.multisampleDepthRBO);
+
+      if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+      {
+        tpWarning() << "Error Map::Private::prepareBuffer multisample frame buffer not complete!";
+        tpWarning() << glGetString(GL_VERSION);
+        return false;
+      }
+    }
+#endif
 
     glViewport(0, 0, width, height);
 
@@ -205,8 +253,23 @@ struct Map::Private
   }
 
   //################################################################################################
+  //If we are rendering to a multisample FBO we need to blit the results to a non multisampled FBO
+  //before we can actually use it. (thanks OpenGL)
+  void swapMultisampledBuffer(FBO& buffer)
+  {
+#ifdef TP_ENABLE_MULTISAMPLE_FBO
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, buffer.multisampleFrameBuffer);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer.frameBuffer);
+    glBlitFramebuffer(0, 0, buffer.width, buffer.height, 0, 0, buffer.width, buffer.height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
+#endif
+  }
+
+  //################################################################################################
   void deleteBuffer(FBO& buffer)
   {
+    glBindTexture(GL_TEXTURE_2D, 0);
+
     if(buffer.frameBuffer)
     {
       glDeleteFramebuffers(1, &buffer.frameBuffer);
@@ -224,6 +287,32 @@ struct Map::Private
       glDeleteTextures(1, &buffer.depthID);
       buffer.depthID = 0;
     }
+
+#ifdef TP_ENABLE_MULTISAMPLE_FBO
+    if(buffer.multisampleFrameBuffer)
+    {
+      glDeleteFramebuffers(1, &buffer.multisampleFrameBuffer);
+      buffer.multisampleFrameBuffer = 0;
+    }
+
+    if(buffer.multisampleTextureID)
+    {
+      glDeleteTextures(1, &buffer.multisampleTextureID);
+      buffer.multisampleTextureID = 0;
+    }
+
+    if(buffer.multisampleColorRBO)
+    {
+      glDeleteRenderbuffers(1, &buffer.multisampleColorRBO);
+      buffer.multisampleColorRBO = 0;
+    }
+
+    if(buffer.multisampleDepthRBO)
+    {
+      glDeleteRenderbuffers(1, &buffer.multisampleDepthRBO);
+      buffer.multisampleDepthRBO = 0;
+    }
+#endif
   }
 
   //################################################################################################
@@ -232,6 +321,13 @@ struct Map::Private
     buffer.frameBuffer = 0;
     buffer.textureID   = 0;
     buffer.depthID     = 0;
+
+#ifdef TP_ENABLE_MULTISAMPLE_FBO
+    buffer.multisampleFrameBuffer = 0;
+    buffer.multisampleTextureID   = 0;
+    buffer.multisampleColorRBO    = 0;
+    buffer.multisampleDepthRBO    = 0;
+#endif
   }
 };
 
@@ -693,7 +789,7 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
 
   //------------------------------------------------------------------------------------------------
   // Configure the frame buffer that the picking values will be rendered to.
-  if(!d->prepareBuffer(d->renderToImageBuffer, d->width, d->height))
+  if(!d->prepareBuffer(d->renderToImageBuffer, d->width, d->height, true, false))
     return nullptr;
 
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -797,11 +893,14 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
 
   // Configure the frame buffer that the image will be rendered to.
-  if(!d->prepareBuffer(d->renderToImageBuffer, int(width), int(height)))
+  if(!d->prepareBuffer(d->renderToImageBuffer, int(width), int(height), true, true))
     return false;
 
   // Execute a render passes.
   paintGLNoMakeCurrent();
+
+  // Swap the multisampled FBO into the non multisampled FBO.
+  d->swapMultisampledBuffer(d->renderToImageBuffer);
 
   // Read the texture that we just generated
   glReadPixels(0, 0, int(width), int(height), GL_RGBA, GL_UNSIGNED_BYTE, pixels);
@@ -1011,15 +1110,21 @@ void Map::paintGLNoMakeCurrent()
 
       for(size_t i=0; i<d->lightTextures.size(); i++)
       {
+        DEBUG_printOpenGLError("RenderPass::LightFBOs a");
         const auto& light = d->lights.at(i);
         auto& lightBuffer = d->lightTextures.at(i);
 
-        if(!d->prepareBuffer(lightBuffer, d->lightTextureSize, d->lightTextureSize, false))
+        DEBUG_printOpenGLError("RenderPass::LightFBOs b");
+        if(!d->prepareBuffer(lightBuffer, d->lightTextureSize, d->lightTextureSize, false, false))
           return;
 
+        DEBUG_printOpenGLError("RenderPass::LightFBOs c");
         d->controller->setCurrentLight(light);
+        DEBUG_printOpenGLError("RenderPass::LightFBOs d");
         lightBuffer.worldToTexture = d->controller->lightMatrices().vp;
+        DEBUG_printOpenGLError("RenderPass::LightFBOs e");
         d->render();
+        DEBUG_printOpenGLError("RenderPass::LightFBOs f");
       }
       DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers");
 
@@ -1035,11 +1140,12 @@ void Map::paintGLNoMakeCurrent()
       DEBUG_printOpenGLError("RenderPass::ReflectionFBO start");
 #ifdef TP_FBO_SUPPORTED
       glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
-      if(!d->prepareBuffer(d->reflectionBuffer, d->width*2, d->height*2))
+      if(!d->prepareBuffer(d->reflectionBuffer, d->width, d->height, true, true))
       {
         printOpenGLError("RenderPass::ReflectionFBO");
         return;
       }
+
 #endif
       DEBUG_printOpenGLError("RenderPass::ReflectionFBO end");
       break;
@@ -1081,29 +1187,9 @@ void Map::paintGLNoMakeCurrent()
     {
       DEBUG_printOpenGLError("RenderPass::Reflection start");
 #ifdef TP_FBO_SUPPORTED
+      d->swapMultisampledBuffer(d->reflectionBuffer);
       glViewport(0, 0, d->width, d->height);
       glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
-      //      glBindFramebuffer(GL_READ_FRAMEBUFFER, d->reflectionBuffer.frameBuffer);
-
-      //#if 1
-      //      glBlitFramebuffer(0, 0, d->reflectionBuffer.width, d->reflectionBuffer.height,
-      //                        0, 0, d->width, d->height,
-      //                        GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
-      //                        GL_NEAREST);
-      //#else
-      //      glBlitFramebuffer(0, 0, d->width, d->height,
-      //                        0, 0, d->width, d->height,
-      //                        GL_DEPTH_BUFFER_BIT,
-      //                        GL_NEAREST);
-
-      //      glBlitFramebuffer(0, 0, d->width, d->height,
-      //                        0, 0, d->width, d->height,
-      //                        GL_COLOR_BUFFER_BIT ,
-      //                        GL_LINEAR);
-      //#endif
-
-      //      // Call this again to replace GL_READ_FRAMEBUFFER
-      //      glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
 
       glEnable(GL_DEPTH_TEST);
       glDepthFunc(GL_LESS);

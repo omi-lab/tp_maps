@@ -53,6 +53,25 @@
 #  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_130
 #  define TP_GL3
 
+#elif defined(TP_LINUX)
+
+#  define GL_GLEXT_PROTOTYPES
+
+#  include <GLES3/gl32.h>
+#  include <GL/gl.h>
+#  include <GL/glext.h>
+
+// Don't bring in qopenglext.h
+#  ifndef __glext_h_
+#    define __glext_h_ 1
+#  endif
+
+#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_130
+#  define TP_GL3
+#  define TP_ENABLE_MULTISAMPLE
+#  define TP_ENABLE_MULTISAMPLE_FBO
+
+
 #else //--------------------------------------------------------------------------------------------
 #  define GL_GLEXT_LEGACY
 #  include <GLES3/gl3.h>
@@ -397,6 +416,14 @@ struct FBO
   GLuint depthID{0};
   int width{1};
   int height{1};
+
+#ifdef TP_ENABLE_MULTISAMPLE_FBO
+  GLuint multisampleFrameBuffer{0};
+  GLuint multisampleTextureID{0};
+
+  GLuint multisampleColorRBO{0};
+  GLuint multisampleDepthRBO{0};
+#endif
 
   glm::mat4 worldToTexture{1}; //!< For lighting this is used to map world coords onto the texture.
 };
