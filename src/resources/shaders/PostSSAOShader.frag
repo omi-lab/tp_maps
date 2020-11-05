@@ -53,6 +53,8 @@ void main()
     }
   }
 
+  occlusions = max(0.0, occlusions-(count/2.0));
+
   float dim = (clamp((1.0 - occlusions/count)*1.0, 0.0, 1.0)+1.0) / 2.0;
   /*TP_GLSL_GLFRAGCOLOR*/ = vec4(/*TP_GLSL_TEXTURE*/(textureSampler, texCoordinate).xyz*dim, 1.0);
 

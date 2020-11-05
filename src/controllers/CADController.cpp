@@ -218,6 +218,19 @@ CADControllerMode CADController::mode() const
 void CADController::setMode(CADControllerMode mode)
 {
   d->mode = mode;
+
+  switch(d->mode)
+  {
+  case CADControllerMode::OrthoXY:
+  case CADControllerMode::OrthoXZ:
+  case CADControllerMode::OrthoYZ:
+    d->focalPoint = {0.0f, 0.0f, 0.0f};
+    break;
+
+  default:
+    break;
+  }
+
   map()->update();
 }
 
