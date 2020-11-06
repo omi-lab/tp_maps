@@ -204,11 +204,13 @@ GLuint BasicTexture::bindTexture(const tp_image_utils::ColorMap& img,
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, textureWrapS);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, textureWrapT);
 
+#ifdef TP_LINUX
   {
     float maxAnisotropy;
     glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &maxAnisotropy);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAnisotropy);
   }
+#endif
 
   return txId;
 }
