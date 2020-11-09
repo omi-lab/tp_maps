@@ -738,13 +738,7 @@ size_t Map::maxLightTextureSize() const
 //##################################################################################################
 void Map::setMaxSamples(size_t maxSamples)
 {
-  makeCurrent();
-  GLint max=1;
-  glGetIntegerv(GL_MAX_SAMPLES, &max);
-  d->samples = tpMin(size_t(max), maxSamples);
-
-  if(size_t(d->samples) != maxSamples)
-    tpWarning() << "Max samples set to: " << d->samples;
+  d->samples = maxSamples;
 }
 
 //##################################################################################################
@@ -1233,6 +1227,20 @@ void Map::paintGL()
 void Map::paintGLNoMakeCurrent()
 {
   DEBUG_printOpenGLError("paintGLNoMakeCurrent start");
+
+#ifdef TP_ENABLE_MULTISAMPLE_FBO
+  if(d->samples != 1)
+  {
+    GLint max=1;
+    glGetIntegerv(GL_MAX_SAMPLES, &max);
+
+    auto s = d->samples;
+    d->samples = tpMin(GLsizei(max), d->samples);
+
+    if(d->samples != s)
+      tpWarning() << "Max samples set to: " << d->samples;
+  }
+#endif
 
 #ifdef TP_FBO_SUPPORTED
   GLint originalFrameBuffer = 0;
