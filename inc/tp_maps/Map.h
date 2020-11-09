@@ -71,6 +71,10 @@ public:
   static void printOpenGLError(const std::string& description);
 
   //################################################################################################
+  //! Prints error and returns true if there is an FBO error detected.
+  static bool printFBOError(const std::string& description);
+
+  //################################################################################################
   //!Sets the background clear color
   void setBackgroundColor(const glm::vec3& color);
 

@@ -21,6 +21,12 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
+#ifdef TP_MAPS_DEBUG
+#  define DEBUG_printOpenGLError(A) printOpenGLError(A)
+#else
+#  define DEBUG_printOpenGLError(A) do{}while(false)
+#endif
+
 namespace tp_maps
 {
 
@@ -69,7 +75,7 @@ struct Map::Private
   std::vector<Light> lights;
   std::vector<FBO> lightTextures;
   int lightTextureSize{1024};
-  GLsizei samples{4};
+  GLsizei samples{1};
   int spotLightLevels{1};
 
   Texture* spotLightTexture{nullptr};
@@ -143,6 +149,8 @@ struct Map::Private
   */
   bool prepareBuffer(FBO& buffer, int width, int height, bool createColorBuffer, bool multisample, int levels, int level)
   {
+    multisample = multisample && (samples>1);
+
     if(buffer.width!=width || buffer.height!=height || buffer.levels!=levels)
       deleteBuffer(buffer);
 
@@ -174,6 +182,7 @@ struct Map::Private
         if(levels == 1)
         {
           glBindTexture(GL_TEXTURE_2D, buffer.textureID);
+          //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
           glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -212,6 +221,7 @@ struct Map::Private
         case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
         case OpenGLProfile::VERSION_320_ES:
           glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+          //glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
           break;
 
         default:
@@ -228,27 +238,22 @@ struct Map::Private
       }
       else
       {
-        q->printOpenGLError("A");
         glBindTexture(GL_TEXTURE_3D, buffer.depthID);
 
-        q->printOpenGLError("B");
         switch(openGLProfile)
         {
         case OpenGLProfile::VERSION_100_ES:
           glTexImage3D(GL_TEXTURE_3D, 0, GL_DEPTH_COMPONENT, width, height, levels, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
-          q->printOpenGLError("C");
           break;
 
         case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
         case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
         case OpenGLProfile::VERSION_320_ES:
           glTexImage3D(GL_TEXTURE_3D, 0, TP_GL_DEPTH_COMPONENT24, width, height, levels, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
-          q->printOpenGLError("D");
           break;
 
         default:
           glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F, width, height, levels, 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
-          q->printOpenGLError("E");
           break;
         }
 
@@ -256,10 +261,7 @@ struct Map::Private
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        q->printOpenGLError("F");
-
         glBindTexture(GL_TEXTURE_3D, 0);
-        q->printOpenGLError("G");
       }
     }
 
@@ -267,14 +269,9 @@ struct Map::Private
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.depthID, 0);
     else
       glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, buffer.depthID, 0, level);
-    q->printOpenGLError("H");
 
-    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    {
-      tpWarning() << "Error Map::Private::prepareBuffer frame buffer not complete!";
-      tpWarning() << glGetString(GL_VERSION);
+    if(printFBOError("Error Map::Private::prepareBuffer frame buffer not complete!"))
       return false;
-    }
 
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
     if(multisample)
@@ -288,37 +285,45 @@ struct Map::Private
 
       if(!buffer.multisampleTextureID)
       {
-        glGenTextures(1, &buffer.multisampleTextureID);
-        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, buffer.multisampleTextureID);
-        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA8, width, height, GL_TRUE);
+        switch(openGLProfile)
+        {
+        case OpenGLProfile::VERSION_100_ES: [[fallthrough]];
+        case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
+        case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
+        case OpenGLProfile::VERSION_320_ES:
+          break;
+
+        default:
+          glGenTextures(1, &buffer.multisampleTextureID);
+          glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, buffer.multisampleTextureID);
+          glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGB8, width, height, GL_TRUE);
+          glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, buffer.multisampleTextureID, 0);
+          break;
+        }
       }
 
       if(!buffer.multisampleColorRBO)
       {
         glGenRenderbuffers(1, &buffer.multisampleColorRBO);
         glBindRenderbuffer(GL_RENDERBUFFER, buffer.multisampleColorRBO);
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGBA8, width, height);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGB8, width, height);
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer.multisampleColorRBO);
       }
 
       if(!buffer.multisampleDepthRBO)
       {
         glGenRenderbuffers(1, &buffer.multisampleDepthRBO);
         glBindRenderbuffer(GL_RENDERBUFFER, buffer.multisampleDepthRBO);
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH_COMPONENT, width, height);
+
+        //glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH_COMPONENT, width, height);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, TP_GL_DEPTH_COMPONENT24, width, height);
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer.multisampleDepthRBO);
       }
 
-      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, buffer.multisampleTextureID, 0);
-      glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer.multisampleColorRBO);
-      glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer.multisampleDepthRBO);
-
-      if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-      {
-        tpWarning() << "Error Map::Private::prepareBuffer multisample frame buffer not complete!";
-        tpWarning() << glGetString(GL_VERSION);
+      if(printFBOError("Error Map::Private::prepareBuffer multisample frame buffer not complete!"))
         return false;
-      }
     }
 #endif
 
@@ -337,10 +342,13 @@ struct Map::Private
   void swapMultisampledBuffer(FBO& buffer)
   {
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, buffer.multisampleFrameBuffer);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer.frameBuffer);
-    glBlitFramebuffer(0, 0, buffer.width, buffer.height, 0, 0, buffer.width, buffer.height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-    glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
+    if(samples>1)
+    {
+      glBindFramebuffer(GL_READ_FRAMEBUFFER, buffer.multisampleFrameBuffer);
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer.frameBuffer);
+      glBlitFramebuffer(0, 0, buffer.width, buffer.height, 0, 0, buffer.width, buffer.height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+      glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
+    }
 #endif
   }
 
@@ -499,6 +507,38 @@ void Map::printOpenGLError(const std::string& description)
     tpWarning() << description << " OpenGL Error: " << errorString << "(" << error << ")";
   }
 }
+
+//##################################################################################################
+bool Map::printFBOError(const std::string& description)
+{
+  if(auto e=glCheckFramebufferStatus(GL_FRAMEBUFFER); e != GL_FRAMEBUFFER_COMPLETE)
+  {
+    auto fboError=[](GLenum e)
+    {
+      switch(e)
+      {
+      case GL_FRAMEBUFFER_COMPLETE:                      return std::string("GL_FRAMEBUFFER_COMPLETE");
+      case GL_FRAMEBUFFER_UNDEFINED:                     return std::string("GL_FRAMEBUFFER_UNDEFINED");
+      case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:         return std::string("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
+      case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: return std::string("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
+      case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:        return std::string("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER");
+      case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:        return std::string("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER");
+      case GL_FRAMEBUFFER_UNSUPPORTED:                   return std::string("GL_FRAMEBUFFER_UNSUPPORTED");
+      case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:        return std::string("GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE");
+      case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:      return std::string("GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS");
+      }
+
+      return std::to_string(int(e));
+    };
+
+    tpWarning() << description;
+    tpWarning() << "FBO error: " << fboError(e);
+    tpWarning() << glGetString(GL_VERSION);
+    return true;
+  }
+  return false;
+}
+
 
 //##################################################################################################
 RenderInfo& Map::renderInfo()
@@ -698,7 +738,13 @@ size_t Map::maxLightTextureSize() const
 //##################################################################################################
 void Map::setMaxSamples(size_t maxSamples)
 {
-  d->samples = maxSamples;
+  makeCurrent();
+  GLint max=1;
+  glGetIntegerv(GL_MAX_SAMPLES, &max);
+  d->samples = tpMin(size_t(max), maxSamples);
+
+  if(size_t(d->samples) != maxSamples)
+    tpWarning() << "Max samples set to: " << d->samples;
 }
 
 //##################################################################################################
@@ -1001,15 +1047,18 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
 
   auto originalWidth  = d->width;
   auto originalHeight = d->height;
-
-  makeCurrent();
+  resizeGL(int(width), int(height));
 
   GLint originalFrameBuffer = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
 
+  DEBUG_printOpenGLError("renderToImage A");
+
   // Configure the frame buffer that the image will be rendered to.
   if(!d->prepareBuffer(d->renderToImageBuffer, int(width), int(height), true, true, 1, 0))
     return false;
+
+  DEBUG_printOpenGLError("renderToImage B");
 
   // Execute a render passes.
   paintGLNoMakeCurrent();
@@ -1019,6 +1068,8 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
 
   // Read the texture that we just generated
   glReadPixels(0, 0, int(width), int(height), GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+  DEBUG_printOpenGLError("renderToImage C");
 
   if(swapY)
   {
@@ -1038,10 +1089,11 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
   }
 
   // Return to the original viewport settings
-  d->width  = originalWidth;
-  d->height = originalHeight;
+  resizeGL(int(originalWidth), int(originalHeight));
   glBindFramebuffer(GL_FRAMEBUFFER, originalFrameBuffer);
   glViewport(0, 0, d->width, d->height);
+
+  DEBUG_printOpenGLError("renderToImage D");
 
   return true;
 }
@@ -1180,11 +1232,7 @@ void Map::paintGL()
 //##################################################################################################
 void Map::paintGLNoMakeCurrent()
 {
-#ifdef TP_MAPS_DEBUG
-#  define DEBUG_printOpenGLError(A) printOpenGLError(A)
-#else
-#  define DEBUG_printOpenGLError(A) do{}while(false)
-#endif
+  DEBUG_printOpenGLError("paintGLNoMakeCurrent start");
 
 #ifdef TP_FBO_SUPPORTED
   GLint originalFrameBuffer = 0;

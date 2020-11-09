@@ -54,7 +54,7 @@ uniform float discardOpacity;
 /*TP_GLSL_GLFRAGCOLOR_DEF*/
 
 const int shadowSamples=1;
-const float totalSadowSamples=((shadowSamples*2)+1) * ((shadowSamples*2)+1);
+const float totalSadowSamples=float(((shadowSamples*2)+1) * ((shadowSamples*2)+1));
 
 // Taken from: https://github.com/BennyQBD/3DEngineCpp/blob/master/res/shaders/sampling.glh
 // https://youtu.be/yn5UJzMqxj0
