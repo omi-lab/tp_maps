@@ -70,6 +70,7 @@
 #  define TP_GL3
 #  define TP_ENABLE_MULTISAMPLE
 #  define TP_ENABLE_MULTISAMPLE_FBO
+#  define TP_ENABLE_3D_TEXTURE
 
 
 #else //--------------------------------------------------------------------------------------------

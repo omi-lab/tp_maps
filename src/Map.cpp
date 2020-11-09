@@ -179,15 +179,9 @@ struct Map::Private
       {
         glGenTextures(1, &buffer.textureID);
 
-        if(levels == 1)
-        {
-          glBindTexture(GL_TEXTURE_2D, buffer.textureID);
-          //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        }
-        else
+
+#ifdef TP_ENABLE_3D_TEXTURE
+        if(levels != 1)
         {
           //Can't see why we would need a multi level color buffer but will include it for completeness.
           glBindTexture(GL_TEXTURE_3D, buffer.textureID);
@@ -195,19 +189,63 @@ struct Map::Private
           glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
           glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         }
+        else
+#endif
+        {
+          glBindTexture(GL_TEXTURE_2D, buffer.textureID);
+          //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        }
       }
 
-      if(levels == 1)
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer.textureID, 0);
-      else
+#ifdef TP_ENABLE_3D_TEXTURE
+      if(levels != 1)
+      {
         glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, buffer.textureID, 0, level);
+      }
+      else
+#endif
+      {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer.textureID, 0);
+      }
     }
 
     if(!buffer.depthID)
     {
       glGenTextures(1, &buffer.depthID);
 
-      if(levels == 1)
+#ifdef TP_ENABLE_3D_TEXTURE
+      if(levels != 1)
+      {
+        glBindTexture(GL_TEXTURE_3D, buffer.depthID);
+
+        switch(openGLProfile)
+        {
+        case OpenGLProfile::VERSION_100_ES:
+          glTexImage3D(GL_TEXTURE_3D, 0, GL_DEPTH_COMPONENT, width, height, levels, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
+          break;
+
+        case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
+        case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
+        case OpenGLProfile::VERSION_320_ES:
+          glTexImage3D(GL_TEXTURE_3D, 0, TP_GL_DEPTH_COMPONENT24, width, height, levels, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+          break;
+
+        default:
+          glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F, width, height, levels, 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
+          break;
+        }
+
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glBindTexture(GL_TEXTURE_3D, 0);
+      }
+      else
+#endif
       {
         glBindTexture(GL_TEXTURE_2D, buffer.depthID);
 
@@ -236,39 +274,16 @@ struct Map::Private
 
         glBindTexture(GL_TEXTURE_2D, 0);
       }
-      else
-      {
-        glBindTexture(GL_TEXTURE_3D, buffer.depthID);
-
-        switch(openGLProfile)
-        {
-        case OpenGLProfile::VERSION_100_ES:
-          glTexImage3D(GL_TEXTURE_3D, 0, GL_DEPTH_COMPONENT, width, height, levels, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
-          break;
-
-        case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
-        case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
-        case OpenGLProfile::VERSION_320_ES:
-          glTexImage3D(GL_TEXTURE_3D, 0, TP_GL_DEPTH_COMPONENT24, width, height, levels, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
-          break;
-
-        default:
-          glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F, width, height, levels, 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
-          break;
-        }
-
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glBindTexture(GL_TEXTURE_3D, 0);
-      }
     }
 
-    if(levels == 1)
-      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.depthID, 0);
-    else
+#ifdef TP_ENABLE_3D_TEXTURE
+    if(levels != 1)
       glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, buffer.depthID, 0, level);
+    else
+#endif
+    {
+      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.depthID, 0);
+    }
 
     if(printFBOError("Error Map::Private::prepareBuffer frame buffer not complete!"))
       return false;
@@ -521,11 +536,14 @@ bool Map::printFBOError(const std::string& description)
       case GL_FRAMEBUFFER_UNDEFINED:                     return std::string("GL_FRAMEBUFFER_UNDEFINED");
       case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:         return std::string("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
       case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: return std::string("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
+      case GL_FRAMEBUFFER_UNSUPPORTED:                   return std::string("GL_FRAMEBUFFER_UNSUPPORTED");
+
+#ifdef TP_ENABLE_MULTISAMPLE_FBO
       case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:        return std::string("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER");
       case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:        return std::string("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER");
-      case GL_FRAMEBUFFER_UNSUPPORTED:                   return std::string("GL_FRAMEBUFFER_UNSUPPORTED");
-      case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:        return std::string("GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE");
       case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:      return std::string("GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS");
+      case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:        return std::string("GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE");
+#endif
       }
 
       return std::to_string(int(e));
