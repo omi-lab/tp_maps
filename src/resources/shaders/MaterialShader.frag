@@ -53,6 +53,9 @@ uniform float discardOpacity;
 
 /*TP_GLSL_GLFRAGCOLOR_DEF*/
 
+const int shadowSamples=1;
+const float totalSadowSamples=((shadowSamples*2)+1) * ((shadowSamples*2)+1);
+
 // Taken from: https://github.com/BennyQBD/3DEngineCpp/blob/master/res/shaders/sampling.glh
 // https://youtu.be/yn5UJzMqxj0
 float sampleShadowMap(sampler2D shadowMap, vec2 coords, float compare)
@@ -158,11 +161,11 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampl
   if(bias>0.0 && fragPos_light.z>0.0 && fragPos_light.z<1.0)
   {
     bias = max(0.0001, (1.0 - bias)*0.0005);
-    vec2 texelSize = vec2(2.0, 2.0) / lightTextureSize;
+    vec2 texelSize = vec2(1.0, 1.0) / lightTextureSize;
     float biasedDepth = min(fragPos_light.z-bias,1.0);
-    for(int x = -1; x <= 1; ++x)
+    for(int x = -shadowSamples; x <= shadowSamples; ++x)
     {
-      for(int y = -1; y <= 1; ++y)
+      for(int y = -shadowSamples; y <= shadowSamples; ++y)
       {
         vec2 coord = fragPos_light.xy + (vec2(x, y)*texelSize);
         if(coord.x<0.0 || coord.x>1.0 || coord.y<0.0 || coord.y>1.0)
@@ -175,7 +178,7 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampl
         }
       }
     }
-    shadow /= 9.0;
+    shadow /= totalSadowSamples;
 
     vec2 spotTexCoord = (fragPos_light.xy*light.spotLightWH) + light.spotLightUV;
     shadowTex = /*TP_GLSL_TEXTURE*/(spotLightTexture, spotTexCoord).xyz * shadow;

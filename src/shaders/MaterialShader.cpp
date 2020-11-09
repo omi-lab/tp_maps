@@ -425,7 +425,14 @@ void MaterialShader::setLights(const std::vector<Light>& lights, const std::vect
       glUniformMatrix4fv(lightLocations.worldToLightLocation, 1, GL_FALSE, glm::value_ptr(lightBuffer.worldToTexture));
 
       glActiveTexture(GL_TEXTURE6 + i);
-      glBindTexture(GL_TEXTURE_2D, lightBuffer.depthID);
+
+
+      if(lightBuffer.levels == 1)
+        glBindTexture(GL_TEXTURE_2D, lightBuffer.depthID);
+
+
+
+
       glUniform1i(lightLocations.lightTextureIDLocation, 6 + i);
 
       glm::vec2 lightTextureSize{lightBuffer.width, lightBuffer.height};

@@ -55,7 +55,7 @@ void main()
 
   occlusions = max(0.0, occlusions-(count/2.0));
 
-  float dim = (clamp((1.0 - occlusions/count)*1.0, 0.0, 1.0)+1.0) / 2.0;
+  float dim = clamp((1.1 - ((occlusions/count)*2.0)), 0.4, 1.0);
   /*TP_GLSL_GLFRAGCOLOR*/ = vec4(/*TP_GLSL_TEXTURE*/(textureSampler, texCoordinate).xyz*dim, 1.0);
 
 
@@ -63,6 +63,6 @@ void main()
   // float d = /*TP_GLSL_TEXTURE*/(depthSampler, texCoordinate).x;
   // float d = occlusions/count;
   // float d = length(viewCoord.xyz);
-  // float d = clamp((1.0 - occlusions/count)*3.0, 0.4, 1.0);
-  // /*TP_GLSL_GLFRAGCOLOR*/ = vec4(d, d, d, 1.0f);
+  // float d = clamp((1.0 - ((occlusions/count)*2.0)), 0.0, 1.0);
+  // /*TP_GLSL_GLFRAGCOLOR*/ = vec4(dim, dim, dim, 1.0f);
 }

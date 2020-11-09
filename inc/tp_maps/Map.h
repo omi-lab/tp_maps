@@ -137,6 +137,24 @@ public:
   const std::vector<Layer*>& layers() const;
 
   //################################################################################################
+  void setMaxLightTextureSize(size_t maxLightTextureSize);
+
+  //################################################################################################
+  size_t maxLightTextureSize() const;
+
+  //################################################################################################
+  void setMaxSamples(size_t maxSamples);
+
+  //################################################################################################
+  size_t maxSamples() const;
+
+  //################################################################################################
+  void setMaxSpotLightLevels(size_t maxSpotLightLevels);
+
+  //################################################################################################
+  size_t maxSpotLightLevels() const;
+
+  //################################################################################################
   //! Called when buffers become invalid.
   /*!
   This is called when the OpenGL context becomes invalid, all OpenGL resources should be ignored.

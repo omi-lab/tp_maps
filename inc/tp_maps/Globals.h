@@ -416,6 +416,8 @@ struct FBO
   GLuint depthID{0};
   int width{1};
   int height{1};
+  int levels{1}; //!< Number of levels in the 3D texture generated for shadow maps.
+  int level{0};  //!< The level that we are currently rendering, when rendering shadows.
 
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
   GLuint multisampleFrameBuffer{0};
