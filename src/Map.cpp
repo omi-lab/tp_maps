@@ -331,7 +331,6 @@ struct Map::Private
         glGenRenderbuffers(1, &buffer.multisampleDepthRBO);
         glBindRenderbuffer(GL_RENDERBUFFER, buffer.multisampleDepthRBO);
 
-        //glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH_COMPONENT, width, height);
         glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, TP_GL_DEPTH_COMPONENT24, width, height);
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer.multisampleDepthRBO);
