@@ -75,8 +75,11 @@ struct Map::Private
   std::vector<Light> lights;
   std::vector<FBO> lightTextures;
   int lightTextureSize{1024};
-  GLsizei samples{1};
   int spotLightLevels{1};
+
+  bool updateSamplesRequired{true};
+  GLsizei maxSamples{1};
+  GLsizei samples{1};
 
   Texture* spotLightTexture{nullptr};
   GLuint spotLightTextureID{0};
@@ -149,6 +152,20 @@ struct Map::Private
   */
   bool prepareBuffer(FBO& buffer, int width, int height, bool createColorBuffer, bool multisample, int levels, int level)
   {
+  #ifdef TP_ENABLE_MULTISAMPLE_FBO
+    if(updateSamplesRequired)
+    {
+      updateSamplesRequired = false;
+
+      GLint max=1;
+      glGetIntegerv(GL_MAX_SAMPLES, &max);
+      samples = tpMin(GLsizei(max), maxSamples);
+
+      if(samples != maxSamples)
+        tpWarning() << "Max samples set to: " << samples;
+    }
+  #endif
+
     multisample = multisample && (samples>1);
 
     if(buffer.width!=width || buffer.height!=height || buffer.levels!=levels)
@@ -755,13 +772,14 @@ size_t Map::maxLightTextureSize() const
 //##################################################################################################
 void Map::setMaxSamples(size_t maxSamples)
 {
-  d->samples = maxSamples;
+  d->updateSamplesRequired = true;
+  d->maxSamples = maxSamples;
 }
 
 //##################################################################################################
 size_t Map::maxSamples() const
 {
-  return d->samples;
+  return d->maxSamples;
 }
 
 //##################################################################################################
@@ -1183,6 +1201,8 @@ void Map::initializeGL()
   TP_UNUSED(initGlew);
 #endif
 
+  d->updateSamplesRequired = true;
+
   //Invalidate old state before initializing new state
   {
     for(auto& i : d->shaders)
@@ -1244,20 +1264,6 @@ void Map::paintGL()
 void Map::paintGLNoMakeCurrent()
 {
   DEBUG_printOpenGLError("paintGLNoMakeCurrent start");
-
-#ifdef TP_ENABLE_MULTISAMPLE_FBO
-  if(d->samples != 1)
-  {
-    GLint max=1;
-    glGetIntegerv(GL_MAX_SAMPLES, &max);
-
-    auto s = d->samples;
-    d->samples = tpMin(GLsizei(max), d->samples);
-
-    if(d->samples != s)
-      tpWarning() << "Max samples set to: " << d->samples;
-  }
-#endif
 
 #ifdef TP_FBO_SUPPORTED
   GLint originalFrameBuffer = 0;
