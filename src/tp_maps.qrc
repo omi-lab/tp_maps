@@ -20,8 +20,9 @@
         <file alias="PointSpriteShader.picking.vert">resources/shaders/PointSpriteShader.picking.vert</file>
         <file alias="YUVImageShader.frag">resources/shaders/YUVImageShader.frag</file>
         <file alias="DepthImageShader.frag">resources/shaders/DepthImageShader.frag</file>
+        <file alias="PostShader.vert">resources/shaders/PostShader.vert</file>
         <file alias="PostSSAOShader.frag">resources/shaders/PostSSAOShader.frag</file>
-        <file alias="PostSSAOShader.vert">resources/shaders/PostSSAOShader.vert</file>
+        <file alias="PostBlitShader.frag">resources/shaders/PostBlitShader.frag</file>
     </qresource>
 </RCC>
 

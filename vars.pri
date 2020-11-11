@@ -119,8 +119,14 @@ HEADERS += inc/tp_maps/shaders/FontShader.h
 SOURCES += src/shaders/FrameShader.cpp
 HEADERS += inc/tp_maps/shaders/FrameShader.h
 
+SOURCES += src/shaders/PostShader.cpp
+HEADERS += inc/tp_maps/shaders/PostShader.h
+
 SOURCES += src/shaders/PostSSAOShader.cpp
 HEADERS += inc/tp_maps/shaders/PostSSAOShader.h
+
+SOURCES += src/shaders/PostBlitShader.cpp
+HEADERS += inc/tp_maps/shaders/PostBlitShader.h
 
 
 #-- Layers -----------------------------------------------------------------------------------------
@@ -162,6 +168,12 @@ HEADERS += inc/tp_maps/layers/GizmoLayer.h
 
 
 #-- Post Processing Layers -------------------------------------------------------------------------
+
+SOURCES += src/layers/PostLayer.cpp
+HEADERS += inc/tp_maps/layers/PostLayer.h
+
+SOURCES += src/layers/PostBlitLayer.cpp
+HEADERS += inc/tp_maps/layers/PostBlitLayer.h
 
 SOURCES += src/layers/PostSSAOLayer.cpp
 HEADERS += inc/tp_maps/layers/PostSSAOLayer.h

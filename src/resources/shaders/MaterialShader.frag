@@ -7,6 +7,10 @@ struct Material
   vec3 specular;
   float shininess;
   float alpha;
+
+  float ambientScale;
+  float diffuseScale;
+  float specularScale;
 };
 
 struct Light
@@ -188,11 +192,11 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampl
   float distance    = length(light.position - fragPos_world);
   float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
 
-  r.ambient  *= shadowTex;
+  //r.ambient  *= shadowTex;
   r.diffuse  *= shadowTex;
   r.specular *= shadowTex;
 
-  r.ambient  *= attenuation;
+  //r.ambient  *= attenuation;
   r.diffuse  *= attenuation;
   r.specular *= attenuation;
 
@@ -215,9 +219,9 @@ void main()
 
   /*LIGHT_FRAG_CALC*/
 
-  ambient  *= (ambientTex+material.ambient);
-  diffuse  *= (diffuseTex+material.diffuse);
-  specular *= (specularTex+material.specular);
+  ambient  *= (ambientTex+material.ambient)   * material.ambientScale;
+  diffuse  *= (diffuseTex+material.diffuse)   * material.diffuseScale;
+  specular *= (specularTex+material.specular) * material.specularScale;
 
   vec3 result = ambient + diffuse + specular;
 

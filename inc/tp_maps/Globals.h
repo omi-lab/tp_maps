@@ -311,6 +311,10 @@ struct TP_MAPS_SHARED_EXPORT Material
   float shininess{32.0f};               //!< mtl: Ns 0 -> 128, 0=diffuse 128=sharp shiny reflections
   float alpha{1.0f};                    //!< mtl: d
 
+  float ambientScale{1.0f};             //!< Multiplied by the ambient
+  float diffuseScale{1.0f};             //!< Multiplied by the diffuse
+  float specularScale{1.0f};            //!< Multiplied by the specular
+
   tp_utils::StringID ambientTexture;    //!< mtl: map_Ka
   tp_utils::StringID diffuseTexture;    //!< mtl: map_Kd
   tp_utils::StringID specularTexture;   //!< mtl: map_Ks

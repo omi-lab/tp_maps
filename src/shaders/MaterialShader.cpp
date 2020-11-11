@@ -77,6 +77,10 @@ struct MaterialShader::Private
   GLint materialShininessLocation{0};
   GLint     materialAlphaLocation{0};
 
+  GLint   materialAmbientScaleLocation{0};
+  GLint   materialDiffuseScaleLocation{0};
+  GLint  materialSpecularScaleLocation{0};
+
   GLint    discardOpacityLocation{0};
 
   GLint    ambientTextureLocation{0};
@@ -299,6 +303,10 @@ void MaterialShader::compile(const char* vertShaderStr,
       d->materialShininessLocation = glGetUniformLocation(program, "material.shininess");
       d->materialAlphaLocation     = glGetUniformLocation(program, "material.alpha");
 
+      d-> materialAmbientScaleLocation = glGetUniformLocation(program, "material.ambientScale");
+      d-> materialDiffuseScaleLocation = glGetUniformLocation(program, "material.diffuseScale");
+      d->materialSpecularScaleLocation = glGetUniformLocation(program, "material.specularScale");
+
       d->discardOpacityLocation    = glGetUniformLocation(program, "discardOpacity");
 
       d->ambientTextureLocation   = glGetUniformLocation(program, "ambientTexture");
@@ -377,11 +385,15 @@ void MaterialShader::setMaterial(const Material& material)
   if(d->shaderType != ShaderType::Render)
     return;
 
-  glUniform3fv(d->materialAmbientLocation,  1, &material.ambient.x  );
-  glUniform3fv(d->materialDiffuseLocation,  1, &material.diffuse.x  );
-  glUniform3fv(d->materialSpecularLocation, 1, &material.specular.x );
-  glUniform1f(d->materialShininessLocation,     material.shininess  );
-  glUniform1f(d->materialAlphaLocation,         material.alpha      );
+  glUniform3fv(     d->materialAmbientLocation, 1, &material.ambient.x    );
+  glUniform3fv(     d->materialDiffuseLocation, 1, &material.diffuse.x    );
+  glUniform3fv(    d->materialSpecularLocation, 1, &material.specular.x   );
+  glUniform1f (   d->materialShininessLocation,     material.shininess    );
+  glUniform1f (       d->materialAlphaLocation,     material.alpha        );
+
+  glUniform1f( d->materialAmbientScaleLocation,     material.ambientScale );
+  glUniform1f( d->materialDiffuseScaleLocation,     material.diffuseScale );
+  glUniform1f(d->materialSpecularScaleLocation,     material.specularScale);
 }
 
 //##################################################################################################

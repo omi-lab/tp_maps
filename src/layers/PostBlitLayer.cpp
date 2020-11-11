@@ -1,21 +1,21 @@
-#include "tp_maps/layers/PostSSAOLayer.h"
-#include "tp_maps/shaders/PostSSAOShader.h"
+#include "tp_maps/layers/PostBlitLayer.h"
+#include "tp_maps/shaders/PostBlitShader.h"
 #include "tp_maps/Map.h"
 
 namespace tp_maps
 {
 
 //##################################################################################################
-PostSSAOLayer::PostSSAOLayer(Map* map, RenderPass customRenderPass):
+PostBlitLayer::PostBlitLayer(Map* map, RenderPass customRenderPass):
   PostLayer(map, customRenderPass)
 {
 
 }
 
 //##################################################################################################
-PostShader* PostSSAOLayer::makeShader()
+PostShader* PostBlitLayer::makeShader()
 {
-  return map()->getShader<PostSSAOShader>();
+  return map()->getShader<PostBlitShader>();
 }
 
 }
