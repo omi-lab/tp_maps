@@ -1317,7 +1317,6 @@ void Map::initializeGL()
       if(flags & GL_CONTEXT_FLAG_DEBUG_BIT)
       {
         tpWarning() << "Got a debug context, registering debug callback.";
-
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glDebugMessageCallback(tpOutputOpenGLDebug, nullptr);
@@ -1325,7 +1324,7 @@ void Map::initializeGL()
       }
       else
       {
-        tpWarning() << "Failed to get debug EGL context.";
+        tpWarning() << "Failed to get debug GL context.";
       }
     }
 #endif
