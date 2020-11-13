@@ -19,6 +19,7 @@
 #include "tp_utils/StackTrace.h"
 
 #include "glm/glm.hpp"
+#include "glm/gtx/norm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
 #ifdef TP_MAPS_DEBUG
@@ -75,7 +76,8 @@ struct Map::Private
   std::vector<Light> lights;
   std::vector<FBO> lightTextures;
   int lightTextureSize{1024};
-  int spotLightLevels{1};
+  size_t spotLightLevels{1};
+  size_t shadowSamples{1};
 
   bool updateSamplesRequired{true};
   GLsizei maxSamples{1};
@@ -123,6 +125,17 @@ struct Map::Private
     }
 
     renderInfo.map = q;
+  }
+
+  //################################################################################################
+  void deleteShaders()
+  {
+    q->makeCurrent();
+
+    for(const auto& i : shaders)
+      delete i.second;
+
+    shaders.clear();
   }
 
   //################################################################################################
@@ -200,6 +213,8 @@ struct Map::Private
 #ifdef TP_ENABLE_3D_TEXTURE
         if(levels != 1)
         {
+          glEnable(GL_TEXTURE_3D);
+
           //Can't see why we would need a multi level color buffer but will include it for completeness.
           glBindTexture(GL_TEXTURE_3D, buffer.textureID);
           glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, width, height, levels, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
@@ -220,6 +235,7 @@ struct Map::Private
 #ifdef TP_ENABLE_3D_TEXTURE
       if(levels != 1)
       {
+        glEnable(GL_TEXTURE_3D);
         glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, buffer.textureID, 0, level);
       }
       else
@@ -236,6 +252,7 @@ struct Map::Private
 #ifdef TP_ENABLE_3D_TEXTURE
       if(levels != 1)
       {
+        glEnable(GL_TEXTURE_3D);
         glBindTexture(GL_TEXTURE_3D, buffer.depthID);
 
         switch(openGLProfile)
@@ -259,6 +276,7 @@ struct Map::Private
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
         glBindTexture(GL_TEXTURE_3D, 0);
       }
       else
@@ -295,7 +313,10 @@ struct Map::Private
 
 #ifdef TP_ENABLE_3D_TEXTURE
     if(levels != 1)
+    {
+      glEnable(GL_TEXTURE_3D);
       glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, buffer.depthID, 0, level);
+    }
     else
 #endif
     {
@@ -467,12 +488,7 @@ Map::~Map()
 //##################################################################################################
 void Map::preDelete()
 {
-  makeCurrent();
-
-  for(const auto& i : d->shaders)
-    delete i.second;
-
-  d->shaders.clear();
+  d->deleteShaders();
 
   delete d->controller;
   d->controller=nullptr;
@@ -676,20 +692,19 @@ void Map::setLights(const std::vector<Light>& lights)
         lightingModelChanged=LightingModelChanged::Yes;
         break;
       }
+
+      if(std::fabs(glm::distance2(d->lights.at(i).offsetScale, lights.at(i).offsetScale)) > 0.00001f)
+      {
+        lightingModelChanged=LightingModelChanged::Yes;
+        break;
+      }
     }
   }
 
   d->lights = lights;
 
   if(lightingModelChanged==LightingModelChanged::Yes)
-  {
-    makeCurrent();
-
-    for(const auto& i : d->shaders)
-      delete i.second;
-
-    d->shaders.clear();
-  }
+    d->deleteShaders();
 
   for(auto l : d->layers)
     l->lightsChanged(lightingModelChanged);
@@ -792,6 +807,31 @@ void Map::setMaxSpotLightLevels(size_t maxSpotLightLevels)
 size_t Map::maxSpotLightLevels() const
 {
   return d->spotLightLevels;
+}
+
+//##################################################################################################
+size_t Map::spotLightLevels() const
+{
+  return tpMin(Light::lightLevelOffsets().size(), d->spotLightLevels);
+}
+
+//##################################################################################################
+void Map::setShadowSamples(size_t shadowSamples)
+{
+  if(d->shadowSamples != shadowSamples)
+  {
+    d->shadowSamples = shadowSamples;
+    d->deleteShaders();
+
+    for(auto l : d->layers)
+      l->lightsChanged(LightingModelChanged::No);
+  }
+}
+
+//##################################################################################################
+size_t Map::shadowSamples() const
+{
+  return d->shadowSamples;
 }
 
 //##################################################################################################
@@ -1307,18 +1347,18 @@ void Map::paintGLNoMakeCurrent()
         const auto& light = d->lights.at(i);
         auto& lightBuffer = d->lightTextures.at(i);
 
-
         int levels=1;
         if(light.type == LightType::Spot)
           levels=d->spotLightLevels;
 
+        lightBuffer.worldToTexture.resize(levels);
         for(int l=0; l<levels; l++)
         {
           if(!d->prepareBuffer(lightBuffer, d->lightTextureSize, d->lightTextureSize, false, false, levels, l))
             return;
 
-          d->controller->setCurrentLight(light);
-          lightBuffer.worldToTexture = d->controller->lightMatrices().vp;
+          d->controller->setCurrentLight(light, l);
+          lightBuffer.worldToTexture[l] = d->controller->lightMatrices();
           d->render();
         }
       }

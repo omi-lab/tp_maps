@@ -15,7 +15,7 @@ void main()
   float far  = 100.0;
 
   // Get the z value from the depth texture.
-  float depth = /*TP_GLSL_TEXTURE*/(textureSampler, texCoordinate).x;
+  float depth = /*TP_GLSL_TEXTURE_2D*/(textureSampler, texCoordinate).x;
 
   // Scale the depth back into world coords.
   depth = 2.0 * near * far / (far + near - (2.0 * depth - 1.0) * (far - near));

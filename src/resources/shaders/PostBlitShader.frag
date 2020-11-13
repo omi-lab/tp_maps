@@ -12,5 +12,5 @@ uniform mat4 invProjectionMatrix;
 
 void main()
 {
-  /*TP_GLSL_GLFRAGCOLOR*/ = vec4(/*TP_GLSL_TEXTURE*/(textureSampler, texCoordinate).xyz, 1.0);
+  /*TP_GLSL_GLFRAGCOLOR*/ = vec4(/*TP_GLSL_TEXTURE_2D*/(textureSampler, texCoordinate).xyz, 1.0);
 }

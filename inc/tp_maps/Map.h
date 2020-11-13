@@ -159,6 +159,22 @@ public:
   size_t maxSpotLightLevels() const;
 
   //################################################################################################
+  //! The calculated number of spot light levels in a 3D texture. (<=maxSpotLightLevels)
+  size_t spotLightLevels() const;
+
+  //################################################################################################
+  void setShadowSamples(size_t shadowSamples);
+
+  //################################################################################################
+  //! The number of adjacent samples to take from a shadow texture
+  /*!
+  The actual number of samples that is made is as follows:
+
+  samples = (shadowSamples+1) * (shadowSamples+1) * spotLightLevels * nLights;
+  */
+  size_t shadowSamples() const;
+
+  //################################################################################################
   //! Called when buffers become invalid.
   /*!
   This is called when the OpenGL context becomes invalid, all OpenGL resources should be ignored.

@@ -11,7 +11,7 @@ uniform sampler2D textureSampler;
 
 void main()
 {
-  /*TP_GLSL_GLFRAGCOLOR*/ = /*TP_GLSL_TEXTURE*/(textureSampler, texCoordinate)*multColor;
+  /*TP_GLSL_GLFRAGCOLOR*/ = /*TP_GLSL_TEXTURE_2D*/(textureSampler, texCoordinate)*multColor;
   if(/*TP_GLSL_GLFRAGCOLOR*/.a < 0.01)
     discard;
 }

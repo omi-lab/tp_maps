@@ -74,7 +74,7 @@ void LightsLayer::render(RenderInfo& renderInfo)
     {
       std::vector<glm::mat4> lights;
       for(const auto& light : map()->lightTextures())
-        lights.push_back(light.worldToTexture);
+        lights.push_back(light.worldToTexture.empty()?glm::mat4(1.0f):light.worldToTexture.front().vp);
       d->frustums->setCameraMatrices(lights);
     }
 

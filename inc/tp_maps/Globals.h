@@ -375,6 +375,8 @@ struct TP_MAPS_SHARED_EXPORT Light
   float fov{50.0f};        //!< Field of view for spot lights.
   float orthoRadius{10.0f}; //!< The radius of fixed directional light ortho projection.
 
+  glm::vec3 offsetScale{0.0f, 0.1f, 0.0f};
+
   //################################################################################################
   void setPosition(const glm::vec3& position);
 
@@ -398,6 +400,9 @@ struct TP_MAPS_SHARED_EXPORT Light
 
   //################################################################################################
   static std::vector<Light> loadLights(const nlohmann::json& j);
+
+  //################################################################################################
+  static const std::vector<glm::vec3>& lightLevelOffsets();
 };
 
 //##################################################################################################
@@ -432,7 +437,8 @@ struct FBO
   GLuint multisampleDepthRBO{0};
 #endif
 
-  glm::mat4 worldToTexture{1}; //!< For lighting this is used to map world coords onto the texture.
+  //There will be 1 for each level
+  std::vector<Matrices> worldToTexture; //!< For lighting this is used to map world coords onto the texture, per level.
 };
 
 //##################################################################################################

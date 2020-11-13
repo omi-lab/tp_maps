@@ -10,6 +10,6 @@ uniform sampler2D textureSampler;
 void main()
 {
   /*TP_GLSL_GLFRAGCOLOR*/ = picking;
-  if(/*TP_GLSL_TEXTURE*/(textureSampler, texCoordinate).a < 0.001)
+  if(/*TP_GLSL_TEXTURE_2D*/(textureSampler, texCoordinate).a < 0.001)
     discard;
 }

@@ -58,7 +58,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "gl_FragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "gl_FragColor=vec4(0,0,0,1);");
     replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "");
-    replace("/*TP_GLSL_TEXTURE*/",           "texture");
+    replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
+    replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
   }
 
@@ -73,7 +74,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "gl_FragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "gl_FragColor=vec4(0,0,0,1);");
     replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "");
-    replace("/*TP_GLSL_TEXTURE*/",           "texture2D");
+    replace("/*TP_GLSL_TEXTURE_2D*/",        "texture2D");
+    replace("/*TP_GLSL_TEXTURE_3D*/",        "texture3D");
     break;
   }
 
@@ -88,7 +90,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
     replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",           "texture");
+    replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
+    replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
   }
 
@@ -103,7 +106,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
     replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",           "texture");
+    replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
+    replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
   }
 
@@ -118,7 +122,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
     replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",           "texture");
+    replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
+    replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
   }
 
@@ -133,7 +138,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
     replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",           "texture");
+    replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
+    replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
   }
 
@@ -148,7 +154,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
     replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",           "texture");
+    replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
+    replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
   }
 
@@ -163,7 +170,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
     replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",           "texture");
+    replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
+    replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
   }
 
@@ -178,7 +186,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
     replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",           "texture");
+    replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
+    replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
   }
 
@@ -193,7 +202,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
     replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",           "texture");
+    replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
+    replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
   }
 
@@ -208,7 +218,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
     replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",           "texture");
+    replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
+    replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
   }
 
@@ -223,7 +234,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
     replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",           "texture");
+    replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
+    replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
   }
 
@@ -238,7 +250,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
     replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",           "texture");
+    replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
+    replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
   }
 
@@ -253,7 +266,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "gl_FragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "gl_FragColor=vec4(0,0,0,1);");
     replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "");
-    replace("/*TP_GLSL_TEXTURE*/",           "texture2D");
+    replace("/*TP_GLSL_TEXTURE_2D*/",        "texture2D");
+    replace("/*TP_GLSL_TEXTURE_3D*/",        "texture3D");
     break;
   }
 
@@ -268,7 +282,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
     replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",           "texture");
+    replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
+    replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
   }
 
@@ -283,7 +298,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
     replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",           "texture");
+    replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
+    replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
   }
 
@@ -298,7 +314,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
     replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
-    replace("/*TP_GLSL_TEXTURE*/",           "texture");
+    replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
+    replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
   }
   }
@@ -480,6 +497,8 @@ nlohmann::json Light::saveState() const
   j["fov"]         = fov;
   j["orthoRadius"] = orthoRadius;
 
+  j["offsetScale"] = tp_math_utils::vec3ToJSON(offsetScale);
+
   return j;
 }
 
@@ -509,6 +528,8 @@ void Light::loadState(const nlohmann::json& j)
   far         = TPJSONFloat(j, "far"        , far        );
   fov         = TPJSONFloat(j, "fov"        , fov        );
   orthoRadius = TPJSONFloat(j, "orthoRadius", orthoRadius);
+
+  offsetScale = tp_math_utils::vec3FromJSON(TPJSON(j, "offsetScale", tp_math_utils::vec3ToJSON(glm::vec3(0.1f,0.1f,0.1f))));
 }
 
 //##################################################################################################
@@ -528,6 +549,57 @@ std::vector<Light> Light::loadLights(const nlohmann::json& j)
     for(const nlohmann::json& i : j)
       lights.emplace_back().loadState(i);
   return lights;
+}
+
+//##################################################################################################
+const std::vector<glm::vec3>& Light::lightLevelOffsets()
+{
+  static const std::vector<glm::vec3> offsets =
+  {
+    { 0.0f,  0.0f,  0.0f},
+
+    {-1.0f,  0.0f,  0.0f},
+    { 0.0f,  1.0f,  0.0f},
+    { 1.0f,  0.0f,  0.0f},
+    { 0.0f, -1.0f,  0.0f},
+
+    { 0.6f,  0.6f,  0.0f},
+    { 0.6f, -0.6f,  0.0f},
+    {-0.6f, -0.6f,  0.0f},
+    {-0.6f,  0.6f,  0.0f},
+
+    {-0.5f,  0.0f,  0.0f},
+    { 0.0f,  0.5f,  0.0f},
+    { 0.5f,  0.0f,  0.0f},
+    { 0.0f, -0.5f,  0.0f},
+
+    { 0.3f,  0.3f,  0.0f},
+    { 0.3f, -0.3f,  0.0f},
+    {-0.3f, -0.3f,  0.0f},
+    {-0.3f,  0.3f,  0.0f},
+
+    { 0.3f,  0.7f,  0.0f},
+    { 0.7f, -0.3f,  0.0f},
+    {-0.3f, -0.7f,  0.0f},
+    {-0.7f,  0.3f,  0.0f},
+
+    { 0.7f,  0.3f,  0.0f},
+    { 0.3f, -0.7f,  0.0f},
+    {-0.7f, -0.3f,  0.0f},
+    {-0.3f,  0.7f,  0.0f},
+
+    {-0.2f,  0.0f,  0.0f},
+    { 0.0f,  0.2f,  0.0f},
+    { 0.2f,  0.0f,  0.0f},
+    { 0.0f, -0.2f,  0.0f},
+
+    { 0.2f,  0.2f,  0.0f},
+    { 0.2f, -0.2f,  0.0f},
+    {-0.2f, -0.2f,  0.0f},
+    {-0.2f,  0.2f,  0.0f}
+  };
+
+  return offsets;
 }
 
 //##################################################################################################

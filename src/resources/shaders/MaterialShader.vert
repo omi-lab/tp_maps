@@ -42,7 +42,7 @@ void main()
 
   uv_tangent = inTexture;
 
-  /*LIGHT_VERT_CALC*/
+/*LIGHT_VERT_CALC*/
 
   cameraOrigin_tangent = TBN * cameraOrigin_world;
   fragPos_tangent = TBN * fragPos_world;

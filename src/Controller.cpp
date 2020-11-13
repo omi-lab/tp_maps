@@ -50,7 +50,7 @@ Matrices Controller::matrices(const tp_utils::StringID& coordinateSystem) const
 }
 
 //##################################################################################################
-void Controller::setCurrentLight(const Light& light)
+void Controller::setCurrentLight(const Light& light, size_t level)
 {
   d->currentLight = light;
 
@@ -82,10 +82,12 @@ void Controller::setCurrentLight(const Light& light)
   }
   }
 
+  glm::mat4 offset = glm::translate(glm::mat4(1.0f), Light::lightLevelOffsets()[level] * d->currentLight.offsetScale);
+
   Matrices vp;
   vp.p  = projection;
-  vp.v  = view;
-  vp.vp = projection * view;
+  vp.v  = offset * view;
+  vp.vp = projection * offset * view;
 
   d->lightMatrices = vp;
 }

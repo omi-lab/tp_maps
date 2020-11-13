@@ -18,7 +18,7 @@ vec4(-0.7010f, +0.5291f, -0.8860f, +1.0000f)
 
 void main()
 {
-  /*TP_GLSL_GLFRAGCOLOR*/ = (ycbcrToRGBTransform * /*TP_GLSL_TEXTURE*/(textureSampler, texCoordinate))*color;
+  /*TP_GLSL_GLFRAGCOLOR*/ = (ycbcrToRGBTransform * /*TP_GLSL_TEXTURE_2D*/(textureSampler, texCoordinate))*color;
   if(/*TP_GLSL_GLFRAGCOLOR*/.a < 0.01)
     discard;
 }

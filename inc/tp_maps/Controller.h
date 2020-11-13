@@ -52,7 +52,7 @@ public:
 
   //################################################################################################
   //! Sets the light that is currently being rendered in the LightFBOs pass.
-  void setCurrentLight(const Light& light);
+  void setCurrentLight(const Light& light, size_t level);
 
   //################################################################################################
   Matrices lightMatrices();

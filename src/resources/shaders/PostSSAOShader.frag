@@ -24,7 +24,7 @@ float distance2(vec3 a, vec3 b)
 
 void main()
 {
-  float depth = /*TP_GLSL_TEXTURE*/(depthSampler, texCoordinate).x;
+  float depth = /*TP_GLSL_TEXTURE_2D*/(depthSampler, texCoordinate).x;
   vec3 viewCoord = clipToView(texCoordinate, depth);
 
   float occlusions=0.0;
@@ -42,7 +42,7 @@ void main()
 
         if(clipCoord.x>=0.0 && clipCoord.y>=0.0 && clipCoord.x<=1.0 && clipCoord.y<=1.0)
         {
-          float d = /*TP_GLSL_TEXTURE*/(depthSampler, clipCoord.xy).x;
+          float d = /*TP_GLSL_TEXTURE_2D*/(depthSampler, clipCoord.xy).x;
           vec3 viewCoord2 = clipToView(clipCoord.xy, d);
 
           if(clipCoord.z>d && distance2(viewCoord, viewCoord2)<0.01)
@@ -56,11 +56,11 @@ void main()
   occlusions = max(0.0, occlusions-(count/2.0));
 
   float dim = clamp((1.1 - ((occlusions/count)*2.0)), 0.4, 1.0);
-  /*TP_GLSL_GLFRAGCOLOR*/ = vec4(/*TP_GLSL_TEXTURE*/(textureSampler, texCoordinate).xyz*dim, 1.0);
+  /*TP_GLSL_GLFRAGCOLOR*/ = vec4(/*TP_GLSL_TEXTURE_2D*/(textureSampler, texCoordinate).xyz*dim, 1.0);
 
 
 
-  // float d = /*TP_GLSL_TEXTURE*/(depthSampler, texCoordinate).x;
+  // float d = /*TP_GLSL_TEXTURE_2D*/(depthSampler, texCoordinate).x;
   // float d = occlusions/count;
   // float d = length(viewCoord.xyz);
   // float d = clamp((1.0 - ((occlusions/count)*2.0)), 0.0, 1.0);
