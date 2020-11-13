@@ -273,8 +273,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
 
   case OpenGLProfile::VERSION_300_ES:
   {
-    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 300 es\nprecision highp float;");
-    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 300 es\nprecision highp float;");
+    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 300 es\nprecision highp float;\nprecision highp sampler3D;");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 300 es\nprecision highp float;\nprecision highp sampler3D;");
     replace("/*TP_GLSL_IN_V*/",              "in ");
     replace("/*TP_GLSL_IN_F*/",              "in ");
     replace("/*TP_GLSL_OUT_V*/",             "out ");
@@ -289,8 +289,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
 
   case OpenGLProfile::VERSION_310_ES:
   {
-    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 310 es\nprecision highp float;");
-    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 310 es\nprecision highp float;");
+    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 310 es\nprecision highp float;\nprecision highp sampler3D;");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 310 es\nprecision highp float;\nprecision highp sampler3D;");
     replace("/*TP_GLSL_IN_V*/",              "in ");
     replace("/*TP_GLSL_IN_F*/",              "in ");
     replace("/*TP_GLSL_OUT_V*/",             "out ");
@@ -305,8 +305,8 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
 
   case OpenGLProfile::VERSION_320_ES:
   {
-    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 320 es\nprecision highp float;");
-    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 320 es\nprecision highp float;");
+    replace("/*TP_VERT_SHADER_HEADER*/",     "#version 320 es\nprecision highp float;\nprecision highp sampler3D;");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 320 es\nprecision highp float;\nprecision highp sampler3D;");
     replace("/*TP_GLSL_IN_V*/",              "in ");
     replace("/*TP_GLSL_IN_F*/",              "in ");
     replace("/*TP_GLSL_OUT_V*/",             "out ");
@@ -529,7 +529,7 @@ void Light::loadState(const nlohmann::json& j)
   fov         = TPJSONFloat(j, "fov"        , fov        );
   orthoRadius = TPJSONFloat(j, "orthoRadius", orthoRadius);
 
-  offsetScale = tp_math_utils::vec3FromJSON(TPJSON(j, "offsetScale", tp_math_utils::vec3ToJSON(glm::vec3(0.1f,0.1f,0.1f))));
+  offsetScale = tp_math_utils::vec3FromJSON(TPJSON(j, "offsetScale", tp_math_utils::vec3ToJSON(glm::vec3(0.8f,0.8f,0.8f))));
 }
 
 //##################################################################################################

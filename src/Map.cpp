@@ -28,6 +28,62 @@
 #  define DEBUG_printOpenGLError(A) do{}while(false)
 #endif
 
+#ifdef TP_MAPS_DEBUG
+//##################################################################################################
+static void APIENTRY tpOutputOpenGLDebug(GLenum source,
+                                         GLenum type,
+                                         unsigned int id,
+                                         GLenum severity,
+                                         GLsizei length,
+                                         const char *message,
+                                         const void *userParam)
+{
+  TP_UNUSED(length);
+  TP_UNUSED(userParam);
+
+  // ignore non-significant error/warning codes
+  if(id == 131169 || id == 131185 || id == 131218 || id == 131204) return;
+
+  tpWarning() << "---------------";
+  tpWarning() << "OpenGL Debug message (" << id << "): " <<  message << std::endl;
+
+  switch(source)
+  {
+  case GL_DEBUG_SOURCE_API:             tpWarning() << "  Source: API"; break;
+  case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   tpWarning() << "  Source: Window System"; break;
+  case GL_DEBUG_SOURCE_SHADER_COMPILER: tpWarning() << "  Source: Shader Compiler"; break;
+  case GL_DEBUG_SOURCE_THIRD_PARTY:     tpWarning() << "  Source: Third Party"; break;
+  case GL_DEBUG_SOURCE_APPLICATION:     tpWarning() << "  Source: Application"; break;
+  case GL_DEBUG_SOURCE_OTHER:           tpWarning() << "  Source: Other"; break;
+  }
+
+  switch(type)
+  {
+  case GL_DEBUG_TYPE_ERROR:               tpWarning() << "  Type: Error"; break;
+  case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: tpWarning() << "  Type: Deprecated Behaviour"; break;
+  case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  tpWarning() << "  Type: Undefined Behaviour"; break;
+  case GL_DEBUG_TYPE_PORTABILITY:         tpWarning() << "  Type: Portability"; break;
+  case GL_DEBUG_TYPE_PERFORMANCE:         tpWarning() << "  Type: Performance"; break;
+  case GL_DEBUG_TYPE_MARKER:              tpWarning() << "  Type: Marker"; break;
+  case GL_DEBUG_TYPE_PUSH_GROUP:          tpWarning() << "  Type: Push Group"; break;
+  case GL_DEBUG_TYPE_POP_GROUP:           tpWarning() << "  Type: Pop Group"; break;
+  case GL_DEBUG_TYPE_OTHER:               tpWarning() << "  Type: Other"; break;
+  }
+
+  switch(severity)
+  {
+  case GL_DEBUG_SEVERITY_HIGH:         tpWarning() << "  Severity: high"; break;
+  case GL_DEBUG_SEVERITY_MEDIUM:       tpWarning() << "  Severity: medium"; break;
+  case GL_DEBUG_SEVERITY_LOW:          tpWarning() << "  Severity: low"; break;
+  case GL_DEBUG_SEVERITY_NOTIFICATION: tpWarning() << "  Severity: notification"; break;
+  }
+
+  tpWarning() << "Error stack trace:";
+  tp_utils::printStackTrace();
+  tpWarning() << "---------------\n";
+}
+#endif
+
 namespace tp_maps
 {
 
@@ -165,7 +221,9 @@ struct Map::Private
   */
   bool prepareBuffer(FBO& buffer, int width, int height, bool createColorBuffer, bool multisample, int levels, int level)
   {
-  #ifdef TP_ENABLE_MULTISAMPLE_FBO
+    DEBUG_printOpenGLError("prepareBuffer Start");
+
+#ifdef TP_ENABLE_MULTISAMPLE_FBO
     if(updateSamplesRequired)
     {
       updateSamplesRequired = false;
@@ -177,7 +235,7 @@ struct Map::Private
       if(samples != maxSamples)
         tpWarning() << "Max samples set to: " << samples;
     }
-  #endif
+#endif
 
     multisample = multisample && (samples>1);
 
@@ -194,7 +252,10 @@ struct Map::Private
       buffer.levels = levels;
     }
 
+    DEBUG_printOpenGLError("prepareBuffer Init");
+
     glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
+    DEBUG_printOpenGLError("prepareBuffer glBindFramebuffer first");
 
     // Some versions of OpenGL must have a color buffer even if we are not going to use it.
     if(!createColorBuffer)
@@ -213,22 +274,22 @@ struct Map::Private
 #ifdef TP_ENABLE_3D_TEXTURE
         if(levels != 1)
         {
-          glEnable(GL_TEXTURE_3D);
-
           //Can't see why we would need a multi level color buffer but will include it for completeness.
+          glEnable(GL_TEXTURE_3D);
           glBindTexture(GL_TEXTURE_3D, buffer.textureID);
           glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, width, height, levels, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
           glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
           glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+          DEBUG_printOpenGLError("prepareBuffer generate 3D texture for color buffer");
         }
         else
 #endif
         {
           glBindTexture(GL_TEXTURE_2D, buffer.textureID);
-          //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
           glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+          DEBUG_printOpenGLError("prepareBuffer generate 2D texture for color buffer");
         }
       }
 
@@ -237,11 +298,13 @@ struct Map::Private
       {
         glEnable(GL_TEXTURE_3D);
         glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, buffer.textureID, 0, level);
+        DEBUG_printOpenGLError("prepareBuffer bind 3D texture to FBO");
       }
       else
 #endif
       {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer.textureID, 0);
+        DEBUG_printOpenGLError("prepareBuffer bind 2D texture to FBO");
       }
     }
 
@@ -252,7 +315,6 @@ struct Map::Private
 #ifdef TP_ENABLE_3D_TEXTURE
       if(levels != 1)
       {
-        glEnable(GL_TEXTURE_3D);
         glBindTexture(GL_TEXTURE_3D, buffer.depthID);
 
         switch(openGLProfile)
@@ -264,7 +326,7 @@ struct Map::Private
         case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
         case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
         case OpenGLProfile::VERSION_320_ES:
-          glTexImage3D(GL_TEXTURE_3D, 0, TP_GL_DEPTH_COMPONENT24, width, height, levels, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+          glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F, width, height, levels, 0, GL_RED, GL_FLOAT, nullptr);
           break;
 
         default:
@@ -278,6 +340,7 @@ struct Map::Private
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
         glBindTexture(GL_TEXTURE_3D, 0);
+        DEBUG_printOpenGLError("prepareBuffer generate 3D texture for depth buffer");
       }
       else
 #endif
@@ -294,7 +357,6 @@ struct Map::Private
         case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
         case OpenGLProfile::VERSION_320_ES:
           glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
-          //glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
           break;
 
         default:
@@ -308,19 +370,21 @@ struct Map::Private
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         glBindTexture(GL_TEXTURE_2D, 0);
+        DEBUG_printOpenGLError("prepareBuffer generate 2D texture for depth buffer");
       }
     }
 
 #ifdef TP_ENABLE_3D_TEXTURE
     if(levels != 1)
     {
-      glEnable(GL_TEXTURE_3D);
       glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, buffer.depthID, 0, level);
+      DEBUG_printOpenGLError("prepareBuffer bind 3D texture to FBO as color but to store depth");
     }
     else
 #endif
     {
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.depthID, 0);
+      DEBUG_printOpenGLError("prepareBuffer bind 2D texture to FBO to store depth");
     }
 
     if(printFBOError("Error Map::Private::prepareBuffer frame buffer not complete!"))
@@ -335,6 +399,7 @@ struct Map::Private
         glGenFramebuffers(1, &buffer.multisampleFrameBuffer);
 
       glBindFramebuffer(GL_FRAMEBUFFER, buffer.multisampleFrameBuffer);
+      DEBUG_printOpenGLError("prepareBuffer glBindFramebuffer second");
 
       if(!buffer.multisampleTextureID)
       {
@@ -353,6 +418,7 @@ struct Map::Private
           glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, buffer.multisampleTextureID, 0);
           break;
         }
+        DEBUG_printOpenGLError("prepareBuffer generate 2D texture for multisample FBO");
       }
 
       if(!buffer.multisampleColorRBO)
@@ -362,16 +428,17 @@ struct Map::Private
         glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGB8, width, height);
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer.multisampleColorRBO);
+        DEBUG_printOpenGLError("prepareBuffer multisample RBO for color");
       }
 
       if(!buffer.multisampleDepthRBO)
       {
         glGenRenderbuffers(1, &buffer.multisampleDepthRBO);
         glBindRenderbuffer(GL_RENDERBUFFER, buffer.multisampleDepthRBO);
-
         glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, TP_GL_DEPTH_COMPONENT24, width, height);
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer.multisampleDepthRBO);
+        DEBUG_printOpenGLError("prepareBuffer multisample RBO for depth");
       }
 
       if(printFBOError("Error Map::Private::prepareBuffer multisample frame buffer not complete!"))
@@ -384,6 +451,8 @@ struct Map::Private
     glDepthMask(true);
     glClearDepthf(1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    DEBUG_printOpenGLError("prepareBuffer end");
 
     return true;
   }
@@ -1239,6 +1308,26 @@ void Map::initializeGL()
     return false;
   }();
   TP_UNUSED(initGlew);
+#endif
+
+#ifdef TP_MAPS_DEBUG
+    {
+      int flags;
+      glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+      if(flags & GL_CONTEXT_FLAG_DEBUG_BIT)
+      {
+        tpWarning() << "Got a debug context, registering debug callback.";
+
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(tpOutputOpenGLDebug, nullptr);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+      }
+      else
+      {
+        tpWarning() << "Failed to get debug EGL context.";
+      }
+    }
 #endif
 
   d->updateSamplesRequired = true;
