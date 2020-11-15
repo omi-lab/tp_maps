@@ -529,7 +529,7 @@ void Light::loadState(const nlohmann::json& j)
   fov         = TPJSONFloat(j, "fov"        , fov        );
   orthoRadius = TPJSONFloat(j, "orthoRadius", orthoRadius);
 
-  offsetScale = tp_math_utils::vec3FromJSON(TPJSON(j, "offsetScale", tp_math_utils::vec3ToJSON(glm::vec3(0.8f,0.8f,0.8f))));
+  offsetScale = tp_math_utils::vec3FromJSON(TPJSON(j, "offsetScale", tp_math_utils::vec3ToJSON(glm::vec3(0.1f,0.1f,0.1f))));
 }
 
 //##################################################################################################
