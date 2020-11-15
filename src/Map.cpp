@@ -28,7 +28,7 @@
 #  define DEBUG_printOpenGLError(A) do{}while(false)
 #endif
 
-#ifdef TP_MAPS_DEBUG
+#if defined(TP_MAPS_DEBUG) && !defined(TP_EMSCRIPTEN)
 //##################################################################################################
 static void APIENTRY tpOutputOpenGLDebug(GLenum source,
                                          GLenum type,
@@ -1310,7 +1310,7 @@ void Map::initializeGL()
   TP_UNUSED(initGlew);
 #endif
 
-#ifdef TP_MAPS_DEBUG
+#if defined(TP_MAPS_DEBUG) && !defined(TP_EMSCRIPTEN)
     {
       int flags;
       glGetIntegerv(GL_CONTEXT_FLAGS, &flags);

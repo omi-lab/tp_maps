@@ -53,7 +53,11 @@ struct TexturePool::Private
     }
 
     for(auto& i : images)
+    {
       delete i.second.texture;
+      //if(i.second.texture)
+      //  tpDebug() << "overwrite subscribe: " << i.first.keyString();
+    }
   }
 
   //################################################################################################
@@ -103,6 +107,10 @@ void TexturePool::subscribe(const tp_utils::StringID& name, const tp_image_utils
     if(details.textureID && d->map())
       d->map()->deleteTexture(details.textureID);
     delete details.texture;
+
+    //if(details.texture)
+    //  tpDebug() << "overwrite subscribe: " << name.keyString();
+
     details.textureID = 0;
     details.texture = nullptr;
   }
@@ -124,6 +132,10 @@ void TexturePool::unsubscribe(const tp_utils::StringID& name)
     if(i->second.textureID && d->map())
       d->map()->deleteTexture(i->second.textureID);    
     delete i->second.texture;
+
+    //if(i->second.texture)
+    //  tpDebug() << "unsubscribe texture: " << name.keyString();
+
     d->images.erase(i);
   }
 }
@@ -143,7 +155,10 @@ GLuint TexturePool::textureID(const tp_utils::StringID& name)
     return 0;
 
   if(!i->second.texture)
+  {
     i->second.texture = new BasicTexture(d->map(), i->second.image);
+    //tpDebug() << "New texture: " << name.keyString();
+  }
 
   if(!i->second.textureID)
     i->second.textureID = i->second.texture->bindTexture();

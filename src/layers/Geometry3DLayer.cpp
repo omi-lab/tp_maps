@@ -61,12 +61,14 @@ struct Geometry3DLayer::Private
   //################################################################################################
   tp_utils::Callback<void()> geometry3DPoolChanged = [&]
   {
+    TP_TIME_SCOPE("Geometry3DLayer::geometry3DPoolChanged");
     q->update();
   };
 
   //################################################################################################
   void checkClearGeometry()
   {
+    TP_TIME_SCOPE("Geometry3DLayer::checkClearGeometry");
     if(geometrySet)
     {
       geometrySet=false;
@@ -104,6 +106,7 @@ const tp_utils::StringID& Geometry3DLayer::name() const
 //##################################################################################################
 void Geometry3DLayer::setTexturePool(TexturePool* texturePool)
 {  
+  TP_TIME_SCOPE("Geometry3DLayer::setTexturePool");
   for(const auto& name : d->subscribedTextures)
     d->texturePool->unsubscribe(name);
   d->subscribedTextures.clear();
@@ -122,6 +125,7 @@ TexturePool* Geometry3DLayer::texturePool() const
 //##################################################################################################
 void Geometry3DLayer::setTextures(const std::unordered_map<tp_utils::StringID, tp_image_utils::ColorMap>& textures)
 {
+  TP_TIME_SCOPE("Geometry3DLayer::setTextures");
   std::vector<tp_utils::StringID> subscribedTextures;
 
   for(const auto& i : textures)
@@ -138,6 +142,7 @@ void Geometry3DLayer::setTextures(const std::unordered_map<tp_utils::StringID, t
 //##################################################################################################
 void Geometry3DLayer::setGeometry3DPool(Geometry3DPool* geometry3DPool)
 {
+  TP_TIME_SCOPE("Geometry3DLayer::setGeometry3DPool");
   d->checkClearGeometry();
   d->geometry3DPool = geometry3DPool;
   d->geometry3DPoolChanged.disconnect();
@@ -154,6 +159,7 @@ Geometry3DPool* Geometry3DLayer::geometry3DPool() const
 //##################################################################################################
 void Geometry3DLayer::setGeometry(const std::vector<Geometry3D>& geometry)
 {
+  TP_TIME_SCOPE("Geometry3DLayer::setGeometry");
   d->checkClearGeometry();
   d->geometrySet = true;
   d->geometry3DPool->subscribe(d->name, geometry, true);
@@ -181,6 +187,7 @@ Geometry3DLayer::ShaderSelection Geometry3DLayer::shaderSelection() const
 //##################################################################################################
 void Geometry3DLayer::render(RenderInfo& renderInfo)
 {
+  TP_TIME_SCOPE("Geometry3DLayer::render");
   if(renderInfo.pass != defaultRenderPass() &&
      renderInfo.pass != RenderPass::Transparency &&
      renderInfo.pass != RenderPass::LightFBOs &&
@@ -245,6 +252,9 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     }
     else
     {
+      tp_utils::ElapsedTimer t(10);
+      t.start();
+      TP_CLEANUP([&]{t.printTime("Geometry3DLayer::render");});
       d->geometry3DPool->viewProcessedGeometry(d->name, shader, [&](const std::vector<ProcessedGeometry3D>& processedGeometry)
       {
         for(const auto& details : processedGeometry)
@@ -254,6 +264,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
             draw(shader, buff.first, buff.second);
         }
       });
+
     }
   };
 
