@@ -14,6 +14,7 @@ class TexturePool;
 //##################################################################################################
 struct ProcessedGeometry3D
 {
+  TP_REF_COUNT_OBJECTS("ProcessedGeometry3D");
   std::vector<std::pair<GLenum, MaterialShader::VertexBuffer*>> vertexBuffers;
   Material material;
 

@@ -6,6 +6,7 @@
 #include "tp_image_utils/ColorMap.h"
 
 #include "tp_utils/DebugUtils.h"
+#include "tp_utils/RefCount.h"
 
 namespace tp_maps
 {
@@ -14,6 +15,7 @@ namespace
 {
 struct Details_lt
 {
+  TP_REF_COUNT_OBJECTS("TexturePool::Details_lt");
   int count{0};
   tp_image_utils::ColorMap image;
   BasicTexture* texture{nullptr};
