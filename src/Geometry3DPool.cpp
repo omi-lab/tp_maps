@@ -266,7 +266,7 @@ TexturePool* Geometry3DPool::texturePool() const
 
 //##################################################################################################
 void Geometry3DPool::subscribe(const tp_utils::StringID& name,
-                               const std::vector<Geometry3D>& geometry,
+                               const std::function<std::vector<Geometry3D>()>& getGeometry,
                                bool overwrite)
 {
   auto& details = d->pools[name];
@@ -274,7 +274,7 @@ void Geometry3DPool::subscribe(const tp_utils::StringID& name,
   if(details.count==1 || overwrite || details.overwrite)
   {
     details.overwrite = false;
-    details.geometry = geometry;
+    details.geometry = getGeometry();
     details.updateVertexBuffer = true;
   }
   changedCallbacks();

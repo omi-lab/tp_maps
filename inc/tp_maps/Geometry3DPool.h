@@ -47,7 +47,7 @@ public:
 
   //################################################################################################
   void subscribe(const tp_utils::StringID& name,
-                 const std::vector<Geometry3D>& geometry,
+                 const std::function<std::vector<Geometry3D>()>& getGeometry,
                  bool overwrite);
 
   //################################################################################################

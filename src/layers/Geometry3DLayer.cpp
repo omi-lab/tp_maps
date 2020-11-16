@@ -162,7 +162,7 @@ void Geometry3DLayer::setGeometry(const std::vector<Geometry3D>& geometry)
   TP_TIME_SCOPE("Geometry3DLayer::setGeometry");
   d->checkClearGeometry();
   d->geometrySet = true;
-  d->geometry3DPool->subscribe(d->name, geometry, true);
+  d->geometry3DPool->subscribe(d->name, [&]{return geometry;}, true);
 }
 
 //################################################################################################
@@ -252,9 +252,6 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     }
     else
     {
-      tp_utils::ElapsedTimer t(10);
-      t.start();
-      TP_CLEANUP([&]{t.printTime("Geometry3DLayer::render");});
       d->geometry3DPool->viewProcessedGeometry(d->name, shader, [&](const std::vector<ProcessedGeometry3D>& processedGeometry)
       {
         for(const auto& details : processedGeometry)
