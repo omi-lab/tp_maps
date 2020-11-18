@@ -6,6 +6,7 @@
         <file alias="FrameShader.vert">resources/shaders/FrameShader.vert</file>
         <file alias="ImageShader.frag">resources/shaders/ImageShader.frag</file>
         <file alias="ImageShader.vert">resources/shaders/ImageShader.vert</file>
+        <file alias="Image3DShader.frag">resources/shaders/Image3DShader.frag</file>
         <file alias="LineShader.frag">resources/shaders/LineShader.frag</file>
         <file alias="LineShader.vert">resources/shaders/LineShader.vert</file>
         <file alias="MaterialShader.frag">resources/shaders/MaterialShader.frag</file>
@@ -20,6 +21,7 @@
         <file alias="PointSpriteShader.picking.vert">resources/shaders/PointSpriteShader.picking.vert</file>
         <file alias="YUVImageShader.frag">resources/shaders/YUVImageShader.frag</file>
         <file alias="DepthImageShader.frag">resources/shaders/DepthImageShader.frag</file>
+        <file alias="DepthImage3DShader.frag">resources/shaders/DepthImage3DShader.frag</file>
         <file alias="PostShader.vert">resources/shaders/PostShader.vert</file>
         <file alias="PostSSAOShader.frag">resources/shaders/PostSSAOShader.frag</file>
         <file alias="PostBlitShader.frag">resources/shaders/PostBlitShader.frag</file>

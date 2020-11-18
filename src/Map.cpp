@@ -205,6 +205,72 @@ struct Map::Private
   }
 
   //################################################################################################
+  void create2DDepthTexture(GLuint& depthID, int width, int height)
+  {
+    glGenTextures(1, &depthID);
+
+    glBindTexture(GL_TEXTURE_2D, depthID);
+
+    switch(openGLProfile)
+    {
+    case OpenGLProfile::VERSION_100_ES:
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
+      break;
+
+    case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
+    case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
+    case OpenGLProfile::VERSION_320_ES:
+      glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+      break;
+
+    default:
+      glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
+      break;
+    }
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    DEBUG_printOpenGLError("prepareBuffer generate 2D texture for depth buffer");
+  }
+
+  //################################################################################################
+  void create3DDepthTexture(GLuint& depthID, int width, int height, int levels)
+  {
+    glGenTextures(1, &depthID);
+
+    glBindTexture(GL_TEXTURE_3D, depthID);
+
+    switch(openGLProfile)
+    {
+    case OpenGLProfile::VERSION_100_ES:
+      glTexImage3D(GL_TEXTURE_3D, 0, GL_DEPTH_COMPONENT, width, height, levels, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
+      break;
+
+    case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
+    case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
+    case OpenGLProfile::VERSION_320_ES:
+      glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F, width, height, levels, 0, GL_RED, GL_FLOAT, nullptr);
+      break;
+
+    default:
+      glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F, width, height, levels, 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
+      break;
+    }
+
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glBindTexture(GL_TEXTURE_3D, 0);
+    DEBUG_printOpenGLError("prepareBuffer generate 3D texture for depth buffer");
+  }
+
+  //################################################################################################
   //! Create and bind an FBO.
   /*!
   This will delete and recreate the buffer if required.
@@ -264,125 +330,53 @@ struct Map::Private
         createColorBuffer = true;
     }
 
+#ifdef TP_ENABLE_3D_TEXTURE
+    if(levels != 1)
+      createColorBuffer = false;
+#endif
+
     if(createColorBuffer)
     {
       if(!buffer.textureID)
       {
         glGenTextures(1, &buffer.textureID);
-
-
-#ifdef TP_ENABLE_3D_TEXTURE
-        if(levels != 1)
-        {
-          //Can't see why we would need a multi level color buffer but will include it for completeness.
-          glEnable(GL_TEXTURE_3D);
-          glBindTexture(GL_TEXTURE_3D, buffer.textureID);
-          glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, width, height, levels, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-          glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-          glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-          DEBUG_printOpenGLError("prepareBuffer generate 3D texture for color buffer");
-        }
-        else
-#endif
-        {
-          glBindTexture(GL_TEXTURE_2D, buffer.textureID);
-          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-          DEBUG_printOpenGLError("prepareBuffer generate 2D texture for color buffer");
-        }
+        glBindTexture(GL_TEXTURE_2D, buffer.textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        DEBUG_printOpenGLError("prepareBuffer generate 2D texture for color buffer");
       }
 
-#ifdef TP_ENABLE_3D_TEXTURE
-      if(levels != 1)
-      {
-        glEnable(GL_TEXTURE_3D);
-        glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, buffer.textureID, 0, level);
-        DEBUG_printOpenGLError("prepareBuffer bind 3D texture to FBO");
-      }
-      else
-#endif
-      {
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer.textureID, 0);
-        DEBUG_printOpenGLError("prepareBuffer bind 2D texture to FBO");
-      }
-    }
-
-    if(!buffer.depthID)
-    {
-      glGenTextures(1, &buffer.depthID);
-
-#ifdef TP_ENABLE_3D_TEXTURE
-      if(levels != 1)
-      {
-        glBindTexture(GL_TEXTURE_3D, buffer.depthID);
-
-        switch(openGLProfile)
-        {
-        case OpenGLProfile::VERSION_100_ES:
-          glTexImage3D(GL_TEXTURE_3D, 0, GL_DEPTH_COMPONENT, width, height, levels, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
-          break;
-
-        case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
-        case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
-        case OpenGLProfile::VERSION_320_ES:
-          glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F, width, height, levels, 0, GL_RED, GL_FLOAT, nullptr);
-          break;
-
-        default:
-          glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F, width, height, levels, 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
-          break;
-        }
-
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        glBindTexture(GL_TEXTURE_3D, 0);
-        DEBUG_printOpenGLError("prepareBuffer generate 3D texture for depth buffer");
-      }
-      else
-#endif
-      {
-        glBindTexture(GL_TEXTURE_2D, buffer.depthID);
-
-        switch(openGLProfile)
-        {
-        case OpenGLProfile::VERSION_100_ES:
-          glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
-          break;
-
-        case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
-        case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
-        case OpenGLProfile::VERSION_320_ES:
-          glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
-          break;
-
-        default:
-          glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
-          break;
-        }
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glBindTexture(GL_TEXTURE_2D, 0);
-        DEBUG_printOpenGLError("prepareBuffer generate 2D texture for depth buffer");
-      }
+      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer.textureID, 0);
+      DEBUG_printOpenGLError("prepareBuffer bind 2D texture to FBO");
     }
 
 #ifdef TP_ENABLE_3D_TEXTURE
     if(levels != 1)
     {
+      //Its not possible to bind a 3D texture as a depth buffer, so we bind it as the color buffer
+      //and copy the depth values to that color buffer. We do however still require an actual depth
+      // buffer to perform depth tests against. So here textureID gets prepared as a 2D depth
+      //buffer.
+      //The 2D depth buffer is bound as GL_DEPTH_ATTACHMENT.
+      //The 3D depth buffer is bound as GL_COLOR_ATTACHMENT0.
+
+      if(!buffer.depthID)
+        create3DDepthTexture(buffer.depthID, width, height, levels);
+
+      if(!buffer.textureID)
+        create2DDepthTexture(buffer.textureID, width, height);
+
       glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, buffer.depthID, 0, level);
+      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.textureID, 0);
       DEBUG_printOpenGLError("prepareBuffer bind 3D texture to FBO as color but to store depth");
     }
     else
 #endif
     {
+      if(!buffer.depthID)
+        create2DDepthTexture(buffer.depthID, width, height);
+
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.depthID, 0);
       DEBUG_printOpenGLError("prepareBuffer bind 2D texture to FBO to store depth");
     }
@@ -1311,22 +1305,22 @@ void Map::initializeGL()
 #endif
 
 #if defined(TP_MAPS_DEBUG) && !defined(TP_EMSCRIPTEN)
+  {
+    int flags;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+    if(flags & GL_CONTEXT_FLAG_DEBUG_BIT)
     {
-      int flags;
-      glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-      if(flags & GL_CONTEXT_FLAG_DEBUG_BIT)
-      {
-        tpWarning() << "Got a debug context, registering debug callback.";
-        glEnable(GL_DEBUG_OUTPUT);
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        glDebugMessageCallback(tpOutputOpenGLDebug, nullptr);
-        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-      }
-      else
-      {
-        tpWarning() << "Failed to get debug GL context.";
-      }
+      tpWarning() << "Got a debug context, registering debug callback.";
+      glEnable(GL_DEBUG_OUTPUT);
+      glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+      glDebugMessageCallback(tpOutputOpenGLDebug, nullptr);
+      glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
     }
+    else
+    {
+      tpWarning() << "Failed to get debug GL context.";
+    }
+  }
 #endif
 
   d->updateSamplesRequired = true;

@@ -12,6 +12,7 @@ namespace
 {
 ShaderResource& vertShaderStr(){static ShaderResource s{"/tp_maps/ImageShader.vert"}; return s;}
 ShaderResource& fragShaderStr(){static ShaderResource s{"/tp_maps/ImageShader.frag"}; return s;}
+ShaderResource& frag3DShaderStr(){static ShaderResource s{"/tp_maps/DepthImage3DShader.frag"}; return s;}
 }
 
 //##################################################################################################
@@ -102,6 +103,13 @@ void ImageShader::setTexture(GLuint textureID)
 }
 
 //##################################################################################################
+void ImageShader::setTexture3D(GLuint textureID, size_t level)
+{
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_3D, textureID);
+}
+
+//##################################################################################################
 void ImageShader::draw(GLenum mode,
                             VertexBuffer* vertexBuffer,
                             const glm::vec4& color)
@@ -118,6 +126,12 @@ void ImageShader::drawPicking(GLenum mode,
   TP_UNUSED(pickingID);
   glDisable(GL_BLEND);
   d->draw(mode, vertexBuffer);
+}
+//##################################################################################################
+Image3DShader::Image3DShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
+  ImageShader(map, openGLProfile, nullptr, frag3DShaderStr().data(openGLProfile))
+{
+
 }
 
 }

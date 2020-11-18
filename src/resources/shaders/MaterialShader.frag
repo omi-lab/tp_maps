@@ -86,21 +86,23 @@ float sampleShadowMapLinear2D(sampler2D shadowMap, vec2 coords, float compare)
   return mix(mixA, mixB, fracPart.x);
 }
 
-float sampleShadowMap3D(sampler3D shadowMap, vec2 coords, float compare, float level)
+float sampleShadowMap3D(sampler3D shadowMap, vec2 coords, float compareLight, float compareDark, float level)
 {
-  return step(compare, /*TP_GLSL_TEXTURE_3D*/(shadowMap, vec3(coords.xy, level)).r);
+  return smoothstep(compareLight, compareDark, /*TP_GLSL_TEXTURE_3D*/(shadowMap, vec3(coords.xy, level)).r);
+
+  //return step(compare, /*TP_GLSL_TEXTURE_3D*/(shadowMap, vec3(coords.xy, level)).r);
 }
 
-float sampleShadowMapLinear3D(sampler3D shadowMap, vec2 coords, float compare, float level)
+float sampleShadowMapLinear3D(sampler3D shadowMap, vec2 coords, float compareLight, float compareDark, float level)
 {
   vec2 pixelPos = coords/texelSize + vec2(0.5);
   vec2 fracPart = fract(pixelPos);
   vec2 startTexel = (pixelPos - fracPart) * texelSize;
 
-  float blTexel = sampleShadowMap3D(shadowMap, startTexel, compare, level);
-  float brTexel = sampleShadowMap3D(shadowMap, startTexel + vec2(texelSize.x, 0.0), compare, level);
-  float tlTexel = sampleShadowMap3D(shadowMap, startTexel + vec2(0.0, texelSize.y), compare, level);
-  float trTexel = sampleShadowMap3D(shadowMap, startTexel + texelSize, compare, level);
+  float blTexel = sampleShadowMap3D(shadowMap, startTexel, compareLight, compareDark, level);
+  float brTexel = sampleShadowMap3D(shadowMap, startTexel + vec2(texelSize.x, 0.0), compareLight, compareDark, level);
+  float tlTexel = sampleShadowMap3D(shadowMap, startTexel + vec2(0.0, texelSize.y), compareLight, compareDark, level);
+  float trTexel = sampleShadowMap3D(shadowMap, startTexel + texelSize, compareLight, compareDark, level);
 
   float mixA = mix(blTexel, tlTexel, fracPart.y);
   float mixB = mix(brTexel, trTexel, fracPart.y);
@@ -156,7 +158,11 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
         }
       }
     }
-    shadow /= 9.0;
+    shadow /= totalSadowSamples;
+  }
+  else
+  {
+    shadow=1.0;
   }
 
   r.diffuse *= shadow;
@@ -229,14 +235,16 @@ LightResult spotLight2D(vec3 norm, Light light, vec3 lightDirection_tangent, sam
   return r;
 }
 
-float spotLightSampleShadow3D(vec3 norm, vec3 lightDirection_tangent, sampler3D lightTexture, vec3 fragPos_light, float level)
+float spotLightSampleShadow3D(vec3 norm, Light light, vec3 lightDirection_tangent, sampler3D lightTexture, vec3 fragPos_light, float level)
 {
   float shadow = 0.0;
 
   float bias = dot(norm, normalize(-lightDirection_tangent));
   if(bias>0.0 && fragPos_light.z>0.0 && fragPos_light.z<1.0)
   {
-    bias = max(0.0001, (1.0 - bias)*0.0005);
+    bias = 1.0-bias;
+    bias *= (fragPos_light.z*fragPos_light.z) * 0.0001;
+
     float biasedDepth = min(fragPos_light.z-bias,1.0);
 
     for(int x = -shadowSamples; x <= shadowSamples; ++x)
@@ -250,13 +258,16 @@ float spotLightSampleShadow3D(vec3 norm, vec3 lightDirection_tangent, sampler3D 
         }
         else
         {
-          shadow += sampleShadowMapLinear3D(lightTexture, coord, biasedDepth, level);
+          shadow += sampleShadowMapLinear3D(lightTexture, coord, biasedDepth, fragPos_light.z, level);
         }
       }
     }
   }
 
-  return shadow;
+  vec2 spotTexCoord = (fragPos_light.xy*light.spotLightWH) + light.spotLightUV;
+  return /*TP_GLSL_TEXTURE_2D*/(spotLightTexture, spotTexCoord).x * shadow;
+
+  //return shadow;
 }
 
 LightResult spotLight3D(vec3 norm, Light light, vec3 lightDirection_tangent, sampler3D lightTexture, vec3 fragPos_light, float shadow)
@@ -280,16 +291,20 @@ LightResult spotLight3D(vec3 norm, Light light, vec3 lightDirection_tangent, sam
   r.specular = specularCoefficient * light.specular;
 
   // Shadow
-  vec2 spotTexCoord = (fragPos_light.xy*light.spotLightWH) + light.spotLightUV;
-  vec3 shadowTex = /*TP_GLSL_TEXTURE_2D*/(spotLightTexture, spotTexCoord).xyz * shadow;
+  //vec2 spotTexCoord = (fragPos_light.xy*light.spotLightWH) + light.spotLightUV;
+  //vec3 shadowTex = /*TP_GLSL_TEXTURE_2D*/(spotLightTexture, spotTexCoord).xyz * shadow;
+
+  //vec3 shadowTex = vec3(shadow, shadow, shadow);
 
   // Attenuation
   float distance    = length(light.position - fragPos_world);
   float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
 
-  //r.ambient  *= shadowTex;
-  r.diffuse  *= shadowTex;
-  r.specular *= shadowTex;
+  r.diffuse  *= shadow;
+  r.specular *= shadow;
+
+  //r.diffuse  *= shadowTex;
+  //r.specular *= shadowTex;
 
   //r.ambient  *= attenuation;
   r.diffuse  *= attenuation;

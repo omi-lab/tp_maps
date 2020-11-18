@@ -33,6 +33,9 @@ public:
   void setTexture(GLuint textureID);
 
   //################################################################################################
+  void setTexture3D(GLuint textureID, size_t level);
+
+  //################################################################################################
   //! Call this to draw the image
   /*!
   \param vertices The points that make up the line.
@@ -57,6 +60,17 @@ private:
   struct Private;
   Private* d;
   friend struct Private;
+};
+
+//##################################################################################################
+class TP_MAPS_SHARED_EXPORT Image3DShader: public ImageShader
+{
+public:
+  //################################################################################################
+  Image3DShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+
+  //################################################################################################
+  static inline const tp_utils::StringID& name(){return image3DShaderSID();}
 };
 
 }

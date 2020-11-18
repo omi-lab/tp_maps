@@ -93,6 +93,7 @@ void FBOLayer::render(RenderInfo& renderInfo)
 
   GLuint textureID{0};
   ImageShader* shader{nullptr};
+  int levels=1;
   switch(d->source)
   {
   case FBOLayerSource::ReflectionColor:
@@ -112,16 +113,32 @@ void FBOLayer::render(RenderInfo& renderInfo)
   case FBOLayerSource::LightColor:
   {
     if(d->index < map()->lightTextures().size())
-      textureID = map()->lightTextures().at(d->index).textureID;
-    shader = static_cast<ImageShader*>(map()->getShader<ImageShader>());
+    {
+      const auto& l = map()->lightTextures().at(d->index);
+      textureID = l.textureID;
+      levels = l.levels;
+
+      if(levels>1)
+        shader = static_cast<ImageShader*>(map()->getShader<Image3DShader>());
+      else
+        shader = static_cast<ImageShader*>(map()->getShader<ImageShader>());
+    }
     break;
   }
 
   case FBOLayerSource::LightDepth:
   {
     if(d->index < map()->lightTextures().size())
-      textureID = map()->lightTextures().at(d->index).depthID;
-    shader = static_cast<ImageShader*>(map()->getShader<DepthImageShader>());
+    {
+      const auto& l = map()->lightTextures().at(d->index);
+      textureID = l.depthID;
+      levels = l.levels;
+
+      if(levels>1)
+        shader = static_cast<ImageShader*>(map()->getShader<DepthImage3DShader>());
+      else
+        shader = static_cast<ImageShader*>(map()->getShader<DepthImageShader>());
+    }
     break;
   }
   };
@@ -162,7 +179,10 @@ void FBOLayer::render(RenderInfo& renderInfo)
 
   shader->use();
   shader->setMatrix(matrix);
-  shader->setTexture(textureID);
+  if(levels == 1)
+    shader->setTexture(textureID);
+  else
+    shader->setTexture3D(textureID, 0);
 
   shader->draw(GL_TRIANGLE_FAN, d->vertexBuffer, glm::vec4(1.0f));
 }

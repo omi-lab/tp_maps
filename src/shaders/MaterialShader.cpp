@@ -235,7 +235,7 @@ MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, b
               auto o = Light::lightLevelOffsets()[l] * light.offsetScale;
               std::string offset = "vec4(" + std::to_string(o.x) + "," + std::to_string(o.y) + "," + std::to_string(o.z) + ",0.0)";
 
-              LIGHT_FRAG_CALC += replaceLight(ii, std::to_string(l), "    shadow += spotLightSampleShadow3D(norm, light%Direction_tangent, light%Texture, lightPosToTexture(fragPos_light%View,"+offset+", worldToLight%_proj), " + levelTexCoord + ");\n");
+              LIGHT_FRAG_CALC += replaceLight(ii, std::to_string(l), "    shadow += spotLightSampleShadow3D(norm, light%, light%Direction_tangent, light%Texture, lightPosToTexture(fragPos_light%View,"+offset+", worldToLight%_proj), " + levelTexCoord + ");\n");
             }
 
             LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totalSadowSamples * @.0;\n");
@@ -296,8 +296,6 @@ void MaterialShader::compile(const char* vertShaderStr,
                              const std::function<void(GLuint)>& getLocations,
                              ShaderType shaderType)
 {
-
-
   Shader::compile(vertShaderStr,
                   fragShaderStr,
                   [&](GLuint program)
@@ -482,10 +480,7 @@ void MaterialShader::setLights(const std::vector<Light>& lights, const std::vect
       if(lightBuffer.levels == 1)
         glBindTexture(GL_TEXTURE_2D, lightBuffer.depthID);
       else
-      {
-
         glBindTexture(GL_TEXTURE_3D, lightBuffer.depthID);
-      }
 
       glUniform1i(lightLocations.lightTextureIDLocation, 6 + i);
     }
@@ -496,7 +491,6 @@ void MaterialShader::setLights(const std::vector<Light>& lights, const std::vect
     if(!lightBuffers.empty())
       texelSize = glm::vec2(1.0, 1.0) / glm::vec2(lightBuffers[0].width, lightBuffers[0].height);
     glUniform2fv(d->texelSizeLocation, 1, &texelSize.x);
-
   }
 }
 
