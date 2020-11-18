@@ -105,6 +105,7 @@ void ImageShader::setTexture(GLuint textureID)
 //##################################################################################################
 void ImageShader::setTexture3D(GLuint textureID, size_t level)
 {
+  TP_UNUSED(level);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_3D, textureID);
 }
