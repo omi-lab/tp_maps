@@ -28,7 +28,7 @@
 #  define DEBUG_printOpenGLError(A) do{}while(false)
 #endif
 
-#if defined(TP_MAPS_DEBUG) && !defined(TP_EMSCRIPTEN)
+#if defined(TP_MAPS_DEBUG) && !defined(TP_EMSCRIPTEN) && !defined(TP_OSX)
 //##################################################################################################
 static void APIENTRY tpOutputOpenGLDebug(GLenum source,
                                          GLenum type,
@@ -303,6 +303,10 @@ struct Map::Private
     }
 #endif
 
+#ifndef TP_ENABLE_3D_TEXTURE
+    levels = 1;
+#endif
+
     multisample = multisample && (samples>1);
 
     if(buffer.width!=width || buffer.height!=height || buffer.levels!=levels)
@@ -464,6 +468,8 @@ struct Map::Private
       glBlitFramebuffer(0, 0, buffer.width, buffer.height, 0, 0, buffer.width, buffer.height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
       glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
     }
+#else
+    TP_UNUSED(buffer);
 #endif
   }
 
@@ -875,7 +881,11 @@ size_t Map::maxSpotLightLevels() const
 //##################################################################################################
 size_t Map::spotLightLevels() const
 {
+#ifdef TP_ENABLE_3D_TEXTURE
   return tpMin(Light::lightLevelOffsets().size(), d->spotLightLevels);
+#else
+  return 1;
+#endif
 }
 
 //##################################################################################################
@@ -1304,7 +1314,7 @@ void Map::initializeGL()
   TP_UNUSED(initGlew);
 #endif
 
-#if defined(TP_MAPS_DEBUG) && !defined(TP_EMSCRIPTEN)
+#if defined(TP_MAPS_DEBUG) && !defined(TP_EMSCRIPTEN) && !defined(TP_OSX)
   {
     int flags;
     glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
@@ -1429,9 +1439,12 @@ void Map::paintGLNoMakeCurrent()
         const auto& light = d->lights.at(i);
         auto& lightBuffer = d->lightTextures.at(i);
 
-        int levels=1;
+        int levels=1;        
+
+#ifdef TP_ENABLE_3D_TEXTURE
         if(light.type == LightType::Spot)
           levels=d->spotLightLevels;
+#endif
 
         lightBuffer.worldToTexture.resize(levels);
         for(int l=0; l<levels; l++)
