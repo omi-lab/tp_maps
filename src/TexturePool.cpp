@@ -21,6 +21,9 @@ struct Details_lt
   BasicTexture* texture{nullptr};
   bool overwrite{false};
   GLuint textureID{0};
+
+  GLint textureWrapS{GL_CLAMP_TO_EDGE};
+  GLint textureWrapT{GL_CLAMP_TO_EDGE};
 };
 }
 
@@ -125,7 +128,7 @@ void TexturePool::unsubscribe(const tp_utils::StringID& name)
   if(!i->second.count)
   {
     if(i->second.textureID && d->map())
-      d->map()->deleteTexture(i->second.textureID);    
+      d->map()->deleteTexture(i->second.textureID);
     delete i->second.texture;
 
     d->images.erase(i);
@@ -147,12 +150,63 @@ GLuint TexturePool::textureID(const tp_utils::StringID& name)
     return 0;
 
   if(!i->second.texture)
+  {
     i->second.texture = new BasicTexture(d->map(), i->second.image);
+    i->second.texture->setTextureWrapS(i->second.textureWrapS);
+    i->second.texture->setTextureWrapT(i->second.textureWrapT);
+  }
 
   if(!i->second.textureID)
     i->second.textureID = i->second.texture->bindTexture();
 
   return i->second.textureID;
+}
+
+
+//##################################################################################################
+void TexturePool::setTextureWrapS(const tp_utils::StringID& name, GLint textureWrapS)
+{
+  auto i = d->images.find(name);
+  if(i == d->images.end())
+    return;
+
+  if(i->second.textureWrapS == textureWrapS)
+    return;
+
+  i->second.textureWrapS = textureWrapS;
+
+  if(i->second.texture)
+    i->second.texture->setTextureWrapS(i->second.textureWrapS);
+
+  if(i->second.textureID && d->map())
+  {
+    d->map()->makeCurrent();
+    d->map()->deleteTexture(i->second.textureID);
+    i->second.textureID = 0;
+  }
+}
+
+//##################################################################################################
+void TexturePool::setTextureWrapT(const tp_utils::StringID& name, GLint textureWrapT)
+{
+  auto i = d->images.find(name);
+  if(i == d->images.end())
+    return;
+
+  if(i->second.textureWrapT == textureWrapT)
+    return;
+
+  i->second.textureWrapT = textureWrapT;
+
+  if(i->second.texture)
+    i->second.texture->setTextureWrapT(i->second.textureWrapT);
+
+  if(i->second.textureID && d->map())
+  {
+    d->map()->makeCurrent();
+    d->map()->deleteTexture(i->second.textureID);
+    i->second.textureID = 0;
+  }
 }
 
 }

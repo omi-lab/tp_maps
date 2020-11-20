@@ -320,6 +320,8 @@ struct TP_MAPS_SHARED_EXPORT Material
   float diffuseScale{1.0f};             //!< Multiplied by the diffuse
   float specularScale{1.0f};            //!< Multiplied by the specular
 
+  bool tileTextures{false};             //!< True to GL_REPEAT textures else GL_CLAMP_TO_EDGE
+
   tp_utils::StringID ambientTexture;    //!< mtl: map_Ka
   tp_utils::StringID diffuseTexture;    //!< mtl: map_Kd
   tp_utils::StringID specularTexture;   //!< mtl: map_Ks

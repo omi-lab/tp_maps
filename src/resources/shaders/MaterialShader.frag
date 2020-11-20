@@ -243,7 +243,8 @@ float spotLightSampleShadow3D(vec3 norm, Light light, vec3 lightDirection_tangen
   if(bias>0.0 && fragPos_light.z>0.0 && fragPos_light.z<1.0)
   {
     bias = 1.0-bias;
-    bias *= (fragPos_light.z*fragPos_light.z) * 0.0001;
+    bias = clamp(bias, 0.4, 1.0);
+    bias *= 0.0001;
 
     float biasedDepth = min(fragPos_light.z-bias,1.0);
 
@@ -279,7 +280,7 @@ LightResult spotLight3D(vec3 norm, Light light, vec3 lightDirection_tangent, sam
 
   // Diffuse
   float cosTheta = clamp(dot(norm, normalize(-lightDirection_tangent)), 0.0, 1.0);
-  float diff = max(cosTheta*light.diffuseScale, 0.0);
+  float diff = cosTheta*light.diffuseScale;
   r.diffuse = light.diffuse * diff;
 
   // Specular
@@ -290,12 +291,6 @@ LightResult spotLight3D(vec3 norm, Light light, vec3 lightDirection_tangent, sam
   float specularCoefficient = pow(cosAngle, material.shininess);
   r.specular = specularCoefficient * light.specular;
 
-  // Shadow
-  //vec2 spotTexCoord = (fragPos_light.xy*light.spotLightWH) + light.spotLightUV;
-  //vec3 shadowTex = /*TP_GLSL_TEXTURE_2D*/(spotLightTexture, spotTexCoord).xyz * shadow;
-
-  //vec3 shadowTex = vec3(shadow, shadow, shadow);
-
   // Attenuation
   float distance    = length(light.position - fragPos_world);
   float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
@@ -303,10 +298,6 @@ LightResult spotLight3D(vec3 norm, Light light, vec3 lightDirection_tangent, sam
   r.diffuse  *= shadow;
   r.specular *= shadow;
 
-  //r.diffuse  *= shadowTex;
-  //r.specular *= shadowTex;
-
-  //r.ambient  *= attenuation;
   r.diffuse  *= attenuation;
   r.specular *= attenuation;
 

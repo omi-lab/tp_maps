@@ -379,6 +379,8 @@ nlohmann::json Material::saveState() const
   j["diffuseScale"] = diffuseScale;
   j["specularScale"] = specularScale;
 
+  j["tileTextures"] = tileTextures;
+
   j["ambientTexture"] = ambientTexture.keyString();
   j["diffuseTexture"] = diffuseTexture.keyString();
   j["specularTexture"] = specularTexture.keyString();
@@ -403,6 +405,8 @@ void Material::loadState(const nlohmann::json& j)
   ambientScale = TPJSONFloat(j, "ambientScale", 1.0f);
   diffuseScale = TPJSONFloat(j, "diffuseScale", 1.0f);
   specularScale = TPJSONFloat(j, "specularScale", 1.0f);
+
+  tileTextures = TPJSONBool(j, "tileTextures", false);
 
   ambientTexture = TPJSONString(j, "ambientTexture");
   diffuseTexture = TPJSONString(j, "diffuseTexture");

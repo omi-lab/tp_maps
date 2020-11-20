@@ -43,6 +43,12 @@ public:
   GLuint textureID(const tp_utils::StringID& name);
 
   //################################################################################################
+  void setTextureWrapS(const tp_utils::StringID& name, GLint textureWrapS);
+
+  //################################################################################################
+  void setTextureWrapT(const tp_utils::StringID& name, GLint textureWrapT);
+
+  //################################################################################################
   tp_utils::CallbackCollection<void()> changedCallbacks;
 
 private:
