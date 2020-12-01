@@ -492,6 +492,7 @@ struct FBO
   //There will be 1 for each level
   std::vector<Matrices> worldToTexture; //!< For lighting this is used to map world coords onto the texture, per level.
 
+  Multisample multisample{Multisample::No}; //!< Yes if multisample buffers have been created.
   HDR hdr{HDR::No}; //!< Yes if HDR and deferred rendering buffers have been created.
 };
 

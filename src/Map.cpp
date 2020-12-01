@@ -44,7 +44,7 @@ static void APIENTRY tpOutputOpenGLDebug(GLenum source,
   // ignore non-significant error/warning codes
   if(id == 131169 || id == 131185 || id == 131218 || id == 131204) return;
 
-  tpWarning() << "---------------";
+  tpWarning() << "--------------- tpOutputOpenGLDebug ---------------";
   tpWarning() << "OpenGL Debug message (" << id << "): " <<  message << std::endl;
 
   switch(source)
@@ -208,24 +208,59 @@ struct Map::Private
   }
 
   //################################################################################################
+  GLint colorFormatF(Alpha alpha)
+  {
+    switch(openGLProfile)
+    {
+    case OpenGLProfile::VERSION_100_ES: [[fallthrough]];
+    case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
+    case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
+    case OpenGLProfile::VERSION_320_ES:
+      return (alpha==Alpha::Yes)?GL_RGBA32F:GL_RGB16F;
+
+    default:
+      return (alpha==Alpha::Yes)?GL_RGBA32F:GL_RGB32F;
+    }
+  }
+
+  //################################################################################################
+  GLint depthFormatF()
+  {
+    switch(openGLProfile)
+    {
+    case OpenGLProfile::VERSION_100_ES: [[fallthrough]];
+    case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
+    case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
+    case OpenGLProfile::VERSION_320_ES:
+      return GL_R32F;
+
+    default:
+      return GL_R32F;
+    }
+  }
+
+  //################################################################################################
   void create2DColorTexture(GLuint& textureID, int width, int height, HDR hdr, Alpha alpha)
   {
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
+    DEBUG_printOpenGLError("create2DColorTexture A");
 
     if(hdr == HDR::No)
     {
       if(alpha == Alpha::No)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
       else
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+      DEBUG_printOpenGLError("create2DColorTexture B");
     }
     else
     {
       if(alpha == Alpha::No)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, colorFormatF(alpha), width, height, 0, GL_RGB, GL_FLOAT, nullptr);
       else
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, colorFormatF(alpha), width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+      DEBUG_printOpenGLError("create2DColorTexture C");
     }
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -237,37 +272,37 @@ struct Map::Private
   //################################################################################################
   void createMultisampleTexture(GLuint& multisampleTextureID, int width, int height, HDR hdr, Alpha alpha, GLenum attachment)
   {
-      switch(openGLProfile)
+    switch(openGLProfile)
+    {
+    case OpenGLProfile::VERSION_100_ES: [[fallthrough]];
+    case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
+    case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
+    case OpenGLProfile::VERSION_320_ES:
+      break;
+
+    default:
+      glGenTextures(1, &multisampleTextureID);
+      glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, multisampleTextureID);
+
+      if(hdr == HDR::No)
       {
-      case OpenGLProfile::VERSION_100_ES: [[fallthrough]];
-      case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
-      case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
-      case OpenGLProfile::VERSION_320_ES:
-        break;
-
-      default:
-        glGenTextures(1, &multisampleTextureID);
-        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, multisampleTextureID);
-
-        if(hdr == HDR::No)
-        {
-          if(alpha == Alpha::No)
-            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGB, width, height, GL_TRUE);
-          else
-            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA, width, height, GL_TRUE);
-        }
+        if(alpha == Alpha::No)
+          glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGB, width, height, GL_TRUE);
         else
-        {
-          if(alpha == Alpha::No)
-            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGB32F, width, height, GL_TRUE);
-          else
-            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA32F, width, height, GL_TRUE);
-        }
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, multisampleTextureID, 0);
-        break;
+          glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA, width, height, GL_TRUE);
       }
-      DEBUG_printOpenGLError("prepareBuffer generate 2D texture for multisample FBO");
+      else
+      {
+        if(alpha == Alpha::No)
+          glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, colorFormatF(alpha), width, height, GL_TRUE);
+        else
+          glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, colorFormatF(alpha), width, height, GL_TRUE);
+      }
+
+      glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, multisampleTextureID, 0);
+      break;
+    }
+    DEBUG_printOpenGLError("prepareBuffer generate 2D texture for multisample FBO");
   }
 #endif
 
@@ -320,11 +355,11 @@ struct Map::Private
     case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
     case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
     case OpenGLProfile::VERSION_320_ES:
-      glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F, width, height, levels, 0, GL_RED, GL_FLOAT, nullptr);
+      glTexImage3D(GL_TEXTURE_3D, 0, depthFormatF(), width, height, levels, 0, GL_RED, GL_FLOAT, nullptr);
       break;
 
     default:
-      glTexImage3D(GL_TEXTURE_3D, 0, GL_R32F, width, height, levels, 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
+      glTexImage3D(GL_TEXTURE_3D, 0, depthFormatF(), width, height, levels, 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
       break;
     }
 
@@ -346,16 +381,16 @@ struct Map::Private
     if(hdr == HDR::No)
     {
       if(alpha == Alpha::No)
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGB, width, height);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGB8, width, height);
       else
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGBA, width, height);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGBA8, width, height);
     }
     else
     {
       if(alpha == Alpha::No)
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGB32F, width, height);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, colorFormatF(alpha), width, height);
       else
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGBA32F, width, height);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, colorFormatF(alpha), width, height);
     }
 
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
@@ -426,7 +461,7 @@ struct Map::Private
 
     multisample = (multisample==Multisample::Yes && (samples>1))?Multisample::Yes:Multisample::No;
 
-    if(buffer.width!=width || buffer.height!=height || buffer.levels!=levels || buffer.hdr != hdr)
+    if(buffer.width!=width || buffer.height!=height || buffer.levels!=levels || buffer.hdr != hdr || buffer.multisample != multisample)
       deleteBuffer(buffer);
 
     buffer.level = level;
@@ -434,10 +469,11 @@ struct Map::Private
     if(!buffer.frameBuffer)
     {
       glGenFramebuffers(1, &buffer.frameBuffer);
-      buffer.width  = width;
-      buffer.height = height;
-      buffer.levels = levels;
-      buffer.hdr    = hdr;
+      buffer.width       = width;
+      buffer.height      = height;
+      buffer.levels      = levels;
+      buffer.hdr         = hdr;
+      buffer.multisample = multisample;
     }
 
     DEBUG_printOpenGLError("prepareBuffer Init");
@@ -460,7 +496,7 @@ struct Map::Private
     if(createColorBuffer == CreateColorBuffer::Yes)
     {
       if(!buffer.textureID)
-        create2DColorTexture(buffer.textureID, width, height, hdr, Alpha::No);
+        create2DColorTexture(buffer.textureID, width, height, HDR::No, Alpha::No);
 
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer.textureID, 0);
       DEBUG_printOpenGLError("prepareBuffer bind 2D texture to FBO");
@@ -499,10 +535,10 @@ struct Map::Private
     if(hdr == HDR::Yes)
     {
       if(!buffer.normalsID)
-        create2DColorTexture(buffer.normalsID, width, height, hdr, Alpha::No);
+        create2DColorTexture(buffer.normalsID, width, height, HDR::Yes, Alpha::No);
 
       if(!buffer.specularID)
-        create2DColorTexture(buffer.specularID, width, height, hdr, Alpha::Yes);
+        create2DColorTexture(buffer.specularID, width, height, HDR::Yes, Alpha::Yes);
 
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, buffer.normalsID, 0);
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, buffer.specularID, 0);
@@ -538,16 +574,16 @@ struct Map::Private
       if(hdr == HDR::Yes)
       {
         if(!buffer.multisampleNormalsTextureID)
-          createMultisampleTexture(buffer.multisampleNormalsTextureID, width, height, HDR::No, Alpha::No, GL_COLOR_ATTACHMENT1);
+          createMultisampleTexture(buffer.multisampleNormalsTextureID, width, height, HDR::Yes, Alpha::No, GL_COLOR_ATTACHMENT1);
 
         if(!buffer.multisampleSpecularTextureID)
-          createMultisampleTexture(buffer.multisampleSpecularTextureID, width, height, HDR::No, Alpha::Yes, GL_COLOR_ATTACHMENT2);
+          createMultisampleTexture(buffer.multisampleSpecularTextureID, width, height, HDR::Yes, Alpha::Yes, GL_COLOR_ATTACHMENT2);
 
         if(!buffer.multisampleNormalsRBO)
-          createColorRBO(buffer.multisampleNormalsRBO, width, height, HDR::No, Alpha::No, GL_COLOR_ATTACHMENT1);
+          createColorRBO(buffer.multisampleNormalsRBO, width, height, HDR::Yes, Alpha::No, GL_COLOR_ATTACHMENT1);
 
         if(!buffer.multisampleSpecularRBO)
-          createColorRBO(buffer.multisampleSpecularRBO, width, height, HDR::No, Alpha::Yes, GL_COLOR_ATTACHMENT2);
+          createColorRBO(buffer.multisampleSpecularRBO, width, height, HDR::Yes, Alpha::Yes, GL_COLOR_ATTACHMENT2);
 
         setDrawBuffers({GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2});
       }
@@ -576,24 +612,30 @@ struct Map::Private
   void swapMultisampledBuffer(FBO& buffer)
   {
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
-    if(samples>1)
+    if(buffer.multisample == Multisample::Yes)
     {
       glBindFramebuffer(GL_READ_FRAMEBUFFER, buffer.multisampleFrameBuffer);
       glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer.frameBuffer);
+      DEBUG_printOpenGLError("swapMultisampledBuffer bind FBOs");
 
       glReadBuffer(GL_COLOR_ATTACHMENT0);
-      glDrawBuffer(GL_COLOR_ATTACHMENT0);
+      DEBUG_printOpenGLError("swapMultisampledBuffer a");
+      setDrawBuffers({GL_COLOR_ATTACHMENT0});
+      DEBUG_printOpenGLError("swapMultisampledBuffer b");
       glBlitFramebuffer(0, 0, buffer.width, buffer.height, 0, 0, buffer.width, buffer.height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+      DEBUG_printOpenGLError("swapMultisampledBuffer blit color 0 and depth");
 
       if(buffer.hdr == HDR::Yes)
       {
         glReadBuffer(GL_COLOR_ATTACHMENT1);
-        glDrawBuffer(GL_COLOR_ATTACHMENT1);
+        setDrawBuffers({GL_COLOR_ATTACHMENT1});
         glBlitFramebuffer(0, 0, buffer.width, buffer.height, 0, 0, buffer.width, buffer.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        DEBUG_printOpenGLError("swapMultisampledBuffer blit color 1");
 
         glReadBuffer(GL_COLOR_ATTACHMENT2);
-        glDrawBuffer(GL_COLOR_ATTACHMENT2);
+        setDrawBuffers({GL_COLOR_ATTACHMENT2});
         glBlitFramebuffer(0, 0, buffer.width, buffer.height, 0, 0, buffer.width, buffer.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        DEBUG_printOpenGLError("swapMultisampledBuffer blit color 2");
 
         setDrawBuffers({GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2});
       }
@@ -601,6 +643,7 @@ struct Map::Private
         setDrawBuffers({GL_COLOR_ATTACHMENT0});
 
       glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
+      DEBUG_printOpenGLError("swapMultisampledBuffer bind FBO");
     }
 #else
     TP_UNUSED(buffer);
@@ -1395,14 +1438,15 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
 
   // Execute a render passes.
   paintGLNoMakeCurrent();
+  DEBUG_printOpenGLError("renderToImage C1");
 
   // Swap the multisampled FBO into the non multisampled FBO.
   d->swapMultisampledBuffer(d->renderToImageBuffer);
+  DEBUG_printOpenGLError("renderToImage C2");
 
   // Read the texture that we just generated
   glReadPixels(0, 0, int(width), int(height), GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-
-  DEBUG_printOpenGLError("renderToImage C");
+  DEBUG_printOpenGLError("renderToImage C3");
 
   if(swapY)
   {
