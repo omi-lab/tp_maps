@@ -104,9 +104,9 @@ PointSpriteShader::PointSpriteShader(Map* map, tp_maps::OpenGLProfile openGLProf
     shaderType);
   };
 
-  compileShader(vertShaderStr().data(openGLProfile), fragShaderStr().data(openGLProfile), "PointSpriteShader_render", ShaderType:: Render, d-> renderMatrixLoc, d-> renderScaleFactorLoc, nullptr);
+  compileShader(vertShaderStr().data(openGLProfile, ShaderType::Render), fragShaderStr().data(openGLProfile, ShaderType::Render), "PointSpriteShader_render", ShaderType:: Render, d-> renderMatrixLoc, d-> renderScaleFactorLoc, nullptr);
 #ifdef TP_GLSL_PICKING_SUPPORTED
-  compileShader(vertShaderStrPicking().data(openGLProfile), fragShaderStrPicking().data(openGLProfile), "PointSpriteShader_picking", ShaderType::Picking, d->pickingMatrixLoc, d->pickingScaleFactorLoc, &d->pickingIDLoc);
+  compileShader(vertShaderStrPicking().data(openGLProfile, ShaderType::Render), fragShaderStrPicking().data(openGLProfile, ShaderType::Render), "PointSpriteShader_picking", ShaderType::Picking, d->pickingMatrixLoc, d->pickingScaleFactorLoc, &d->pickingIDLoc);
 #else
   //Point sprite picking is not implemented on this platform.
 #endif
@@ -126,7 +126,8 @@ void PointSpriteShader::use(ShaderType shaderType)
   switch(shaderType)
   {
   case ShaderType::Light: [[fallthrough]];
-  case ShaderType::Render:
+  case ShaderType::Render: [[fallthrough]];
+  case ShaderType::RenderHDR:
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);

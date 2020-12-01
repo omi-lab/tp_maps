@@ -152,6 +152,7 @@ namespace tp_maps
 {
 TP_DECLARE_ID(                      defaultSID,                          "Default");
 TP_DECLARE_ID(                       screenSID,                           "Screen");
+TP_DECLARE_ID(                   gizmoLayerSID,                      "Gizmo layer");
 TP_DECLARE_ID(                   lineShaderSID,                      "Line shader");
 TP_DECLARE_ID(                  imageShaderSID,                     "Image shader");
 TP_DECLARE_ID(                image3DShaderSID,                  "Image 3D shader");
@@ -163,7 +164,7 @@ TP_DECLARE_ID(           depthImage3DShaderSID,            "Depth image 3D shade
 TP_DECLARE_ID(                   fontShaderSID,                      "Font shader");
 TP_DECLARE_ID(                  frameShaderSID,                     "Frame shader");
 TP_DECLARE_ID(               postSSAOShaderSID,                 "Post ssao shader");
-TP_DECLARE_ID(                   gizmoLayerSID,                      "Gizmo layer");
+TP_DECLARE_ID(                postSSRShaderSID,                  "Post ssr shader");
 
 const int32_t      UP_KEY        = 82;
 const int32_t      LEFT_KEY      = 80;
@@ -193,11 +194,12 @@ int staticInit();
 enum class RenderPass
 {
   LightFBOs,     //!< Render depth maps from the point of view of lights to FBOs.
-  ReflectionFBO, //!< Enable reflection FBO before rendering (Background, Normal, Transparency).
+  PrepareDrawFBO,//!< Prepare the initial draw FBO ready for drawing to (read FBO is not ready).
+  SwapDrawFBO,   //!< Swap the draw and read FBO (read FBO now contains previous draw FBO).
   Background,    //!< Render background without writing to the depth buffer.
   Normal,        //!< Render normal 3D geometry.
   Transparency,  //!< Render transparent 3D geometry.
-  Reflection,    //!< Render reflective surfaces, map->reflectionTexture() should now be valid.
+  FinishDrawFBO, //!< Swap the draw into the read FBO and bind the default FBO.
   Text,          //!< Render text on top of scene.
   GUI,           //!< Render UI on top of scene and text.
   Picking,       //!< Picking render.
@@ -205,6 +207,15 @@ enum class RenderPass
   Custom2,       //!< See map->setCustomRenderPass() for further details.
   Custom3,       //!< See map->setCustomRenderPass() for further details.
   Custom4        //!< See map->setCustomRenderPass() for further details.
+};
+
+//##################################################################################################
+enum class ShaderType
+{
+  Render,
+  RenderHDR,
+  Picking,
+  Light
 };
 
 //##################################################################################################
@@ -246,34 +257,46 @@ enum class OpenGLProfile
 };
 
 //##################################################################################################
-enum class OpenGLDepth
+enum class CreateColorBuffer
 {
-  OFF=0,
-  ON_16=16,
-  ON_24=24,
-  ON_32
+  No,
+  Yes
 };
 
 //##################################################################################################
-struct TP_MAPS_SHARED_EXPORT OpenGLConfig
+enum class Multisample
 {
-  OpenGLProfile profile{TP_DEFAULT_PROFILE};
-  OpenGLDepth depth{OpenGLDepth::ON_24};
+  No,
+  Yes
 };
 
 //##################################################################################################
-std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfile);
+enum class HDR
+{
+  No,
+  Yes
+};
+
+//##################################################################################################
+enum class Alpha
+{
+  No,
+  Yes
+};
+
+//##################################################################################################
+std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfile, ShaderType shaderType);
 
 //##################################################################################################
 struct TP_MAPS_SHARED_EXPORT ShaderString
 {
   TP_NONCOPYABLE(ShaderString);
   ShaderString(const char* text);
-  const char* data(OpenGLProfile openGLProfile);
+  const char* data(OpenGLProfile openGLProfile, ShaderType shaderType);
 
 private:
   const std::string m_str;
-  std::unordered_map<OpenGLProfile, std::string> m_parsed;
+  std::unordered_map<OpenGLProfile, std::unordered_map<ShaderType, std::string>> m_parsed;
 };
 
 //##################################################################################################
@@ -281,11 +304,11 @@ struct TP_MAPS_SHARED_EXPORT ShaderResource
 {
   TP_NONCOPYABLE(ShaderResource);
   ShaderResource(const std::string& resourceName);
-  const char* data(OpenGLProfile openGLProfile);
+  const char* data(OpenGLProfile openGLProfile, ShaderType shaderType);
 
 private:
   const std::string m_resourceName;
-  std::unordered_map<OpenGLProfile, std::string> m_parsed;
+  std::unordered_map<OpenGLProfile, std::unordered_map<ShaderType, std::string>> m_parsed;
 };
 
 //################################################################################################
@@ -316,9 +339,19 @@ struct TP_MAPS_SHARED_EXPORT Material
   float shininess{32.0f};               //!< mtl: Ns 0 -> 128, 0=diffuse 128=sharp shiny reflections
   float alpha{1.0f};                    //!< mtl: d
 
+  float roughness{1.0f};                //!<
+  float metalness{0.0f};                //!<
+
   float ambientScale{1.0f};             //!< Multiplied by the ambient
   float diffuseScale{1.0f};             //!< Multiplied by the diffuse
   float specularScale{1.0f};            //!< Multiplied by the specular
+
+  float useDiffuse    {1.0f}; //!< Should the diffuse calculation be used to modulate albedo.
+  float useNdotL      {1.0f}; //!< Should the angel of the light be used to calculate the color.
+  float useAttenuation{1.0f}; //!< Should the distance to the light be used to attenuate the color.
+  float useShadow     {1.0f}; //!< Should the shadow be used in the color calculation.
+  float useLightMask  {1.0f}; //!< Should the light mask texture be used in the color calculation.
+  float useReflection {1.0f}; //!< Should the reflection be used in the final color calculation.
 
   bool tileTextures{false};             //!< True to GL_REPEAT textures else GL_CLAMP_TO_EDGE
 
@@ -429,8 +462,14 @@ enum class LightingModelChanged
 struct FBO
 {
   GLuint frameBuffer{0};
-  GLuint textureID{0};
-  GLuint depthID{0};
+
+  GLuint textureID{0};  //!< The color buffer texture.
+  GLuint depthID{0};    //!< The depth buffer texture.
+
+  // These are used for HDR deferred rendering, useful for SSR and post processing.
+  GLuint normalsID{0};  //!< The normals of each fragment, useful for ray marching.
+  GLuint specularID{0}; //!< The specular colors of each fragment, as well as the shininess in the alpha.
+
   int width{1};
   int height{1};
   int levels{1}; //!< Number of levels in the 3D texture generated for shadow maps.
@@ -442,10 +481,18 @@ struct FBO
 
   GLuint multisampleColorRBO{0};
   GLuint multisampleDepthRBO{0};
+
+  GLuint multisampleNormalsTextureID{0};
+  GLuint multisampleSpecularTextureID{0};
+
+  GLuint multisampleNormalsRBO{0};
+  GLuint multisampleSpecularRBO{0};
 #endif
 
   //There will be 1 for each level
   std::vector<Matrices> worldToTexture; //!< For lighting this is used to map world coords onto the texture, per level.
+
+  HDR hdr{HDR::No}; //!< Yes if HDR and deferred rendering buffers have been created.
 };
 
 //##################################################################################################

@@ -4,6 +4,8 @@
 
 uniform sampler2D textureSampler;
 uniform sampler2D depthSampler;
+uniform sampler2D normalsSampler;
+uniform sampler2D specularSampler;
 
 uniform mat4 projectionMatrix;
 uniform mat4 invProjectionMatrix;
@@ -57,6 +59,8 @@ void main()
 
   float dim = clamp((1.1 - ((occlusions/count)*2.0)), 0.4, 1.0);
   /*TP_GLSL_GLFRAGCOLOR*/ = vec4(/*TP_GLSL_TEXTURE_2D*/(textureSampler, texCoordinate).xyz*dim, 1.0);
+
+  /*TP_GLSL_GLFRAGCOLOR*/ = /*TP_GLSL_TEXTURE_2D*/(normalsSampler, texCoordinate);
 
 
 

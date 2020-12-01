@@ -9,8 +9,10 @@ namespace tp_maps
 {
 enum class FBOLayerSource
 {
-  ReflectionColor,
-  ReflectionDepth,
+  CurrentReadColor,
+  CurrentReadDepth,
+  CurrentDrawColor,
+  CurrentDrawDepth,
   LightColor,
   LightDepth
 };
@@ -26,7 +28,7 @@ class TP_MAPS_SHARED_EXPORT FBOLayer: public Layer
   TP_REF_COUNT_OBJECTS("FBOLayer");
 public:
   //################################################################################################
-  FBOLayer(FBOLayerSource source=FBOLayerSource::ReflectionColor,
+  FBOLayer(FBOLayerSource source=FBOLayerSource::CurrentReadColor,
            size_t index=0,
            const glm::vec2& origin={0.75f, 0.75f},
            const glm::vec2& size={0.20f, 0.20f});
@@ -39,7 +41,7 @@ public:
   void setImageCoords(const glm::vec2& origin, const glm::vec2& size);
 
   //################################################################################################
-  void setSource(FBOLayerSource source=FBOLayerSource::ReflectionColor, size_t index=0);
+  void setSource(FBOLayerSource source=FBOLayerSource::CurrentReadColor, size_t index=0);
 
 protected:
   //################################################################################################

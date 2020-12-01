@@ -232,7 +232,8 @@ glm::mat4 LinesLayer::calculateMatrix() const
 //##################################################################################################
 void LinesLayer::render(RenderInfo& renderInfo)
 {
-  if(renderInfo.pass != defaultRenderPass() && renderInfo.pass != RenderPass::Picking)
+  if(renderInfo.pass != defaultRenderPass() &&
+     renderInfo.pass != RenderPass::Picking)
     return;
 
   auto shader = map()->getShader<LineShader>();
@@ -253,7 +254,7 @@ void LinesLayer::render(RenderInfo& renderInfo)
     }
   }
 
-  shader->use(renderInfo.pass==RenderPass::Picking?ShaderType::Picking:ShaderType::Render);
+  shader->use(renderInfo.shaderType());
   shader->setMatrix(calculateMatrix());
   shader->setLineWidth(d->lineWidth);
 

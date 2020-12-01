@@ -199,7 +199,8 @@ void HandleLayer::render(RenderInfo& renderInfo)
   if(!d->spriteTexture->texture()->imageReady())
     return;
 
-  if(renderInfo.pass != defaultRenderPass() && renderInfo.pass != RenderPass::Picking)
+  if(renderInfo.pass != defaultRenderPass() &&
+     renderInfo.pass != RenderPass::Picking)
     return;
 
   auto shader = map()->getShader<PointSpriteShader>();
@@ -245,7 +246,7 @@ void HandleLayer::render(RenderInfo& renderInfo)
     d->updateVertexBuffer=false;
   }
 
-  shader->use(renderInfo.pass==RenderPass::Picking?ShaderType::Picking:ShaderType::Render);
+  shader->use(renderInfo.shaderType());
 
   glm::mat4 m = map()->controller()->matrix(coordinateSystem()) * modelToWorldMatrix();
 

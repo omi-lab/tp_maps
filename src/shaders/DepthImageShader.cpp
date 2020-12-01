@@ -11,14 +11,14 @@ ShaderResource& frag3DShaderStr(){static ShaderResource s{"/tp_maps/DepthImage3D
 
 //##################################################################################################
 DepthImageShader::DepthImageShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
-  ImageShader(map, openGLProfile, nullptr, fragShaderStr().data(openGLProfile))
+  ImageShader(map, openGLProfile, nullptr, fragShaderStr().data(openGLProfile, ShaderType::Render))
 {
 
 }
 
 //##################################################################################################
 DepthImage3DShader::DepthImage3DShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
-  ImageShader(map, openGLProfile, nullptr, frag3DShaderStr().data(openGLProfile))
+  ImageShader(map, openGLProfile, nullptr, frag3DShaderStr().data(openGLProfile, ShaderType::Render))
 {
 
 }

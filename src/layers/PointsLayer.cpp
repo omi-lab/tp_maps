@@ -112,7 +112,8 @@ void PointsLayer::render(RenderInfo& renderInfo)
   if(!d->spriteTexture->texture()->imageReady())
     return;
 
-  if(renderInfo.pass != defaultRenderPass() && renderInfo.pass != RenderPass::Picking)
+  if(renderInfo.pass != defaultRenderPass() &&
+     renderInfo.pass != RenderPass::Picking)
     return;
 
   auto shader = map()->getShader<PointSpriteShader>();
@@ -141,7 +142,7 @@ void PointsLayer::render(RenderInfo& renderInfo)
     d->updateVertexBuffer=false;
   }
 
-  shader->use(renderInfo.pass==RenderPass::Picking?ShaderType::Picking:ShaderType::Render);
+  shader->use(renderInfo.shaderType());
   shader->setMatrix(map()->controller()->matrix(coordinateSystem()));
   shader->setScreenSize(map()->screenSize());
   shader->setTexture(d->textureID);

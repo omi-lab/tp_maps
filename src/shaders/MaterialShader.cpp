@@ -13,8 +13,35 @@ namespace tp_maps
 namespace
 {
 
-ShaderResource& vertShaderStr()       {static ShaderResource s{"/tp_maps/MaterialShader.vert"};         return s;}
-ShaderResource& fragShaderStr()       {static ShaderResource s{"/tp_maps/MaterialShader.frag"};         return s;}
+/*
+https://learnopengl.com/PBR/Theory
+
+https://youtu.be/yn5UJzMqxj0
+https://github.com/BennyQBD/3DEngineCpp/blob/master/res/shaders/sampling.glh
+
+https://dominium.maksw.com/articles/physically-based-rendering-pbr/pbr-part-one/
+https://www.chaosgroup.com/blog/understanding-metalness
+
+GLSL Function Documantation
+---------------------------
+*/
+
+//##################################################################################################
+// Calculates GGX distribution.
+/*
+This creates the bright spot and soft edge of a specular highlight. I could not figure out what GGX
+stands for it just seems to be a name.
+
+The following are good references:
+* http://www.neilblevins.com/cg_education/ggx/ggx.htm
+* https://learnopengl.com/PBR/Theory
+* https://dominium.maksw.com/articles/physically-based-rendering-pbr/pbr-part-one/
+
+float calcGGXDist(vec3 norm, vec3 lightDirection_tangent, float roughness2);
+*/
+
+ShaderResource& vertShaderStr()       {static ShaderResource s{"/tp_maps/MaterialShader.render.vert"};  return s;}
+ShaderResource& fragShaderStr()       {static ShaderResource s{"/tp_maps/MaterialShader.render.frag"};  return s;}
 ShaderResource& vertShaderStrPicking(){static ShaderResource s{"/tp_maps/MaterialShader.picking.vert"}; return s;}
 ShaderResource& fragShaderStrPicking(){static ShaderResource s{"/tp_maps/MaterialShader.picking.frag"}; return s;}
 ShaderResource& vertShaderStrLight()  {static ShaderResource s{"/tp_maps/MaterialShader.light.vert"};   return s;}
@@ -40,6 +67,49 @@ struct LightLocations_lt
   GLint spotLightWHLocation     {0};
 
   GLint lightTextureIDLocation  {0};
+};
+
+//##################################################################################################
+struct UniformLocations_lt
+{
+  GLint           mMatrixLocation{0};
+  GLint          mvMatrixLocation{0};
+  GLint         mvpMatrixLocation{0};
+  GLint           vMatrixLocation{0};
+
+  GLint      cameraOriginLocation{0};
+
+  GLint   materialAmbientLocation{0};
+  GLint   materialDiffuseLocation{0};
+  GLint  materialSpecularLocation{0};
+  GLint materialShininessLocation{0};
+  GLint     materialAlphaLocation{0};
+
+  GLint materialRoughnessLocation{0};
+  GLint materialMetalnessLocation{0};
+
+  GLint     materialUseDiffuseLocation{0};
+  GLint       materialUseNdotLLocation{0};
+  GLint materialUseAttenuationLocation{0};
+  GLint      materialUseShadowLocation{0};
+  GLint   materialUseLightMaskLocation{0};
+  GLint  materialUseReflectionLocation{0};
+
+  GLint   materialAmbientScaleLocation{0};
+  GLint   materialDiffuseScaleLocation{0};
+  GLint  materialSpecularScaleLocation{0};
+
+  GLint    txlSizeLocation       {0};
+  GLint    discardOpacityLocation{0};
+
+  GLint    ambientTextureLocation{0};
+  GLint    diffuseTextureLocation{0};
+  GLint   specularTextureLocation{0};
+  GLint      alphaTextureLocation{0};
+  GLint       bumpTextureLocation{0};
+  GLint  spotLightTextureLocation{0};
+
+  std::vector<LightLocations_lt> lightLocations;
 };
 
 //##################################################################################################
@@ -73,37 +143,13 @@ struct MaterialShader::Private
 
   size_t maxLights{1};
 
-  GLint           mMatrixLocation{0};
-  GLint         mvpMatrixLocation{0};
-
-  GLint      cameraOriginLocation{0};
-
-  GLint   materialAmbientLocation{0};
-  GLint   materialDiffuseLocation{0};
-  GLint  materialSpecularLocation{0};
-  GLint materialShininessLocation{0};
-  GLint     materialAlphaLocation{0};
-
-  GLint   materialAmbientScaleLocation{0};
-  GLint   materialDiffuseScaleLocation{0};
-  GLint  materialSpecularScaleLocation{0};
-
-  GLint    texelSizeLocation{0};
-  GLint    discardOpacityLocation{0};
-
-  GLint    ambientTextureLocation{0};
-  GLint    diffuseTextureLocation{0};
-  GLint   specularTextureLocation{0};
-  GLint      alphaTextureLocation{0};
-  GLint       bumpTextureLocation{0};
-  GLint  spotLightTextureLocation{0};
+  UniformLocations_lt renderLocations;
+  UniformLocations_lt renderHDRLocations;
 
   GLint  pickingMVPMatrixLocation{0};
   GLint         pickingIDLocation{0};
 
   GLint    lightMVPMatrixLocation{0};
-
-  std::vector<LightLocations_lt> lightLocations;
 
   GLuint emptyTextureID{0};
   GLuint emptyAlphaTextureID{0};
@@ -160,126 +206,141 @@ MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, b
 
   if(compileShader)
   {
-    std::string LIGHT_VERT_VARS;
-    std::string LIGHT_VERT_CALC;
-
-    std::string LIGHT_FRAG_VARS;
-    std::string LIGHT_FRAG_CALC;
-
+    auto compileRenderShader = [&](ShaderType shaderType)
     {
+      std::string LIGHT_VERT_VARS;
+      std::string LIGHT_VERT_CALC;
+
+      std::string LIGHT_FRAG_VARS;
+      std::string LIGHT_FRAG_CALC;
+
       {
-        //The number of lights we can used is limited by the number of available texture units.
-        d->maxLights=0;
-        GLint textureUnits=8;
-        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &textureUnits);
-
-        //The number of textures used by the shader and the back buffer but excluding lights.
-        int staticTextures = 5 + 1;
-        if(textureUnits>staticTextures)
-          d->maxLights = size_t(textureUnits) - size_t(staticTextures);
-      }
-
-      const auto& lights = map->lights();
-      size_t iMax = tpMin(d->maxLights, lights.size());
-      for(size_t i=0; i<iMax; i++)
-      {
-        const auto& light = lights.at(i);
-        auto ii = std::to_string(i);
-
-        size_t levels = (light.type==LightType::Spot)?map->spotLightLevels():1;
-        auto ll = std::to_string(levels);
-
-        LIGHT_VERT_VARS += replaceLight(ii, ll, "uniform mat4 worldToLight%_view;\n");
-        LIGHT_VERT_VARS += replaceLight(ii, ll, "uniform mat4 worldToLight%_proj;\n");
-
-        LIGHT_VERT_VARS += replaceLight(ii, ll, "uniform vec3 light%Direction_world;\n");
-        LIGHT_VERT_VARS += replaceLight(ii, ll, "/*TP_GLSL_OUT_V*/vec3 light%Direction_tangent;\n");
-        LIGHT_VERT_VARS += replaceLight(ii, ll, "/*TP_GLSL_OUT_V*/vec4 fragPos_light%View;\n\n");
-
-        LIGHT_VERT_CALC += replaceLight(ii, ll, "  fragPos_light%View = worldToLight%_view * (m * vec4(inVertex, 1.0));\n");
-        LIGHT_VERT_CALC += replaceLight(ii, ll, "  light%Direction_tangent = TBN * light%Direction_world;\n\n");
-
-        LIGHT_FRAG_VARS += replaceLight(ii, ll, "/*TP_GLSL_IN_F*/vec3 light%Direction_tangent;\n");
-        LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform Light light%;\n");
-        LIGHT_FRAG_VARS += replaceLight(ii, ll, "/*TP_GLSL_IN_F*/vec4 fragPos_light%View;\n\n");
-        LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform mat4 worldToLight%_proj;\n");
-
-        LIGHT_FRAG_CALC += "  {\n";
-
-        switch(light.type)
         {
-        case LightType::Global:[[fallthrough]];
-        case LightType::Directional:
-        {
-          LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform sampler2D light%Texture;\n");
-          LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = directionalLight(norm, light%, light%Direction_tangent, light%Texture, lightPosToTexture(fragPos_light%View, vec4(0,0,0,0), worldToLight%_proj));\n");
-          break;
+          //The number of lights we can used is limited by the number of available texture units.
+          d->maxLights=0;
+          GLint textureUnits=8;
+          glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &textureUnits);
+
+          //The number of textures used by the shader and the back buffer but excluding lights.
+          int staticTextures = 5 + 1;
+          if(textureUnits>staticTextures)
+            d->maxLights = size_t(textureUnits) - size_t(staticTextures);
         }
 
-        case LightType::Spot:
+        const auto& lights = map->lights();
+        size_t iMax = tpMin(d->maxLights, lights.size());
+        for(size_t i=0; i<iMax; i++)
         {
-          if(map->spotLightLevels() == 1)
+          const auto& light = lights.at(i);
+          auto ii = std::to_string(i);
+
+          size_t levels = (light.type==LightType::Spot)?map->spotLightLevels():1;
+          auto ll = std::to_string(levels);
+
+          LIGHT_VERT_VARS += replaceLight(ii, ll, "uniform mat4 worldToLight%_view;\n");
+          LIGHT_VERT_VARS += replaceLight(ii, ll, "uniform mat4 worldToLight%_proj;\n");
+
+          LIGHT_VERT_VARS += replaceLight(ii, ll, "/*TP_GLSL_OUT_V*/vec4 fragPos_light%View;\n\n");
+
+          LIGHT_VERT_CALC += replaceLight(ii, ll, "  fragPos_light%View = worldToLight%_view * (m * vec4(inVertex, 1.0));\n");
+
+          LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform vec3 light%Direction_world;\n");
+          LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform Light light%;\n");
+          LIGHT_FRAG_VARS += replaceLight(ii, ll, "/*TP_GLSL_IN_F*/vec4 fragPos_light%View;\n\n");
+          LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform mat4 worldToLight%_proj;\n");
+
+          LIGHT_FRAG_CALC += "  {\n";
+          LIGHT_FRAG_CALC += replaceLight(ii, ll, "    vec3 ldNormalized = normalize(invTBN * light%Direction_world);\n");
+
+          switch(light.type)
+          {
+          case LightType::Global:[[fallthrough]];
+          case LightType::Directional:
           {
             LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform sampler2D light%Texture;\n");
-            LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = spotLight2D(norm, light%, light%Direction_tangent, light%Texture, lightPosToTexture(fragPos_light%View, vec4(0,0,0,0), worldToLight%_proj));\n");
+            LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = directionalLight(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec4(0,0,0,0), worldToLight%_proj));\n");
+            break;
           }
-          else
+
+          case LightType::Spot:
           {
-            LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform sampler3D light%Texture;\n");
-            LIGHT_FRAG_CALC += replaceLight(ii, ll, "    float shadow=0.0;\n");
-
-            for(size_t l=0; l<levels; l++)
+            if(map->spotLightLevels() == 1)
             {
-              std::string levelTexCoord = std::to_string(float(l)/float(levels-1));
+              LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform sampler2D light%Texture;\n");
+              LIGHT_FRAG_CALC += replaceLight(ii, ll, "    float shadow=0.0;\n");
+              LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow += spotLightSampleShadow2D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec4(0,0,0,0), worldToLight%_proj));\n");
+              //LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = spotLight2D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec4(0,0,0,0), worldToLight%_proj));\n");
+              LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totalSadowSamples;\n");
+            }
+            else
+            {
+              LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform sampler3D light%Texture;\n");
+              LIGHT_FRAG_CALC += replaceLight(ii, ll, "    float shadow=0.0;\n");
 
-              auto o = Light::lightLevelOffsets()[l] * light.offsetScale;
-              std::string offset = "vec4(" + std::to_string(o.x) + "," + std::to_string(o.y) + "," + std::to_string(o.z) + ",0.0)";
+              for(size_t l=0; l<levels; l++)
+              {
+                std::string levelTexCoord = std::to_string(float(l)/float(levels-1));
 
-              LIGHT_FRAG_CALC += replaceLight(ii, std::to_string(l), "    shadow += spotLightSampleShadow3D(norm, light%, light%Direction_tangent, light%Texture, lightPosToTexture(fragPos_light%View,"+offset+", worldToLight%_proj), " + levelTexCoord + ");\n");
+                auto o = Light::lightLevelOffsets()[l] * light.offsetScale;
+                std::string offset = "vec4(" + std::to_string(o.x) + "," + std::to_string(o.y) + "," + std::to_string(o.z) + ",0.0)";
+
+                LIGHT_FRAG_CALC += replaceLight(ii, std::to_string(l), "    shadow += spotLightSampleShadow3D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View,"+offset+", worldToLight%_proj), " + levelTexCoord + ");\n");
+              }
+
+              LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totalSadowSamples * @.0;\n");
+              //LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = spotLight3D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec4(0,0,0,0), worldToLight%_proj), shadow);\n");
             }
 
-            LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totalSadowSamples * @.0;\n");
-            LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = spotLight3D(norm, light%, light%Direction_tangent, light%Texture, lightPosToTexture(fragPos_light%View, vec4(0,0,0,0), worldToLight%_proj), shadow);\n");
+            LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow = mix(1.0, shadow, material.useShadow);\n");
+            LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = spotLight(norm, light%, ldNormalized, lightPosToTexture(fragPos_light%View, vec4(0,0,0,0), worldToLight%_proj), shadow);\n");
+            break;
           }
-          break;
-        }
-        }
+          }
 
-        LIGHT_FRAG_CALC += "    ambient  += r.ambient;\n";
-        LIGHT_FRAG_CALC += "    diffuse  += r.diffuse;\n";
-        LIGHT_FRAG_CALC += "    specular += r.specular;\n";
-        LIGHT_FRAG_CALC += "  }\n\n";
+          LIGHT_FRAG_CALC += "    ambient  += r.ambient;\n";
+          LIGHT_FRAG_CALC += "    diffuse  += r.diffuse;\n";
+          LIGHT_FRAG_CALC += "    specular += r.specular;\n";
+          LIGHT_FRAG_CALC += "  }\n\n";
+        }
       }
-    }
 
-    LIGHT_VERT_VARS = parseShaderString(LIGHT_VERT_VARS, openGLProfile);
-    LIGHT_VERT_CALC = parseShaderString(LIGHT_VERT_CALC, openGLProfile);
-    LIGHT_FRAG_VARS = parseShaderString(LIGHT_FRAG_VARS, openGLProfile);
-    LIGHT_FRAG_CALC = parseShaderString(LIGHT_FRAG_CALC, openGLProfile);
+      LIGHT_VERT_VARS = parseShaderString(LIGHT_VERT_VARS, openGLProfile, shaderType);
+      LIGHT_VERT_CALC = parseShaderString(LIGHT_VERT_CALC, openGLProfile, shaderType);
+      LIGHT_FRAG_VARS = parseShaderString(LIGHT_FRAG_VARS, openGLProfile, shaderType);
+      LIGHT_FRAG_CALC = parseShaderString(LIGHT_FRAG_CALC, openGLProfile, shaderType);
 
-    std::string vertStr = vertShaderStr().data(openGLProfile);
-    std::string fragStr = fragShaderStr().data(openGLProfile);
+      std::string vertStr = vertShaderStr().data(openGLProfile, shaderType);
+      std::string fragStr = fragShaderStr().data(openGLProfile, shaderType);
 
-    auto replace = [&](std::string& result, const std::string& key, const std::string& value)
-    {
-      size_t pos = result.find(key);
-      while(pos != std::string::npos)
+      auto replace = [&](std::string& result, const std::string& key, const std::string& value)
       {
-        result.replace(pos, key.size(), value);
-        pos = result.find(key, pos + value.size());
-      }
+        size_t pos = result.find(key);
+        while(pos != std::string::npos)
+        {
+          result.replace(pos, key.size(), value);
+          pos = result.find(key, pos + value.size());
+        }
+      };
+
+      replace(vertStr, "/*LIGHT_VERT_VARS*/", LIGHT_VERT_VARS);
+      replace(vertStr, "/*LIGHT_VERT_CALC*/", LIGHT_VERT_CALC);
+      replace(fragStr, "/*LIGHT_FRAG_VARS*/", LIGHT_FRAG_VARS);
+      replace(fragStr, "/*LIGHT_FRAG_CALC*/", LIGHT_FRAG_CALC);
+
+      replace(fragStr, "/*TP_SHADOW_SAMPLES*/", std::to_string(map->shadowSamples()));
+
+      compile(vertStr.c_str(), fragStr.c_str(), [](auto){}, [](auto){}, shaderType);
     };
 
-    replace(vertStr, "/*LIGHT_VERT_VARS*/", LIGHT_VERT_VARS);
-    replace(vertStr, "/*LIGHT_VERT_CALC*/", LIGHT_VERT_CALC);
-    replace(fragStr, "/*LIGHT_FRAG_VARS*/", LIGHT_FRAG_VARS);
-    replace(fragStr, "/*LIGHT_FRAG_CALC*/", LIGHT_FRAG_CALC);
+    auto compileOtherShader = [&](ShaderResource& vertStr, ShaderResource& fragStr, ShaderType shaderType)
+    {
+      compile(vertStr.data(openGLProfile, shaderType), fragStr.data(openGLProfile, shaderType), [](auto){}, [](auto){}, shaderType);
+    };
 
-    replace(fragStr, "/*TP_SHADOW_SAMPLES*/", std::to_string(map->shadowSamples()));
-
-    compile(vertStr.c_str(), fragStr.c_str(), [](auto){}, [](auto){});
-    compile(vertShaderStrPicking().data(openGLProfile), fragShaderStrPicking().data(openGLProfile), [](auto){}, [](auto){}, ShaderType::Picking);
-    compile(vertShaderStrLight().data(openGLProfile), fragShaderStrLight().data(openGLProfile), [](auto){}, [](auto){}, ShaderType::Light);
+    compileRenderShader(ShaderType::Render);
+    compileRenderShader(ShaderType::RenderHDR);
+    compileOtherShader(vertShaderStrPicking(), fragShaderStrPicking(), ShaderType::Picking);
+    compileOtherShader(vertShaderStrLight(), fragShaderStrLight(), ShaderType::Light);
   }
 }
 
@@ -302,7 +363,8 @@ void MaterialShader::compile(const char* vertShaderStr,
   {
     switch(shaderType)
     {
-    case ShaderType::Render:
+    case ShaderType::Render: [[fallthrough]];
+    case ShaderType::RenderHDR:
     {
       glBindAttribLocation(program, 0, "inVertex");
       glBindAttribLocation(program, 1, "inNormal");
@@ -324,42 +386,52 @@ void MaterialShader::compile(const char* vertShaderStr,
   },
   [&](GLuint program)
   {
-    switch(shaderType)
+    auto exec = [&](UniformLocations_lt& locations)
     {
-    case ShaderType::Render:
-    {
-      d->mMatrixLocation           = glGetUniformLocation(program, "m");
-      d->mvpMatrixLocation         = glGetUniformLocation(program, "mvp");
+      locations.mMatrixLocation           = glGetUniformLocation(program, "m");
+      locations.mvMatrixLocation          = glGetUniformLocation(program, "mv");
+      locations.mvpMatrixLocation         = glGetUniformLocation(program, "mvp");
+      locations.vMatrixLocation           = glGetUniformLocation(program, "v");
 
-      d->cameraOriginLocation      = glGetUniformLocation(program, "cameraOrigin_world");
+      locations.cameraOriginLocation      = glGetUniformLocation(program, "cameraOrigin_world");
 
-      d->materialAmbientLocation   = glGetUniformLocation(program, "material.ambient");
-      d->materialDiffuseLocation   = glGetUniformLocation(program, "material.diffuse");
-      d->materialSpecularLocation  = glGetUniformLocation(program, "material.specular");
-      d->materialShininessLocation = glGetUniformLocation(program, "material.shininess");
-      d->materialAlphaLocation     = glGetUniformLocation(program, "material.alpha");
+      locations.materialAmbientLocation   = glGetUniformLocation(program, "material.ambient");
+      locations.materialDiffuseLocation   = glGetUniformLocation(program, "material.diffuse");
+      locations.materialSpecularLocation  = glGetUniformLocation(program, "material.specular");
+      locations.materialShininessLocation = glGetUniformLocation(program, "material.shininess");
+      locations.materialAlphaLocation     = glGetUniformLocation(program, "material.alpha");
 
-      d-> materialAmbientScaleLocation = glGetUniformLocation(program, "material.ambientScale");
-      d-> materialDiffuseScaleLocation = glGetUniformLocation(program, "material.diffuseScale");
-      d->materialSpecularScaleLocation = glGetUniformLocation(program, "material.specularScale");
+      locations.materialRoughnessLocation = glGetUniformLocation(program, "material.roughness");
+      locations.materialMetalnessLocation = glGetUniformLocation(program, "material.metalness");
 
-      d->texelSizeLocation         = glGetUniformLocation(program, "texelSize");
-      d->discardOpacityLocation    = glGetUniformLocation(program, "discardOpacity");
+      locations.    materialUseDiffuseLocation = glGetUniformLocation(program, "material.useDiffuse"    );
+      locations.      materialUseNdotLLocation = glGetUniformLocation(program, "material.useNdotL"      );
+      locations.materialUseAttenuationLocation = glGetUniformLocation(program, "material.useAttenuation");
+      locations.     materialUseShadowLocation = glGetUniformLocation(program, "material.useShadow"     );
+      locations.  materialUseLightMaskLocation = glGetUniformLocation(program, "material.useLightMask"  );
+      locations. materialUseReflectionLocation = glGetUniformLocation(program, "material.useReflection" );
 
-      d->ambientTextureLocation   = glGetUniformLocation(program, "ambientTexture");
-      d->diffuseTextureLocation   = glGetUniformLocation(program, "diffuseTexture");
-      d->specularTextureLocation  = glGetUniformLocation(program, "specularTexture");
-      d->alphaTextureLocation     = glGetUniformLocation(program, "alphaTexture");
-      d->bumpTextureLocation      = glGetUniformLocation(program, "bumpTexture");
-      d->spotLightTextureLocation = glGetUniformLocation(program, "spotLightTexture");
+      locations. materialAmbientScaleLocation = glGetUniformLocation(program, "material.ambientScale");
+      locations. materialDiffuseScaleLocation = glGetUniformLocation(program, "material.diffuseScale");
+      locations.materialSpecularScaleLocation = glGetUniformLocation(program, "material.specularScale");
+
+      locations.txlSizeLocation           = glGetUniformLocation(program, "txlSize");
+      locations.discardOpacityLocation    = glGetUniformLocation(program, "discardOpacity");
+
+      locations.ambientTextureLocation   = glGetUniformLocation(program, "ambientTexture");
+      locations.diffuseTextureLocation   = glGetUniformLocation(program, "diffuseTexture");
+      locations.specularTextureLocation  = glGetUniformLocation(program, "specularTexture");
+      locations.alphaTextureLocation     = glGetUniformLocation(program, "alphaTexture");
+      locations.bumpTextureLocation      = glGetUniformLocation(program, "bumpTexture");
+      locations.spotLightTextureLocation = glGetUniformLocation(program, "spotLightTexture");
 
       const auto& lights = map()->lights();
       size_t iMax = tpMin(d->maxLights, lights.size());
 
-      d->lightLocations.resize(iMax);
-      for(size_t i=0; i<d->lightLocations.size(); i++)
+      locations.lightLocations.resize(iMax);
+      for(size_t i=0; i<locations.lightLocations.size(); i++)
       {
-        auto& lightLocations = d->lightLocations.at(i);
+        auto& lightLocations = locations.lightLocations.at(i);
 
         auto ii = std::to_string(i);
 
@@ -381,6 +453,19 @@ void MaterialShader::compile(const char* vertShaderStr,
 
         lightLocations.lightTextureIDLocation   = glGetUniformLocation(program, replaceLight(ii, "", "light%Texture").c_str());
       }
+    };
+
+    switch(shaderType)
+    {
+    case ShaderType::Render:
+    {
+      exec(d->renderLocations);
+      break;
+    }
+
+    case ShaderType::RenderHDR:
+    {
+      exec(d->renderHDRLocations);
       break;
     }
 
@@ -413,101 +498,139 @@ void MaterialShader::use(ShaderType shaderType)
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
 
-  Shader::use(shaderType);
+  // if(shaderType == ShaderType::RenderHDR)
+  //   Shader::use(ShaderType::Render);
+  // else
+    Shader::use(shaderType);
+
 }
 
 //##################################################################################################
 void MaterialShader::setMaterial(const Material& material)
 {
-  if(d->shaderType != ShaderType::Render)
-    return;
+  auto exec = [&](const UniformLocations_lt& locations)
+  {
+    glUniform3fv(locations.  materialAmbientLocation, 1, &material.ambient.x    );
+    glUniform3fv(locations.  materialDiffuseLocation, 1, &material.diffuse.x    );
+    glUniform3fv(locations. materialSpecularLocation, 1, &material.specular.x   );
+    glUniform1f (locations.materialShininessLocation,     material.shininess    );
+    glUniform1f (locations.    materialAlphaLocation,     material.alpha        );
 
-  glUniform3fv(     d->materialAmbientLocation, 1, &material.ambient.x    );
-  glUniform3fv(     d->materialDiffuseLocation, 1, &material.diffuse.x    );
-  glUniform3fv(    d->materialSpecularLocation, 1, &material.specular.x   );
-  glUniform1f (   d->materialShininessLocation,     material.shininess    );
-  glUniform1f (       d->materialAlphaLocation,     material.alpha        );
+    glUniform1f (locations.materialRoughnessLocation,     material.roughness    );
+    glUniform1f (locations.materialMetalnessLocation,     material.metalness    );
 
-  glUniform1f( d->materialAmbientScaleLocation,     material.ambientScale );
-  glUniform1f( d->materialDiffuseScaleLocation,     material.diffuseScale );
-  glUniform1f(d->materialSpecularScaleLocation,     material.specularScale);
+    glUniform1f (locations.    materialUseDiffuseLocation, material.useDiffuse    );
+    glUniform1f (locations.      materialUseNdotLLocation, material.useNdotL      );
+    glUniform1f (locations.materialUseAttenuationLocation, material.useAttenuation);
+    glUniform1f (locations.     materialUseShadowLocation, material.useShadow     );
+    glUniform1f (locations.  materialUseLightMaskLocation, material.useLightMask  );
+    glUniform1f (locations. materialUseReflectionLocation, material.useReflection );
+
+    glUniform1f(locations. materialAmbientScaleLocation,     material.ambientScale );
+    glUniform1f(locations. materialDiffuseScaleLocation,     material.diffuseScale );
+    glUniform1f(locations.materialSpecularScaleLocation,     material.specularScale);
+  };
+
+  if(d->shaderType == ShaderType::Render)
+    exec(d->renderLocations);
+  else if(d->shaderType == ShaderType::RenderHDR)
+    exec(d->renderHDRLocations);
 }
 
 //##################################################################################################
 void MaterialShader::setLights(const std::vector<Light>& lights, const std::vector<FBO>& lightBuffers)
 {
-  if(d->shaderType != ShaderType::Render)
-    return;
-
+  auto exec = [&](const UniformLocations_lt& locations)
   {
-    size_t iMax = tpMin(lights.size(), d->lightLocations.size());
-    for(size_t i=0; i<iMax; i++)
     {
-      const auto& light = lights.at(i);
-      const auto& lightLocations = d->lightLocations.at(i);
+      size_t iMax = tpMin(lights.size(), locations.lightLocations.size());
+      for(size_t i=0; i<iMax; i++)
+      {
+        const auto& light = lights.at(i);
+        const auto& lightLocations = locations.lightLocations.at(i);
 
-      glm::vec3 position = light.position();
-      glm::vec3 direction = light.direction();
+        glm::vec3 position = light.position();
+        glm::vec3 direction = light.direction();
 
-      if(lightLocations.positionLocation>=0)
-        glUniform3fv(lightLocations.positionLocation , 1,    &position.x            );
+        if(lightLocations.positionLocation>=0)
+          glUniform3fv(lightLocations.positionLocation , 1,    &position.x            );
 
-      glUniform3fv(lightLocations.directionLocation, 1,    &direction.x           );
-      glUniform3fv(lightLocations.ambientLocation  , 1,    &light.ambient.x       );
-      glUniform3fv(lightLocations.diffuseLocation  , 1,    &light.diffuse.x       );
-      glUniform3fv(lightLocations.specularLocation , 1,    &light.specular.x      );
-      glUniform1f (lightLocations.diffuseScaleLocation,     light.diffuseScale    );
-      glUniform1f (lightLocations.constantLocation,         light.constant        );
-      glUniform1f (lightLocations.linearLocation,           light.linear          );
-      glUniform1f (lightLocations.quadraticLocation,        light.quadratic       );
-      glUniform2fv(lightLocations.spotLightUVLocation, 1,  &light.spotLightUV.x   );
-      glUniform2fv(lightLocations.spotLightWHLocation, 1,  &light.spotLightWH.x   );
+        glUniform3fv(lightLocations.directionLocation, 1,    &direction.x           );
+        glUniform3fv(lightLocations.ambientLocation  , 1,    &light.ambient.x       );
+        glUniform3fv(lightLocations.diffuseLocation  , 1,    &light.diffuse.x       );
+        glUniform3fv(lightLocations.specularLocation , 1,    &light.specular.x      );
+        glUniform1f (lightLocations.diffuseScaleLocation,     light.diffuseScale    );
+        glUniform1f (lightLocations.constantLocation,         light.constant        );
+        glUniform1f (lightLocations.linearLocation,           light.linear          );
+        glUniform1f (lightLocations.quadraticLocation,        light.quadratic       );
+        glUniform2fv(lightLocations.spotLightUVLocation, 1,  &light.spotLightUV.x   );
+        glUniform2fv(lightLocations.spotLightWHLocation, 1,  &light.spotLightWH.x   );
+      }
     }
-  }
 
-  {
-    size_t iMax = tpMin(lightBuffers.size(), d->lightLocations.size());
-    for(size_t i=0; i<iMax; i++)
     {
-      const auto& lightBuffer = lightBuffers.at(i);
-      const auto& lightLocations = d->lightLocations.at(i);
+      size_t iMax = tpMin(lightBuffers.size(), locations.lightLocations.size());
+      for(size_t i=0; i<iMax; i++)
+      {
+        const auto& lightBuffer = lightBuffers.at(i);
+        const auto& lightLocations = locations.lightLocations.at(i);
 
-      glUniformMatrix4fv(lightLocations.worldToLightViewLocation, 1, GL_FALSE, glm::value_ptr(lightBuffer.worldToTexture[0].v));
-      glUniformMatrix4fv(lightLocations.worldToLightProjLocation, 1, GL_FALSE, glm::value_ptr(lightBuffer.worldToTexture[0].p));
+        glUniformMatrix4fv(lightLocations.worldToLightViewLocation, 1, GL_FALSE, glm::value_ptr(lightBuffer.worldToTexture[0].v));
+        glUniformMatrix4fv(lightLocations.worldToLightProjLocation, 1, GL_FALSE, glm::value_ptr(lightBuffer.worldToTexture[0].p));
 
-      glActiveTexture(GL_TEXTURE6 + i);
+        glActiveTexture(GL_TEXTURE6 + i);
 
-      if(lightBuffer.levels == 1)
-        glBindTexture(GL_TEXTURE_2D, lightBuffer.depthID);
-      else
-        glBindTexture(GL_TEXTURE_3D, lightBuffer.depthID);
+        if(lightBuffer.levels == 1)
+          glBindTexture(GL_TEXTURE_2D, lightBuffer.depthID);
+        else
+          glBindTexture(GL_TEXTURE_3D, lightBuffer.depthID);
 
-      glUniform1i(lightLocations.lightTextureIDLocation, 6 + i);
+        glUniform1i(lightLocations.lightTextureIDLocation, 6 + i);
+      }
     }
-  }
 
-  {
-    glm::vec2 texelSize{1.0f, 1.0f};
-    if(!lightBuffers.empty())
-      texelSize = glm::vec2(1.0, 1.0) / glm::vec2(lightBuffers[0].width, lightBuffers[0].height);
-    glUniform2fv(d->texelSizeLocation, 1, &texelSize.x);
-  }
+    {
+      glm::vec2 txlSize{1.0f, 1.0f};
+      if(!lightBuffers.empty())
+        txlSize = glm::vec2(1.0, 1.0) / glm::vec2(lightBuffers[0].width, lightBuffers[0].height);
+      glUniform2fv(locations.txlSizeLocation, 1, &txlSize.x);
+    }
+  };
+
+  if(d->shaderType == ShaderType::Render)
+    exec(d->renderLocations);
+  else if(d->shaderType == ShaderType::RenderHDR)
+    exec(d->renderHDRLocations);
 }
 
 //##################################################################################################
 void MaterialShader::setMatrix(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p)
 {
+  glm::mat4 mv = v*m;
   glm::mat4 mvp = p*v*m;
+
+  auto exec = [&](const UniformLocations_lt& locations)
+  {
+    glUniformMatrix4fv(locations.mMatrixLocation  , 1, GL_FALSE, glm::value_ptr(m));
+    glUniformMatrix4fv(locations.mvMatrixLocation, 1, GL_FALSE, glm::value_ptr(mv));
+    glUniformMatrix4fv(locations.mvpMatrixLocation, 1, GL_FALSE, glm::value_ptr(mvp));
+    glUniformMatrix4fv(locations.vMatrixLocation, 1, GL_FALSE, glm::value_ptr(v));
+
+    glm::vec3 cameraOrigin_world = glm::inverse(v) * glm::vec4(0,0,0,1);
+    glUniform3fv(locations.cameraOriginLocation, 1, &cameraOrigin_world.x);
+  };
 
   switch(d->shaderType)
   {
   case ShaderType::Render:
   {
-    glUniformMatrix4fv(d->mMatrixLocation  , 1, GL_FALSE, glm::value_ptr(m));
-    glUniformMatrix4fv(d->mvpMatrixLocation, 1, GL_FALSE, glm::value_ptr(mvp));
+    exec(d->renderLocations);
+    break;
+  }
 
-    glm::vec3 cameraOrigin_world = glm::inverse(v) * glm::vec4(0,0,0,1);
-    glUniform3fv(d->cameraOriginLocation, 1, &cameraOrigin_world.x);
+  case ShaderType::RenderHDR:
+  {
+    exec(d->renderHDRLocations);
     break;
   }
 
@@ -564,33 +687,39 @@ void MaterialShader::setTextures(GLuint ambientTextureID,
                                  GLuint alphaTextureID,
                                  GLuint bumpTextureID,
                                  GLuint spotLightTextureID)
-{  
-  if(d->shaderType != ShaderType::Render)
-    return;
+{
+  auto exec = [&](const UniformLocations_lt& locations)
+  {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, ambientTextureID);
+    glUniform1i(locations.ambientTextureLocation, 0);
 
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, ambientTextureID);
-  glUniform1i(d->ambientTextureLocation, 0);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, diffuseTextureID);
+    glUniform1i(locations.diffuseTextureLocation, 1);
 
-  glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, diffuseTextureID);
-  glUniform1i(d->diffuseTextureLocation, 1);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, specularTextureID);
+    glUniform1i(locations.specularTextureLocation, 2);
 
-  glActiveTexture(GL_TEXTURE2);
-  glBindTexture(GL_TEXTURE_2D, specularTextureID);
-  glUniform1i(d->specularTextureLocation, 2);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, alphaTextureID);
+    glUniform1i(locations.alphaTextureLocation, 3);
 
-  glActiveTexture(GL_TEXTURE3);
-  glBindTexture(GL_TEXTURE_2D, alphaTextureID);
-  glUniform1i(d->alphaTextureLocation, 3);
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, bumpTextureID);
+    glUniform1i(locations.bumpTextureLocation, 4);
 
-  glActiveTexture(GL_TEXTURE4);
-  glBindTexture(GL_TEXTURE_2D, bumpTextureID);
-  glUniform1i(d->bumpTextureLocation, 4);
+    glActiveTexture(GL_TEXTURE5);
+    glBindTexture(GL_TEXTURE_2D, spotLightTextureID);
+    glUniform1i(locations.spotLightTextureLocation, 5);
 
-  glActiveTexture(GL_TEXTURE5);
-  glBindTexture(GL_TEXTURE_2D, spotLightTextureID);
-  glUniform1i(d->spotLightTextureLocation, 5);
+  };
+
+  if(d->shaderType == ShaderType::Render)
+    exec(d->renderLocations);
+  else if(d->shaderType == ShaderType::RenderHDR)
+    exec(d->renderHDRLocations);
 }
 
 //##################################################################################################
@@ -607,10 +736,15 @@ void MaterialShader::setBlankTextures()
 //##################################################################################################
 void MaterialShader::setDiscardOpacity(float discardOpacity)
 {
-  if(d->shaderType != ShaderType::Render)
-    return;
+  auto exec = [&](const UniformLocations_lt& locations)
+  {
+    glUniform1f(locations.discardOpacityLocation, discardOpacity);
+  };
 
-  glUniform1f(d->discardOpacityLocation, discardOpacity);
+  if(d->shaderType == ShaderType::Render)
+    exec(d->renderLocations);
+  else if(d->shaderType == ShaderType::RenderHDR)
+    exec(d->renderHDRLocations);
 }
 
 }

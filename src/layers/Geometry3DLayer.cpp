@@ -194,21 +194,6 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
      renderInfo.pass != RenderPass::Picking)
     return;
 
-  ShaderType shaderType{ShaderType::Render};
-  switch(renderInfo.pass)
-  {
-  case RenderPass::LightFBOs:
-    shaderType = ShaderType::Light;
-    break;
-
-  case RenderPass::Picking:
-    shaderType = ShaderType::Picking;
-    break;
-
-  default:
-    break;
-  }
-
   //== Get matrices ================================================================================
   Matrices m;
   if(renderInfo.pass == RenderPass::LightFBOs)
@@ -231,7 +216,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
 
     use(shader);
 
-    if(renderInfo.pass==RenderPass::Picking)
+    if(renderInfo.pass == RenderPass::Picking)
     {
       d->geometry3DPool->viewProcessedGeometry(d->name, shader, [&](const std::vector<ProcessedGeometry3D>& processedGeometry)
       {
@@ -270,7 +255,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
   {
     render(static_cast<MaterialShader*>(nullptr), [&](auto shader) //-- use ------------------------
     {
-      shader->use(shaderType);
+      shader->use(renderInfo.shaderType());
       shader->setMatrix(modelToWorldMatrix(), m.v, m.p);
       shader->setLights(map()->lights(), map()->lightTextures());
     },

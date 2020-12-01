@@ -22,7 +22,7 @@ public:
   void use(ShaderType shaderType = ShaderType::Render) override;
 
   //################################################################################################
-  void setReflectionTextures(GLuint colorID, GLuint depthID);
+  void setReadFBO(const FBO& readFBO);
 
   //################################################################################################
   void setProjectionMatrix(const glm::mat4& projectionMatrix);

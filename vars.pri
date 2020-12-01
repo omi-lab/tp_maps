@@ -125,6 +125,9 @@ HEADERS += inc/tp_maps/shaders/PostShader.h
 SOURCES += src/shaders/PostSSAOShader.cpp
 HEADERS += inc/tp_maps/shaders/PostSSAOShader.h
 
+SOURCES += src/shaders/PostSSRShader.cpp
+HEADERS += inc/tp_maps/shaders/PostSSRShader.h
+
 SOURCES += src/shaders/PostBlitShader.cpp
 HEADERS += inc/tp_maps/shaders/PostBlitShader.h
 
@@ -177,6 +180,9 @@ HEADERS += inc/tp_maps/layers/PostBlitLayer.h
 
 SOURCES += src/layers/PostSSAOLayer.cpp
 HEADERS += inc/tp_maps/layers/PostSSAOLayer.h
+
+SOURCES += src/layers/PostSSRLayer.cpp
+HEADERS += inc/tp_maps/layers/PostSSRLayer.h
 
 
 #-- Textures ---------------------------------------------------------------------------------------

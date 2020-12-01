@@ -58,7 +58,7 @@ void PostLayer::render(RenderInfo& renderInfo)
     return;
 
   shader->use();
-  shader->setReflectionTextures(map()->reflectionTexture(), map()->reflectionDepth());
+  shader->setReadFBO(map()->currentReadFBO());
   shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);
   shader->draw();
 }

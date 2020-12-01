@@ -144,7 +144,7 @@ void GeometryLayer::render(RenderInfo& renderInfo)
     }
   }
 
-  shader->use(renderInfo.pass==RenderPass::Picking?ShaderType::Picking:ShaderType::Render);
+  shader->use(renderInfo.shaderType());
 
   {
     auto m = map()->controller()->matrices(coordinateSystem());

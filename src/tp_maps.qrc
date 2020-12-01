@@ -9,8 +9,8 @@
         <file alias="Image3DShader.frag">resources/shaders/Image3DShader.frag</file>
         <file alias="LineShader.frag">resources/shaders/LineShader.frag</file>
         <file alias="LineShader.vert">resources/shaders/LineShader.vert</file>
-        <file alias="MaterialShader.frag">resources/shaders/MaterialShader.frag</file>
-        <file alias="MaterialShader.vert">resources/shaders/MaterialShader.vert</file>
+        <file alias="MaterialShader.render.frag">resources/shaders/MaterialShader.render.frag</file>
+        <file alias="MaterialShader.render.vert">resources/shaders/MaterialShader.render.vert</file>
         <file alias="MaterialShader.light.frag">resources/shaders/MaterialShader.light.frag</file>
         <file alias="MaterialShader.light.vert">resources/shaders/MaterialShader.light.vert</file>
         <file alias="MaterialShader.picking.frag">resources/shaders/MaterialShader.picking.frag</file>
@@ -24,7 +24,10 @@
         <file alias="DepthImage3DShader.frag">resources/shaders/DepthImage3DShader.frag</file>
         <file alias="PostShader.vert">resources/shaders/PostShader.vert</file>
         <file alias="PostSSAOShader.frag">resources/shaders/PostSSAOShader.frag</file>
-        <file alias="PostBlitShader.frag">resources/shaders/PostBlitShader.frag</file>
+        <file alias="PostSSRShader.frag">resources/shaders/PostSSRShader.frag</file>
+        <file alias="PostBlitShader.frag">resources/shaders/PostBlitShader.frag</file>        
+        <file alias="WriteFragment.hdr.glsl">resources/shaders/WriteFragment.hdr.glsl</file>
+        <file alias="WriteFragment.render.glsl">resources/shaders/WriteFragment.render.glsl</file>
     </qresource>
 </RCC>
 

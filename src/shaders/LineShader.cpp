@@ -47,8 +47,8 @@ LineShader::LineShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
   Shader(map, openGLProfile),
   d(new Private())
 {
-  compile(vertShaderStr().data(openGLProfile),
-          fragShaderStr().data(openGLProfile),
+  compile(vertShaderStr().data(openGLProfile, ShaderType::Render),
+          fragShaderStr().data(openGLProfile, ShaderType::Render),
           [](GLuint program)
   {
     glBindAttribLocation(program, 0, "position");
@@ -74,7 +74,8 @@ void LineShader::use(ShaderType shaderType)
   switch(shaderType)
   {
   case ShaderType::Light: [[fallthrough]];
-  case ShaderType::Render:
+  case ShaderType::Render: [[fallthrough]];
+  case ShaderType::RenderHDR:
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);

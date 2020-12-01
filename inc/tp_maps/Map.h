@@ -175,6 +175,14 @@ public:
   size_t shadowSamples() const;
 
   //################################################################################################
+  //! Enable high dynamic range and deferred rendering buffers.
+  void setHDR(HDR hdr);
+
+  //################################################################################################
+  //! Returns true if HDR is enabled and supported.
+  HDR hdr() const;
+
+  //################################################################################################
   //! Called when buffers become invalid.
   /*!
   This is called when the OpenGL context becomes invalid, all OpenGL resources should be ignored.
@@ -272,12 +280,10 @@ public:
   }
 
   //################################################################################################
-  //! If there is a reflection texture this returns its ID.
-  GLuint reflectionTexture() const;
+  const FBO& currentReadFBO();
 
   //################################################################################################
-  //! If there is a reflection depth texture this returns its ID.
-  GLuint reflectionDepth() const;
+  const FBO& currentDrawFBO();
 
   //################################################################################################
   //! Returns the depth textures for each light.

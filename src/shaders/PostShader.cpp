@@ -26,8 +26,10 @@ struct PostShader::Private
   GLuint vaoID{0};
 #endif
 
-  GLint textureLocation{0};
-  GLint depthLocation  {0};
+  GLint textureLocation {0};
+  GLint depthLocation   {0};
+  GLint normalsLocation {0};
+  GLint specularLocation{0};
 
   GLint projectionMatrixLocation   {0};
   GLint invProjectionMatrixLocation{0};
@@ -47,7 +49,7 @@ PostShader::PostShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const cha
   d(new Private())
 {
   if(!vertexShader)
-    vertexShader = vertShaderStr().data(openGLProfile);
+    vertexShader = vertShaderStr().data(openGLProfile, ShaderType::Render);
 
 
   compile(vertexShader,
@@ -58,8 +60,10 @@ PostShader::PostShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const cha
   },
   [&](GLuint program)
   {
-    d->textureLocation = glGetUniformLocation(program, "textureSampler");
-    d->depthLocation   = glGetUniformLocation(program, "depthSampler");
+    d->textureLocation  = glGetUniformLocation(program, "textureSampler");
+    d->depthLocation    = glGetUniformLocation(program, "depthSampler");
+    d->normalsLocation  = glGetUniformLocation(program, "normalsSampler");
+    d->specularLocation = glGetUniformLocation(program, "specularSampler");
 
     d->projectionMatrixLocation = glGetUniformLocation(program, "projectionMatrix");
     d->invProjectionMatrixLocation = glGetUniformLocation(program, "invProjectionMatrix");
@@ -93,15 +97,35 @@ void PostShader::use(ShaderType shaderType)
 }
 
 //##################################################################################################
-void PostShader::setReflectionTextures(GLuint colorID, GLuint depthID)
+void PostShader::setReadFBO(const FBO& readFBO)
 {
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, colorID);
-  glUniform1i(d->textureLocation, 0);
+  if(d->textureLocation>=0)
+  {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, readFBO.textureID);
+    glUniform1i(d->textureLocation, 0);
+  }
 
-  glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, depthID);
-  glUniform1i(d->depthLocation, 1);
+  if(d->depthLocation>=0)
+  {
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, readFBO.depthID);
+    glUniform1i(d->depthLocation, 1);
+  }
+
+  if(d->normalsLocation>=0)
+  {
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, readFBO.normalsID);
+    glUniform1i(d->normalsLocation, 2);
+  }
+
+  if(d->specularLocation>=0)
+  {
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, readFBO.specularID);
+    glUniform1i(d->specularLocation, 3);
+  }
 }
 
 //##################################################################################################
@@ -116,13 +140,13 @@ void PostShader::setProjectionMatrix(const glm::mat4& projectionMatrix)
 void PostShader::draw()
 {
 #ifdef TP_VERTEX_ARRAYS_SUPPORTED
-    tpBindVertexArray(d->vaoID);
-    //tpDrawElements(GL_TRIANGLE_FAN, vertexBuffer->indexCount, GL_UNSIGNED_INT, nullptr);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-    tpBindVertexArray(0);
+  tpBindVertexArray(d->vaoID);
+  //tpDrawElements(GL_TRIANGLE_FAN, vertexBuffer->indexCount, GL_UNSIGNED_INT, nullptr);
+  glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+  tpBindVertexArray(0);
 #else
-    vertexBuffer->bindVBO();
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+  vertexBuffer->bindVBO();
+  glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 #endif
 }
 

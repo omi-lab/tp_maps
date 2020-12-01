@@ -58,6 +58,9 @@ public:
   //! The render method will get called multiple times for different purposes
   RenderPass pass;
 
+  //! Are we rendering to HDR buffers.
+  HDR hdr{HDR::No};
+
   //! If this is a picking pass this will contain the type of picking request
   /*!
   Picking passes can be used for different purposes for example:
@@ -85,6 +88,9 @@ public:
   //################################################################################################
   //! Call this at the start of the picking pass
   void resetPicking();
+
+  //################################################################################################
+  ShaderType shaderType() const;
 };
 
 }

@@ -7,17 +7,6 @@
 
 namespace tp_maps
 {
-enum class ShaderType
-{
-  Render,
-  Picking,
-  Light
-};
-
-}
-
-namespace tp_maps
-{
 class Map;
 class ShaderPointer;
 

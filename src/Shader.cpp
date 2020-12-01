@@ -52,8 +52,7 @@ struct Shader::Private
 };
 
 //##################################################################################################
-Shader::Shader(Map* map,
-               tp_maps::OpenGLProfile openGLProfile):
+Shader::Shader(Map* map, tp_maps::OpenGLProfile openGLProfile):
   d(new Private(map, openGLProfile))
 {
 

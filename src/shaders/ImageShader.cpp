@@ -48,10 +48,10 @@ ImageShader::ImageShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const c
   d(new Private())
 {
   if(!vertexShader)
-    vertexShader = vertShaderStr().data(openGLProfile);
+    vertexShader = vertShaderStr().data(openGLProfile, ShaderType::Render);
 
   if(!fragmentShader)
-    fragmentShader = fragShaderStr().data(openGLProfile);
+    fragmentShader = fragShaderStr().data(openGLProfile, ShaderType::Render);
 
   compile(vertexShader,
           fragmentShader,
@@ -130,7 +130,7 @@ void ImageShader::drawPicking(GLenum mode,
 }
 //##################################################################################################
 Image3DShader::Image3DShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
-  ImageShader(map, openGLProfile, nullptr, frag3DShaderStr().data(openGLProfile))
+  ImageShader(map, openGLProfile, nullptr, frag3DShaderStr().data(openGLProfile, ShaderType::Render))
 {
 
 }

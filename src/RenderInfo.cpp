@@ -32,4 +32,19 @@ void RenderInfo::resetPicking()
   nextID = 1;
 }
 
+//##################################################################################################
+ShaderType RenderInfo::shaderType() const
+{
+  if(pass == RenderPass::LightFBOs)
+    return ShaderType::Light;
+
+  if(pass == RenderPass::Picking)
+    return ShaderType::Picking;
+
+  if(hdr == HDR::Yes)
+    return ShaderType::RenderHDR;
+
+  return ShaderType::Render;
+}
+
 }

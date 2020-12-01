@@ -139,7 +139,8 @@ void ImageLayer::render(RenderInfo& renderInfo)
   if(!d->texture->imageReady())
     return;
 
-  if(renderInfo.pass != defaultRenderPass() && renderInfo.pass != RenderPass::Picking)
+  if(renderInfo.pass != defaultRenderPass() &&
+     renderInfo.pass != RenderPass::Picking)
     return;
 
   auto shader = d->getShader(map());

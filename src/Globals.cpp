@@ -10,6 +10,7 @@ namespace tp_maps
 {
 TP_DEFINE_ID(                      defaultSID,                          "Default");
 TP_DEFINE_ID(                       screenSID,                           "Screen");
+TP_DEFINE_ID(                   gizmoLayerSID,                      "Gizmo layer");
 TP_DEFINE_ID(                   lineShaderSID,                      "Line shader");
 TP_DEFINE_ID(                  imageShaderSID,                     "Image shader");
 TP_DEFINE_ID(                image3DShaderSID,                  "Image 3D shader");
@@ -21,7 +22,7 @@ TP_DEFINE_ID(           depthImage3DShaderSID,            "Depth image 3D shader
 TP_DEFINE_ID(                   fontShaderSID,                      "Font shader");
 TP_DEFINE_ID(                  frameShaderSID,                     "Frame shader");
 TP_DEFINE_ID(               postSSAOShaderSID,                 "Post ssao shader");
-TP_DEFINE_ID(                   gizmoLayerSID,                      "Gizmo layer");
+TP_DEFINE_ID(                postSSRShaderSID,                  "Post ssr shader");
 
 //##################################################################################################
 int tp_rc();
@@ -33,7 +34,7 @@ int staticInit()
 }
 
 //##################################################################################################
-std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfile)
+std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfile, ShaderType shaderType)
 {
   std::string result(text);
 
@@ -46,6 +47,18 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
       pos = result.find(key, pos + value.size());
     }
   };
+
+  if(shaderType == ShaderType::Render)
+  {
+    static std::string writeFragmentStr{tp_utils::resource("/tp_maps/WriteFragment.render.glsl").data};
+    replace("/*TP_WRITE_FRAGMENT*/", writeFragmentStr);
+  }
+
+  if(shaderType == ShaderType::RenderHDR)
+  {
+    static std::string writeFragmentStr{tp_utils::resource("/tp_maps/WriteFragment.hdr.glsl").data};
+    replace("/*TP_WRITE_FRAGMENT*/", writeFragmentStr);
+  }
 
   switch(openGLProfile)
   {
@@ -333,12 +346,12 @@ ShaderString::ShaderString(const char* text):
 }
 
 //##################################################################################################
-const char* ShaderString::data(OpenGLProfile openGLProfile)
+const char* ShaderString::data(OpenGLProfile openGLProfile, ShaderType shaderType)
 {
-  std::string& parsed = m_parsed[openGLProfile];
+  std::string& parsed = m_parsed[openGLProfile][shaderType];
 
   if(parsed.empty())
-    parsed = parseShaderString(m_str, openGLProfile);
+    parsed = parseShaderString(m_str, openGLProfile, shaderType);
 
   return parsed.c_str();
 }
@@ -351,12 +364,12 @@ ShaderResource::ShaderResource(const std::string& resourceName):
 }
 
 //##################################################################################################
-const char* ShaderResource::data(OpenGLProfile openGLProfile)
+const char* ShaderResource::data(OpenGLProfile openGLProfile, ShaderType shaderType)
 {
-  std::string& parsed = m_parsed[openGLProfile];
+  std::string& parsed = m_parsed[openGLProfile][shaderType];
 
   if(parsed.empty())
-    parsed = parseShaderString(tp_utils::resource(m_resourceName).data, openGLProfile);
+    parsed = parseShaderString(tp_utils::resource(m_resourceName).data, openGLProfile, shaderType);
 
   return parsed.c_str();
 }
@@ -375,9 +388,19 @@ nlohmann::json Material::saveState() const
   j["shininess"] = shininess;
   j["alpha"] = alpha;
 
+  j["roughness"] = roughness;
+  j["metalness"] = metalness;
+
   j["ambientScale"] = ambientScale;
   j["diffuseScale"] = diffuseScale;
   j["specularScale"] = specularScale;
+
+  j["useDiffuse"]     = useDiffuse;
+  j["useNdotL"]       = useNdotL;
+  j["useAttenuation"] = useAttenuation;
+  j["useShadow"]      = useShadow;
+  j["useLightMask"]   = useLightMask;
+  j["useReflection"]  = useReflection;
 
   j["tileTextures"] = tileTextures;
 
@@ -402,9 +425,19 @@ void Material::loadState(const nlohmann::json& j)
   shininess = TPJSONFloat(j, "shininess", shininess);
   alpha = TPJSONFloat(j, "alpha", alpha);
 
+  roughness = TPJSONFloat(j, "roughness", roughness);
+  metalness = TPJSONFloat(j, "metalness", metalness);
+
   ambientScale = TPJSONFloat(j, "ambientScale", 1.0f);
   diffuseScale = TPJSONFloat(j, "diffuseScale", 1.0f);
   specularScale = TPJSONFloat(j, "specularScale", 1.0f);
+
+  useDiffuse     = TPJSONFloat(j, "useDiffuse"    , 1.0f);
+  useNdotL       = TPJSONFloat(j, "useNdotL"      , 1.0f);
+  useAttenuation = TPJSONFloat(j, "useAttenuation", 1.0f);
+  useShadow      = TPJSONFloat(j, "useShadow"     , 1.0f);
+  useLightMask   = TPJSONFloat(j, "useLightMask"  , 1.0f);
+  useReflection  = TPJSONFloat(j, "useReflection" , 1.0f);
 
   tileTextures = TPJSONBool(j, "tileTextures", false);
 

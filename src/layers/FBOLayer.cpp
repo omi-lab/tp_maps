@@ -96,16 +96,30 @@ void FBOLayer::render(RenderInfo& renderInfo)
   int levels=1;
   switch(d->source)
   {
-  case FBOLayerSource::ReflectionColor:
+  case FBOLayerSource::CurrentDrawColor:
   {
-    textureID = map()->reflectionTexture();
+    textureID = map()->currentDrawFBO().textureID;
     shader = static_cast<ImageShader*>(map()->getShader<ImageShader>());
     break;
   }
 
-  case FBOLayerSource::ReflectionDepth:
+  case FBOLayerSource::CurrentDrawDepth:
   {
-    textureID = map()->reflectionDepth();
+    textureID = map()->currentDrawFBO().depthID;
+    shader = static_cast<ImageShader*>(map()->getShader<DepthImageShader>());
+    break;
+  }
+
+  case FBOLayerSource::CurrentReadColor:
+  {
+    textureID = map()->currentReadFBO().textureID;
+    shader = static_cast<ImageShader*>(map()->getShader<ImageShader>());
+    break;
+  }
+
+  case FBOLayerSource::CurrentReadDepth:
+  {
+    textureID = map()->currentReadFBO().depthID;
     shader = static_cast<ImageShader*>(map()->getShader<DepthImageShader>());
     break;
   }

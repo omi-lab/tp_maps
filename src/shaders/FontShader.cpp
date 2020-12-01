@@ -121,10 +121,10 @@ FontShader::FontShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const cha
   d(new Private())
 {
   if(!vertexShader)
-    vertexShader = vertShaderStr().data(openGLProfile);
+    vertexShader = vertShaderStr().data(openGLProfile, ShaderType::Render);
 
   if(!fragmentShader)
-    fragmentShader = fragShaderStr().data(openGLProfile);
+    fragmentShader = fragShaderStr().data(openGLProfile, ShaderType::Render);
 
   compile(vertexShader,
           fragmentShader,
