@@ -59,8 +59,7 @@ struct GizmoLayer::Private
     {
       auto& circle = geometry.emplace_back();
 
-      circle.material.ambient = color;
-      circle.material.diffuse = color;
+      circle.material.albedo = color;
 
       circle.geometry.triangleFan   = GL_TRIANGLE_FAN;
       circle.geometry.triangleStrip = GL_TRIANGLE_STRIP;
@@ -136,8 +135,7 @@ struct GizmoLayer::Private
     {
       auto& arrow = geometry.emplace_back();
 
-      arrow.material.ambient = color;
-      arrow.material.diffuse = color;
+      arrow.material.albedo = color;
 
       arrow.geometry.triangleFan   = GL_TRIANGLE_FAN;
       arrow.geometry.triangleStrip = GL_TRIANGLE_STRIP;

@@ -134,7 +134,7 @@ struct Map::Private
   std::vector<FBO> lightTextures;
   int lightTextureSize{1024};
   size_t spotLightLevels{1};
-  size_t shadowSamples{1};
+  size_t shadowSamples{0};
 
   HDR hdr{HDR::No};
 

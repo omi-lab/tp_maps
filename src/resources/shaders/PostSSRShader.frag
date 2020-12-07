@@ -80,7 +80,7 @@ void main()
     fragColorR /= count;
 
   vec3 fragColorA = /*TP_GLSL_TEXTURE_2D*/(textureSampler, texCoordinate).xyz;
-  float metalness = 0.01;///*TP_GLSL_TEXTURE_2D*/(specularSampler, texCoordinate).x;
+  float metalness = /*TP_GLSL_TEXTURE_2D*/(specularSampler, texCoordinate).x;
 
   /*TP_GLSL_GLFRAGCOLOR*/ = vec4(fragColorA+(fragColorR*metalness), 1.0);
 

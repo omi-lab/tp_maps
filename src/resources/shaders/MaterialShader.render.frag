@@ -2,15 +2,7 @@
 
 struct Material
 {
-  vec3 ambient;
-  vec3 diffuse;
-  vec3 specular;
-  float shininess;
-  float alpha;
-
-  float roughness;
-  float metalness;
-
+  float useAmbient;
   float useDiffuse;
   float useNdotL;
   float useAttenuation;
@@ -18,8 +10,7 @@ struct Material
   float useLightMask;
   float useReflection;
 
-  float ambientScale;
-  float diffuseScale;
+  float albedoScale;
   float specularScale;
 };
 
@@ -46,11 +37,10 @@ struct LightResult
   vec3 specular;
 };
 
-uniform sampler2D ambientTexture;
-uniform sampler2D diffuseTexture;
+uniform sampler2D rgbaTexture;
 uniform sampler2D specularTexture;
-uniform sampler2D alphaTexture;
-uniform sampler2D bumpTexture;
+uniform sampler2D normalsTexture;
+uniform sampler2D rmaoTexture;
 uniform sampler2D spotLightTexture;
 
 uniform Material material;
@@ -75,9 +65,14 @@ uniform vec3 cameraOrigin_world;
 vec3 fragPos_tangent;
 vec3 cameraOrigin_tangent;
 
+vec3 albedo;
+vec3 specularColor;
+float roughness;
+float roughness2;
+float metalness;
+
 vec3 F0;
 vec3 surfaceToCamera;
-vec3 albedo;
 
 /*TP_GLSL_IN_F*/vec3 normal_view;
 
@@ -95,51 +90,49 @@ const float pi = 3.14159265358979323846264338327950288419716939937510f;
 //See MaterialShader.cpp for documentation.
 
 //##################################################################################################
-float sampleShadowMap2D(sampler2D shadowMap, vec2 coords, float compareLight, float compareDark)
+float lineariseDepth(float depth)
 {
-  return smoothstep(compareLight, compareDark, /*TP_GLSL_TEXTURE_2D*/(shadowMap, coords.xy).r);
+  float near = 0.01;
+  float far  = 100.0;
+
+  // Scale the depth back into world coords.
+  return 2.0 * near * far / (far + near - (2.0 * depth - 1.0) * (far - near));
 }
 
 //##################################################################################################
 float sampleShadowMapLinear2D(sampler2D shadowMap, vec2 coords, float compareLight, float compareDark)
 {
-  vec2 pixelPos = coords/txlSize + vec2(0.5);
+  vec2 pixelPos = (coords/txlSize) - 0.5;
   vec2 fracPart = fract(pixelPos);
-  vec2 startTxl = (pixelPos - fracPart) * txlSize;
+  vec2 startTxl = (pixelPos-fracPart) * txlSize;
 
-  float blTxl = sampleShadowMap2D(shadowMap, startTxl, compareLight, compareDark);
-  float brTxl = sampleShadowMap2D(shadowMap, startTxl + vec2(txlSize.x, 0.0), compareLight, compareDark);
-  float tlTxl = sampleShadowMap2D(shadowMap, startTxl + vec2(0.0, txlSize.y), compareLight, compareDark);
-  float trTxl = sampleShadowMap2D(shadowMap, startTxl + txlSize, compareLight, compareDark);
+  float blTxl = lineariseDepth(/*TP_GLSL_TEXTURE_2D*/(shadowMap, startTxl).r);
+  float brTxl = lineariseDepth(/*TP_GLSL_TEXTURE_2D*/(shadowMap, startTxl + vec2(txlSize.x, 0.0)).r);
+  float tlTxl = lineariseDepth(/*TP_GLSL_TEXTURE_2D*/(shadowMap, startTxl + vec2(0.0, txlSize.y)).r);
+  float trTxl = lineariseDepth(/*TP_GLSL_TEXTURE_2D*/(shadowMap, startTxl + txlSize).r);
 
   float mixA = mix(blTxl, tlTxl, fracPart.y);
   float mixB = mix(brTxl, trTxl, fracPart.y);
 
-  return mix(mixA, mixB, fracPart.x);
-}
-
-//##################################################################################################
-float sampleShadowMap3D(sampler3D shadowMap, vec2 coords, float compareLight, float compareDark, float level)
-{
-  return smoothstep(compareLight, compareDark, /*TP_GLSL_TEXTURE_3D*/(shadowMap, vec3(coords.xy, level)).r);
+  return smoothstep(compareLight, compareDark, mix(mixA, mixB, fracPart.x));
 }
 
 //##################################################################################################
 float sampleShadowMapLinear3D(sampler3D shadowMap, vec2 coords, float compareLight, float compareDark, float level)
 {
-  vec2 pixelPos = coords/txlSize + vec2(0.5);
+  vec2 pixelPos = (coords/txlSize) - 0.5;
   vec2 fracPart = fract(pixelPos);
-  vec2 startTxl = (pixelPos - fracPart) * txlSize;
+  vec2 startTxl = (pixelPos-fracPart) * txlSize;
 
-  float blTxl = sampleShadowMap3D(shadowMap, startTxl, compareLight, compareDark, level);
-  float brTxl = sampleShadowMap3D(shadowMap, startTxl + vec2(txlSize.x, 0.0), compareLight, compareDark, level);
-  float tlTxl = sampleShadowMap3D(shadowMap, startTxl + vec2(0.0, txlSize.y), compareLight, compareDark, level);
-  float trTxl = sampleShadowMap3D(shadowMap, startTxl + txlSize, compareLight, compareDark, level);
+  float blTxl = lineariseDepth(/*TP_GLSL_TEXTURE_3D*/(shadowMap, vec3(startTxl, level)).r);
+  float brTxl = lineariseDepth(/*TP_GLSL_TEXTURE_3D*/(shadowMap, vec3(startTxl + vec2(txlSize.x, 0.0), level)).r);
+  float tlTxl = lineariseDepth(/*TP_GLSL_TEXTURE_3D*/(shadowMap, vec3(startTxl + vec2(0.0, txlSize.y), level)).r);
+  float trTxl = lineariseDepth(/*TP_GLSL_TEXTURE_3D*/(shadowMap, vec3(startTxl + txlSize, level)).r);
 
   float mixA = mix(blTxl, tlTxl, fracPart.y);
   float mixB = mix(brTxl, trTxl, fracPart.y);
 
-  return mix(mixA, mixB, fracPart.x);
+  return smoothstep(compareLight, compareDark, mix(mixA, mixB, fracPart.x));
 }
 
 //##################################################################################################
@@ -147,16 +140,6 @@ vec3 lightPosToTexture(vec4 fragPos_light, vec4 offset, mat4 proj)
 {
   vec4 fp = proj * (fragPos_light+offset);
   return vec3((vec3(0.5, 0.5, 0.5) * (fp.xyz / fp.w)) + vec3(0.5, 0.5, 0.5));
-}
-
-//##################################################################################################
-float calcBiasedDepth(float bias, float z)
-{
-  bias = 1.0-bias;
-  bias = clamp(bias, 0.4, 1.0);
-  bias *= 0.0001;
-
-  return min(z-bias,1.0);
 }
 
 //##################################################################################################
@@ -169,6 +152,7 @@ float calcGGXDist(vec3 norm, vec3 halfV, float roughness2)
   return roughness2/(pi*fDen * fDen);
 }
 
+//##################################################################################################
 float chiGGX(float f)
 {
   return f > 0.0 ? 1.0 : 0.0 ;
@@ -186,7 +170,7 @@ float calcGGXGeom(vec3 surfaceToCamera, vec3 norm, vec3 lightViewHalfVector, flo
   return (fChi * 2.0) / (1.0 + sqrt(1.0 + roughness2 * fTan2)) ;
 }
 
-
+//##################################################################################################
 float GeometrySchlickGGX(float NdotV, float k)
 {
     float nom   = NdotV;
@@ -195,6 +179,7 @@ float GeometrySchlickGGX(float NdotV, float k)
     return nom / denom;
 }
 
+//##################################################################################################
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float k)
 {
     float NdotV = max(dot(N, V), 0.0);
@@ -215,63 +200,28 @@ vec3 calcFresnel(vec3 halfV, vec3 norm, vec3 F0)
 LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampler2D lightTexture, vec3 fragPos_light)
 {
   LightResult r;
+  r.ambient=vec3(0);
+  r.specular=vec3(0);
+  r.diffuse=vec3(0);
 
-  // Ambient
-  r.ambient = light.ambient;
+//  // Ambient
+//  r.ambient = light.ambient;
 
-  // Diffuse
-  float cosTheta = clamp(dot(norm, -lightDirection_tangent), 0.0, 1.0);
-  float diff = cosTheta*light.diffuseScale;
-  r.diffuse = light.diffuse * diff;
+//  // Diffuse
+//  float cosTheta = clamp(dot(norm, -lightDirection_tangent), 0.0, 1.0);
+//  float diff = cosTheta*light.diffuseScale;
+//  r.diffuse = light.diffuse * diff;
 
-  // Specular
-  vec3 incidenceVector = lightDirection_tangent;
-  vec3 reflectionVector = reflect(incidenceVector, norm);
-  vec3 surfaceToCamera = normalize(cameraOrigin_tangent-fragPos_tangent);
-  float cosAngle = max(0.0, dot(surfaceToCamera, reflectionVector));
-  float specularCoefficient = pow(cosAngle, material.shininess);
-  r.specular = specularCoefficient * light.specular;
+//  // Specular
+////  vec3 incidenceVector = lightDirection_tangent;
+////  vec3 reflectionVector = reflect(incidenceVector, norm);
+////  vec3 surfaceToCamera = normalize(cameraOrigin_tangent-fragPos_tangent);
+////  float cosAngle = max(0.0, dot(surfaceToCamera, reflectionVector));
+////  float specularCoefficient = pow(cosAngle, material.shininess);
+////  r.specular = specularCoefficient * light.specular;
 
-  // Shadow
-  float shadow = 0.0;
-  float bias = dot(norm, -lightDirection_tangent);
-  if(bias>0.0 && fragPos_light.z>0.0 && fragPos_light.z<1.0)
-  {
-    float biasedDepth = calcBiasedDepth(bias, fragPos_light.z);
-
-    for(int x = -shadowSamples; x <= shadowSamples; ++x)
-    {
-      for(int y = -shadowSamples; y <= shadowSamples; ++y)
-      {
-        vec2 coord = fragPos_light.xy + (vec2(x, y)*txlSize);
-        if(coord.x<0.0 || coord.x>1.0 || coord.y<0.0 || coord.y>1.0)
-        {
-          shadow += 1.0;
-        }
-        else
-        {
-          shadow += sampleShadowMapLinear2D(lightTexture, coord, biasedDepth, fragPos_light.z);
-        }
-      }
-    }
-    shadow /= totalSadowSamples;
-  }
-  else
-  {
-    shadow=1.0;
-  }
-
-  r.diffuse *= shadow;
-  r.specular *= shadow;
-
-  return r;
-}
-
-////##################################################################################################
-//float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangent, sampler2D lightTexture, vec3 fragPos_light)
-//{
+//  // Shadow
 //  float shadow = 0.0;
-
 //  float bias = dot(norm, -lightDirection_tangent);
 //  if(bias>0.0 && fragPos_light.z>0.0 && fragPos_light.z<1.0)
 //  {
@@ -284,7 +234,7 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
 //        vec2 coord = fragPos_light.xy + (vec2(x, y)*txlSize);
 //        if(coord.x<0.0 || coord.x>1.0 || coord.y<0.0 || coord.y>1.0)
 //        {
-//          shadow += 0.0;
+//          shadow += 1.0;
 //        }
 //        else
 //        {
@@ -292,12 +242,18 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
 //        }
 //      }
 //    }
+//    shadow /= totalSadowSamples;
 //  }
-//  return shadow;
+//  else
+//  {
+//    shadow=1.0;
+//  }
 
-//  vec2 spotTexCoord = (fragPos_light.xy*light.spotLightWH) + light.spotLightUV;
-//  return mix(1.0, /*TP_GLSL_TEXTURE_2D*/(spotLightTexture, spotTexCoord).x, material.useLightMask) * shadow;
-//}
+//  r.diffuse *= shadow;
+//  r.specular *= shadow;
+
+  return r;
+}
 
 //##################################################################################################
 float maskLight(Light light, vec3 uv, float shadow)
@@ -316,15 +272,17 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
   float bias = dot(norm, -lightDirection_tangent);
   if(bias>0.0 && uv.z>0.0 && uv.z<1.0)
   {
-    float biasedDepth = calcBiasedDepth(bias, uv.z);
-
+    float linearDepth = lineariseDepth(uv.z);
+    float biasedDepth = linearDepth - clamp(1.0-bias, 0.1, 1.0) * linearDepth * 0.04;
     for(int x = -shadowSamples; x <= shadowSamples; ++x)
     {
       for(int y = -shadowSamples; y <= shadowSamples; ++y)
       {
         vec2 coord = uv.xy + (vec2(x, y)*txlSize);
         if(coord.x>=0.0 && coord.x<=1.0 && coord.y>=0.0 && coord.y<=1.0)
-          shadow -= 1.0-sampleShadowMapLinear2D(lightTexture, coord, biasedDepth, uv.z);
+        {
+          shadow -= 1.0-sampleShadowMapLinear2D(lightTexture, coord, biasedDepth, linearDepth);
+        }
       }
     }
   }
@@ -335,18 +293,24 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
 float spotLightSampleShadow3D(vec3 norm, Light light, vec3 lightDirection_tangent, sampler3D lightTexture, vec3 uv, float level)
 {
   float shadow = totalSadowSamples;
-  float bias = dot(norm, -lightDirection_tangent);
-  if(bias>0.0 && uv.z>0.0 && uv.z<1.0)
-  {
-    float biasedDepth = calcBiasedDepth(bias, uv.z);
+  float nDotL = dot(norm, -lightDirection_tangent);
 
+  if(nDotL>0.0 && uv.z>0.0 && uv.z<1.0)
+  {
+    float linearDepth = lineariseDepth(uv.z);
+
+    float bias = clamp((1.0-nDotL)*3.0, 0.1, 3.0) * linearDepth * linearDepth * 0.004;
+    float biasedDepth = linearDepth - bias;
     for(int x = -shadowSamples; x <= shadowSamples; ++x)
     {
       for(int y = -shadowSamples; y <= shadowSamples; ++y)
       {
-        vec2 coord = uv.xy + (vec2(x, y)*txlSize);
+        vec2 coord = uv.xy + (vec2(x, y)*txlSize*(nDotL));
         if(coord.x>=0.0 && coord.x<=1.0 && coord.y>=0.0 && coord.y<=1.0)
-          shadow -= 1.0-sampleShadowMapLinear3D(lightTexture, coord, biasedDepth, uv.z, level);
+        {
+          float extraBias = bias*float(abs(x)+abs(y));
+          shadow -= 1.0-sampleShadowMapLinear3D(lightTexture, coord, biasedDepth-extraBias, linearDepth-extraBias, level);
+        }
       }
     }
   }
@@ -358,19 +322,15 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, vec3 
 {
   LightResult r;
 
-  r.specular = vec3(0,0,0);
-  r.ambient = vec3(0,0,0);
-
-  float roughness = max(0.001, material.roughness);
-  float roughness2 = roughness*roughness;
+  r.ambient = material.useAmbient * light.ambient * albedo;
 
   vec3 surfaceToLight  = -lightDirection_tangent;
   vec3 halfV = normalize(surfaceToCamera + surfaceToLight);
 
   // Attenuation
   float distance    = length(light.position - fragPos_world);
-  float attenuation = mix(1.0, 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance)), material.useAttenuation);
-  vec3  radiance    = light.diffuseScale * light.diffuse  * attenuation * 5.0;
+  float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+  vec3  radiance    = mix(vec3(1.0), light.diffuseScale * light.diffuse  * attenuation, material.useAttenuation);
 
   // Cook-Torrance BRDF
   float NDF = calcGGXDist(norm, halfV, roughness2);
@@ -379,16 +339,18 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, vec3 
 
   vec3 kS = F;
   vec3 kD = vec3(1.0) - kS;
-  kD *= 1.0 - material.metalness;
+  kD *= 1.0 - metalness;
   kD = mix(vec3(1.0,1.0,1.0), kD, material.useDiffuse);
 
   vec3  numerator   = NDF * G * F;
   float denominator = 4.0 * max(dot(norm, surfaceToCamera), 0.0) * max(dot(norm, surfaceToLight), 0.0);
-  vec3  specular    = (material.specular*material.specularScale) * numerator / max(denominator, 0.001);
+  vec3  specular    = numerator / max(denominator, 0.001);
 
   // add to outgoing radiance Lo
   float NdotL = mix(1.0, max(dot(norm, surfaceToLight), 0.0), material.useNdotL);
-  r.diffuse = (kD * albedo/* / pi*/ + specular) * radiance * NdotL * shadow;
+  r.diffuse = kD * albedo * radiance * NdotL * shadow;
+
+  r.specular = specularColor * specular * radiance * NdotL * shadow;
 
   return r;
 }
@@ -406,13 +368,18 @@ mat3 transposeMat3(mat3 inMatrix)
 //##################################################################################################
 void main()
 {
-  vec3  ambientTex = /*TP_GLSL_TEXTURE_2D*/( ambientTexture, uv_tangent).xyz;
-  vec3  diffuseTex = /*TP_GLSL_TEXTURE_2D*/( diffuseTexture, uv_tangent).xyz;
+  vec4     rgbaTex = /*TP_GLSL_TEXTURE_2D*/(    rgbaTexture, uv_tangent);
   vec3 specularTex = /*TP_GLSL_TEXTURE_2D*/(specularTexture, uv_tangent).xyz;
-  float   alphaTex = /*TP_GLSL_TEXTURE_2D*/(   alphaTexture, uv_tangent).x;
-  vec3     bumpTex = /*TP_GLSL_TEXTURE_2D*/(    bumpTexture, uv_tangent).xyz;
+  vec3  normalsTex = /*TP_GLSL_TEXTURE_2D*/( normalsTexture, uv_tangent).xyz;
+  vec3     rmaoTex = /*TP_GLSL_TEXTURE_2D*/(    rmaoTexture, uv_tangent).xyz;
 
-  vec3 norm = normalize(bumpTex*2.0-1.0);
+  vec3 norm = normalize(normalsTex*2.0-1.0);
+
+  albedo = rgbaTex.xyz * material.albedoScale;
+  specularColor = specularTex * material.specularScale;
+  roughness = max(0.001, rmaoTex.x);
+  roughness2 = roughness*roughness;
+  metalness = rmaoTex.y;
 
   vec3 ambient  = vec3(0,0,0);
   vec3 diffuse  = vec3(0,0,0);
@@ -432,26 +399,17 @@ void main()
   cameraOrigin_tangent = invTBN * cameraOrigin_world;
   fragPos_tangent = invTBN * fragPos_world;
 
-  F0 = mix(vec3(0.04), material.diffuse, material.metalness);
+  F0 = mix(vec3(0.04), albedo, metalness);
   surfaceToCamera = normalize(cameraOrigin_tangent-fragPos_tangent);
-  albedo = (diffuseTex+material.diffuse) * material.diffuseScale;
 
   /*LIGHT_FRAG_CALC*/
 
-  ambient  *= (ambientTex+material.ambient)   * material.ambientScale;
-  diffuse  *= (diffuseTex+material.diffuse)   * material.diffuseScale;
-  specular *= (specularTex+material.specular) * material.specularScale;
+  //diffuse  *= albedo;
+  //specular *= specularTex;
 
-  float alpha = material.alpha*alphaTex;
-  vec3 materialSpecular = material.specular;
-  float shininess = material.roughness;
-
-  //ambient = vec3(0.03) * albedo;
-  //diffuse = ambient + diffuse;
-  //diffuse = diffuse / (diffuse + vec3(1.0));
-  //diffuse = pow(diffuse, vec3(1.0/2.2));
-
-  //ambient = vec3(0,0,0);
+  float alpha = rgbaTex.w;
+  vec3 materialSpecular = specularTex;
+  float shininess = metalness;
 
   vec3 normal = TBNv*norm;
 

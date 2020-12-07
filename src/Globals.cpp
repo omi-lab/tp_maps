@@ -381,34 +381,35 @@ nlohmann::json Material::saveState() const
 
   j["name"] = name.keyString();
 
-  j["ambient"] = tp_math_utils::vec3ToJSON(ambient);
-  j["diffuse"] = tp_math_utils::vec3ToJSON(diffuse);
-  j["specular"] = tp_math_utils::vec3ToJSON(specular);
+  j["albedo"]           = tp_math_utils::vec3ToJSON(albedo);
+  j["specular"]         = tp_math_utils::vec3ToJSON(specular);
 
-  j["shininess"] = shininess;
-  j["alpha"] = alpha;
+  j["alpha"]            = alpha;
 
-  j["roughness"] = roughness;
-  j["metalness"] = metalness;
+  j["roughness"]        = roughness;
+  j["metalness"]        = metalness;
 
-  j["ambientScale"] = ambientScale;
-  j["diffuseScale"] = diffuseScale;
-  j["specularScale"] = specularScale;
+  j["albedoScale"]      = albedoScale;
+  j["specularScale"]    = specularScale;
 
-  j["useDiffuse"]     = useDiffuse;
-  j["useNdotL"]       = useNdotL;
-  j["useAttenuation"] = useAttenuation;
-  j["useShadow"]      = useShadow;
-  j["useLightMask"]   = useLightMask;
-  j["useReflection"]  = useReflection;
+  j["useAmbient"]       = useAmbient;
+  j["useDiffuse"]       = useDiffuse;
+  j["useNdotL"]         = useNdotL;
+  j["useAttenuation"]   = useAttenuation;
+  j["useShadow"]        = useShadow;
+  j["useLightMask"]     = useLightMask;
+  j["useReflection"]    = useReflection;
 
-  j["tileTextures"] = tileTextures;
+  j["tileTextures"]     = tileTextures;
 
-  j["ambientTexture"] = ambientTexture.keyString();
-  j["diffuseTexture"] = diffuseTexture.keyString();
-  j["specularTexture"] = specularTexture.keyString();
-  j["alphaTexture"] = alphaTexture.keyString();
-  j["bumpTexture"] = bumpTexture.keyString();
+  j["albedoTexture"]    = albedoTexture.keyString();
+  j["specularTexture"]  = specularTexture.keyString();
+  j["alphaTexture"]     = alphaTexture.keyString();
+  j["normalsTexture"]   = normalsTexture.keyString();
+
+  j["roughnessTexture"] = roughnessTexture.keyString();
+  j["metalnessTexture"] = metalnessTexture.keyString();
+  j["aoTexture"]        = aoTexture.keyString();
 
   return j;
 }
@@ -418,34 +419,30 @@ void Material::loadState(const nlohmann::json& j)
 {
   name = TPJSONString(j, "name");
 
-  ambient = tp_math_utils::vec3FromJSON(TPJSON(j, "ambient"));
-  diffuse = tp_math_utils::vec3FromJSON(TPJSON(j, "diffuse"));
-  specular = tp_math_utils::vec3FromJSON(TPJSON(j, "specular"));
+  albedo          = tp_math_utils::vec3FromJSON(TPJSON(j, "albedo"));
+  specular        = tp_math_utils::vec3FromJSON(TPJSON(j, "specular"));
 
-  shininess = TPJSONFloat(j, "shininess", shininess);
-  alpha = TPJSONFloat(j, "alpha", alpha);
+  alpha           = TPJSONFloat(j, "alpha", alpha);
+  roughness       = TPJSONFloat(j, "roughness", roughness);
+  metalness       = TPJSONFloat(j, "metalness", metalness);
 
-  roughness = TPJSONFloat(j, "roughness", roughness);
-  metalness = TPJSONFloat(j, "metalness", metalness);
+  albedoScale     = TPJSONFloat(j, "albedoScale", 1.0f);
+  specularScale   = TPJSONFloat(j, "specularScale", 1.0f);
 
-  ambientScale = TPJSONFloat(j, "ambientScale", 1.0f);
-  diffuseScale = TPJSONFloat(j, "diffuseScale", 1.0f);
-  specularScale = TPJSONFloat(j, "specularScale", 1.0f);
+  useAmbient      = TPJSONFloat(j, "useAmbient"    , 1.0f);
+  useDiffuse      = TPJSONFloat(j, "useDiffuse"    , 1.0f);
+  useNdotL        = TPJSONFloat(j, "useNdotL"      , 1.0f);
+  useAttenuation  = TPJSONFloat(j, "useAttenuation", 1.0f);
+  useShadow       = TPJSONFloat(j, "useShadow"     , 1.0f);
+  useLightMask    = TPJSONFloat(j, "useLightMask"  , 1.0f);
+  useReflection   = TPJSONFloat(j, "useReflection" , 1.0f);
 
-  useDiffuse     = TPJSONFloat(j, "useDiffuse"    , 1.0f);
-  useNdotL       = TPJSONFloat(j, "useNdotL"      , 1.0f);
-  useAttenuation = TPJSONFloat(j, "useAttenuation", 1.0f);
-  useShadow      = TPJSONFloat(j, "useShadow"     , 1.0f);
-  useLightMask   = TPJSONFloat(j, "useLightMask"  , 1.0f);
-  useReflection  = TPJSONFloat(j, "useReflection" , 1.0f);
+  tileTextures    = TPJSONBool(j, "tileTextures", false);
 
-  tileTextures = TPJSONBool(j, "tileTextures", false);
-
-  ambientTexture = TPJSONString(j, "ambientTexture");
-  diffuseTexture = TPJSONString(j, "diffuseTexture");
+  albedoTexture   = TPJSONString(j, "albedoTexture");
   specularTexture = TPJSONString(j, "specularTexture");
-  alphaTexture = TPJSONString(j, "alphaTexture");
-  bumpTexture = TPJSONString(j, "bumpTexture");
+  alphaTexture    = TPJSONString(j, "alphaTexture");
+  normalsTexture  = TPJSONString(j, "normalsTexture");
 }
 
 //##################################################################################################

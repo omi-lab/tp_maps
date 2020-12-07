@@ -54,60 +54,50 @@ struct LightLocations_lt
   GLint worldToLightViewLocation{0};
   GLint worldToLightProjLocation{0};
 
-  GLint positionLocation        {0};
-  GLint directionLocation       {0};
-  GLint ambientLocation         {0};
-  GLint diffuseLocation         {0};
-  GLint specularLocation        {0};
-  GLint diffuseScaleLocation    {0};
-  GLint constantLocation        {0};
-  GLint linearLocation          {0};
-  GLint quadraticLocation       {0};
-  GLint spotLightUVLocation     {0};
-  GLint spotLightWHLocation     {0};
+  GLint         positionLocation{0};
+  GLint        directionLocation{0};
+  GLint          ambientLocation{0};
+  GLint          diffuseLocation{0};
+  GLint         specularLocation{0};
+  GLint     diffuseScaleLocation{0};
+  GLint         constantLocation{0};
+  GLint           linearLocation{0};
+  GLint        quadraticLocation{0};
+  GLint      spotLightUVLocation{0};
+  GLint      spotLightWHLocation{0};
 
-  GLint lightTextureIDLocation  {0};
+  GLint   lightTextureIDLocation{0};
 };
 
 //##################################################################################################
 struct UniformLocations_lt
 {
-  GLint           mMatrixLocation{0};
-  GLint          mvMatrixLocation{0};
-  GLint         mvpMatrixLocation{0};
-  GLint           vMatrixLocation{0};
+  GLint                     mMatrixLocation{0};
+  GLint                    mvMatrixLocation{0};
+  GLint                   mvpMatrixLocation{0};
+  GLint                     vMatrixLocation{0};
 
-  GLint      cameraOriginLocation{0};
+  GLint                cameraOriginLocation{0};
 
-  GLint   materialAmbientLocation{0};
-  GLint   materialDiffuseLocation{0};
-  GLint  materialSpecularLocation{0};
-  GLint materialShininessLocation{0};
-  GLint     materialAlphaLocation{0};
+  GLint          materialUseAmbientLocation{0};
+  GLint          materialUseDiffuseLocation{0};
+  GLint            materialUseNdotLLocation{0};
+  GLint      materialUseAttenuationLocation{0};
+  GLint           materialUseShadowLocation{0};
+  GLint        materialUseLightMaskLocation{0};
+  GLint       materialUseReflectionLocation{0};
 
-  GLint materialRoughnessLocation{0};
-  GLint materialMetalnessLocation{0};
+  GLint         materialAlbedoScaleLocation{0};
+  GLint       materialSpecularScaleLocation{0};
 
-  GLint     materialUseDiffuseLocation{0};
-  GLint       materialUseNdotLLocation{0};
-  GLint materialUseAttenuationLocation{0};
-  GLint      materialUseShadowLocation{0};
-  GLint   materialUseLightMaskLocation{0};
-  GLint  materialUseReflectionLocation{0};
+  GLint                     txlSizeLocation{0};
+  GLint              discardOpacityLocation{0};
 
-  GLint   materialAmbientScaleLocation{0};
-  GLint   materialDiffuseScaleLocation{0};
-  GLint  materialSpecularScaleLocation{0};
-
-  GLint    txlSizeLocation       {0};
-  GLint    discardOpacityLocation{0};
-
-  GLint    ambientTextureLocation{0};
-  GLint    diffuseTextureLocation{0};
-  GLint   specularTextureLocation{0};
-  GLint      alphaTextureLocation{0};
-  GLint       bumpTextureLocation{0};
-  GLint  spotLightTextureLocation{0};
+  GLint      rgbaTextureLocation{0};
+  GLint  specularTextureLocation{0};
+  GLint   normalsTextureLocation{0};
+  GLint      rmaoTextureLocation{0};
+  GLint spotLightTextureLocation{0};
 
   std::vector<LightLocations_lt> lightLocations;
 };
@@ -152,7 +142,6 @@ struct MaterialShader::Private
   GLint    lightMVPMatrixLocation{0};
 
   GLuint emptyTextureID{0};
-  GLuint emptyAlphaTextureID{0};
   GLuint emptyNormalTextureID{0};
 
   //################################################################################################
@@ -169,7 +158,6 @@ struct MaterialShader::Private
     {
       q->map()->makeCurrent();
       q->map()->deleteTexture(emptyTextureID);
-      q->map()->deleteTexture(emptyAlphaTextureID);
       q->map()->deleteTexture(emptyNormalTextureID);
     }
   }
@@ -201,7 +189,6 @@ MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, b
   };
 
   d->emptyTextureID       = bindTexture({  0,   0,   0, 255});
-  d->emptyAlphaTextureID  = bindTexture({255, 255, 255, 255});
   d->emptyNormalTextureID = bindTexture({127, 127, 255, 255});
 
   if(compileShader)
@@ -395,15 +382,7 @@ void MaterialShader::compile(const char* vertShaderStr,
 
       locations.cameraOriginLocation      = glGetUniformLocation(program, "cameraOrigin_world");
 
-      locations.materialAmbientLocation   = glGetUniformLocation(program, "material.ambient");
-      locations.materialDiffuseLocation   = glGetUniformLocation(program, "material.diffuse");
-      locations.materialSpecularLocation  = glGetUniformLocation(program, "material.specular");
-      locations.materialShininessLocation = glGetUniformLocation(program, "material.shininess");
-      locations.materialAlphaLocation     = glGetUniformLocation(program, "material.alpha");
-
-      locations.materialRoughnessLocation = glGetUniformLocation(program, "material.roughness");
-      locations.materialMetalnessLocation = glGetUniformLocation(program, "material.metalness");
-
+      locations.    materialUseAmbientLocation = glGetUniformLocation(program, "material.useAmbient"    );
       locations.    materialUseDiffuseLocation = glGetUniformLocation(program, "material.useDiffuse"    );
       locations.      materialUseNdotLLocation = glGetUniformLocation(program, "material.useNdotL"      );
       locations.materialUseAttenuationLocation = glGetUniformLocation(program, "material.useAttenuation");
@@ -411,18 +390,16 @@ void MaterialShader::compile(const char* vertShaderStr,
       locations.  materialUseLightMaskLocation = glGetUniformLocation(program, "material.useLightMask"  );
       locations. materialUseReflectionLocation = glGetUniformLocation(program, "material.useReflection" );
 
-      locations. materialAmbientScaleLocation = glGetUniformLocation(program, "material.ambientScale");
-      locations. materialDiffuseScaleLocation = glGetUniformLocation(program, "material.diffuseScale");
+      locations.  materialAlbedoScaleLocation = glGetUniformLocation(program, "material.albedoScale"  );
       locations.materialSpecularScaleLocation = glGetUniformLocation(program, "material.specularScale");
 
       locations.txlSizeLocation           = glGetUniformLocation(program, "txlSize");
       locations.discardOpacityLocation    = glGetUniformLocation(program, "discardOpacity");
 
-      locations.ambientTextureLocation   = glGetUniformLocation(program, "ambientTexture");
-      locations.diffuseTextureLocation   = glGetUniformLocation(program, "diffuseTexture");
-      locations.specularTextureLocation  = glGetUniformLocation(program, "specularTexture");
-      locations.alphaTextureLocation     = glGetUniformLocation(program, "alphaTexture");
-      locations.bumpTextureLocation      = glGetUniformLocation(program, "bumpTexture");
+      locations.     rgbaTextureLocation = glGetUniformLocation(program, "rgbaTexture"     );
+      locations. specularTextureLocation = glGetUniformLocation(program, "specularTexture" );
+      locations.  normalsTextureLocation = glGetUniformLocation(program, "normalsTexture"  );
+      locations.     rmaoTextureLocation = glGetUniformLocation(program, "rmaoTexture"     );
       locations.spotLightTextureLocation = glGetUniformLocation(program, "spotLightTexture");
 
       const auto& lights = map()->lights();
@@ -510,15 +487,7 @@ void MaterialShader::setMaterial(const Material& material)
 {
   auto exec = [&](const UniformLocations_lt& locations)
   {
-    glUniform3fv(locations.  materialAmbientLocation, 1, &material.ambient.x    );
-    glUniform3fv(locations.  materialDiffuseLocation, 1, &material.diffuse.x    );
-    glUniform3fv(locations. materialSpecularLocation, 1, &material.specular.x   );
-    glUniform1f (locations.materialShininessLocation,     material.shininess    );
-    glUniform1f (locations.    materialAlphaLocation,     material.alpha        );
-
-    glUniform1f (locations.materialRoughnessLocation,     material.roughness    );
-    glUniform1f (locations.materialMetalnessLocation,     material.metalness    );
-
+    glUniform1f (locations.    materialUseAmbientLocation, material.useAmbient    );
     glUniform1f (locations.    materialUseDiffuseLocation, material.useDiffuse    );
     glUniform1f (locations.      materialUseNdotLLocation, material.useNdotL      );
     glUniform1f (locations.materialUseAttenuationLocation, material.useAttenuation);
@@ -526,13 +495,13 @@ void MaterialShader::setMaterial(const Material& material)
     glUniform1f (locations.  materialUseLightMaskLocation, material.useLightMask  );
     glUniform1f (locations. materialUseReflectionLocation, material.useReflection );
 
-    glUniform1f(locations. materialAmbientScaleLocation,     material.ambientScale );
-    glUniform1f(locations. materialDiffuseScaleLocation,     material.diffuseScale );
-    glUniform1f(locations.materialSpecularScaleLocation,     material.specularScale);
+    glUniform1f(locations.    materialAlbedoScaleLocation, material.albedoScale   );
+    glUniform1f(locations.  materialSpecularScaleLocation, material.specularScale );
   };
 
   if(d->shaderType == ShaderType::Render)
     exec(d->renderLocations);
+
   else if(d->shaderType == ShaderType::RenderHDR)
     exec(d->renderHDRLocations);
 }
@@ -668,7 +637,6 @@ void MaterialShader::drawPicking(GLenum mode,
 void MaterialShader::invalidate()
 {
   d->emptyTextureID = 0;
-  d->emptyAlphaTextureID = 0;
   d->emptyNormalTextureID = 0;
 
   Geometry3DShader::invalidate();
@@ -681,39 +649,33 @@ void MaterialShader::drawVertexBuffer(GLenum mode, VertexBuffer* vertexBuffer)
 }
 
 //##################################################################################################
-void MaterialShader::setTextures(GLuint ambientTextureID,
-                                 GLuint diffuseTextureID,
+void MaterialShader::setTextures(GLuint rgbaTextureID,
                                  GLuint specularTextureID,
-                                 GLuint alphaTextureID,
-                                 GLuint bumpTextureID,
+                                 GLuint normalsTextureID,
+                                 GLuint rmaoTextureID,
                                  GLuint spotLightTextureID)
 {
   auto exec = [&](const UniformLocations_lt& locations)
   {
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, ambientTextureID);
-    glUniform1i(locations.ambientTextureLocation, 0);
+    glBindTexture(GL_TEXTURE_2D, rgbaTextureID);
+    glUniform1i(locations.rgbaTextureLocation, 0);
 
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, diffuseTextureID);
-    glUniform1i(locations.diffuseTextureLocation, 1);
+    glBindTexture(GL_TEXTURE_2D, specularTextureID);
+    glUniform1i(locations.specularTextureLocation, 1);
 
     glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, specularTextureID);
-    glUniform1i(locations.specularTextureLocation, 2);
+    glBindTexture(GL_TEXTURE_2D, normalsTextureID);
+    glUniform1i(locations.normalsTextureLocation, 2);
 
     glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, alphaTextureID);
-    glUniform1i(locations.alphaTextureLocation, 3);
+    glBindTexture(GL_TEXTURE_2D, rmaoTextureID);
+    glUniform1i(locations.rmaoTextureLocation, 3);
 
     glActiveTexture(GL_TEXTURE4);
-    glBindTexture(GL_TEXTURE_2D, bumpTextureID);
-    glUniform1i(locations.bumpTextureLocation, 4);
-
-    glActiveTexture(GL_TEXTURE5);
     glBindTexture(GL_TEXTURE_2D, spotLightTextureID);
-    glUniform1i(locations.spotLightTextureLocation, 5);
-
+    glUniform1i(locations.spotLightTextureLocation, 4);
   };
 
   if(d->shaderType == ShaderType::Render)
@@ -727,9 +689,8 @@ void MaterialShader::setBlankTextures()
 {
   setTextures(d->emptyTextureID,
               d->emptyTextureID,
-              d->emptyTextureID,
-              d->emptyAlphaTextureID,
               d->emptyNormalTextureID,
+              d->emptyTextureID,
               map()->spotLightTexture());
 }
 

@@ -270,12 +270,12 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     [&](auto shader, const auto& details) //-- setMaterial -----------------------------------------
     {
       shader->setMaterial(details.material);
-      shader->setTextures(details.ambientTextureID,
-                          details.diffuseTextureID,
+      shader->setTextures(details.rgbaTextureID,
                           details.specularTextureID,
-                          details.alphaTextureID,
-                          details.bumpTextureID,
+                          details.normalsTextureID,
+                          details.rmaoTextureID,
                           map()->spotLightTexture());
+
       shader->setDiscardOpacity((renderInfo.pass == RenderPass::Transparency)?0.01f:0.80f);
     },
     [&](auto shader, auto first, auto second) //-- draw --------------------------------------------
@@ -295,7 +295,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     },
     [&](auto shader, const auto& details) //-- setMaterialPicking ----------------------------------
     {
-      shader->setTexture(details.ambientTextureID);
+      shader->setTexture(details.rgbaTextureID);
     },
     [&](auto shader, auto first, auto second, auto pickingID) //-- drawPicking ---------------------
     {
@@ -303,7 +303,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     },
     [&](auto shader, const auto& details) //-- setMaterial -----------------------------------------
     {
-      shader->setTexture(details.ambientTextureID);
+      shader->setTexture(details.rgbaTextureID);
     },
     [&](auto shader, auto first, auto second) //-- draw --------------------------------------------
     {

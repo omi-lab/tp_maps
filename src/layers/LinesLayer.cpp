@@ -95,7 +95,7 @@ void LinesLayer::setLinesFromGeometry(const std::vector<Geometry3D>& geometry)
     for(const auto& m : g.geometry.indexes)
     {
       auto& l = lines.emplace_back();
-      l.color = glm::vec4(g.material.ambient, 1.0f);
+      l.color = glm::vec4(g.material.albedo, 1.0f);
       l.mode = GL_LINES;
 
       if(!m.indexes.empty())

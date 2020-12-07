@@ -1,6 +1,7 @@
 #include "tp_maps/Geometry3DPool.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/TexturePool.h"
+#include "tp_maps/TexturePoolKey.h"
 #include "tp_maps/textures/BasicTexture.h"
 
 #include "tp_utils/TimeUtils.h"
@@ -11,6 +12,16 @@ namespace tp_maps
 
 namespace
 {
+
+//##################################################################################################
+struct TextureKeys_lt
+{
+  TexturePoolKey rgba;
+  TexturePoolKey specular;
+  TexturePoolKey normals;
+  TexturePoolKey rmao;
+};
+
 //##################################################################################################
 struct PoolDetails_lt
 {
@@ -18,10 +29,13 @@ struct PoolDetails_lt
   bool overwrite{false};
   std::vector<Geometry3D> geometry;
   std::vector<ProcessedGeometry3D> processedGeometry;
+  std::vector<TextureKeys_lt> textureKeys;
 
   bool updateVertexBuffer{true};
   bool updateVertexBufferTextures{true};
   bool bindBeforeRender{true};
+
+  std::unordered_set<TexturePoolKey> textureSubscriptions;
 
   //################################################################################################
   void deleteVertexBuffers()
@@ -74,36 +88,21 @@ struct PoolDetails_lt
   }
 
   //################################################################################################
-  void checkUpdateVertexBufferTextures(TexturePool* texturePool, GLuint emptyTextureID, GLuint emptyAlphaTextureID, GLuint emptyNormalTextureID)
+  void checkUpdateVertexBufferTextures(TexturePool* texturePool)
   {
     if(updateVertexBufferTextures)
     {
       updateVertexBufferTextures=false;
-
-      for(auto& details : processedGeometry)
+      size_t mMax = tpMin(processedGeometry.size(), textureKeys.size());
+      for(size_t m=0; m<mMax; m++)
       {
-        auto selectTexture = [&](const tp_utils::StringID& name, GLuint& textureID, glm::vec3& color, GLuint emptyID)
-        {
-          if(texturePool)
-          {
-            textureID = texturePool->textureID(name);
-            if(textureID == 0)
-              textureID = emptyID;
-            else
-              color = {0.0f, 0.0f, 0.0f};
-          }
-          else
-            textureID = emptyID;
-        };
+        auto& details = processedGeometry.at(m);
+        const auto& textureDetails = textureKeys.at(m);
 
-        glm::vec3 tmpAlpha{1.0f, 1.0f, 1.0f};
-        glm::vec3 tmpNormal{0.0f, 0.0f, 1.0f};
-
-        selectTexture(details.material.ambientTexture, details.ambientTextureID, details.material.ambient, emptyTextureID);
-        selectTexture(details.material.diffuseTexture, details.diffuseTextureID, details.material.diffuse, emptyTextureID);
-        selectTexture(details.material.specularTexture, details.specularTextureID, details.material.specular, emptyTextureID);
-        selectTexture(details.material.alphaTexture, details.alphaTextureID, tmpAlpha, emptyAlphaTextureID);
-        selectTexture(details.material.bumpTexture, details.bumpTextureID, tmpNormal, emptyNormalTextureID);
+        details.    rgbaTextureID = texturePool->textureID(textureDetails.rgba    );
+        details.specularTextureID = texturePool->textureID(textureDetails.specular);
+        details. normalsTextureID = texturePool->textureID(textureDetails.normals );
+        details.    rmaoTextureID = texturePool->textureID(textureDetails.rmao    );
       }
     }
   }
@@ -121,16 +120,6 @@ struct Geometry3DPool::Private
   TexturePool* texturePool{nullptr};
 
   std::unordered_map<tp_utils::StringID, PoolDetails_lt> pools;
-
-  std::unique_ptr<BasicTexture> emptyTexture;
-  std::unique_ptr<BasicTexture> emptyAlphaTexture;
-  std::unique_ptr<BasicTexture> emptyNormalTexture;
-
-  GLuint emptyTextureID{0};
-  GLuint emptyAlphaTextureID{0};
-  GLuint emptyNormalTextureID{0};
-
-  bool bindBeforeRender{true};
 
   //################################################################################################
   Private(Geometry3DPool* q_, Map* map_):
@@ -157,10 +146,6 @@ struct Geometry3DPool::Private
   {
     for(auto& i : pools)
       i.second.deleteVertexBuffers();
-
-    map()->deleteTexture(emptyTextureID);
-    map()->deleteTexture(emptyAlphaTextureID);
-    map()->deleteTexture(emptyNormalTextureID);
   }
 
   //################################################################################################
@@ -187,45 +172,16 @@ struct Geometry3DPool::Private
       i.second.bindBeforeRender = true;
       i.second.updateVertexBufferTextures=true;
     }
-
-    bindBeforeRender = true;
-    emptyTextureID = 0;
-    emptyAlphaTextureID = 0;
-    emptyNormalTextureID = 0;
   };
 
   //################################################################################################
-  void checkBindTextures()
+  void unsubscribeTextures(std::unordered_set<TexturePoolKey>& textureSubscriptions)
   {
-    if(bindBeforeRender)
-    {
-      bindBeforeRender=false;
+    if(texturePool)
+      for(const auto& key : textureSubscriptions)
+        texturePool->unsubscribe(key);
 
-      for(auto& i : pools)
-        i.second.updateVertexBufferTextures=true;
-
-      if(!emptyTexture)
-      {
-        tp_image_utils::ColorMap textureData{1, 1, nullptr, TPPixel{0, 0, 0, 255}};
-        emptyTexture = std::make_unique<BasicTexture>(map(), textureData);
-      }
-
-      if(!emptyAlphaTexture)
-      {
-        tp_image_utils::ColorMap textureData{1, 1, nullptr, TPPixel{255, 255, 255, 255}};
-        emptyAlphaTexture = std::make_unique<BasicTexture>(map(), textureData);
-      }
-
-      if(!emptyNormalTexture)
-      {
-        tp_image_utils::ColorMap textureData{1, 1, nullptr, TPPixel{127, 127, 255, 255}};
-        emptyNormalTexture = std::make_unique<BasicTexture>(map(), textureData);
-      }
-
-      emptyTextureID = emptyTexture->bindTexture();
-      emptyAlphaTextureID = emptyAlphaTexture->bindTexture();
-      emptyNormalTextureID = emptyNormalTexture->bindTexture();
-    }
+    textureSubscriptions.clear();
   }
 };
 
@@ -273,9 +229,42 @@ void Geometry3DPool::subscribe(const tp_utils::StringID& name,
   details.count++;
   if(details.count==1 || overwrite || details.overwrite)
   {
+    bool tileTextures=false;
+
     details.overwrite = false;
     details.geometry = getGeometry();
     details.updateVertexBuffer = true;
+    d->unsubscribeTextures(details.textureSubscriptions);
+
+    std::unordered_set<TexturePoolKey> textureSubscriptions;
+    details.textureKeys.resize(details.geometry.size());
+    for(size_t m=0; m<details.geometry.size(); m++)
+    {
+      const auto& material = details.geometry.at(m).material;
+      auto& textureKeys = details.textureKeys.at(m);
+
+      tileTextures = material.tileTextures;
+
+      textureKeys.rgba     = TexturePoolKey(material.   albedoTexture, material.   albedoTexture, material.  albedoTexture, material.alphaTexture, 0, 1, 2, 0, TPPixel(uint8_t(material.  albedo.x*255.0f), uint8_t(material.  albedo.y*255.0f), uint8_t(material.  albedo.z*255.0f), uint8_t(material.alpha*255.0f)));
+      textureKeys.specular = TexturePoolKey(material. specularTexture, material. specularTexture, material.specularTexture,  tp_utils::StringID(), 0, 1, 2, 0, TPPixel(uint8_t(material.specular.x*255.0f), uint8_t(material.specular.y*255.0f), uint8_t(material.specular.z*255.0f), 255                           ));
+      textureKeys.normals  = TexturePoolKey(material.  normalsTexture, material.  normalsTexture, material. normalsTexture,  tp_utils::StringID(), 0, 1, 2, 0, TPPixel(128                                , 128                                , 255                                , 255                           ));
+      textureKeys.rmao     = TexturePoolKey(material.roughnessTexture, material.metalnessTexture, material.      aoTexture,  tp_utils::StringID(), 0, 1, 2, 0, TPPixel(uint8_t(material. roughness*255.0f), uint8_t(material. metalness*255.0f), 255                                , 255                           ));
+
+      textureSubscriptions.insert(textureKeys.rgba    );
+      textureSubscriptions.insert(textureKeys.specular);
+      textureSubscriptions.insert(textureKeys.normals );
+      textureSubscriptions.insert(textureKeys.rmao    );
+    }
+
+    details.textureSubscriptions.swap(textureSubscriptions);
+    for(const auto& key : details.textureSubscriptions)
+    {
+      d->texturePool->subscribe(key);
+      d->texturePool->setTextureWrapS(key, tileTextures?GL_REPEAT:GL_CLAMP_TO_EDGE);
+      d->texturePool->setTextureWrapT(key, tileTextures?GL_REPEAT:GL_CLAMP_TO_EDGE);
+    }
+
+    details.updateVertexBufferTextures=true;
   }
   changedCallbacks();
 }
@@ -288,6 +277,7 @@ void Geometry3DPool::unsubscribe(const tp_utils::StringID& name)
   if(!i->second.count)
   {
     i->second.deleteVertexBuffers();
+    d->unsubscribeTextures(i->second.textureSubscriptions);
     d->pools.erase(i);
   }
 }
@@ -308,9 +298,8 @@ void Geometry3DPool::viewProcessedGeometry(const tp_utils::StringID& name,
   if(i==d->pools.end())
     return;
 
-  d->checkBindTextures();
   i->second.checkUpdateVertexBuffer(shader, d->map());
-  i->second.checkUpdateVertexBufferTextures(d->texturePool, d->emptyTextureID, d->emptyAlphaTextureID, d->emptyNormalTextureID);
+  i->second.checkUpdateVertexBufferTextures(d->texturePool);
 
   closure(i->second.processedGeometry);
 }

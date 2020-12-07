@@ -16,6 +16,7 @@ namespace tp_maps
 {
 class Map;
 class Layer;
+class TexturePoolKey;
 
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT TexturePool
@@ -37,16 +38,31 @@ public:
   void unsubscribe(const tp_utils::StringID& name);
 
   //################################################################################################
+  void subscribe(const TexturePoolKey& key);
+
+  //################################################################################################
+  void unsubscribe(const TexturePoolKey& key);
+
+  //################################################################################################
   void invalidate(const tp_utils::StringID& name);
 
   //################################################################################################
   GLuint textureID(const tp_utils::StringID& name);
 
   //################################################################################################
+  GLuint textureID(const TexturePoolKey& key);
+
+  //################################################################################################
   void setTextureWrapS(const tp_utils::StringID& name, GLint textureWrapS);
 
   //################################################################################################
   void setTextureWrapT(const tp_utils::StringID& name, GLint textureWrapT);
+
+  //################################################################################################
+  void setTextureWrapS(const TexturePoolKey& key, GLint textureWrapS);
+
+  //################################################################################################
+  void setTextureWrapT(const TexturePoolKey& key, GLint textureWrapT);
 
   //################################################################################################
   tp_utils::CallbackCollection<void()> changedCallbacks;

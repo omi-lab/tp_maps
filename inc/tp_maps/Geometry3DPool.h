@@ -18,11 +18,10 @@ struct ProcessedGeometry3D
   std::vector<std::pair<GLenum, MaterialShader::VertexBuffer*>> vertexBuffers;
   Material material;
 
-  GLuint ambientTextureID{0};
-  GLuint diffuseTextureID{0};
-  GLuint specularTextureID{0};
-  GLuint alphaTextureID{0};
-  GLuint bumpTextureID{0};
+  GLuint     rgbaTextureID{0}; //!< Albedo and alpha.
+  GLuint specularTextureID{0}; //!< Specular.
+  GLuint  normalsTextureID{0}; //!< Normals.
+  GLuint     rmaoTextureID{0}; //!< Roughness, metalness, and ambient occlusion.
 };
 
 //##################################################################################################
@@ -64,18 +63,6 @@ public:
   //################################################################################################
   void viewGeometry(const tp_utils::StringID& name,
                     const std::function<void(const std::vector<Geometry3D>&)>& closure) const;
-  
-  
-  
-  //  //################################################################################################
-  //  const std::vector<Geometry3D>& geometry() const;
-  
-  //  //################################################################################################
-  //  void setGeometry(const std::vector<Geometry3D>& geometry);
-  
-  //  //################################################################################################
-  //  //! Call this to set the material of all geometry.
-  //  void setMaterial(const Material& material);
 
   //################################################################################################
   tp_utils::CallbackCollection<void()> changedCallbacks;

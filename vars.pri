@@ -41,6 +41,9 @@ HEADERS += inc/tp_maps/Texture.h
 SOURCES += src/TexturePool.cpp
 HEADERS += inc/tp_maps/TexturePool.h
 
+SOURCES += src/TexturePoolKey.cpp
+HEADERS += inc/tp_maps/TexturePoolKey.h
+
 SOURCES += src/Font.cpp
 HEADERS += inc/tp_maps/Font.h
 

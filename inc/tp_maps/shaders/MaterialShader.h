@@ -43,11 +43,17 @@ public:
   void setMatrix(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p);
 
   //################################################################################################
-  void setTextures(GLuint ambientTextureID,
-                   GLuint diffuseTextureID,
+  /*!
+  \param rgbaTextureID albedo and alpha texture.
+  \param specularTextureID specular texture.
+  \param normalsTextureID normals texture.
+  \param rmaoTextureID roughness, metalness, ambient occlusion texture.
+  \param spotLightTextureID spot light mask texture.
+  */
+  void setTextures(GLuint rgbaTextureID,
                    GLuint specularTextureID,
-                   GLuint alphaTextureID,
-                   GLuint bumpTextureID,
+                   GLuint normalsTextureID,
+                   GLuint rmaoTextureID,
                    GLuint spotLightTextureID);
 
   //################################################################################################
