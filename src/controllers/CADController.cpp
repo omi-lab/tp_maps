@@ -93,25 +93,25 @@ struct CADController::Private
     q(q_),
     fullScreen(fullScreen_)
   {
-    keyState[UP_KEY   ]      = false;
-    keyState[LEFT_KEY ]      = false;
-    keyState[RIGHT_KEY]      = false;
-    keyState[DOWN_KEY ]      = false;
+    keyState[TP_UP_KEY   ]      = false;
+    keyState[TP_LEFT_KEY ]      = false;
+    keyState[TP_RIGHT_KEY]      = false;
+    keyState[TP_DOWN_KEY ]      = false;
 
-    keyState[W_KEY]          = false;
-    keyState[A_KEY]          = false;
-    keyState[S_KEY]          = false;
-    keyState[D_KEY]          = false;
+    keyState[TP_W_KEY]          = false;
+    keyState[TP_A_KEY]          = false;
+    keyState[TP_S_KEY]          = false;
+    keyState[TP_D_KEY]          = false;
 
-    keyState[SPACE_KEY]      = false;
+    keyState[TP_SPACE_KEY]      = false;
 
-    keyState[L_SHIFT_KEY]    = false;
-    keyState[R_SHIFT_KEY]    = false;
+    keyState[TP_L_SHIFT_KEY]    = false;
+    keyState[TP_R_SHIFT_KEY]    = false;
 
-    keyState[L_CTRL_KEY]     = false;
+    keyState[TP_L_CTRL_KEY]     = false;
 
-    keyState[PAGE_UP_KEY ]   = false;
-    keyState[PAGE_DOWN_KEY ] = false;
+    keyState[TP_PAGE_UP_KEY ]   = false;
+    keyState[TP_PAGE_DOWN_KEY ] = false;
   }
 
   //################################################################################################
@@ -667,7 +667,7 @@ bool CADController::mouseEvent(const MouseEvent& event)
     d->mouseInteraction = Button::NoButton;
     break;
   }
-  };
+  }
 
   return true;
 }
@@ -729,27 +729,27 @@ void CADController::animate(double timestampMS)
   //-- Perspective mode ----------------------------------------------------------------------------
   if(d->mode == CADControllerMode::Perspective)
   {
-    if(d->keyState[L_SHIFT_KEY] ||d->keyState[R_SHIFT_KEY] )
+    if(d->keyState[TP_L_SHIFT_KEY] ||d->keyState[TP_R_SHIFT_KEY] )
     {
       changed = true;
       translateMeters *= 10;
     }
 
-    if(d->keyState[UP_KEY] ||d->keyState[W_KEY] )
+    if(d->keyState[TP_UP_KEY] ||d->keyState[TP_W_KEY] )
     {
       changed = true;
       d->translate(float(translateMeters));
       map()->update();
     }
 
-    if(d->keyState[DOWN_KEY]||d->keyState[S_KEY] )
+    if(d->keyState[TP_DOWN_KEY]||d->keyState[TP_S_KEY] )
     {
       changed = true;
       d->translate(-float(translateMeters));
       map()->update();
     }
 
-    if(d->keyState[LEFT_KEY])
+    if(d->keyState[TP_LEFT_KEY])
     {
       changed = true;
       d->rotationAngle -= float(rotateDegrees);
@@ -758,7 +758,7 @@ void CADController::animate(double timestampMS)
       map()->update();
     }
 
-    if(d->keyState[RIGHT_KEY])
+    if(d->keyState[TP_RIGHT_KEY])
     {
       changed = true;
       d->rotationAngle += float(rotateDegrees);
@@ -767,28 +767,28 @@ void CADController::animate(double timestampMS)
       map()->update();
     }
 
-    if(d->keyState[A_KEY] )
+    if(d->keyState[TP_A_KEY] )
     {
       changed = true;
       d->strafe(-float(translateMeters));
       map()->update();
     }
 
-    if(d->keyState[D_KEY] )
+    if(d->keyState[TP_D_KEY] )
     {
       changed = true;
       d->strafe(float(translateMeters));
       map()->update();
     }
 
-    if(d->keyState[PAGE_UP_KEY] || d->keyState[SPACE_KEY])
+    if(d->keyState[TP_PAGE_UP_KEY] || d->keyState[TP_SPACE_KEY])
     {
       changed = true;
       d->cameraOrigin.z += float(translateMeters) * d->speedModifier;
       map()->update();
     }
 
-    if(d->keyState[PAGE_DOWN_KEY]|| d->keyState[L_CTRL_KEY])
+    if(d->keyState[TP_PAGE_DOWN_KEY]|| d->keyState[TP_L_CTRL_KEY])
     {
       changed = true;
       d->cameraOrigin.z -= float(translateMeters) * d->speedModifier;

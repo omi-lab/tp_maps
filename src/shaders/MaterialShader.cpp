@@ -547,14 +547,14 @@ void MaterialShader::setLights(const std::vector<Light>& lights, const std::vect
         glUniformMatrix4fv(lightLocations.worldToLightViewLocation, 1, GL_FALSE, glm::value_ptr(lightBuffer.worldToTexture[0].v));
         glUniformMatrix4fv(lightLocations.worldToLightProjLocation, 1, GL_FALSE, glm::value_ptr(lightBuffer.worldToTexture[0].p));
 
-        glActiveTexture(GL_TEXTURE6 + i);
+        glActiveTexture(GLenum(GL_TEXTURE6 + i));
 
         if(lightBuffer.levels == 1)
           glBindTexture(GL_TEXTURE_2D, lightBuffer.depthID);
         else
           glBindTexture(GL_TEXTURE_3D, lightBuffer.depthID);
 
-        glUniform1i(lightLocations.lightTextureIDLocation, 6 + i);
+        glUniform1i(lightLocations.lightTextureIDLocation, GLint(6 + i));
       }
     }
 

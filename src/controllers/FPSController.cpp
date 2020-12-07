@@ -49,25 +49,25 @@ struct FPSController::Private
     q(q_),
     fullScreen(fullScreen_)
   {
-    keyState[UP_KEY   ]      = false;
-    keyState[LEFT_KEY ]      = false;
-    keyState[RIGHT_KEY]      = false;
-    keyState[DOWN_KEY ]      = false;
+    keyState[TP_UP_KEY   ]      = false;
+    keyState[TP_LEFT_KEY ]      = false;
+    keyState[TP_RIGHT_KEY]      = false;
+    keyState[TP_DOWN_KEY ]      = false;
 
-    keyState[W_KEY]          = false;
-    keyState[A_KEY]          = false;
-    keyState[S_KEY]          = false;
-    keyState[D_KEY]          = false;
+    keyState[TP_W_KEY]          = false;
+    keyState[TP_A_KEY]          = false;
+    keyState[TP_S_KEY]          = false;
+    keyState[TP_D_KEY]          = false;
 
-    keyState[SPACE_KEY]      = false;
+    keyState[TP_SPACE_KEY]      = false;
 
-    keyState[L_SHIFT_KEY]    = false;
-    keyState[R_SHIFT_KEY]    = false;
+    keyState[TP_L_SHIFT_KEY]    = false;
+    keyState[TP_R_SHIFT_KEY]    = false;
 
-    keyState[L_CTRL_KEY]     = false;
+    keyState[TP_L_CTRL_KEY]     = false;
 
-    keyState[PAGE_UP_KEY ]   = false;
-    keyState[PAGE_DOWN_KEY ] = false;
+    keyState[TP_PAGE_UP_KEY ]   = false;
+    keyState[TP_PAGE_DOWN_KEY ] = false;
   }
 
   //################################################################################################
@@ -355,7 +355,7 @@ bool FPSController::mouseEvent(const MouseEvent& event)
     d->mouseInteraction = Button::NoButton;
     break;
   }
-  };
+  }
 
   return true;
 }
@@ -407,24 +407,24 @@ void FPSController::animate(double timestampMS)
   double rotateDegrees   = rotationFactor * delta;
   double translateMeters = translationFactor * delta;
 
-  if(d->keyState[L_SHIFT_KEY] ||d->keyState[R_SHIFT_KEY] )
+  if(d->keyState[TP_L_SHIFT_KEY] ||d->keyState[TP_R_SHIFT_KEY] )
   {
     translateMeters *= 10;
   }
 
-  if(d->keyState[UP_KEY] ||d->keyState[W_KEY] )
+  if(d->keyState[TP_UP_KEY] ||d->keyState[TP_W_KEY] )
   {
     d->translate(float(translateMeters));
     map()->update();
   }
 
-  if(d->keyState[DOWN_KEY]||d->keyState[S_KEY] )
+  if(d->keyState[TP_DOWN_KEY]||d->keyState[TP_S_KEY] )
   {
     d->translate(-float(translateMeters));
     map()->update();
   }
 
-  if(d->keyState[LEFT_KEY])
+  if(d->keyState[TP_LEFT_KEY])
   {
     d->rotationAngle -= float(rotateDegrees);
     if(d->rotationAngle<0.0f)
@@ -432,7 +432,7 @@ void FPSController::animate(double timestampMS)
     map()->update();
   }
 
-  if(d->keyState[RIGHT_KEY])
+  if(d->keyState[TP_RIGHT_KEY])
   {
     d->rotationAngle += float(rotateDegrees);
     if(d->rotationAngle>360.0f)
@@ -440,25 +440,25 @@ void FPSController::animate(double timestampMS)
     map()->update();
   }
 
-  if(d->keyState[A_KEY] )
+  if(d->keyState[TP_A_KEY] )
   {
     d->strafe(-float(translateMeters));
     map()->update();
   }
 
-  if(d->keyState[D_KEY] )
+  if(d->keyState[TP_D_KEY] )
   {
     d->strafe(float(translateMeters));
     map()->update();
   }
 
-  if(d->keyState[PAGE_UP_KEY] || d->keyState[SPACE_KEY])
+  if(d->keyState[TP_PAGE_UP_KEY] || d->keyState[TP_SPACE_KEY])
   {
     d->cameraOrigin.z += float(translateMeters);
     map()->update();
   }
 
-  if(d->keyState[PAGE_DOWN_KEY]|| d->keyState[L_CTRL_KEY])
+  if(d->keyState[TP_PAGE_DOWN_KEY]|| d->keyState[TP_L_CTRL_KEY])
   {
     d->cameraOrigin.z -= float(translateMeters);
     map()->update();

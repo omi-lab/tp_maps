@@ -93,7 +93,7 @@ void FBOLayer::render(RenderInfo& renderInfo)
 
   GLuint textureID{0};
   ImageShader* shader{nullptr};
-  int levels=1;
+  size_t levels=1;
   switch(d->source)
   {
   case FBOLayerSource::CurrentDrawColor:
@@ -155,7 +155,7 @@ void FBOLayer::render(RenderInfo& renderInfo)
     }
     break;
   }
-  };
+  }
 
   if(!shader || shader->error())
     return;

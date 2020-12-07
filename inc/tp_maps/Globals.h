@@ -100,7 +100,7 @@
 #  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24
 #  define TP_GL_DRAW_FRAMEBUFFER GL_DRAW_FRAMEBUFFER
 
-using TPGLsize = GLuint;
+using TPGLsizei = GLsizei;
 using TPGLfloat = float;
 using TPGLenum = GLenum;
 //using TPGLenum  = GLint;
@@ -113,7 +113,7 @@ using TPGLenum = GLenum;
 #  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT16
 #  define TP_GL_DRAW_FRAMEBUFFER GL_FRAMEBUFFER
 
-using TPGLsize = GLsizei;
+using TPGLsizei = GLsizei;
 using TPGLfloat = float;
 using TPGLenum = GLenum;
 #endif
@@ -141,10 +141,30 @@ using TPGLenum = GLenum;
 #  define TP_GLSL_PICKING_SUPPORTED
 #  define TP_FBO_SUPPORTED
 
-using TPGLsize = GLsizei;
+using TPGLsizei = GLsizei;
 using TPGLfloat = float;
 using TPGLenum = GLenum;
 #endif
+
+#define      TP_UP_KEY         82
+#define      TP_LEFT_KEY       80
+#define      TP_RIGHT_KEY      79
+#define      TP_DOWN_KEY       81
+
+#define      TP_W_KEY          26
+#define      TP_A_KEY           4
+#define      TP_S_KEY          22
+#define      TP_D_KEY           7
+
+#define      TP_SPACE_KEY      44
+
+#define      TP_L_SHIFT_KEY   229
+#define      TP_R_SHIFT_KEY   225
+
+#define      TP_L_CTRL_KEY    224
+
+#define      TP_PAGE_UP_KEY    75
+#define      TP_PAGE_DOWN_KEY  78
 
 //##################################################################################################
 //! A simple 3D engine.
@@ -165,27 +185,6 @@ TP_DECLARE_ID(                   fontShaderSID,                      "Font shade
 TP_DECLARE_ID(                  frameShaderSID,                     "Frame shader");
 TP_DECLARE_ID(               postSSAOShaderSID,                 "Post ssao shader");
 TP_DECLARE_ID(                postSSRShaderSID,                  "Post ssr shader");
-
-const int32_t      UP_KEY        = 82;
-const int32_t      LEFT_KEY      = 80;
-const int32_t      RIGHT_KEY     = 79;
-const int32_t      DOWN_KEY      = 81;
-
-const int32_t      W_KEY         = 26;
-const int32_t      A_KEY         = 4;
-const int32_t      S_KEY         = 22;
-const int32_t      D_KEY         = 7;
-
-const int32_t      SPACE_KEY     = 44;
-
-const int32_t      L_SHIFT_KEY   = 229;
-const int32_t      R_SHIFT_KEY   = 225;
-
-const int32_t      L_CTRL_KEY    = 224;
-
-const int32_t      PAGE_UP_KEY   = 75;
-const int32_t      PAGE_DOWN_KEY = 78;
-
 
 //##################################################################################################
 int staticInit();
@@ -320,10 +319,10 @@ struct Matrices
   glm::mat4 vp{1.0f};   //!< Projection * View matrix.
 
   // The double precision matrices are not always set.
-  glm::dmat4 dv{1.0f};  //!< View matrix. (double)
-  glm::dmat4 dp{1.0f};  //!< Projection matrix. (double)
+  glm::dmat4 dv{1.0};  //!< View matrix. (double)
+  glm::dmat4 dp{1.0};  //!< Projection matrix. (double)
 
-  glm::dmat4 dvp{1.0f}; //!< Projection * View matrix. (double)
+  glm::dmat4 dvp{1.0}; //!< Projection * View matrix. (double)
 
   glm::vec3 cameraOriginNear{0.0f, 0.0f, 0.0f};
   glm::vec3 cameraOriginFar {0.0f, 0.0f, 1.0f};
@@ -472,10 +471,10 @@ struct FBO
   GLuint normalsID{0};  //!< The normals of each fragment, useful for ray marching.
   GLuint specularID{0}; //!< The specular colors of each fragment, as well as the shininess in the alpha.
 
-  int width{1};
-  int height{1};
-  int levels{1}; //!< Number of levels in the 3D texture generated for shadow maps.
-  int level{0};  //!< The level that we are currently rendering, when rendering shadows.
+  size_t width{1};
+  size_t height{1};
+  size_t levels{1}; //!< Number of levels in the 3D texture generated for shadow maps.
+  size_t level{0};  //!< The level that we are currently rendering, when rendering shadows.
 
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
   GLuint multisampleFrameBuffer{0};

@@ -70,7 +70,7 @@ public:
     GLuint vboID{0};
 
     GLuint   vertexCount{0};
-    TPGLsize  indexCount{0};
+    TPGLsizei  indexCount{0};
   };
 
   //################################################################################################

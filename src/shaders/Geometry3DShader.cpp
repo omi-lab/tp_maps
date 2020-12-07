@@ -18,7 +18,7 @@ Geometry3DShader::VertexBuffer* Geometry3DShader::generateVertexBuffer(Map* map,
 {
   auto vertexBuffer = new VertexBuffer(map, this);
 
-  vertexBuffer->indexCount  = TPGLsize(indexes.size());
+  vertexBuffer->indexCount  = TPGLsizei(indexes.size());
 
 #ifdef TP_VERTEX_ARRAYS_SUPPORTED
   vertexBuffer->vertexCount = GLuint(verts.size());

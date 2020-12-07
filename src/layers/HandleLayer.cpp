@@ -265,7 +265,7 @@ void HandleLayer::render(RenderInfo& renderInfo)
         return new HandlePickingResult(r.pickingType, r.details, r.renderInfo, handle);
       }
       return nullptr;
-    }, d->handles.size()));
+    }, uint32_t(d->handles.size())));
     shader->drawPointSpritesPicking(d->vertexBuffer, pickingID);
   }
   else

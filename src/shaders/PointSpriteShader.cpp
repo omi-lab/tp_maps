@@ -276,12 +276,12 @@ PointSpriteShader::VertexBuffer* PointSpriteShader::generateVertexBuffer(Map* ma
 
   glGenBuffers(1, &vertexBuffer->iboID);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer->iboID);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, TPGLsize(indexes.size()*sizeof(GLuint)), indexes.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, TPGLsizei(indexes.size()*sizeof(GLuint)), indexes.data(), GL_STATIC_DRAW);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
   glGenBuffers(1, &vertexBuffer->vboID);
   glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
-  glBufferData(GL_ARRAY_BUFFER, TPGLsize(verts.size()*sizeof(PointSprite_lt)), verts.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, TPGLsizei(verts.size()*sizeof(PointSprite_lt)), verts.data(), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   tpGenVertexArrays(1, &vertexBuffer->vaoID);
@@ -297,7 +297,7 @@ PointSpriteShader::VertexBuffer* PointSpriteShader::generateVertexBuffer(Map* ma
 
   glGenBuffers(1, &vertexBuffer->vboID);
   glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->vboID);
-  glBufferData(GL_ARRAY_BUFFER, TPGLsize(indexedVerts.size()*sizeof(PointSprite_lt)), indexedVerts.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, TPGLsizei(indexedVerts.size()*sizeof(PointSprite_lt)), indexedVerts.data(), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 #endif
 

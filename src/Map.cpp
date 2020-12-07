@@ -121,8 +121,8 @@ struct Map::Private
 
   RenderInfo renderInfo;
 
-  int width{1};
-  int height{1};
+  size_t width{1};
+  size_t height{1};
   glm::vec3 backgroundColor{0.0f, 0.0f, 0.0f};
 
   OpenGLProfile openGLProfile{TP_DEFAULT_PROFILE};
@@ -132,15 +132,15 @@ struct Map::Private
 
   std::vector<Light> lights;
   std::vector<FBO> lightTextures;
-  int lightTextureSize{1024};
+  size_t lightTextureSize{1024};
   size_t spotLightLevels{1};
   size_t shadowSamples{0};
 
   HDR hdr{HDR::No};
 
   bool updateSamplesRequired{true};
-  GLsizei maxSamples{1};
-  GLsizei samples{1};
+  size_t maxSamples{1};
+  size_t samples{1};
 
   Texture* spotLightTexture{nullptr};
   GLuint spotLightTextureID{0};
@@ -240,7 +240,7 @@ struct Map::Private
   }
 
   //################################################################################################
-  void create2DColorTexture(GLuint& textureID, int width, int height, HDR hdr, Alpha alpha)
+  void create2DColorTexture(GLuint& textureID, size_t width, size_t height, HDR hdr, Alpha alpha)
   {
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
@@ -249,17 +249,17 @@ struct Map::Private
     if(hdr == HDR::No)
     {
       if(alpha == Alpha::No)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TPGLsizei(width), TPGLsizei(height), 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
       else
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, TPGLsizei(width), TPGLsizei(height), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
       DEBUG_printOpenGLError("create2DColorTexture B");
     }
     else
     {
       if(alpha == Alpha::No)
-        glTexImage2D(GL_TEXTURE_2D, 0, colorFormatF(alpha), width, height, 0, GL_RGB, GL_FLOAT, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, colorFormatF(alpha), TPGLsizei(width), TPGLsizei(height), 0, GL_RGB, GL_FLOAT, nullptr);
       else
-        glTexImage2D(GL_TEXTURE_2D, 0, colorFormatF(alpha), width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, colorFormatF(alpha), TPGLsizei(width), TPGLsizei(height), 0, GL_RGBA, GL_FLOAT, nullptr);
       DEBUG_printOpenGLError("create2DColorTexture C");
     }
 
@@ -307,7 +307,7 @@ struct Map::Private
 #endif
 
   //################################################################################################
-  void create2DDepthTexture(GLuint& depthID, int width, int height)
+  void create2DDepthTexture(GLuint& depthID, size_t width, size_t height)
   {
     glGenTextures(1, &depthID);
 
@@ -316,17 +316,17 @@ struct Map::Private
     switch(openGLProfile)
     {
     case OpenGLProfile::VERSION_100_ES:
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, TPGLsizei(width), TPGLsizei(height), 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
       break;
 
     case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
     case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
     case OpenGLProfile::VERSION_320_ES:
-      glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+      glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, TPGLsizei(width), TPGLsizei(height), 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
       break;
 
     default:
-      glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
+      glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, TPGLsizei(width), TPGLsizei(height), 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
       break;
     }
 
@@ -381,16 +381,16 @@ struct Map::Private
     if(hdr == HDR::No)
     {
       if(alpha == Alpha::No)
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGB8, width, height);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, TPGLsizei(samples), GL_RGB8, TPGLsizei(width), TPGLsizei(height));
       else
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGBA8, width, height);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, TPGLsizei(samples), GL_RGBA8, TPGLsizei(width), TPGLsizei(height));
     }
     else
     {
       if(alpha == Alpha::No)
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, colorFormatF(alpha), width, height);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, TPGLsizei(samples), colorFormatF(alpha), TPGLsizei(width), TPGLsizei(height));
       else
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, colorFormatF(alpha), width, height);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, TPGLsizei(samples), colorFormatF(alpha), TPGLsizei(width), TPGLsizei(height));
     }
 
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
@@ -399,11 +399,11 @@ struct Map::Private
   }
 
   //################################################################################################
-  void createDepthRBO(GLuint& rboID, int width, int height)
+  void createDepthRBO(GLuint& rboID, size_t width, size_t height)
   {
     glGenRenderbuffers(1, &rboID);
     glBindRenderbuffer(GL_RENDERBUFFER, rboID);
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, TP_GL_DEPTH_COMPONENT24, width, height);
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, TPGLsizei(samples), TP_GL_DEPTH_COMPONENT24, TPGLsizei(width), TPGLsizei(height));
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboID);
     DEBUG_printOpenGLError("prepareBuffer multisample RBO for depth");
@@ -412,7 +412,7 @@ struct Map::Private
   //################################################################################################
   void setDrawBuffers(const std::vector<GLenum>& buffers)
   {
-    glDrawBuffers(buffers.size(), buffers.data());
+    glDrawBuffers(TPGLsizei(buffers.size()), buffers.data());
   }
 
   //################################################################################################
@@ -431,13 +431,13 @@ struct Map::Private
   \return true if we managed to create a functional FBO.
   */
   bool prepareBuffer(FBO& buffer,
-                     int width,
-                     int height,
+                     size_t width,
+                     size_t height,
                      CreateColorBuffer createColorBuffer,
                      Multisample multisample,
                      HDR hdr,
-                     int levels,
-                     int level)
+                     size_t levels,
+                     size_t level)
   {
     DEBUG_printOpenGLError("prepareBuffer Start");
 
@@ -595,7 +595,7 @@ struct Map::Private
     }
 #endif
 
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, TPGLsizei(width), TPGLsizei(height));
 
     glDepthMask(true);
     glClearDepthf(1.0f);
@@ -1351,7 +1351,7 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
 
   //The size of the area to perform picking in, must be an odd number
   int windowX = tpBound(0, pos.x-left, width()-(pickingSize+1));
-  int windowY = tpBound(0, (d->height-pos.y)-left, height()-(pickingSize+1));
+  int windowY = tpBound(0, (int(d->height)-pos.y)-left, int(height()-(pickingSize+1)));
   std::vector<unsigned char> pixels(pickingSize*pickingSize*4);
 
   switch(d->openGLProfile)
@@ -1431,7 +1431,7 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
   DEBUG_printOpenGLError("renderToImage A");
 
   // Configure the frame buffer that the image will be rendered to.
-  if(!d->prepareBuffer(d->renderToImageBuffer, int(width), int(height), CreateColorBuffer::Yes, Multisample::No, HDR::No, 1, 0))
+  if(!d->prepareBuffer(d->renderToImageBuffer, width, height, CreateColorBuffer::Yes, Multisample::No, HDR::No, 1, 0))
     return false;
 
   DEBUG_printOpenGLError("renderToImage B");
@@ -1468,7 +1468,7 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
   // Return to the original viewport settings
   resizeGL(int(originalWidth), int(originalHeight));
   glBindFramebuffer(GL_FRAMEBUFFER, originalFrameBuffer);
-  glViewport(0, 0, d->width, d->height);
+  glViewport(0, 0, TPGLsizei(d->width), TPGLsizei(d->height));
 
   DEBUG_printOpenGLError("renderToImage D");
 
@@ -1515,13 +1515,13 @@ GLuint Map::spotLightTexture() const
 //##################################################################################################
 int Map::width() const
 {
-  return d->width;
+  return int(d->width);
 }
 
 //##################################################################################################
 int Map::height() const
 {
-  return d->height;
+  return int(d->height);
 }
 
 //##################################################################################################
@@ -1618,7 +1618,7 @@ void Map::initializeGL()
   glClearColor(d->backgroundColor.x, d->backgroundColor.y, d->backgroundColor.z, 1.0f);
   d->initialized = true;
 
-  d->controller->mapResized(d->width, d->height);
+  d->controller->mapResized(int(d->width), int(d->height));
 }
 
 //##################################################################################################
@@ -1677,7 +1677,7 @@ void Map::paintGLNoMakeCurrent()
         const auto& light = d->lights.at(i);
         auto& lightBuffer = d->lightTextures.at(i);
 
-        int levels=1;
+        size_t levels=1;
 
 #ifdef TP_ENABLE_3D_TEXTURE
         if(light.type == LightType::Spot)
@@ -1685,7 +1685,7 @@ void Map::paintGLNoMakeCurrent()
 #endif
 
         lightBuffer.worldToTexture.resize(levels);
-        for(int l=0; l<levels; l++)
+        for(size_t l=0; l<levels; l++)
         {
           if(!d->prepareBuffer(lightBuffer, d->lightTextureSize, d->lightTextureSize, CreateColorBuffer::No, Multisample::No, HDR::No, levels, l))
             return;
@@ -1697,7 +1697,7 @@ void Map::paintGLNoMakeCurrent()
       }
       DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers");
 
-      glViewport(0, 0, d->width, d->height);
+      glViewport(0, 0, TPGLsizei(d->width), TPGLsizei(d->height));
       glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
       DEBUG_printOpenGLError("RenderPass::LightFBOs bind default buffer");
 #endif
@@ -1883,10 +1883,10 @@ void Map::resizeGL(int w, int h)
 {
   makeCurrent();
 
-  d->width  = w;
-  d->height = h;
+  d->width  = size_t(w);
+  d->height = size_t(h);
 
-  glViewport(0, 0, d->width, d->height);
+  glViewport(0, 0, TPGLsizei(d->width), TPGLsizei(d->height));
 
   if(d->initialized)
     d->controller->mapResized(w, h);
