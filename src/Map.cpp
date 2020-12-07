@@ -448,7 +448,7 @@ struct Map::Private
 
       GLint max=1;
       glGetIntegerv(GL_MAX_SAMPLES, &max);
-      samples = tpMin(GLsizei(max), maxSamples);
+      samples = tpMin(size_t(max), maxSamples);
 
       if(samples != maxSamples)
         tpWarning() << "Max samples set to: " << samples;
