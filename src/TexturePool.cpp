@@ -196,7 +196,10 @@ void TexturePool::unsubscribe(const tp_utils::StringID& name)
   if(!i->second.count)
   {
     if(i->second.textureID && d->map())
+    {
+      d->map()->makeCurrent();
       d->map()->deleteTexture(i->second.textureID);
+    }
     delete i->second.texture;
 
     d->images.erase(i);
@@ -241,7 +244,10 @@ void TexturePool::unsubscribe(const TexturePoolKey& key)
   if(!i->second.count)
   {
     if(i->second.textureID && d->map())
+    {
+      d->map()->makeCurrent();
       d->map()->deleteTexture(i->second.textureID);
+    }
     delete i->second.texture;
 
     d->combinedImages.erase(i);
@@ -374,6 +380,7 @@ void TexturePool::setTextureWrapS(const tp_utils::StringID& name, GLint textureW
     d->map()->makeCurrent();
     d->map()->deleteTexture(i->second.textureID);
     i->second.textureID = 0;
+    changedCallbacks();
   }
 }
 
@@ -397,6 +404,7 @@ void TexturePool::setTextureWrapT(const tp_utils::StringID& name, GLint textureW
     d->map()->makeCurrent();
     d->map()->deleteTexture(i->second.textureID);
     i->second.textureID = 0;
+    changedCallbacks();
   }
 }
 
@@ -420,6 +428,7 @@ void TexturePool::setTextureWrapS(const TexturePoolKey& key, GLint textureWrapS)
     d->map()->makeCurrent();
     d->map()->deleteTexture(i->second.textureID);
     i->second.textureID = 0;
+    changedCallbacks();
   }
 }
 
@@ -443,6 +452,7 @@ void TexturePool::setTextureWrapT(const TexturePoolKey& key, GLint textureWrapT)
     d->map()->makeCurrent();
     d->map()->deleteTexture(i->second.textureID);
     i->second.textureID = 0;
+    changedCallbacks();
   }
 }
 

@@ -461,7 +461,7 @@ struct Map::Private
 
     multisample = (multisample==Multisample::Yes && (samples>1))?Multisample::Yes:Multisample::No;
 
-    if(buffer.width!=width || buffer.height!=height || buffer.levels!=levels || buffer.hdr != hdr || buffer.multisample != multisample)
+    if(buffer.width!=width || buffer.height!=height || buffer.levels!=levels || buffer.samples!=samples || buffer.hdr != hdr || buffer.multisample != multisample)
       deleteBuffer(buffer);
 
     buffer.level = level;
@@ -472,6 +472,7 @@ struct Map::Private
       buffer.width       = width;
       buffer.height      = height;
       buffer.levels      = levels;
+      buffer.samples     = samples;
       buffer.hdr         = hdr;
       buffer.multisample = multisample;
     }

@@ -58,9 +58,10 @@ struct CADController::Private
 
   CADController* q;
 
-  float speedModifier{1.0f};
-
   CADControllerMode mode{CADControllerMode::Perspective};
+
+  float mouseSpeedModifier{1.0f};
+  float keyboardSpeedModifier{1.0f};
 
   glm::ivec2 previousPos{0,0};
   glm::ivec2 previousPos2{0,0};
@@ -73,13 +74,14 @@ struct CADController::Private
   float viewAngle{-90.0f};   //!< In degrees.
   float rotationAngle{0.0f}; //!< In degrees.
   glm::vec3 cameraOrigin{0, 0, 1.8f};
-  float rotationFactor{0.2f};
 
   float distance{10.0f};     //!< Distance for ortho projections.
   glm::vec3 focalPoint{0.0f,0.0f,0.0f};
 
   float near{0.01f};
   float far{100.0f};
+
+  float fov{63.0f};
 
   bool mouseMoved{false};
 
@@ -115,7 +117,7 @@ struct CADController::Private
   }
 
   //################################################################################################
-  void translate(float dist)
+  void translate(float dist, float speedModifier)
   {
     float radians = glm::radians(rotationAngle);
     float ca = std::cos(radians);
@@ -125,7 +127,7 @@ struct CADController::Private
   }
 
   //################################################################################################
-  void strafe(float distX, float distY=0.0f)
+  void strafe(float distX, float distY, float speedModifier)
   {
     float radians = glm::radians(rotationAngle);
     float ca = std::cos(radians);
@@ -145,7 +147,7 @@ struct CADController::Private
   }
 
   //################################################################################################
-  void translate(float dx, float dy)
+  void translate(float dx, float dy, float speedModifier)
   {
     //The width and height of the map widget
     float width  = float(q->map()->width());
@@ -191,7 +193,7 @@ struct CADController::Private
   }
 
   //################################################################################################
-  void moveForward(float distZ)
+  void moveForward(float distZ, float speedModifier)
   {
     glm::mat4 m = glm::inverse(q->matrix(defaultSID()));
     glm::vec4 v1 = m*glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -235,9 +237,27 @@ void CADController::setMode(CADControllerMode mode)
 }
 
 //##################################################################################################
-void CADController::setSpeedModifier(float speedModifier)
+void CADController::setMouseSpeedModifier(float mouseSpeedModifier)
 {
-  d->speedModifier = speedModifier;
+  d->mouseSpeedModifier = mouseSpeedModifier;
+}
+
+//##################################################################################################
+float CADController::mouseSpeedModifier() const
+{
+  return d->mouseSpeedModifier;
+}
+
+//##################################################################################################
+void CADController::setKeyboardSpeedModifier(float keyboardSpeedModifier)
+{
+  d->keyboardSpeedModifier = keyboardSpeedModifier;
+}
+
+//##################################################################################################
+float CADController::keyboardSpeedModifier() const
+{
+  return d->keyboardSpeedModifier;
 }
 
 //##################################################################################################
@@ -291,23 +311,36 @@ void CADController::setRotationAngle(float rotationAngle)
 }
 
 //##################################################################################################
-float CADController::rotationFactor() const
-{
-  return d->rotationFactor;
-}
-
-//##################################################################################################
-void CADController::setRotationFactor(float rotationFactor)
-{
-  d->rotationFactor = rotationFactor;
-}
-
-//##################################################################################################
 void CADController::setNearAndFar(float near, float far)
 {
   d->near = near;
   d->far = far;
   map()->update();
+}
+
+//##################################################################################################
+float CADController::near() const
+{
+  return d->near;
+}
+
+//##################################################################################################
+float CADController::far() const
+{
+  return d->far;
+}
+
+//##################################################################################################
+void CADController::setFOV(float fov)
+{
+  d->fov = fov;
+  map()->update();
+}
+
+//##################################################################################################
+float CADController::fov() const
+{
+  return d->fov;
 }
 
 //##################################################################################################
@@ -364,12 +397,17 @@ nlohmann::json CADController::saveState() const
 {
   nlohmann::json j;
 
-  j["View angle"]     = d->viewAngle;
-  j["Rotation angle"] = d->rotationAngle;
-  j["Camera origin"]  = tp_math_utils::vec3ToJSON(d->cameraOrigin);
-  j["Focal point"]    = tp_math_utils::vec3ToJSON(d->focalPoint);
-  j["Distance"]       = d->distance;
-  j["Mode"]           = cadControllerModeToString(d->mode);
+  j["mouseSpeedModifier"]    = d->mouseSpeedModifier;
+  j["keyboardSpeedModifier"] = d->keyboardSpeedModifier;
+  j["View angle"]            = d->viewAngle;
+  j["Rotation angle"]        = d->rotationAngle;
+  j["Camera origin"]         = tp_math_utils::vec3ToJSON(d->cameraOrigin);
+  j["Focal point"]           = tp_math_utils::vec3ToJSON(d->focalPoint);
+  j["Distance"]              = d->distance;
+  j["Mode"]                  = cadControllerModeToString(d->mode);
+  j["near"]                  = d->near;
+  j["far"]                   = d->far;
+  j["fov"]                   = d->fov;
 
   return j;
 }
@@ -377,12 +415,17 @@ nlohmann::json CADController::saveState() const
 //##################################################################################################
 void CADController::loadState(const nlohmann::json& j)
 {
-  d->viewAngle     =                             TPJSONFloat (j, "View angle"    , d->viewAngle                       );
-  d->rotationAngle =                             TPJSONFloat (j, "Rotation angle", d->rotationAngle                   );
-  d->cameraOrigin  =               tp_math_utils::getJSONVec3(j, "Camera origin" , d->cameraOrigin                    );
-  d->focalPoint    =               tp_math_utils::getJSONVec3(j, "Focal point"   , d->focalPoint                      );
-  d->distance      =                             TPJSONFloat (j, "Distance"      , d->distance                        );
-  d->mode          = cadControllerModeFromString(TPJSONString(j, "Mode"          , cadControllerModeToString(d->mode)));
+  d->mouseSpeedModifier    =                             TPJSONFloat (j, "mouseSpeedModifier"   , d->mouseSpeedModifier              );
+  d->keyboardSpeedModifier =                             TPJSONFloat (j, "keyboardSpeedModifier", d->keyboardSpeedModifier           );
+  d->viewAngle             =                             TPJSONFloat (j, "View angle"           , d->viewAngle                       );
+  d->rotationAngle         =                             TPJSONFloat (j, "Rotation angle"       , d->rotationAngle                   );
+  d->cameraOrigin          =               tp_math_utils::getJSONVec3(j, "Camera origin"        , d->cameraOrigin                    );
+  d->focalPoint            =               tp_math_utils::getJSONVec3(j, "Focal point"          , d->focalPoint                      );
+  d->distance              =                             TPJSONFloat (j, "Distance"             , d->distance                        );
+  d->mode                  = cadControllerModeFromString(TPJSONString(j, "Mode"                 , cadControllerModeToString(d->mode)));
+  d->near                  =                             TPJSONFloat (j, "near"                 , d->near                            );
+  d->far                   =                             TPJSONFloat (j, "far"                  , d->far                             );
+  d->fov                   =                             TPJSONFloat (j, "fov"                  , d->fov                             );
   map()->update();
 }
 
@@ -390,16 +433,20 @@ void CADController::loadState(const nlohmann::json& j)
 //################################################################################################
 void CADController::copyState(const CADController& other)
 {
+  d->mouseSpeedModifier    = other.d->mouseSpeedModifier;
+  d->keyboardSpeedModifier = other.d->keyboardSpeedModifier;
+
   d->viewAngle      = other.d->viewAngle;
   d->rotationAngle  = other.d->rotationAngle;
   d->cameraOrigin   = other.d->cameraOrigin;
-  d->rotationFactor = other.d->rotationFactor;
 
   d->distance       = other.d->distance;
   d->focalPoint     = other.d->focalPoint;
 
   d->near           = other.d->near;
   d->far            = other.d->far;
+
+  d->fov            = other.d->fov;
 
   map()->update();
 }
@@ -457,7 +504,7 @@ void CADController::updateMatrices()
     view = glm::rotate(view, glm::radians(d->rotationAngle), glm::vec3(0.0f, 0.0f, 1.0f));
     view = glm::translate(view, -d->cameraOrigin);
 
-    projection = glm::perspective(glm::radians(63.0f), fw/fh, d->near, d->far);
+    projection = glm::perspective(glm::radians(d->fov), fw/fh, d->near, d->far);
     break;
   }
 
@@ -562,9 +609,9 @@ bool CADController::mouseEvent(const MouseEvent& event)
     {
       changed = true;
       if(d->mode == CADControllerMode::Perspective)
-        d->strafe(dx*float(translationFactor), dy*float(translationFactor));
+        d->strafe(dx*float(translationFactor), dy*float(translationFactor), d->mouseSpeedModifier);
       else
-        d->translate(dx, dy);
+        d->translate(dx, dy, d->mouseSpeedModifier);
       map()->update();
     }
     else if(d->fullScreen || d->mouseInteraction == Button::RightButton)
@@ -574,7 +621,7 @@ bool CADController::mouseEvent(const MouseEvent& event)
         if(d->variableViewAngle)
         {
           changed = true;
-          d->viewAngle += dy*0.2f;
+          d->viewAngle += dy*0.2f * d->mouseSpeedModifier;
 
           if(d->viewAngle>0)
             d->viewAngle = 0;
@@ -586,7 +633,7 @@ bool CADController::mouseEvent(const MouseEvent& event)
         if(d->allowRotation)
         {
           changed = true;
-          d->rotationAngle += dx*d->rotationFactor;
+          d->rotationAngle += dx*0.2f*d->mouseSpeedModifier;
           if(d->rotationAngle<0)
             d->rotationAngle+=360;
 
@@ -605,7 +652,7 @@ bool CADController::mouseEvent(const MouseEvent& event)
     if(d->mode == CADControllerMode::Perspective)
     {
       changed = true;
-      d->moveForward(float(event.delta)*translationFactor*0.2f);
+      d->moveForward(float(event.delta)*translationFactor*0.2f, d->mouseSpeedModifier);
     }
     else
     {
@@ -614,9 +661,9 @@ bool CADController::mouseEvent(const MouseEvent& event)
       bool moveOrigin = map()->unProject(event.pos, scenePointA, tp_math_utils::Plane());
 
       if(event.delta<0)
-        d->distance *= 1.1f;
+        d->distance += d->distance * 0.1f * d->mouseSpeedModifier;
       else if(event.delta>0)
-        d->distance *= 0.9f;
+        d->distance -= d->distance * 0.1f * d->mouseSpeedModifier;
       else
         return true;
 
@@ -738,21 +785,21 @@ void CADController::animate(double timestampMS)
     if(d->keyState[TP_UP_KEY] ||d->keyState[TP_W_KEY] )
     {
       changed = true;
-      d->translate(float(translateMeters));
+      d->translate(float(translateMeters), d->keyboardSpeedModifier);
       map()->update();
     }
 
     if(d->keyState[TP_DOWN_KEY]||d->keyState[TP_S_KEY] )
     {
       changed = true;
-      d->translate(-float(translateMeters));
+      d->translate(-float(translateMeters), d->keyboardSpeedModifier);
       map()->update();
     }
 
     if(d->keyState[TP_LEFT_KEY])
     {
       changed = true;
-      d->rotationAngle -= float(rotateDegrees);
+      d->rotationAngle -= float(rotateDegrees) * d->keyboardSpeedModifier;
       if(d->rotationAngle<0.0f)
         d->rotationAngle+=360.0f;
       map()->update();
@@ -761,7 +808,7 @@ void CADController::animate(double timestampMS)
     if(d->keyState[TP_RIGHT_KEY])
     {
       changed = true;
-      d->rotationAngle += float(rotateDegrees);
+      d->rotationAngle += float(rotateDegrees) * d->keyboardSpeedModifier;
       if(d->rotationAngle>360.0f)
         d->rotationAngle-=360.0f;
       map()->update();
@@ -770,28 +817,28 @@ void CADController::animate(double timestampMS)
     if(d->keyState[TP_A_KEY] )
     {
       changed = true;
-      d->strafe(-float(translateMeters));
+      d->strafe(-float(translateMeters), 0.0f, d->keyboardSpeedModifier);
       map()->update();
     }
 
     if(d->keyState[TP_D_KEY] )
     {
       changed = true;
-      d->strafe(float(translateMeters));
+      d->strafe(float(translateMeters), 0.0f, d->keyboardSpeedModifier);
       map()->update();
     }
 
     if(d->keyState[TP_PAGE_UP_KEY] || d->keyState[TP_SPACE_KEY])
     {
       changed = true;
-      d->cameraOrigin.z += float(translateMeters) * d->speedModifier;
+      d->cameraOrigin.z += float(translateMeters) * d->keyboardSpeedModifier;
       map()->update();
     }
 
     if(d->keyState[TP_PAGE_DOWN_KEY]|| d->keyState[TP_L_CTRL_KEY])
     {
       changed = true;
-      d->cameraOrigin.z -= float(translateMeters) * d->speedModifier;
+      d->cameraOrigin.z -= float(translateMeters) * d->keyboardSpeedModifier;
       map()->update();
     }
   }

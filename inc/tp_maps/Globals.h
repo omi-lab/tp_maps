@@ -475,6 +475,7 @@ struct FBO
   size_t height{1};
   size_t levels{1}; //!< Number of levels in the 3D texture generated for shadow maps.
   size_t level{0};  //!< The level that we are currently rendering, when rendering shadows.
+  size_t samples{1};
 
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
   GLuint multisampleFrameBuffer{0};

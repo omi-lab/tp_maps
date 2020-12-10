@@ -59,6 +59,27 @@ size_t TexturePoolKey::makeHash()
 }
 
 //##################################################################################################
+std::string TexturePoolKey::debugString() const
+{
+  std::string s;
+
+  s += "rName: " + rName.keyString();
+  s += " gName: " + gName.keyString();
+  s += " bName: " + bName.keyString();
+  s += " aName: " + aName.keyString();
+
+  s += " rIndex: " + std::to_string(rIndex);
+  s += " gIndex: " + std::to_string(gIndex);
+  s += " bIndex: " + std::to_string(bIndex);
+  s += " aIndex: " + std::to_string(aIndex);
+
+  s += " defaultColor: " + defaultColor.toString();
+  s += " h: " + std::to_string(h);
+
+  return s;
+}
+
+//##################################################################################################
 bool operator==(const TexturePoolKey& a, const TexturePoolKey& b)
 {
   if(a.h!=b.h)return false;

@@ -40,8 +40,18 @@ public:
   void setMode(CADControllerMode mode);
 
   //################################################################################################
-  //! Multiplied with translation operations
-  void setSpeedModifier(float speedModifier);
+  //! Multiplied with mouse translation and rotation operations
+  void setMouseSpeedModifier(float mouseSpeedModifier);
+
+  //################################################################################################
+  float mouseSpeedModifier() const;
+
+  //################################################################################################
+  //! Multiplied with keyboard translation and rotation operations
+  void setKeyboardSpeedModifier(float keyboardSpeedModifier);
+
+  //################################################################################################
+  float keyboardSpeedModifier() const;
 
   //################################################################################################
   glm::vec3 cameraOrigin() const;
@@ -75,13 +85,19 @@ public:
   void setRotationAngle(float rotationAngle);
 
   //################################################################################################
-  float rotationFactor() const;
-
-  //################################################################################################
-  void setRotationFactor(float rotationFactor);
-
-  //################################################################################################
   void setNearAndFar(float near, float far);
+
+  //################################################################################################
+  float near() const;
+
+  //################################################################################################
+  float far() const;
+
+  //################################################################################################
+  void setFOV(float fov);
+
+  //################################################################################################
+  float fov() const;
 
   //################################################################################################
   //! Calculate the forward vector of the camera.

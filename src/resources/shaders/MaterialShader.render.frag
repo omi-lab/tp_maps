@@ -404,9 +404,6 @@ void main()
 
   /*LIGHT_FRAG_CALC*/
 
-  //diffuse  *= albedo;
-  //specular *= specularTex;
-
   float alpha = rgbaTex.w;
   vec3 materialSpecular = specularTex;
   float shininess = metalness;
