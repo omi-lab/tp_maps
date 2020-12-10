@@ -8,7 +8,7 @@
 
 namespace tp_maps
 {
-
+class FontRenderer;
 //##################################################################################################
 //! Draws objects at the light positions.
 class TP_MAPS_SHARED_EXPORT LightsLayer: public Layer
@@ -23,6 +23,17 @@ public:
 
   //################################################################################################
   tp_utils::CallbackCollection<void()> lightsEdited;
+
+  //################################################################################################
+  //! Set the font that will be used to render text
+  /*!
+  \note This does not take ownership.
+  \param font The font to use for drawing the labels for the lights.
+  */
+  void setFont(FontRenderer* font);
+
+  //################################################################################################
+  FontRenderer* font() const;
 
 protected:
 

@@ -6,6 +6,7 @@
 #include "tp_maps/Map.h"
 #include "tp_maps/Controller.h"
 #include "tp_maps/RenderInfo.h"
+#include "tp_maps/shaders/FontShader.h"
 
 #include "tp_math_utils/Sphere.h"
 
@@ -18,6 +19,16 @@
 
 namespace tp_maps
 {
+
+namespace
+{
+struct LabelDetails_lt
+{
+  glm::vec3 position;
+  std::shared_ptr<tp_maps::FontShader::PreparedString> preparedString;
+};
+}
+
 //##################################################################################################
 struct LightsLayer::Private
 {
@@ -31,6 +42,10 @@ struct LightsLayer::Private
   std::vector<GizmoLayer*> gizmoLayers;
 
   bool updateModels{true};
+
+  FontRenderer* font{nullptr};
+  bool regenerateText{true};
+  std::vector<LabelDetails_lt> labels;
 };
 
 //##################################################################################################
@@ -48,6 +63,20 @@ LightsLayer::LightsLayer():
 LightsLayer::~LightsLayer()
 {
   delete d;
+}
+
+//##################################################################################################
+void LightsLayer::setFont(FontRenderer* font)
+{
+  d->regenerateText = false;
+  d->font = font;
+  update();
+}
+
+//##################################################################################################
+FontRenderer* LightsLayer::font() const
+{
+  return d->font;
 }
 
 //##################################################################################################
@@ -96,7 +125,7 @@ void LightsLayer::render(RenderInfo& renderInfo)
           {
             auto gizmoLayer = d->gizmoLayers.at(i);
             lights.at(i).viewMatrix = glm::inverse(gizmoLayer->modelMatrix());
-            map()->setLights(lights);            
+            map()->setLights(lights);
             lightsEdited();
           }
         });
@@ -114,6 +143,56 @@ void LightsLayer::render(RenderInfo& renderInfo)
     }
   }
 
+  //Draw the text.
+  if(font())
+  {
+    auto shader = map()->getShader<tp_maps::FontShader>();
+    if(shader->error())
+      return;
+
+    if(d->regenerateText)
+    {
+      d->regenerateText = false;
+      tp_maps::PreparedStringConfig config;
+      config.topDown = true;
+      config.relativeOffset.x = 1.0f;
+      config.pixelOffset.x = 5.0f;
+
+      const auto& lights = map()->lights();
+      d->labels.resize(lights.size());
+      for(size_t l=0; l<lights.size(); l++)
+      {
+        const auto& light = lights.at(l);
+        auto& label = d->labels.at(l);
+        label.preparedString.reset(new tp_maps::FontShader::PreparedString(shader, font(), tpFromUTF8(light.name.keyString()), config));
+        label.position = light.position();
+      }
+
+    }
+
+    float width  = float(map()->width());
+    float height = float(map()->height());
+
+    glm::mat4 matrix{1.0f};
+    matrix = glm::translate(matrix, {-1.0f, 1.0f, 0.0f});
+    matrix = glm::scale(matrix, {2.0f/width, -2.0f/height, 1.0f});
+
+    auto m = map()->controller()->matrix(tp_maps::defaultSID());
+
+    shader->use();
+    shader->setColor({0.0f, 0.0f, 0.0f, 1.0f});
+    for(const auto& label : d->labels)
+    {
+      auto p = tpProj(m, label.position);
+
+      p.x = ((p.x+1.0f) / 2.0f) * width;
+      p.y = (1.0f - ((p.y+1.0f) / 2.0f)) * height;
+
+      shader->setMatrix(glm::translate(matrix, glm::floor(glm::vec3(std::floor(p.x), std::floor(p.y), 0.0f))));
+      shader->drawPreparedString(*label.preparedString.get());
+    }
+  }
+
   Layer::render(renderInfo);
 }
 
@@ -122,6 +201,7 @@ void LightsLayer::lightsChanged(LightingModelChanged lightingModelChanged)
 {
   TP_UNUSED(lightingModelChanged);
   d->updateModels = true;
+  d->regenerateText = true;
 }
 
 }
