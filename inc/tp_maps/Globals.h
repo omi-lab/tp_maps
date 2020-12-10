@@ -55,6 +55,9 @@
 #include <GL/glew.h>
 #  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_130
 #  define TP_GL3
+#  define TP_ENABLE_MULTISAMPLE
+#  define TP_ENABLE_MULTISAMPLE_FBO
+#  define TP_ENABLE_3D_TEXTURE
 
 #elif defined(TP_LINUX)
 

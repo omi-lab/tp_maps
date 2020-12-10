@@ -270,7 +270,7 @@ struct Map::Private
 
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
   //################################################################################################
-  void createMultisampleTexture(GLuint& multisampleTextureID, int width, int height, HDR hdr, Alpha alpha, GLenum attachment)
+  void createMultisampleTexture(GLuint& multisampleTextureID, size_t width, size_t height, HDR hdr, Alpha alpha, GLenum attachment)
   {
     switch(openGLProfile)
     {
@@ -287,16 +287,16 @@ struct Map::Private
       if(hdr == HDR::No)
       {
         if(alpha == Alpha::No)
-          glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGB, width, height, GL_TRUE);
+          glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, TPGLsizei(samples), GL_RGB, TPGLsizei(width), TPGLsizei(height), GL_TRUE);
         else
-          glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA, width, height, GL_TRUE);
+          glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, TPGLsizei(samples), GL_RGBA, TPGLsizei(width), TPGLsizei(height), GL_TRUE);
       }
       else
       {
         if(alpha == Alpha::No)
-          glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, colorFormatF(alpha), width, height, GL_TRUE);
+          glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, TPGLsizei(samples), colorFormatF(alpha), TPGLsizei(width), TPGLsizei(height), GL_TRUE);
         else
-          glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, colorFormatF(alpha), width, height, GL_TRUE);
+          glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, TPGLsizei(samples), colorFormatF(alpha), TPGLsizei(width), TPGLsizei(height), GL_TRUE);
       }
 
       glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, multisampleTextureID, 0);
@@ -340,7 +340,7 @@ struct Map::Private
   }
 
   //################################################################################################
-  void create3DDepthTexture(GLuint& depthID, int width, int height, int levels)
+  void create3DDepthTexture(GLuint& depthID, size_t width, size_t height, size_t levels)
   {
     glGenTextures(1, &depthID);
 
@@ -349,17 +349,17 @@ struct Map::Private
     switch(openGLProfile)
     {
     case OpenGLProfile::VERSION_100_ES:
-      glTexImage3D(GL_TEXTURE_3D, 0, GL_DEPTH_COMPONENT, width, height, levels, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
+      glTexImage3D(GL_TEXTURE_3D, 0, GL_DEPTH_COMPONENT, TPGLsizei(width), TPGLsizei(height), TPGLsizei(levels), 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
       break;
 
     case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
     case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
     case OpenGLProfile::VERSION_320_ES:
-      glTexImage3D(GL_TEXTURE_3D, 0, depthFormatF(), width, height, levels, 0, GL_RED, GL_FLOAT, nullptr);
+      glTexImage3D(GL_TEXTURE_3D, 0, depthFormatF(), TPGLsizei(width), TPGLsizei(height), TPGLsizei(levels), 0, GL_RED, GL_FLOAT, nullptr);
       break;
 
     default:
-      glTexImage3D(GL_TEXTURE_3D, 0, depthFormatF(), width, height, levels, 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
+      glTexImage3D(GL_TEXTURE_3D, 0, depthFormatF(), TPGLsizei(width), TPGLsizei(height), TPGLsizei(levels), 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
       break;
     }
 
@@ -373,7 +373,7 @@ struct Map::Private
   }
 
   //################################################################################################
-  void createColorRBO(GLuint& rboID, int width, int height, HDR hdr, Alpha alpha, GLenum attachment)
+  void createColorRBO(GLuint& rboID, size_t width, size_t height, HDR hdr, Alpha alpha, GLenum attachment)
   {
     glGenRenderbuffers(1, &rboID);
     glBindRenderbuffer(GL_RENDERBUFFER, rboID);
@@ -519,7 +519,7 @@ struct Map::Private
       if(!buffer.textureID)
         create2DDepthTexture(buffer.textureID, width, height);
 
-      glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, buffer.depthID, 0, level);
+      glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, buffer.depthID, 0, GLint(level));
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.textureID, 0);
       DEBUG_printOpenGLError("prepareBuffer bind 3D texture to FBO as color but to store depth");
     }
@@ -623,19 +623,19 @@ struct Map::Private
       DEBUG_printOpenGLError("swapMultisampledBuffer a");
       setDrawBuffers({GL_COLOR_ATTACHMENT0});
       DEBUG_printOpenGLError("swapMultisampledBuffer b");
-      glBlitFramebuffer(0, 0, buffer.width, buffer.height, 0, 0, buffer.width, buffer.height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+      glBlitFramebuffer(0, 0, GLint(buffer.width), GLint(buffer.height), 0, 0, GLint(buffer.width), GLint(buffer.height), GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
       DEBUG_printOpenGLError("swapMultisampledBuffer blit color 0 and depth");
 
       if(buffer.hdr == HDR::Yes)
       {
         glReadBuffer(GL_COLOR_ATTACHMENT1);
         setDrawBuffers({GL_COLOR_ATTACHMENT1});
-        glBlitFramebuffer(0, 0, buffer.width, buffer.height, 0, 0, buffer.width, buffer.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBlitFramebuffer(0, 0, GLint(buffer.width), GLint(buffer.height), 0, 0, GLint(buffer.width), GLint(buffer.height), GL_COLOR_BUFFER_BIT, GL_NEAREST);
         DEBUG_printOpenGLError("swapMultisampledBuffer blit color 1");
 
         glReadBuffer(GL_COLOR_ATTACHMENT2);
         setDrawBuffers({GL_COLOR_ATTACHMENT2});
-        glBlitFramebuffer(0, 0, buffer.width, buffer.height, 0, 0, buffer.width, buffer.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBlitFramebuffer(0, 0, GLint(buffer.width), GLint(buffer.height), 0, 0, GLint(buffer.width), GLint(buffer.height), GL_COLOR_BUFFER_BIT, GL_NEAREST);
         DEBUG_printOpenGLError("swapMultisampledBuffer blit color 2");
 
         setDrawBuffers({GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2});
