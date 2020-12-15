@@ -6,15 +6,6 @@
 
 namespace tp_maps
 {
-namespace
-{
-struct ShaderDetails_lt
-{
-  GLuint vertexShader{0};
-  GLuint fragmentShader{0};
-  GLuint program{0};
-};
-}
 
 //##################################################################################################
 struct Shader::Private
@@ -24,7 +15,7 @@ struct Shader::Private
 
   Map* map;
   tp_maps::OpenGLProfile openGLProfile;
-  std::unordered_map<ShaderType, ShaderDetails_lt> shaders;
+  std::unordered_map<ShaderType, ShaderDetails> shaders;
   bool error{false};
 
   Private(Map* map_, tp_maps::OpenGLProfile profile_):
@@ -181,6 +172,12 @@ GLuint Shader::loadShader(const char* shaderSrc, GLenum type)
 bool Shader::error() const
 {
   return d->error;
+}
+
+//##################################################################################################
+ShaderDetails Shader::shaderDetails(ShaderType shaderType) const
+{
+  return d->shaders[shaderType];
 }
 
 //##################################################################################################

@@ -65,6 +65,8 @@ struct LightLocations_lt
   GLint        quadraticLocation{0};
   GLint      spotLightUVLocation{0};
   GLint      spotLightWHLocation{0};
+  GLint             nearLocation{0};
+  GLint              farLocation{0};
 
   GLint   lightTextureIDLocation{0};
 };
@@ -428,6 +430,9 @@ void MaterialShader::compile(const char* vertShaderStr,
         lightLocations.spotLightUVLocation      = glGetUniformLocation(program, replaceLight(ii, "", "light%.spotLightUV").c_str());
         lightLocations.spotLightWHLocation      = glGetUniformLocation(program, replaceLight(ii, "", "light%.spotLightWH").c_str());
 
+        lightLocations.nearLocation             = glGetUniformLocation(program, replaceLight(ii, "", "light%.near").c_str());
+        lightLocations.farLocation              = glGetUniformLocation(program, replaceLight(ii, "", "light%.far").c_str());
+
         lightLocations.lightTextureIDLocation   = glGetUniformLocation(program, replaceLight(ii, "", "light%Texture").c_str());
       }
     };
@@ -522,18 +527,20 @@ void MaterialShader::setLights(const std::vector<Light>& lights, const std::vect
         glm::vec3 direction = light.direction();
 
         if(lightLocations.positionLocation>=0)
-          glUniform3fv(lightLocations.positionLocation , 1,    &position.x            );
+          glUniform3fv(lightLocations.  positionLocation, 1,    &position.x       );
 
-        glUniform3fv(lightLocations.directionLocation, 1,    &direction.x           );
-        glUniform3fv(lightLocations.ambientLocation  , 1,    &light.ambient.x       );
-        glUniform3fv(lightLocations.diffuseLocation  , 1,    &light.diffuse.x       );
-        glUniform3fv(lightLocations.specularLocation , 1,    &light.specular.x      );
-        glUniform1f (lightLocations.diffuseScaleLocation,     light.diffuseScale    );
-        glUniform1f (lightLocations.constantLocation,         light.constant        );
-        glUniform1f (lightLocations.linearLocation,           light.linear          );
-        glUniform1f (lightLocations.quadraticLocation,        light.quadratic       );
-        glUniform2fv(lightLocations.spotLightUVLocation, 1,  &light.spotLightUV.x   );
-        glUniform2fv(lightLocations.spotLightWHLocation, 1,  &light.spotLightWH.x   );
+        glUniform3fv(lightLocations.   directionLocation, 1,  &direction.x        );
+        glUniform3fv(lightLocations.     ambientLocation, 1,  &light.ambient.x    );
+        glUniform3fv(lightLocations.     diffuseLocation, 1,  &light.diffuse.x    );
+        glUniform3fv(lightLocations.    specularLocation, 1,  &light.specular.x   );
+        glUniform1f (lightLocations.diffuseScaleLocation,      light.diffuseScale );
+        glUniform1f (lightLocations.    constantLocation,      light.constant     );
+        glUniform1f (lightLocations.      linearLocation,      light.linear       );
+        glUniform1f (lightLocations.   quadraticLocation,      light.quadratic    );
+        glUniform2fv(lightLocations. spotLightUVLocation, 1,  &light.spotLightUV.x);
+        glUniform2fv(lightLocations. spotLightWHLocation, 1,  &light.spotLightWH.x);
+        glUniform1f (lightLocations.        nearLocation,      light.near         );
+        glUniform1f (lightLocations.         farLocation,      light.far          );
       }
     }
 

@@ -127,8 +127,14 @@ struct Map::Private
 
   OpenGLProfile openGLProfile{TP_DEFAULT_PROFILE};
 
-  FBO currentReadFBO;
-  FBO currentDrawFBO;
+  // The first is multisampled the second and third are not.
+  // We don't want to multisample multiple times it just makes the result blury. So what we do here
+  // is have 3 buffers, the first has the 3D geometry drawn to it and is multisampled after this the
+  // render pipeline toggles between the second and third for the remaining post processing steps.
+  FBO intermediateFBOs[3];
+
+  FBO* currentReadFBO{&intermediateFBOs[0]};
+  FBO* currentDrawFBO{&intermediateFBOs[0]};
 
   std::vector<Light> lights;
   std::vector<FBO> lightTextures;
@@ -788,8 +794,9 @@ void Map::preDelete()
   while(!d->fontRenderers.empty())
     delete tpTakeFirst(d->fontRenderers);
 
-  d->deleteBuffer(d->currentReadFBO);
-  d->deleteBuffer(d->currentDrawFBO);
+  for(size_t i=0; i<3; i++)
+    d->deleteBuffer(d->intermediateFBOs[i]);
+
   d->deleteBuffer(d->pickingBuffer);
   d->deleteBuffer(d->renderToImageBuffer);
 
@@ -1486,13 +1493,13 @@ void Map::deleteTexture(GLuint id)
 //##################################################################################################
 const FBO& Map::currentReadFBO()
 {
-  return d->currentReadFBO;
+  return *d->currentReadFBO;
 }
 
 //##################################################################################################
 const FBO& Map::currentDrawFBO()
 {
-  return d->currentDrawFBO;
+  return *d->currentDrawFBO;
 }
 
 //##################################################################################################
@@ -1580,8 +1587,9 @@ void Map::initializeGL()
     }
     d->shaders.clear();
 
-    d->invalidateBuffer(d->currentReadFBO);
-    d->invalidateBuffer(d->currentDrawFBO);
+    for(size_t i=0; i<3; i++)
+      d->invalidateBuffer(d->intermediateFBOs[i]);
+
     d->invalidateBuffer(d->pickingBuffer);
     d->invalidateBuffer(d->renderToImageBuffer);
 
@@ -1711,7 +1719,9 @@ void Map::paintGLNoMakeCurrent()
 #ifdef TP_FBO_SUPPORTED
       d->renderInfo.hdr = hdr();
       glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
-      if(!d->prepareBuffer(d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, Multisample::Yes, hdr(), 1, 0))
+      d->currentDrawFBO = &d->intermediateFBOs[0];
+      d->currentReadFBO = &d->intermediateFBOs[0];
+      if(!d->prepareBuffer(*d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, Multisample::Yes, hdr(), 1, 0))
       {
         printOpenGLError("RenderPass::PrepareDrawFBO");
         return;
@@ -1726,10 +1736,11 @@ void Map::paintGLNoMakeCurrent()
       DEBUG_printOpenGLError("RenderPass::SwapDrawFBO start");
 #ifdef TP_FBO_SUPPORTED
       d->renderInfo.hdr = hdr();
-      d->swapMultisampledBuffer(d->currentDrawFBO);
-      std::swap(d->currentDrawFBO, d->currentReadFBO);
+      d->swapMultisampledBuffer(*d->currentDrawFBO);
+      d->currentReadFBO = d->currentDrawFBO;
+      d->currentDrawFBO = (d->currentReadFBO!=&d->intermediateFBOs[1])?&d->intermediateFBOs[1]:&d->intermediateFBOs[2];
 
-      if(!d->prepareBuffer(d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, Multisample::Yes, hdr(), 1, 0))
+      if(!d->prepareBuffer(*d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, Multisample::No, hdr(), 1, 0))
       {
         printOpenGLError("RenderPass::SwapDrawFBO");
         return;
@@ -1776,7 +1787,7 @@ void Map::paintGLNoMakeCurrent()
       DEBUG_printOpenGLError("RenderPass::FinishDrawFBO start");
 #ifdef TP_FBO_SUPPORTED
       d->renderInfo.hdr = HDR::No;
-      d->swapMultisampledBuffer(d->currentDrawFBO);
+      d->swapMultisampledBuffer(*d->currentDrawFBO);
       std::swap(d->currentDrawFBO, d->currentReadFBO);
       glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
 #endif

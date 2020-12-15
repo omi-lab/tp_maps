@@ -28,6 +28,9 @@ struct Light
 
   vec2 spotLightUV;
   vec2 spotLightWH;
+
+  float near;
+  float far;
 };
 
 struct LightResult
@@ -90,26 +93,23 @@ const float pi = 3.14159265358979323846264338327950288419716939937510f;
 //See MaterialShader.cpp for documentation.
 
 //##################################################################################################
-float lineariseDepth(float depth)
+float lineariseDepth(float depth, float near, float far)
 {
-  float near = 0.01;
-  float far  = 100.0;
-
   // Scale the depth back into world coords.
   return 2.0 * near * far / (far + near - (2.0 * depth - 1.0) * (far - near));
 }
 
 //##################################################################################################
-float sampleShadowMapLinear2D(sampler2D shadowMap, vec2 coords, float compareLight, float compareDark)
+float sampleShadowMapLinear2D(sampler2D shadowMap, vec2 coords, float compareLight, float compareDark, float near, float far)
 {
   vec2 pixelPos = (coords/txlSize) - 0.5;
   vec2 fracPart = fract(pixelPos);
   vec2 startTxl = (pixelPos-fracPart) * txlSize;
 
-  float blTxl = lineariseDepth(/*TP_GLSL_TEXTURE_2D*/(shadowMap, startTxl).r);
-  float brTxl = lineariseDepth(/*TP_GLSL_TEXTURE_2D*/(shadowMap, startTxl + vec2(txlSize.x, 0.0)).r);
-  float tlTxl = lineariseDepth(/*TP_GLSL_TEXTURE_2D*/(shadowMap, startTxl + vec2(0.0, txlSize.y)).r);
-  float trTxl = lineariseDepth(/*TP_GLSL_TEXTURE_2D*/(shadowMap, startTxl + txlSize).r);
+  float blTxl = lineariseDepth(/*TP_GLSL_TEXTURE_2D*/(shadowMap, startTxl).r, near, far);
+  float brTxl = lineariseDepth(/*TP_GLSL_TEXTURE_2D*/(shadowMap, startTxl + vec2(txlSize.x, 0.0)).r, near, far);
+  float tlTxl = lineariseDepth(/*TP_GLSL_TEXTURE_2D*/(shadowMap, startTxl + vec2(0.0, txlSize.y)).r, near, far);
+  float trTxl = lineariseDepth(/*TP_GLSL_TEXTURE_2D*/(shadowMap, startTxl + txlSize).r, near, far);
 
   float mixA = mix(blTxl, tlTxl, fracPart.y);
   float mixB = mix(brTxl, trTxl, fracPart.y);
@@ -118,16 +118,16 @@ float sampleShadowMapLinear2D(sampler2D shadowMap, vec2 coords, float compareLig
 }
 
 //##################################################################################################
-float sampleShadowMapLinear3D(sampler3D shadowMap, vec2 coords, float compareLight, float compareDark, float level)
+float sampleShadowMapLinear3D(sampler3D shadowMap, vec2 coords, float compareLight, float compareDark, float level, float near, float far)
 {
   vec2 pixelPos = (coords/txlSize) - 0.5;
   vec2 fracPart = fract(pixelPos);
   vec2 startTxl = (pixelPos-fracPart) * txlSize;
 
-  float blTxl = lineariseDepth(/*TP_GLSL_TEXTURE_3D*/(shadowMap, vec3(startTxl, level)).r);
-  float brTxl = lineariseDepth(/*TP_GLSL_TEXTURE_3D*/(shadowMap, vec3(startTxl + vec2(txlSize.x, 0.0), level)).r);
-  float tlTxl = lineariseDepth(/*TP_GLSL_TEXTURE_3D*/(shadowMap, vec3(startTxl + vec2(0.0, txlSize.y), level)).r);
-  float trTxl = lineariseDepth(/*TP_GLSL_TEXTURE_3D*/(shadowMap, vec3(startTxl + txlSize, level)).r);
+  float blTxl = lineariseDepth(/*TP_GLSL_TEXTURE_3D*/(shadowMap, vec3(startTxl, level)).r, near, far);
+  float brTxl = lineariseDepth(/*TP_GLSL_TEXTURE_3D*/(shadowMap, vec3(startTxl + vec2(txlSize.x, 0.0), level)).r, near, far);
+  float tlTxl = lineariseDepth(/*TP_GLSL_TEXTURE_3D*/(shadowMap, vec3(startTxl + vec2(0.0, txlSize.y), level)).r, near, far);
+  float trTxl = lineariseDepth(/*TP_GLSL_TEXTURE_3D*/(shadowMap, vec3(startTxl + txlSize, level)).r, near, far);
 
   float mixA = mix(blTxl, tlTxl, fracPart.y);
   float mixB = mix(brTxl, trTxl, fracPart.y);
@@ -269,11 +269,14 @@ float maskLight(Light light, vec3 uv, float shadow)
 float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangent, sampler2D lightTexture, vec3 uv)
 {
   float shadow = totalSadowSamples;
-  float bias = dot(norm, -lightDirection_tangent);
-  if(bias>0.0 && uv.z>0.0 && uv.z<1.0)
+  float nDotL = dot(norm, -lightDirection_tangent);
+
+  if(nDotL>0.0 && uv.z>0.0 && uv.z<1.0)
   {
-    float linearDepth = lineariseDepth(uv.z);
-    float biasedDepth = linearDepth - clamp(1.0-bias, 0.1, 1.0) * linearDepth * 0.04;
+    float linearDepth = lineariseDepth(uv.z, light.near, light.far);
+
+    float bias = clamp((1.0-nDotL)*3.0, 0.1, 3.0) * linearDepth * linearDepth * 0.0004;
+    float biasedDepth = linearDepth - bias;
     for(int x = -shadowSamples; x <= shadowSamples; ++x)
     {
       for(int y = -shadowSamples; y <= shadowSamples; ++y)
@@ -281,7 +284,8 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
         vec2 coord = uv.xy + (vec2(x, y)*txlSize);
         if(coord.x>=0.0 && coord.x<=1.0 && coord.y>=0.0 && coord.y<=1.0)
         {
-          shadow -= 1.0-sampleShadowMapLinear2D(lightTexture, coord, biasedDepth, linearDepth);
+          float extraBias = bias*float(abs(x)+abs(y));
+          shadow -= 1.0-sampleShadowMapLinear2D(lightTexture, coord, biasedDepth-extraBias, linearDepth-extraBias, light.near, light.far);
         }
       }
     }
@@ -297,9 +301,9 @@ float spotLightSampleShadow3D(vec3 norm, Light light, vec3 lightDirection_tangen
 
   if(nDotL>0.0 && uv.z>0.0 && uv.z<1.0)
   {
-    float linearDepth = lineariseDepth(uv.z);
+    float linearDepth = lineariseDepth(uv.z, light.near, light.far);
 
-    float bias = clamp((1.0-nDotL)*3.0, 0.1, 3.0) * linearDepth * linearDepth * 0.004;
+    float bias = clamp((1.0-nDotL)*3.0, 0.1, 3.0) * linearDepth * linearDepth * 0.0004;
     float biasedDepth = linearDepth - bias;
     for(int x = -shadowSamples; x <= shadowSamples; ++x)
     {
@@ -309,7 +313,7 @@ float spotLightSampleShadow3D(vec3 norm, Light light, vec3 lightDirection_tangen
         if(coord.x>=0.0 && coord.x<=1.0 && coord.y>=0.0 && coord.y<=1.0)
         {
           float extraBias = bias*float(abs(x)+abs(y));
-          shadow -= 1.0-sampleShadowMapLinear3D(lightTexture, coord, biasedDepth-extraBias, linearDepth-extraBias, level);
+          shadow -= 1.0-sampleShadowMapLinear3D(lightTexture, coord, biasedDepth-extraBias, linearDepth-extraBias, level, light.near, light.far);
         }
       }
     }
@@ -386,8 +390,8 @@ void main()
   vec3 specular = vec3(0,0,0);
 
   // Calculate the TBN matrix used to transform between world and tangent space.
-  vec3 t = normalize(outTangent  );
-  vec3 n = normalize(outNormal   );
+  vec3 t = normalize(outTangent);
+  vec3 n = normalize(outNormal);
   vec3 b = cross(n, t);
   t = cross(n, b);
 

@@ -10,6 +10,13 @@ namespace tp_maps
 class Map;
 class ShaderPointer;
 
+struct ShaderDetails
+{
+  GLuint vertexShader{0};
+  GLuint fragmentShader{0};
+  GLuint program{0};
+};
+
 //##################################################################################################
 //! The base class for shaders.
 /*!
@@ -46,6 +53,9 @@ public:
 
   //################################################################################################
   bool error() const;
+
+  //################################################################################################
+  ShaderDetails shaderDetails(ShaderType shaderType) const;
 
 protected:
   //################################################################################################

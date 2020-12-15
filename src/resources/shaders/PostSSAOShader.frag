@@ -10,6 +10,11 @@ uniform sampler2D specularSampler;
 uniform mat4 projectionMatrix;
 uniform mat4 invProjectionMatrix;
 
+uniform float near;
+uniform float far;
+
+uniform vec3 ssaoKernel[64];
+
 /*TP_GLSL_GLFRAGCOLOR_DEF*/
 
 vec3 clipToView(vec2 texXY, float depth)
@@ -26,41 +31,92 @@ float distance2(vec3 a, vec3 b)
 
 void main()
 {
-  float depth = /*TP_GLSL_TEXTURE_2D*/(depthSampler, texCoordinate).x;
+  float depth    = /*TP_GLSL_TEXTURE_2D*/(depthSampler, texCoordinate).x;
+  vec3 normal    = /*TP_GLSL_TEXTURE_2D*/(normalsSampler, texCoordinate).xyz;
   vec3 viewCoord = clipToView(texCoordinate, depth);
 
-  float occlusions=0.0;
-  float count=0.0f;
+  vec3 rndA = vec3(0.4, 0.4, 0.0); //texture(texNoise, TexCoords * noiseScale).xyz;
+  vec3 rndB = vec3(rndA.y, rndA.z, rndA.x); //texture(texNoise, TexCoords * noiseScale).xyz;
+  vec3 randomVec = (abs(dot(rndA, normal)) > abs(dot(rndB, normal)))?rndB:rndA;
 
-  for(float x=-1.0; x<=1.0; x+=0.2)
+  vec3 t = cross(randomVec, normal);
+  vec3 n = normal;
+  vec3 b = cross(n, t);
+  t = cross(n, b);
+
+  mat3 TBN = mat3(t, b, n);
+
+  float occlusions = 0.0;
+  float radius=0.05;
+  for(int i=0; i<64; i++)
   {
-    for(float y=-1.0; y<=1.0; y+=0.2)
-    {
-      for(float z=-1.0; z<=1.0; z+=0.2)
+      // get sample position
+      vec3 samplePos = TBN * ssaoKernel[i]; // from tangent to view-space
+      samplePos = viewCoord + samplePos * radius;
+
+      vec4 clipCoord = projectionMatrix * vec4(samplePos, 1.0);
+      clipCoord /= clipCoord.w;
+      clipCoord.xyz = (clipCoord.xyz*0.5) + 0.5;
+
+      if(clipCoord.x>=0.0 && clipCoord.y>=0.0 && clipCoord.x<=1.0 && clipCoord.y<=1.0)
       {
-        vec4 clipCoord = projectionMatrix * vec4(viewCoord+vec3(x*0.01, y*0.01, z*0.01), 1.0);
-        clipCoord /= clipCoord.w;
-        clipCoord.xyz = (clipCoord.xyz*0.5) + 0.5;
+        float d = /*TP_GLSL_TEXTURE_2D*/(depthSampler, clipCoord.xy).x;
+        vec3 viewCoord2 = clipToView(clipCoord.xy, d);
 
-        if(clipCoord.x>=0.0 && clipCoord.y>=0.0 && clipCoord.x<=1.0 && clipCoord.y<=1.0)
+        float bias=0.000025;
+        if(clipCoord.z>(d+bias))
         {
-          float d = /*TP_GLSL_TEXTURE_2D*/(depthSampler, clipCoord.xy).x;
-          vec3 viewCoord2 = clipToView(clipCoord.xy, d);
-
-          if(clipCoord.z>d && distance2(viewCoord, viewCoord2)<0.01)
-            occlusions++;
-          count++;
+          float rangeCheck = smoothstep(0.0, 1.0, radius / distance(viewCoord, viewCoord2));
+          occlusions       += rangeCheck;
         }
+        //        if(depth>d)
+        //          occlusions++;
+        //count++;
       }
-    }
+
   }
 
-  occlusions = max(0.0, occlusions-(count/2.0));
+  float dim = 1.0 - (occlusions / 64.0);
 
-  float dim = clamp((1.1 - ((occlusions/count)*2.0)), 0.4, 1.0);
   /*TP_GLSL_GLFRAGCOLOR*/ = vec4(/*TP_GLSL_TEXTURE_2D*/(textureSampler, texCoordinate).xyz*dim, 1.0);
 
-  /*TP_GLSL_GLFRAGCOLOR*/ = /*TP_GLSL_TEXTURE_2D*/(normalsSampler, texCoordinate);
+//  float depth = /*TP_GLSL_TEXTURE_2D*/(depthSampler, texCoordinate).x;
+//  vec3 viewCoord = clipToView(texCoordinate, depth);
+
+//  float occlusions=0.0;
+//  float count=0.0f;
+
+//  for(float x=-1.0; x<=1.01; x+=0.2)
+//  {
+//    for(float y=-1.0; y<=1.01; y+=0.2)
+//    {
+//      for(float z=-1.0; z<=1.01; z+=0.2)
+//      {
+//        vec4 clipCoord = projectionMatrix * vec4(viewCoord+vec3(x*0.1, y*0.1, z*0.1), 1.0);
+//        clipCoord /= clipCoord.w;
+//        clipCoord.xyz = (clipCoord.xyz*0.5) + 0.5;
+
+//        if(clipCoord.x>=0.0 && clipCoord.y>=0.0 && clipCoord.x<=1.0 && clipCoord.y<=1.0)
+//        {
+//          float d = /*TP_GLSL_TEXTURE_2D*/(depthSampler, clipCoord.xy).x;
+//          vec3 viewCoord2 = clipToView(clipCoord.xy, d);
+
+//          if(clipCoord.z>d)
+//            occlusions += 1.0 - min(distance(viewCoord, viewCoord2) * 0.1, 1.0);
+//          count++;
+//        }
+//      }
+//    }
+//  }
+
+//  occlusions = max(0.0, occlusions-(count/2.0));
+
+//  float dim = clamp((1.0 - ((occlusions/count)*1.5)), 0.9, 1.0);
+//  dim = pow(dim, 0.2);
+
+//  /*TP_GLSL_GLFRAGCOLOR*/ = vec4(/*TP_GLSL_TEXTURE_2D*/(textureSampler, texCoordinate).xyz*dim, 1.0);
+
+  ///*TP_GLSL_GLFRAGCOLOR*/ = /*TP_GLSL_TEXTURE_2D*/(normalsSampler, texCoordinate);
 
 
 

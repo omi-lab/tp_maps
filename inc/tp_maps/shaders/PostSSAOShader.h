@@ -16,7 +16,18 @@ public:
   PostSSAOShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
 
   //################################################################################################
+  ~PostSSAOShader();
+
+  //################################################################################################
+  void use(ShaderType shaderType = ShaderType::Render) override;
+
+  //################################################################################################
   static inline const tp_utils::StringID& name(){return postSSAOShaderSID();}
+
+private:
+  struct Private;
+  friend struct Private;
+  Private* d;
 };
 
 }
