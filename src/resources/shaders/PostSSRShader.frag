@@ -31,7 +31,7 @@ float distance2(vec3 a, vec3 b)
 }
 
 vec3 fragColorR = vec3(0.0);
-float count=0;
+float count=0.0;
 void takeSample(vec3 viewCoord, vec3 reflectRay, vec3 noise)
 {
   reflectRay = normalize(reflectRay+noise);
@@ -71,10 +71,12 @@ void main()
   vec3 cameraRay  = normalize(viewCoord);
   vec3 reflectRay = normalize(reflect(cameraRay, normal));
 
-  for(float x=-1; x<=1.01; x+=0.5)
-    for(float y=-1; y<=1.01; y+=0.5)
-      for(float z=-1; z<=1.01; z+=0.5)
-        takeSample(viewCoord, reflectRay, vec3(x,y,z)*0.1);
+  // for(float x=-1.0; x<=1.01; x+=0.5)
+  //   for(float y=-1.0; y<=1.01; y+=0.5)
+  //     for(float z=-1.0; z<=1.01; z+=0.5)
+  //       takeSample(viewCoord, reflectRay, vec3(x,y,z)*0.1);
+
+  takeSample(viewCoord, reflectRay, vec3(0.0,0.0,0.0));
 
   if(count>1.0)
     fragColorR /= count;
