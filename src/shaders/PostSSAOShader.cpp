@@ -1,5 +1,7 @@
 #include "tp_maps/shaders/PostSSAOShader.h"
 
+#include "tp_utils/DebugUtils.h"
+
 #include "glm/gtc/type_ptr.hpp"
 
 namespace tp_maps

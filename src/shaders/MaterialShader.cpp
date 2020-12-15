@@ -526,13 +526,12 @@ void MaterialShader::setLights(const std::vector<Light>& lights, const std::vect
         glm::vec3 position = light.position();
         glm::vec3 direction = light.direction();
 
-        if(lightLocations.positionLocation>=0)
-          glUniform3fv(lightLocations.  positionLocation, 1,    &position.x       );
+        if(lightLocations. positionLocation>=0) glUniform3fv(lightLocations. positionLocation, 1,    &position.x       );
+        if(lightLocations.directionLocation>=0) glUniform3fv(lightLocations.directionLocation, 1,  &direction.x        );
+        if(lightLocations.  ambientLocation>=0) glUniform3fv(lightLocations.  ambientLocation, 1,  &light.ambient.x    );
+        if(lightLocations.  diffuseLocation>=0) glUniform3fv(lightLocations.  diffuseLocation, 1,  &light.diffuse.x    );
+        if(lightLocations. specularLocation>=0) glUniform3fv(lightLocations. specularLocation, 1,  &light.specular.x   );
 
-        glUniform3fv(lightLocations.   directionLocation, 1,  &direction.x        );
-        glUniform3fv(lightLocations.     ambientLocation, 1,  &light.ambient.x    );
-        glUniform3fv(lightLocations.     diffuseLocation, 1,  &light.diffuse.x    );
-        glUniform3fv(lightLocations.    specularLocation, 1,  &light.specular.x   );
         glUniform1f (lightLocations.diffuseScaleLocation,      light.diffuseScale );
         glUniform1f (lightLocations.    constantLocation,      light.constant     );
         glUniform1f (lightLocations.      linearLocation,      light.linear       );
@@ -592,8 +591,11 @@ void MaterialShader::setMatrix(const glm::mat4& m, const glm::mat4& v, const glm
     glUniformMatrix4fv(locations.mvpMatrixLocation, 1, GL_FALSE, glm::value_ptr(mvp));
     glUniformMatrix4fv(locations.vMatrixLocation, 1, GL_FALSE, glm::value_ptr(v));
 
-    glm::vec3 cameraOrigin_world = glm::inverse(v) * glm::vec4(0,0,0,1);
-    glUniform3fv(locations.cameraOriginLocation, 1, &cameraOrigin_world.x);
+    if(locations.cameraOriginLocation)
+    {
+      glm::vec3 cameraOrigin_world = glm::inverse(v) * glm::vec4(0,0,0,1);
+      glUniform3fv(locations.cameraOriginLocation, 1, &cameraOrigin_world.x);
+    }
   };
 
   switch(d->shaderType)

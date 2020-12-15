@@ -1,5 +1,3 @@
-
-//out vec4 fragColor;
 out vec4 fragNormal;
 out vec4 fragSpecular;
 
