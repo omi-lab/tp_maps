@@ -141,6 +141,15 @@ public:
   const std::vector<Layer*>& layers() const;
 
   //################################################################################################
+  template<typename T>
+  void findLayers(const std::function<void(T*)>& closure)
+  {
+    for(auto l : layers())
+      if(auto ll = dynamic_cast<T*>(l); ll)
+        closure(ll);
+  }
+
+  //################################################################################################
   void setMaxLightTextureSize(size_t maxLightTextureSize);
 
   //################################################################################################
@@ -261,7 +270,22 @@ public:
   void deleteTexture(GLuint id);
 
   //################################################################################################
-  //! Use this to allocate your shaders
+  //! Use this to allocate your shaders if they have parameters.
+  template<typename T>
+  T* getShader(const std::function<T*(Map*, tp_maps::OpenGLProfile)>& factory)
+  {
+    const tp_utils::StringID& name = T::name();
+    T* shader = static_cast<T*>(getShader(name));
+    if(!shader)
+    {
+      shader = factory(this, openGLProfile());
+      addShader(name, shader);
+    }
+    return shader;
+  }
+
+  //################################################################################################
+  //! Use this to allocate your shaders.
   /*!
   This will either return an existing shader created in a previous call or create a new shader and
   add it to the shader. This allows shaders to be shared between layers.
@@ -269,15 +293,12 @@ public:
   template<typename T>
   T* getShader()
   {
-    const tp_utils::StringID& name = T::name();
-    T* shader = static_cast<T*>(getShader(name));
-    if(!shader)
-    {
-      shader = new T(this, openGLProfile());
-      addShader(name, shader);
-    }
-    return shader;
+    return getShader<T>([](Map* m, tp_maps::OpenGLProfile p){return new T(m, p);});
   }
+
+  //################################################################################################
+  //! Use this to delete shaders to force a recompile, no need to delete shader once you are done.
+  void deleteShader(const tp_utils::StringID& name);
 
   //################################################################################################
   const FBO& currentReadFBO();

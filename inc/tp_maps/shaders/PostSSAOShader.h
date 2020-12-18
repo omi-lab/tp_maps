@@ -7,13 +7,33 @@ namespace tp_maps
 {
 
 //##################################################################################################
+struct PostSSAOParameters
+{
+  bool useScreenBuffer{true};
+  bool useLightBuffers{false};
+  float radius{0.05f};
+  size_t nSamples{64};
+};
+
+//##################################################################################################
+class PostSSAOShader;
+class PostSSAOShaderPrivate
+{
+private:
+  struct Private;
+  Private* d;
+  friend class PostSSAOShader;
+  PostSSAOShaderPrivate(Map* map, tp_maps::OpenGLProfile openGLProfile, const PostSSAOParameters& parameters);
+};
+
+//##################################################################################################
 //! A shader for Screen Space Ambient Occlusion.
-class TP_MAPS_SHARED_EXPORT PostSSAOShader: public PostShader
+class TP_MAPS_SHARED_EXPORT PostSSAOShader:private PostSSAOShaderPrivate, public PostShader
 {
   friend class Map;
 public:
   //################################################################################################
-  PostSSAOShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+  PostSSAOShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const PostSSAOParameters& parameters);
 
   //################################################################################################
   ~PostSSAOShader();
@@ -25,9 +45,12 @@ public:
   static inline const tp_utils::StringID& name(){return postSSAOShaderSID();}
 
 private:
-  struct Private;
-  friend struct Private;
-  Private* d;
+
+  //################################################################################################
+  //! Called by use()
+  void setLights(const std::vector<Light>& lights, const std::vector<FBO>& lightBuffers);
+
+  PostSSAOShaderPrivate::Private* d;
 };
 
 }

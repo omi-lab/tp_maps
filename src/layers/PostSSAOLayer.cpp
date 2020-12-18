@@ -6,30 +6,60 @@ namespace tp_maps
 {
 
 //##################################################################################################
-PostSSAOLayer::PostSSAOLayer(Map* map, RenderPass customRenderPass):
-  PostLayer(map, customRenderPass)
+struct PostSSAOLayer::Private
 {
-  std::uniform_real_distribution<float> randomFloats(0.0, 1.0); // random floats between [0.0, 1.0]
-  std::default_random_engine generator;
-  std::vector<glm::vec3> ssaoKernel;
-  for (unsigned int i = 0; i < 64; ++i)
+  PostSSAOLayer* q;
+  PostSSAOParameters parameters;
+
+  //################################################################################################
+  void recompileShaders()
   {
-    glm::vec3 sample(
-          randomFloats(generator) * 2.0f - 1.0f,
-          randomFloats(generator) * 2.0f - 1.0f,
-          randomFloats(generator)
-          );
-    sample  = glm::normalize(sample);
-    sample *= randomFloats(generator);
-    ssaoKernel.push_back(sample);
+    if(q->map())
+      q->map()->deleteShader(PostSSAOShader::name());
   }
 
+  //################################################################################################
+  Private(PostSSAOLayer* q_):
+    q(q_)
+  {
+
+  }
+};
+
+//##################################################################################################
+PostSSAOLayer::PostSSAOLayer(Map* map, RenderPass customRenderPass):
+  PostLayer(map, customRenderPass),
+  d(new Private(this))
+{
+
+}
+
+//##################################################################################################
+PostSSAOLayer::~PostSSAOLayer()
+{
+  delete d;
+}
+
+//##################################################################################################
+const PostSSAOParameters& PostSSAOLayer::parameters() const
+{
+  return d->parameters;
+}
+
+//##################################################################################################
+void PostSSAOLayer::setParameters(const PostSSAOParameters& parameters)
+{
+  d->parameters = parameters;
+  d->recompileShaders();
 }
 
 //##################################################################################################
 PostShader* PostSSAOLayer::makeShader()
 {
-  return map()->getShader<PostSSAOShader>();
+  return map()->getShader<PostSSAOShader>([&](Map* m, tp_maps::OpenGLProfile p)
+  {
+    return new PostSSAOShader(m, p, d->parameters);
+  });
 }
 
 }

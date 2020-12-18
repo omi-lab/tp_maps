@@ -341,7 +341,6 @@ struct Map::Private
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glBindTexture(GL_TEXTURE_2D, 0);
     DEBUG_printOpenGLError("prepareBuffer generate 2D texture for depth buffer");
   }
 
@@ -374,7 +373,6 @@ struct Map::Private
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glBindTexture(GL_TEXTURE_3D, 0);
     DEBUG_printOpenGLError("prepareBuffer generate 3D texture for depth buffer");
   }
 
@@ -653,6 +651,7 @@ struct Map::Private
       DEBUG_printOpenGLError("swapMultisampledBuffer bind FBO");
     }
 #else
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     TP_UNUSED(buffer);
 #endif
   }
@@ -1488,6 +1487,20 @@ void Map::deleteTexture(GLuint id)
 {
   if(id>0)
     glDeleteTextures(1, &id);
+}
+
+//##################################################################################################
+void Map::deleteShader(const tp_utils::StringID& name)
+{
+  auto i = d->shaders.find(name);
+  if(i == d->shaders.end())
+    return;
+
+  makeCurrent();
+  delete i->second;
+  d->shaders.erase(i);
+
+  update();
 }
 
 //##################################################################################################

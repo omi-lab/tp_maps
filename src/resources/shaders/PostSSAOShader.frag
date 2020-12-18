@@ -1,6 +1,6 @@
 /*TP_FRAG_SHADER_HEADER*/
 
-/*TP_GLSL_IN_F*/vec2 texCoordinate;
+/*TP_GLSL_IN_F*/vec2 coord_tex;
 
 uniform sampler2D textureSampler;
 uniform sampler2D depthSampler;
@@ -13,30 +13,94 @@ uniform mat4 invProjectionMatrix;
 uniform float near;
 uniform float far;
 
-uniform vec3 ssaoKernel[64];
+const float discardOpacity=0.8;
+
+/*AO_FRAG_VARS*/
+
+uniform vec3 ssaoKernel[N_SAMPLES];
 
 /*TP_GLSL_GLFRAGCOLOR_DEF*/
+/*TP_WRITE_FRAGMENT*/
 
-vec3 clipToView(vec2 texXY, float depth)
+//##################################################################################################
+float calcBias(float depth, mat4 projectionMatrix, mat4 invProjectionMatrix, float biasMeters)
 {
-  vec4 viewCoord = invProjectionMatrix * vec4((texXY*2.0)-1.0, depth*2.0-1.0, 1.0);
-  return viewCoord.xyz / viewCoord.w;
+  return 0.000025;
 }
 
-float distance2(vec3 a, vec3 b)
+//##################################################################################################
+vec3 clipToView(vec2 xy_tex, float depth, mat4 invProjectionMatrix)
 {
-  vec3 c = a - b;
-  return dot(c, c);
+  vec4 coord_view = invProjectionMatrix * vec4((xy_tex*2.0)-1.0, depth*2.0-1.0, 1.0);
+  return coord_view.xyz / coord_view.w;
 }
 
+//##################################################################################################
+vec2 testBuffer2D(vec3 coord_view, vec3 samplePos_view, mat4 projectionMatrix, mat4 invProjectionMatrix, sampler2D depthSampler)
+{
+  vec4 samplePos_clip = projectionMatrix * vec4(samplePos_view, 1.0);
+  samplePos_clip /= samplePos_clip.w;
+  samplePos_clip.xyz = (samplePos_clip.xyz*0.5) + 0.5;
+
+  if(samplePos_clip.x>=0.0 && samplePos_clip.y>=0.0 && samplePos_clip.x<=1.0 && samplePos_clip.y<=1.0)
+  {
+    float d = /*TP_GLSL_TEXTURE_2D*/(depthSampler, samplePos_clip.xy).x;
+    vec3 coord_view2 = clipToView(samplePos_clip.xy, d, invProjectionMatrix);
+
+    float bias=calcBias(d, projectionMatrix, invProjectionMatrix, 0.0001);
+    if(samplePos_clip.z>(d+bias))
+    {
+      float dim = 1.0-clamp(distance(samplePos_view, coord_view2) / radius, 0.0, 1.0);
+      if(dim>0.1)
+        return vec2(dim, 0.0);
+    }
+    else
+      return vec2(0.0, 0.0);
+  }
+
+  return vec2(1.0, 1.0);
+}
+
+//##################################################################################################
+vec2 testBuffer3D(vec3 coord_view, vec3 samplePos_view, mat4 projectionMatrix, mat4 invProjectionMatrix, sampler3D depthSampler)
+{
+  vec4 samplePos_clip = projectionMatrix * vec4(samplePos_view, 1.0);
+  samplePos_clip /= samplePos_clip.w;
+  samplePos_clip.xyz = (samplePos_clip.xyz*0.5) + 0.5;
+
+  if(samplePos_clip.x>=0.0 && samplePos_clip.y>=0.0 && samplePos_clip.x<=1.0 && samplePos_clip.y<=1.0)
+  {
+    float d = /*TP_GLSL_TEXTURE_3D*/(depthSampler, vec3(samplePos_clip.xy, 0.0)).x;
+    vec3 coord_view2 = clipToView(samplePos_clip.xy, d, invProjectionMatrix);
+
+    float bias=calcBias(d, projectionMatrix, invProjectionMatrix, 0.0001);
+    if(samplePos_clip.z>(d+bias))
+    {
+      float dim = 1.0-clamp(distance(samplePos_view, coord_view2) / radius, 0.0, 1.0);
+      if(dim>0.1)
+        return vec2(dim, 0.0);
+    }
+    else
+      return vec2(0.0, 0.0);
+  }
+
+  return vec2(1.0, 1.0);
+}
+
+//##################################################################################################
 void main()
 {
-  float depth    = /*TP_GLSL_TEXTURE_2D*/(depthSampler, texCoordinate).x;
-  vec3 normal    = /*TP_GLSL_TEXTURE_2D*/(normalsSampler, texCoordinate).xyz;
-  vec3 viewCoord = clipToView(texCoordinate, depth);
+  float depth   = /*TP_GLSL_TEXTURE_2D*/(depthSampler   , coord_tex).x;
+  gl_FragDepth = depth;
+
+  vec3 normal   = /*TP_GLSL_TEXTURE_2D*/(normalsSampler , coord_tex).xyz;
+  //vec3 specular = /*TP_GLSL_TEXTURE_2D*/(specularSampler, coord_tex).xyz;
+
+  //The position of the current texel in view coords
+  vec3 coord_view = clipToView(coord_tex, depth, invProjectionMatrix);
 
   vec3 rndA = vec3(0.4, 0.4, 0.0); //texture(texNoise, TexCoords * noiseScale).xyz;
-  vec3 rndB = vec3(rndA.y, rndA.z, rndA.x); //texture(texNoise, TexCoords * noiseScale).xyz;
+  vec3 rndB = vec3(rndA.y, rndA.z, rndA.x);
   vec3 randomVec = (abs(dot(rndA, normal)) > abs(dot(rndB, normal)))?rndB:rndA;
 
   vec3 t = cross(randomVec, normal);
@@ -47,82 +111,30 @@ void main()
   mat3 TBN = mat3(t, b, n);
 
   float occlusions = 0.0;
-  float radius=0.05;
-  for(int i=0; i<64; i++)
+  for(int i=0; i<N_SAMPLES; i++)
   {
-      // get sample position
-      vec3 samplePos = TBN * ssaoKernel[i]; // from tangent to view-space
-      samplePos = viewCoord + samplePos * radius;
+    vec2 occlusion = vec2(1.0);
 
-      vec4 clipCoord = projectionMatrix * vec4(samplePos, 1.0);
-      clipCoord /= clipCoord.w;
-      clipCoord.xyz = (clipCoord.xyz*0.5) + 0.5;
+    vec3 samplePos_view = TBN * ssaoKernel[i];
+    samplePos_view = coord_view + samplePos_view * radius;
 
-      if(clipCoord.x>=0.0 && clipCoord.y>=0.0 && clipCoord.x<=1.0 && clipCoord.y<=1.0)
-      {
-        float d = /*TP_GLSL_TEXTURE_2D*/(depthSampler, clipCoord.xy).x;
-        vec3 viewCoord2 = clipToView(clipCoord.xy, d);
+    /*AO_FRAG_CALC*/
 
-        float bias=0.000025;
-        if(clipCoord.z>(d+bias))
-        {
-          float rangeCheck = smoothstep(0.0, 1.0, radius / distance(viewCoord, viewCoord2));
-          occlusions       += rangeCheck;
-        }
-        //        if(depth>d)
-        //          occlusions++;
-        //count++;
-      }
-
+    occlusions += occlusion.x - occlusion.y;
   }
 
-  float dim = 1.0 - (occlusions / 64.0);
+  float dim = 1.0 - (occlusions / float(N_SAMPLES));
 
-  /*TP_GLSL_GLFRAGCOLOR*/ = vec4(/*TP_GLSL_TEXTURE_2D*/(textureSampler, texCoordinate).xyz*dim, 1.0);
+  vec3 ambient = /*TP_GLSL_TEXTURE_2D*/(textureSampler, coord_tex).xyz*dim;
+  //vec3 ambient = vec3(dim);
 
-//  float depth = /*TP_GLSL_TEXTURE_2D*/(depthSampler, texCoordinate).x;
-//  vec3 viewCoord = clipToView(texCoordinate, depth);
+  //vec3 ambient = vec3(depth);
 
-//  float occlusions=0.0;
-//  float count=0.0f;
+  vec3 diffuse = vec3(0.0);
+  vec3 specular = vec3(0.0);
+  float alpha = 1.0;
+  vec3 materialSpecular = vec3(0.0);
+  float shininess = 0.0;
 
-//  for(float x=-1.0; x<=1.01; x+=0.2)
-//  {
-//    for(float y=-1.0; y<=1.01; y+=0.2)
-//    {
-//      for(float z=-1.0; z<=1.01; z+=0.2)
-//      {
-//        vec4 clipCoord = projectionMatrix * vec4(viewCoord+vec3(x*0.1, y*0.1, z*0.1), 1.0);
-//        clipCoord /= clipCoord.w;
-//        clipCoord.xyz = (clipCoord.xyz*0.5) + 0.5;
-
-//        if(clipCoord.x>=0.0 && clipCoord.y>=0.0 && clipCoord.x<=1.0 && clipCoord.y<=1.0)
-//        {
-//          float d = /*TP_GLSL_TEXTURE_2D*/(depthSampler, clipCoord.xy).x;
-//          vec3 viewCoord2 = clipToView(clipCoord.xy, d);
-
-//          if(clipCoord.z>d)
-//            occlusions += 1.0 - min(distance(viewCoord, viewCoord2) * 0.1, 1.0);
-//          count++;
-//        }
-//      }
-//    }
-//  }
-
-//  occlusions = max(0.0, occlusions-(count/2.0));
-
-//  float dim = clamp((1.0 - ((occlusions/count)*1.5)), 0.9, 1.0);
-//  dim = pow(dim, 0.2);
-
-//  /*TP_GLSL_GLFRAGCOLOR*/ = vec4(/*TP_GLSL_TEXTURE_2D*/(textureSampler, texCoordinate).xyz*dim, 1.0);
-
-  ///*TP_GLSL_GLFRAGCOLOR*/ = /*TP_GLSL_TEXTURE_2D*/(normalsSampler, texCoordinate);
-
-
-
-  // float d = /*TP_GLSL_TEXTURE_2D*/(depthSampler, texCoordinate).x;
-  // float d = occlusions/count;
-  // float d = length(viewCoord.xyz);
-  // float d = clamp((1.0 - ((occlusions/count)*2.0)), 0.0, 1.0);
-  // /*TP_GLSL_GLFRAGCOLOR*/ = vec4(dim, dim, dim, 1.0f);
+  writeFragment(ambient, diffuse, specular, normal, alpha, materialSpecular, shininess);
 }

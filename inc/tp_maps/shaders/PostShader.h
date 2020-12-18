@@ -16,6 +16,9 @@ public:
   PostShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const char* vertexShader, const char* fragmentShader);
 
   //################################################################################################
+  PostShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const std::string& fragmentShader);
+
+  //################################################################################################
   ~PostShader() override;
 
   //################################################################################################

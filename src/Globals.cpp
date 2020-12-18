@@ -23,6 +23,7 @@ TP_DEFINE_ID(                   fontShaderSID,                      "Font shader
 TP_DEFINE_ID(                  frameShaderSID,                     "Frame shader");
 TP_DEFINE_ID(               postSSAOShaderSID,                 "Post ssao shader");
 TP_DEFINE_ID(                postSSRShaderSID,                  "Post ssr shader");
+TP_DEFINE_ID(               postBlitShaderSID,                 "Post blit shader");
 
 //##################################################################################################
 int tp_rc();
@@ -104,7 +105,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_OUT_F*/",             "out ");
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;");
     replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
     replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
@@ -122,7 +123,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_OUT_F*/",             "out ");
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;");
     replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
     replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
@@ -140,7 +141,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_OUT_F*/",             "out ");
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;");
     replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
     replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
@@ -158,7 +159,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_OUT_F*/",             "out ");
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;");
     replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
     replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
@@ -176,7 +177,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_OUT_F*/",             "out ");
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;");
     replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
     replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
@@ -194,7 +195,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_OUT_F*/",             "out ");
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;");
     replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
     replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
@@ -212,7 +213,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_OUT_F*/",             "out ");
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;");
     replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
     replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
@@ -230,7 +231,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_OUT_F*/",             "out ");
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;");
     replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
     replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
@@ -248,7 +249,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_OUT_F*/",             "out ");
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;");
     replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
     replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
@@ -266,7 +267,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_OUT_F*/",             "out ");
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;");
     replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
     replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
@@ -284,7 +285,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_OUT_F*/",             "out ");
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "out vec4 fragColor;\n");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "layout(location = 0) out vec4 fragColor;");
     replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
     replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
@@ -320,7 +321,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_OUT_F*/",             "out ");
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "layout(location = 0) out vec4 fragColor;\n");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "layout(location = 0) out vec4 fragColor;");
     replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
     replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
@@ -338,7 +339,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_OUT_F*/",             "out ");
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "layout(location = 0) out vec4 fragColor;\n");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "layout(location = 0) out vec4 fragColor;");
     replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
     replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
@@ -356,7 +357,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     replace("/*TP_GLSL_OUT_F*/",             "out ");
     replace("/*TP_GLSL_GLFRAGCOLOR*/",       "fragColor");
     replace("/*TP_GLSL_GLFRAGCOLOR_EMPTY*/", "");
-    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "layout(location = 0) out vec4 fragColor;\n");
+    replace("/*TP_GLSL_GLFRAGCOLOR_DEF*/",   "layout(location = 0) out vec4 fragColor;");
     replace("/*TP_GLSL_TEXTURE_2D*/",        "texture");
     replace("/*TP_GLSL_TEXTURE_3D*/",        "texture");
     break;
@@ -394,12 +395,18 @@ ShaderResource::ShaderResource(const std::string& resourceName):
 //##################################################################################################
 const char* ShaderResource::data(OpenGLProfile openGLProfile, ShaderType shaderType)
 {
+  return dataStr(openGLProfile, shaderType).c_str();
+}
+
+//##################################################################################################
+const std::string& ShaderResource::dataStr(OpenGLProfile openGLProfile, ShaderType shaderType)
+{
   std::string& parsed = m_parsed[openGLProfile][shaderType];
 
   if(parsed.empty())
     parsed = parseShaderString(tp_utils::resource(m_resourceName).data, openGLProfile, shaderType);
 
-  return parsed.c_str();
+  return parsed;
 }
 
 //##################################################################################################

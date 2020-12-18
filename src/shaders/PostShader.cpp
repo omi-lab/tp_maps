@@ -18,7 +18,8 @@ struct PostShader::Private
 {
   TP_REF_COUNT_OBJECTS("tp_maps::PostShader::Private");
   TP_NONCOPYABLE(Private);
-  Private() = default;
+
+  PostShader* q;
 
   GLuint vboID{0};
 
@@ -35,6 +36,46 @@ struct PostShader::Private
   GLint invProjectionMatrixLocation{0};
 
   //################################################################################################
+  Private(PostShader* q_, tp_maps::OpenGLProfile openGLProfile, const char* vertexShader, const char* fragmentShader):
+    q(q_)
+  {
+    if(!vertexShader)
+      vertexShader = vertShaderStr().data(openGLProfile, ShaderType::RenderHDR);
+
+
+    q->compile(vertexShader,
+            fragmentShader,
+            [](GLuint program)
+    {
+      glBindAttribLocation(program, 0, "inVertex");
+    },
+    [&](GLuint program)
+    {
+      textureLocation  = glGetUniformLocation(program, "textureSampler");
+      depthLocation    = glGetUniformLocation(program, "depthSampler");
+      normalsLocation  = glGetUniformLocation(program, "normalsSampler");
+      specularLocation = glGetUniformLocation(program, "specularSampler");
+
+      projectionMatrixLocation = glGetUniformLocation(program, "projectionMatrix");
+      invProjectionMatrixLocation = glGetUniformLocation(program, "invProjectionMatrix");
+    }, ShaderType::RenderHDR);
+
+    std::vector<glm::vec2> verts{{0,0}, {1,0}, {1,1}, {0,1}};
+
+    glGenBuffers(1, &vboID);
+    glBindBuffer(GL_ARRAY_BUFFER, vboID);
+    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(verts.size()*sizeof(glm::vec2)), verts.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+  #ifdef TP_VERTEX_ARRAYS_SUPPORTED
+    tpGenVertexArrays(1, &vaoID);
+    tpBindVertexArray(vaoID);
+    bindVBO();
+    tpBindVertexArray(0);
+  #endif
+  }
+
+  //################################################################################################
   void bindVBO()
   {
     glBindBuffer(GL_ARRAY_BUFFER, vboID);
@@ -46,42 +87,17 @@ struct PostShader::Private
 //##################################################################################################
 PostShader::PostShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const char* vertexShader, const char* fragmentShader):
   Shader(map, openGLProfile),
-  d(new Private())
+  d(new Private(this, openGLProfile, vertexShader, fragmentShader))
 {
-  if(!vertexShader)
-    vertexShader = vertShaderStr().data(openGLProfile, ShaderType::Render);
 
+}
 
-  compile(vertexShader,
-          fragmentShader,
-          [](GLuint program)
-  {
-    glBindAttribLocation(program, 0, "inVertex");
-  },
-  [&](GLuint program)
-  {
-    d->textureLocation  = glGetUniformLocation(program, "textureSampler");
-    d->depthLocation    = glGetUniformLocation(program, "depthSampler");
-    d->normalsLocation  = glGetUniformLocation(program, "normalsSampler");
-    d->specularLocation = glGetUniformLocation(program, "specularSampler");
+//##################################################################################################
+PostShader::PostShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const std::string& fragmentShader):
+  Shader(map, openGLProfile),
+  d(new Private(this, openGLProfile, nullptr, fragmentShader.data()))
+{
 
-    d->projectionMatrixLocation = glGetUniformLocation(program, "projectionMatrix");
-    d->invProjectionMatrixLocation = glGetUniformLocation(program, "invProjectionMatrix");
-  });
-
-  std::vector<glm::vec2> verts{{0,0}, {1,0}, {1,1}, {0,1}};
-
-  glGenBuffers(1, &d->vboID);
-  glBindBuffer(GL_ARRAY_BUFFER, d->vboID);
-  glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(verts.size()*sizeof(glm::vec2)), verts.data(), GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-#ifdef TP_VERTEX_ARRAYS_SUPPORTED
-  tpGenVertexArrays(1, &d->vaoID);
-  tpBindVertexArray(d->vaoID);
-  d->bindVBO();
-  tpBindVertexArray(0);
-#endif
 }
 
 //##################################################################################################

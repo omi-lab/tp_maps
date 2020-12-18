@@ -10,7 +10,7 @@ ShaderResource& fragShaderStr(){static ShaderResource s{"/tp_maps/PostBlitShader
 
 //##################################################################################################
 PostBlitShader::PostBlitShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
-  PostShader(map, openGLProfile, nullptr, fragShaderStr().data(openGLProfile, ShaderType::Render))
+  PostShader(map, openGLProfile, nullptr, fragShaderStr().data(openGLProfile, ShaderType::RenderHDR))
 {
 
 }

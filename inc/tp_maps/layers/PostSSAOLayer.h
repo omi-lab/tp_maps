@@ -3,6 +3,8 @@
 
 #include "tp_maps/layers/PostLayer.h"
 
+#include "tp_maps/shaders/PostSSAOShader.h"
+
 namespace tp_maps
 {
 
@@ -13,9 +15,23 @@ public:
   //################################################################################################
   PostSSAOLayer(Map* map, RenderPass customRenderPass);
 
+  //################################################################################################
+  ~PostSSAOLayer() override;
+
+  //################################################################################################
+  const PostSSAOParameters& parameters() const;
+
+  //################################################################################################
+  void setParameters(const PostSSAOParameters& parameters);
+
 protected:
   //################################################################################################
   PostShader* makeShader() override;
+
+private:
+  struct Private;
+  friend struct Private;
+  Private* d;
 };
 
 }

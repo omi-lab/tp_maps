@@ -2,7 +2,7 @@
 
 /*TP_GLSL_IN_F*/vec3 LightVector0;
 /*TP_GLSL_IN_F*/vec3 EyeNormal;
-/*TP_GLSL_IN_F*/vec2 texCoordinate;
+/*TP_GLSL_IN_F*/vec2 coord_tex;
 
 uniform sampler2D textureSampler;
 uniform vec4 color;
@@ -15,7 +15,7 @@ void main()
   float far  = 100.0;
 
   // Get the z value from the depth texture.
-  float depth = /*TP_GLSL_TEXTURE_2D*/(textureSampler, texCoordinate).x;
+  float depth = /*TP_GLSL_TEXTURE_2D*/(textureSampler, coord_tex).x;
 
   // Scale the depth back into world coords.
   depth = 2.0 * near * far / (far + near - (2.0 * depth - 1.0) * (far - near));

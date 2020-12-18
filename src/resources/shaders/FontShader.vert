@@ -6,10 +6,10 @@
 
 uniform mat4 matrix;
 
-/*TP_GLSL_OUT_V*/vec2 texCoordinate;
+/*TP_GLSL_OUT_V*/vec2 coord_tex;
 
 void main()
 {
   gl_Position = matrix * vec4(inVertex, 1.0);
-  texCoordinate = inTexture;
+  coord_tex = inTexture;
 }

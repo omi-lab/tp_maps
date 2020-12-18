@@ -1,6 +1,6 @@
 /*TP_FRAG_SHADER_HEADER*/
 
-/*TP_GLSL_IN_F*/vec2 texCoordinate;
+/*TP_GLSL_IN_F*/vec2 coord_tex;
 
 uniform sampler2D textureSampler;
 uniform sampler2D depthSampler;
@@ -10,11 +10,15 @@ uniform sampler2D specularSampler;
 uniform mat4 projectionMatrix;
 uniform mat4 invProjectionMatrix;
 
-/*TP_GLSL_GLFRAGCOLOR_DEF*/
+const float discardOpacity=0.8;
 
-vec3 clipToView(vec2 texXY, float depth)
+//out float gl_FragDepth;
+/*TP_GLSL_GLFRAGCOLOR_DEF*/
+/*TP_WRITE_FRAGMENT*/
+
+vec3 clipToView(vec2 xy_tex, float depth)
 {
-  vec4 viewCoord = invProjectionMatrix * vec4((texXY*2.0)-1.0, depth*2.0-1.0, 1.0);
+  vec4 viewCoord = invProjectionMatrix * vec4((xy_tex*2.0)-1.0, depth*2.0-1.0, 1.0);
   return viewCoord.xyz / viewCoord.w;
 }
 
@@ -62,11 +66,13 @@ void takeSample(vec3 viewCoord, vec3 reflectRay, vec3 noise)
 
 void main()
 {
-  float depth  = /*TP_GLSL_TEXTURE_2D*/(depthSampler, texCoordinate).x;
-  vec3  normal = normalize(/*TP_GLSL_TEXTURE_2D*/(normalsSampler, texCoordinate).xyz);
+  float depth  = /*TP_GLSL_TEXTURE_2D*/(depthSampler, coord_tex).x;
+  gl_FragDepth = depth;
+
+  vec3  normal = normalize(/*TP_GLSL_TEXTURE_2D*/(normalsSampler, coord_tex).xyz);
 
   // The fragment position in view space
-  vec3 viewCoord = clipToView(texCoordinate, depth);
+  vec3 viewCoord = clipToView(coord_tex, depth);
 
   vec3 cameraRay  = normalize(viewCoord);
   vec3 reflectRay = normalize(reflect(cameraRay, normal));
@@ -81,21 +87,16 @@ void main()
   if(count>1.0)
     fragColorR /= count;
 
-  vec3 fragColorA = /*TP_GLSL_TEXTURE_2D*/(textureSampler, texCoordinate).xyz;
-  float metalness = /*TP_GLSL_TEXTURE_2D*/(specularSampler, texCoordinate).x;
+  vec3 fragColorA = /*TP_GLSL_TEXTURE_2D*/(textureSampler, coord_tex).xyz;
+  float metalness = /*TP_GLSL_TEXTURE_2D*/(specularSampler, coord_tex).x;
 
-  /*TP_GLSL_GLFRAGCOLOR*/ = vec4(fragColorA+(fragColorR*metalness), 1.0);
+  vec3 ambient = fragColorA+(fragColorR*metalness);
 
+  vec3 diffuse = vec3(0.0);
+  vec3 specular = vec3(0.0);
+  float alpha = 1.0;
+  vec3 materialSpecular = vec3(0.0);
+  float shininess = metalness;
 
-  ///*TP_GLSL_GLFRAGCOLOR*/ = vec4(reflectRay, 1);
-
-
-  ///*TP_GLSL_GLFRAGCOLOR*/ = vec4(/*TP_GLSL_TEXTURE_2D*/(textureSampler, viewToClip(viewCoord + (reflectRay*0.1)).xy).xyz, 1.0);
-  ///*TP_GLSL_GLFRAGCOLOR*/ = vec4(/*TP_GLSL_TEXTURE_2D*/(textureSampler, texCoordinate).xyz, 1.0);
-
-  ///*TP_GLSL_GLFRAGCOLOR*/ = vec4(0,0,1,1);
-
-  ///*TP_GLSL_GLFRAGCOLOR*/ = /*TP_GLSL_TEXTURE_2D*/(normalsSampler, texCoordinate);
-  // /*TP_GLSL_GLFRAGCOLOR*/ = /*TP_GLSL_TEXTURE_2D*/(textureSampler, texCoordinate);
-  ///*TP_GLSL_GLFRAGCOLOR*/.x = 0.5;
+  writeFragment(ambient, diffuse, specular, normal, alpha, materialSpecular, shininess);
 }

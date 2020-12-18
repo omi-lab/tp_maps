@@ -16,7 +16,7 @@ public:
   PostBlitShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
 
   //################################################################################################
-  static inline const tp_utils::StringID& name(){return postSSAOShaderSID();}
+  static inline const tp_utils::StringID& name(){return postBlitShaderSID();}
 };
 
 }

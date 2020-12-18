@@ -188,6 +188,7 @@ TP_DECLARE_ID(                   fontShaderSID,                      "Font shade
 TP_DECLARE_ID(                  frameShaderSID,                     "Frame shader");
 TP_DECLARE_ID(               postSSAOShaderSID,                 "Post ssao shader");
 TP_DECLARE_ID(                postSSRShaderSID,                  "Post ssr shader");
+TP_DECLARE_ID(               postBlitShaderSID,                 "Post blit shader");
 
 //##################################################################################################
 int staticInit();
@@ -307,6 +308,7 @@ struct TP_MAPS_SHARED_EXPORT ShaderResource
   TP_NONCOPYABLE(ShaderResource);
   ShaderResource(const std::string& resourceName);
   const char* data(OpenGLProfile openGLProfile, ShaderType shaderType);
+  const std::string& dataStr(OpenGLProfile openGLProfile, ShaderType shaderType);
 
 private:
   const std::string m_resourceName;
