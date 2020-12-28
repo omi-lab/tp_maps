@@ -4,6 +4,8 @@
 #include "tp_maps/Globals.h"
 #include "tp_maps/textures/BasicTexture.h"
 
+#include "tp_image_utils/ColorMapF.h"
+
 #include "tp_utils/CallbackCollection.h"
 
 #include <string>
@@ -253,14 +255,31 @@ public:
 
   \param width of image to render.
   \param height of image to render.
-  \param pixels this will be resized and the results will be written to here.
+  \param image this will be resized and the results will be written to here.
   \param swapY swap rows to convert OpenGL format images to normal images.
   \return True if successful.
   */
-  bool renderToImage(size_t width, size_t height, tp_image_utils::ColorMap& pixels, bool swapY=true);
+  bool renderToImage(size_t width, size_t height, tp_image_utils::ColorMap& image, bool swapY=true);
 
   //################################################################################################
   bool renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY=true);
+
+  //################################################################################################
+  //! Resize the view and render to an image.
+  /*!
+  This will create a frame buffer of width x height dimensions and render the map to it, if
+  successful the results will be written to pixels and this will return true. This method should
+  return the map to its original state when it is done.
+
+  This renders using fully HDR buffers if possible.
+
+  \param width of image to render.
+  \param height of image to render.
+  \param image this will be resized and the results will be written to here.
+  \param swapY swap rows to convert OpenGL format images to normal images.
+  \return True if successful.
+  */
+  bool renderToImage(size_t width, size_t height, tp_image_utils::ColorMapF& image, bool swapY=true);
 
   //################################################################################################
   //! Delete the given texture

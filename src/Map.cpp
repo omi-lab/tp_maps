@@ -1482,6 +1482,77 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
   return true;
 }
 
+
+
+
+//##################################################################################################
+bool Map::renderToImage(size_t width, size_t height, tp_image_utils::ColorMapF& image, bool swapY)
+{
+  image.setSize(width, height);
+  glm::vec4* pixels = image.data();
+
+  if(width<1 || height<1)
+  {
+    tpWarning() << "Error Map::renderToImage can't render to image smaller than 1 pixel.";
+    return false;
+  }
+
+  auto originalWidth  = d->width;
+  auto originalHeight = d->height;
+  resizeGL(int(width), int(height));
+
+  GLint originalFrameBuffer = 0;
+  glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
+
+  DEBUG_printOpenGLError("renderToImage A");
+
+  // Configure the frame buffer that the image will be rendered to.
+  if(!d->prepareBuffer(d->renderToImageBuffer, width, height, CreateColorBuffer::Yes, Multisample::No, HDR::Yes, 1, 0))
+    return false;
+
+  DEBUG_printOpenGLError("renderToImage B");
+
+  // Execute a render passes.
+  paintGLNoMakeCurrent();
+  DEBUG_printOpenGLError("renderToImage C1");
+
+  // Swap the multisampled FBO into the non multisampled FBO.
+  d->swapMultisampledBuffer(d->renderToImageBuffer);
+  DEBUG_printOpenGLError("renderToImage C2");
+
+  // Read the texture that we just generated
+  glReadPixels(0, 0, int(width), int(height), GL_RGBA, GL_FLOAT, pixels);
+  DEBUG_printOpenGLError("renderToImage C3");
+
+  if(swapY)
+  {
+    std::vector<glm::vec4> line{size_t(width)};
+    glm::vec4* c = line.data();
+    size_t rowLengthBytes = size_t(width)*sizeof(glm::vec4);
+    size_t yMax = size_t(height)/2;
+    for(size_t y=0; y<yMax; y++)
+    {
+      glm::vec4* a{pixels + y*size_t(width)};
+      glm::vec4* b{pixels + (size_t(height-1)-y)*size_t(width)};
+
+      memcpy(c, a, rowLengthBytes);
+      memcpy(a, b, rowLengthBytes);
+      memcpy(b, c, rowLengthBytes);
+    }
+  }
+
+  // Return to the original viewport settings
+  resizeGL(int(originalWidth), int(originalHeight));
+  glBindFramebuffer(GL_FRAMEBUFFER, originalFrameBuffer);
+  glViewport(0, 0, TPGLsizei(d->width), TPGLsizei(d->height));
+
+  DEBUG_printOpenGLError("renderToImage D");
+
+  return true;
+}
+
+
+
 //##################################################################################################
 void Map::deleteTexture(GLuint id)
 {
