@@ -144,7 +144,7 @@ void LightsLayer::render(RenderInfo& renderInfo)
   }
 
   //Draw the text.
-  if(font())
+  if(renderInfo.pass == RenderPass::Text && font())
   {
     auto shader = map()->getShader<tp_maps::FontShader>();
     if(shader->error())
@@ -184,6 +184,8 @@ void LightsLayer::render(RenderInfo& renderInfo)
     for(const auto& label : d->labels)
     {
       auto p = tpProj(m, label.position);
+      if(std::fabs(p.z)>1.0f)
+        continue;
 
       p.x = ((p.x+1.0f) / 2.0f) * width;
       p.y = (1.0f - ((p.y+1.0f) / 2.0f)) * height;

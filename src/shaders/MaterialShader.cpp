@@ -591,7 +591,7 @@ void MaterialShader::setMatrix(const glm::mat4& m, const glm::mat4& v, const glm
     glUniformMatrix4fv(locations.mvpMatrixLocation, 1, GL_FALSE, glm::value_ptr(mvp));
     glUniformMatrix4fv(locations.vMatrixLocation, 1, GL_FALSE, glm::value_ptr(v));
 
-    if(locations.cameraOriginLocation)
+    if(locations.cameraOriginLocation>=0)
     {
       glm::vec3 cameraOrigin_world = glm::inverse(v) * glm::vec4(0,0,0,1);
       glUniform3fv(locations.cameraOriginLocation, 1, &cameraOrigin_world.x);

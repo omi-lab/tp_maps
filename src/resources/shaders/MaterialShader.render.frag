@@ -197,60 +197,65 @@ vec3 calcFresnel(vec3 halfV, vec3 norm, vec3 F0)
 }
 
 //##################################################################################################
-LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampler2D lightTexture, vec3 fragPos_light)
+LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent, sampler2D lightTexture, vec3 uv)
 {
   LightResult r;
-  r.ambient=vec3(0);
-  r.specular=vec3(0);
-  r.diffuse=vec3(0);
 
-//  // Ambient
-//  r.ambient = light.ambient;
+  // Shadow
+  float shadow = totalSadowSamples;
+  float nDotL = dot(norm, -lightDirection_tangent);
 
-//  // Diffuse
-//  float cosTheta = clamp(dot(norm, -lightDirection_tangent), 0.0, 1.0);
-//  float diff = cosTheta*light.diffuseScale;
-//  r.diffuse = light.diffuse * diff;
+  if(nDotL>0.0 && uv.z>0.0 && uv.z<1.0)
+  {
+    float linearDepth = lineariseDepth(uv.z, light.near, light.far);
+    float bias = clamp((1.0-nDotL)*3.0, 0.1, 3.0) * linearDepth * linearDepth * 0.0004;
+    float biasedDepth = linearDepth - bias;
 
-//  // Specular
-////  vec3 incidenceVector = lightDirection_tangent;
-////  vec3 reflectionVector = reflect(incidenceVector, norm);
-////  vec3 surfaceToCamera = normalize(cameraOrigin_tangent-fragPos_tangent);
-////  float cosAngle = max(0.0, dot(surfaceToCamera, reflectionVector));
-////  float specularCoefficient = pow(cosAngle, material.shininess);
-////  r.specular = specularCoefficient * light.specular;
+    for(int x = -shadowSamples; x <= shadowSamples; ++x)
+    {
+      for(int y = -shadowSamples; y <= shadowSamples; ++y)
+      {
+        vec2 coord = uv.xy + (vec2(x, y)*txlSize);
+        if(coord.x>=0.0 && coord.x<=1.0 && coord.y>=0.0 && coord.y<=1.0)
+        {
+          float extraBias = bias*float(abs(x)+abs(y));
+          shadow -= 1.0-sampleShadowMapLinear2D(lightTexture, coord, biasedDepth-extraBias, linearDepth-extraBias, light.near, light.far);
+        }
+      }
+    }
+  }
 
-//  // Shadow
-//  float shadow = 0.0;
-//  float bias = dot(norm, -lightDirection_tangent);
-//  if(bias>0.0 && fragPos_light.z>0.0 && fragPos_light.z<1.0)
-//  {
-//    float biasedDepth = calcBiasedDepth(bias, fragPos_light.z);
+  shadow /= totalSadowSamples;
 
-//    for(int x = -shadowSamples; x <= shadowSamples; ++x)
-//    {
-//      for(int y = -shadowSamples; y <= shadowSamples; ++y)
-//      {
-//        vec2 coord = fragPos_light.xy + (vec2(x, y)*txlSize);
-//        if(coord.x<0.0 || coord.x>1.0 || coord.y<0.0 || coord.y>1.0)
-//        {
-//          shadow += 1.0;
-//        }
-//        else
-//        {
-//          shadow += sampleShadowMapLinear2D(lightTexture, coord, biasedDepth, fragPos_light.z);
-//        }
-//      }
-//    }
-//    shadow /= totalSadowSamples;
-//  }
-//  else
-//  {
-//    shadow=1.0;
-//  }
+  r.ambient = material.useAmbient * light.ambient * albedo;
 
-//  r.diffuse *= shadow;
-//  r.specular *= shadow;
+  vec3 surfaceToLight  = -lightDirection_tangent;
+  vec3 halfV = normalize(surfaceToCamera + surfaceToLight);
+
+  // Attenuation
+  float distance    = length(light.position - fragPos_world);
+  float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+  vec3  radiance    = mix(vec3(1.0), light.diffuseScale * light.diffuse  * attenuation, material.useAttenuation);
+
+  // Cook-Torrance BRDF
+  float NDF = calcGGXDist(norm, halfV, roughness2);
+  float G   = GeometrySmith(norm, surfaceToCamera, surfaceToLight, roughness);
+  vec3  F   = calcFresnel(halfV, norm, F0);
+
+  vec3 kS = F;
+  vec3 kD = vec3(1.0) - kS;
+  kD *= 1.0 - metalness;
+  kD = mix(vec3(1.0,1.0,1.0), kD, material.useDiffuse);
+
+  vec3  numerator   = NDF * G * F;
+  float denominator = 4.0 * max(dot(norm, surfaceToCamera), 0.0) * max(dot(norm, surfaceToLight), 0.0);
+  vec3  specular    = numerator / max(denominator, 0.001);
+
+  // add to outgoing radiance Lo
+  float NdotL = mix(1.0, max(dot(norm, surfaceToLight), 0.0), material.useNdotL);
+  r.diffuse = kD * albedo * radiance * NdotL * shadow;
+
+  r.specular = specularColor * specular * radiance * NdotL * shadow;
 
   return r;
 }
@@ -350,10 +355,8 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, vec3 
   float denominator = 4.0 * max(dot(norm, surfaceToCamera), 0.0) * max(dot(norm, surfaceToLight), 0.0);
   vec3  specular    = numerator / max(denominator, 0.001);
 
-  // add to outgoing radiance Lo
   float NdotL = mix(1.0, max(dot(norm, surfaceToLight), 0.0), material.useNdotL);
   r.diffuse = kD * albedo * radiance * NdotL * shadow;
-
   r.specular = specularColor * specular * radiance * NdotL * shadow;
 
   return r;
