@@ -501,7 +501,7 @@ struct Map::Private
     if(createColorBuffer == CreateColorBuffer::Yes)
     {
       if(!buffer.textureID)
-        create2DColorTexture(buffer.textureID, width, height, HDR::No, Alpha::No);
+        create2DColorTexture(buffer.textureID, width, height, hdr, Alpha::No);
 
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer.textureID, 0);
       DEBUG_printOpenGLError("prepareBuffer bind 2D texture to FBO");
@@ -571,10 +571,10 @@ struct Map::Private
         createDepthRBO(buffer.multisampleDepthRBO, width, height);
 
       if(!buffer.multisampleTextureID)
-        createMultisampleTexture(buffer.multisampleTextureID, width, height, HDR::No, Alpha::No, GL_COLOR_ATTACHMENT0);
+        createMultisampleTexture(buffer.multisampleTextureID, width, height, hdr, Alpha::No, GL_COLOR_ATTACHMENT0);
 
       if(!buffer.multisampleColorRBO)
-        createColorRBO(buffer.multisampleColorRBO, width, height, HDR::No, Alpha::No, GL_COLOR_ATTACHMENT0);
+        createColorRBO(buffer.multisampleColorRBO, width, height, hdr, Alpha::No, GL_COLOR_ATTACHMENT0);
 
       if(hdr == HDR::Yes)
       {
@@ -1482,9 +1482,6 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
   return true;
 }
 
-
-
-
 //##################################################################################################
 bool Map::renderToImage(size_t width, size_t height, tp_image_utils::ColorMapF& image, bool swapY)
 {
@@ -1550,8 +1547,6 @@ bool Map::renderToImage(size_t width, size_t height, tp_image_utils::ColorMapF& 
 
   return true;
 }
-
-
 
 //##################################################################################################
 void Map::deleteTexture(GLuint id)
