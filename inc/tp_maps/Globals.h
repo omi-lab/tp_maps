@@ -287,7 +287,24 @@ enum class Alpha
   Yes
 };
 
+
+
 //##################################################################################################
+//! Replace key with value in result.
+void replace(std::string& result, const std::string& key, const std::string& value);
+
+//##################################################################################################
+//! Replace light index and levels
+/*!
+\param lightIndex will replace %
+\param levels will replace @
+\param pattern containing the %'s and @'s to be replaced
+\return The pattern with the %'s and @'s to be replaced.
+ */
+std::string replaceLight(const std::string& lightIndex, const std::string& levels, const std::string& pattern);
+
+//##################################################################################################
+//! Performs string replacement on the shader string to make it compatible with the given GLSL version.
 std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfile, ShaderType shaderType);
 
 //##################################################################################################

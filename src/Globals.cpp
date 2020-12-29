@@ -29,9 +29,40 @@ TP_DEFINE_ID(               postBlitShaderSID,                 "Post blit shader
 int tp_rc();
 int staticInit()
 {
-  // Hack to make sure that resources are loaded on OSX, this shoul be part of the default static
+  // Hack to make sure that resources are loaded on OSX, this should be part of the default static
   // init as part of the build system.
   return tp_rc();
+}
+
+//##################################################################################################
+void replace(std::string& result, const std::string& key, const std::string& value)
+{
+  size_t pos = result.find(key);
+  while(pos != std::string::npos)
+  {
+    result.replace(pos, key.size(), value);
+    pos = result.find(key, pos + value.size());
+  }
+}
+
+//##################################################################################################
+std::string replaceLight(const std::string& lightIndex, const std::string& levels, const std::string& pattern)
+{
+  std::string result = pattern;
+
+  auto replace = [&result](char key, const std::string& value)
+  {
+    size_t pos = result.find(key);
+    while(pos != std::string::npos)
+    {
+      result.replace(pos, 1, value);
+      pos = result.find(key, pos + value.size());
+    }
+  };
+
+  replace('%', lightIndex);
+  replace('@', levels);
+  return result;
 }
 
 //##################################################################################################
@@ -41,12 +72,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
 
   auto replace = [&](const std::string& key, const std::string& value)
   {
-    size_t pos = result.find(key);
-    while(pos != std::string::npos)
-    {
-      result.replace(pos, key.size(), value);
-      pos = result.find(key, pos + value.size());
-    }
+    tp_maps::replace(result, key, value);
   };
 
   auto replaceRC = [&](const std::string& key, const std::string& file, ShaderType shaderType_)

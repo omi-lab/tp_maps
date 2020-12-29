@@ -104,23 +104,6 @@ struct UniformLocations_lt
   std::vector<LightLocations_lt> lightLocations;
 };
 
-//##################################################################################################
-std::string replaceLight(const std::string& lightIndex, const std::string& levels, std::string result)
-{
-  auto replace = [&result](char key, const std::string& value)
-  {
-    size_t pos = result.find(key);
-    while(pos != std::string::npos)
-    {
-      result.replace(pos, 1, value);
-      pos = result.find(key, pos + value.size());
-    }
-  };
-
-  replace('%', lightIndex);
-  replace('@', levels);
-  return result;
-}
 }
 
 //##################################################################################################
@@ -300,16 +283,6 @@ MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, b
 
       std::string vertStr = vertShaderStr().data(openGLProfile, shaderType);
       std::string fragStr = fragShaderStr().data(openGLProfile, shaderType);
-
-      auto replace = [&](std::string& result, const std::string& key, const std::string& value)
-      {
-        size_t pos = result.find(key);
-        while(pos != std::string::npos)
-        {
-          result.replace(pos, key.size(), value);
-          pos = result.find(key, pos + value.size());
-        }
-      };
 
       replace(vertStr, "/*LIGHT_VERT_VARS*/", LIGHT_VERT_VARS);
       replace(vertStr, "/*LIGHT_VERT_CALC*/", LIGHT_VERT_CALC);

@@ -22,24 +22,6 @@ struct LightLocations_lt
 
   GLint   lightTextureIDLocation{0};
 };
-
-//################################################################################################
-std::string replaceLight(const std::string& lightIndex, const std::string& levels, std::string result)
-{
-  auto replace = [&result](char key, const std::string& value)
-  {
-    size_t pos = result.find(key);
-    while(pos != std::string::npos)
-    {
-      result.replace(pos, 1, value);
-      pos = result.find(key, pos + value.size());
-    }
-  };
-
-  replace('%', lightIndex);
-  replace('@', levels);
-  return result;
-}
 }
 
 //##################################################################################################
@@ -111,16 +93,6 @@ struct PostSSAOShaderPrivate::Private
         }
       }
     }
-
-    auto replace = [&](std::string& result, const std::string& key, const std::string& value)
-    {
-      size_t pos = result.find(key);
-      while(pos != std::string::npos)
-      {
-        result.replace(pos, key.size(), value);
-        pos = result.find(key, pos + value.size());
-      }
-    };
 
     replace(fragSrc, "/*AO_FRAG_VARS*/", AO_FRAG_VARS);
     replace(fragSrc, "/*AO_FRAG_CALC*/", AO_FRAG_CALC);
