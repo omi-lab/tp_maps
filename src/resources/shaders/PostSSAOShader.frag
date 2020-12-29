@@ -90,16 +90,14 @@ vec2 testBuffer3D(vec3 coord_view, vec3 samplePos_view, mat4 projectionMatrix, m
 //##################################################################################################
 void main()
 {
-  float depth   = /*TP_GLSL_TEXTURE_2D*/(depthSampler   , coord_tex).x;
+  float depth = /*TP_GLSL_TEXTURE_2D*/(depthSampler   , coord_tex).x;
   gl_FragDepth = depth;
-
-  vec3 normal   = /*TP_GLSL_TEXTURE_2D*/(normalsSampler , coord_tex).xyz;
-  //vec3 specular = /*TP_GLSL_TEXTURE_2D*/(specularSampler, coord_tex).xyz;
+  vec3 normal = normalize(/*TP_GLSL_TEXTURE_2D*/(normalsSampler , coord_tex).xyz);
 
   //The position of the current texel in view coords
   vec3 coord_view = clipToView(coord_tex, depth, invProjectionMatrix);
 
-  vec3 rndA = vec3(0.4, 0.4, 0.0); //texture(texNoise, TexCoords * noiseScale).xyz;
+  vec3 rndA = vec3(1.0, 0.0, 0.0); //texture(texNoise, TexCoords * noiseScale).xyz;
   vec3 rndB = vec3(rndA.y, rndA.z, rndA.x);
   vec3 randomVec = (abs(dot(rndA, normal)) > abs(dot(rndB, normal)))?rndB:rndA;
 
@@ -126,9 +124,6 @@ void main()
   float dim = 1.0 - (occlusions / float(N_SAMPLES));
 
   vec3 ambient = /*TP_GLSL_TEXTURE_2D*/(textureSampler, coord_tex).xyz*dim;
-  //vec3 ambient = vec3(dim);
-
-  //vec3 ambient = vec3(depth);
 
   vec3 diffuse = vec3(0.0);
   vec3 specular = vec3(0.0);
