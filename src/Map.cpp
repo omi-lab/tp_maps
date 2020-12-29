@@ -137,7 +137,7 @@ struct Map::Private
   FBO* currentDrawFBO{&intermediateFBOs[0]};
 
   std::vector<Light> lights;
-  std::vector<FBO> lightTextures;
+  std::vector<FBO> lightBuffers;
   size_t lightTextureSize{1024};
   size_t spotLightLevels{1};
   size_t shadowSamples{0};
@@ -799,7 +799,7 @@ void Map::preDelete()
   d->deleteBuffer(d->pickingBuffer);
   d->deleteBuffer(d->renderToImageBuffer);
 
-  for(auto& lightBuffer : d->lightTextures)
+  for(auto& lightBuffer : d->lightBuffers)
     d->deleteBuffer(lightBuffer);
 
   if(d->spotLightTextureID)
@@ -1582,9 +1582,9 @@ const FBO& Map::currentDrawFBO()
 }
 
 //##################################################################################################
-const std::vector<FBO>& Map::lightTextures() const
+const std::vector<FBO>& Map::lightBuffers() const
 {
-  return d->lightTextures;
+  return d->lightBuffers;
 }
 
 //##################################################################################################
@@ -1672,9 +1672,9 @@ void Map::initializeGL()
     d->invalidateBuffer(d->pickingBuffer);
     d->invalidateBuffer(d->renderToImageBuffer);
 
-    for(auto& lightTexture : d->lightTextures)
+    for(auto& lightTexture : d->lightBuffers)
       d->invalidateBuffer(lightTexture);
-    d->lightTextures.clear();
+    d->lightBuffers.clear();
 
     d->spotLightTextureID = 0;
 
@@ -1745,12 +1745,12 @@ void Map::paintGLNoMakeCurrent()
 #ifdef TP_FBO_SUPPORTED      
       d->renderInfo.hdr = HDR::No;
 
-      while(d->lightTextures.size() < d->lights.size())
-        d->lightTextures.emplace_back();
+      while(d->lightBuffers.size() < d->lights.size())
+        d->lightBuffers.emplace_back();
 
-      while(d->lightTextures.size() > d->lights.size())
+      while(d->lightBuffers.size() > d->lights.size())
       {
-        auto buffer = tpTakeLast(d->lightTextures);
+        auto buffer = tpTakeLast(d->lightBuffers);
         d->deleteBuffer(buffer);
       }
       DEBUG_printOpenGLError("RenderPass::LightFBOs delete buffers");
@@ -1760,10 +1760,10 @@ void Map::paintGLNoMakeCurrent()
       glDepthMask(true);
       DEBUG_printOpenGLError("RenderPass::LightFBOs enable depth");
 
-      for(size_t i=0; i<d->lightTextures.size(); i++)
+      for(size_t i=0; i<d->lightBuffers.size(); i++)
       {
         const auto& light = d->lights.at(i);
-        auto& lightBuffer = d->lightTextures.at(i);
+        auto& lightBuffer = d->lightBuffers.at(i);
 
         size_t levels=1;
 

@@ -150,7 +150,7 @@ void GeometryLayer::render(RenderInfo& renderInfo)
     auto m = map()->controller()->matrices(coordinateSystem());
     shader->setMatrix(modelToWorldMatrix(), m.v, m.p);
   }
-  shader->setLights(map()->lights(), map()->lightTextures());
+  shader->setLights(map()->lights(), map()->lightBuffers());
 
   if(renderInfo.pass==RenderPass::Picking)
   {

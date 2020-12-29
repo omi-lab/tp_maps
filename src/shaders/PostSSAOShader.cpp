@@ -189,7 +189,7 @@ void PostSSAOShader::use(ShaderType shaderType)
   glUniform3fv(d->ssaoKernelLocation, GLsizei(d->parameters.nSamples), &d->ssaoKernel[0][0]);
 
   if(d->parameters.useLightBuffers)
-    setLights(map()->lights(), map()->lightTextures());
+    setLights(map()->lights(), map()->lightBuffers());
 }
 
 

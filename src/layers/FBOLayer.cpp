@@ -126,9 +126,9 @@ void FBOLayer::render(RenderInfo& renderInfo)
 
   case FBOLayerSource::LightColor:
   {
-    if(d->index < map()->lightTextures().size())
+    if(d->index < map()->lightBuffers().size())
     {
-      const auto& l = map()->lightTextures().at(d->index);
+      const auto& l = map()->lightBuffers().at(d->index);
       textureID = l.textureID;
       levels = l.levels;
 
@@ -142,9 +142,9 @@ void FBOLayer::render(RenderInfo& renderInfo)
 
   case FBOLayerSource::LightDepth:
   {
-    if(d->index < map()->lightTextures().size())
+    if(d->index < map()->lightBuffers().size())
     {
-      const auto& l = map()->lightTextures().at(d->index);
+      const auto& l = map()->lightBuffers().at(d->index);
       textureID = l.depthID;
       levels = l.levels;
 

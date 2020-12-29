@@ -327,7 +327,7 @@ public:
 
   //################################################################################################
   //! Returns the depth textures for each light.
-  const std::vector<FBO>& lightTextures() const;
+  const std::vector<FBO>& lightBuffers() const;
 
   //################################################################################################
   //! If there is a spot light texture this returns its ID.
