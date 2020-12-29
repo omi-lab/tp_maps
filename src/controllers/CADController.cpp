@@ -658,7 +658,17 @@ bool CADController::mouseEvent(const MouseEvent& event)
     {
       changed = true;
       glm::vec3 scenePointA;
-      bool moveOrigin = map()->unProject(event.pos, scenePointA, tp_math_utils::Plane());
+
+      tp_math_utils::Plane plane;
+      switch(d->mode)
+      {
+      case CADControllerMode::OrthoXZ: plane = tp_math_utils::Plane(d->focalPoint, {0.0f, 1.0f, 0.0f}); break;
+      case CADControllerMode::OrthoYZ: plane = tp_math_utils::Plane(d->focalPoint, {1.0f, 0.0f, 0.0f}); break;
+      case CADControllerMode::OrthoXY: plane = tp_math_utils::Plane(d->focalPoint, {0.0f, 0.0f, 1.0f}); break;
+      default:break;
+      }
+
+      bool moveOrigin = map()->unProject(event.pos, scenePointA, plane);
 
       if(event.delta<0)
         d->distance += d->distance * 0.1f * d->mouseSpeedModifier;
@@ -671,7 +681,7 @@ bool CADController::mouseEvent(const MouseEvent& event)
       {
         updateMatrices();
         glm::vec3 scenePointB;
-        moveOrigin = map()->unProject(event.pos, scenePointB, tp_math_utils::Plane());
+        moveOrigin = map()->unProject(event.pos, scenePointB, plane);
 
         if(moveOrigin)
           d->focalPoint += scenePointA - scenePointB;
