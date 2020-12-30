@@ -521,8 +521,7 @@ struct Map::Private
     {
       //Its not possible to bind a 3D texture as a depth buffer, so we bind it as the color buffer
       //and copy the depth values to that color buffer. We do however still require an actual depth
-      // buffer to perform depth tests against. So here textureID gets prepared as a 2D depth
-      //buffer.
+      //buffer to perform depth tests against. So here textureID gets prepared as a 2D depth buffer.
       //The 2D depth buffer is bound as GL_DEPTH_ATTACHMENT.
       //The 3D depth buffer is bound as GL_COLOR_ATTACHMENT0.
 

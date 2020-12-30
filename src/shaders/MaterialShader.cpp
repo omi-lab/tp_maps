@@ -221,7 +221,7 @@ MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, b
           LIGHT_FRAG_VARS += replaceLight(ii, ll, "/*TP_GLSL_IN_F*/vec4 fragPos_light%View;\n\n");
           LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform mat4 worldToLight%_proj;\n");
 
-          LIGHT_FRAG_CALC += "  {\n";
+          LIGHT_FRAG_CALC += "\n  {\n";
           LIGHT_FRAG_CALC += replaceLight(ii, ll, "    vec3 ldNormalized = normalize(invTBN * light%Direction_world);\n");
 
           switch(light.type)
@@ -272,7 +272,7 @@ MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, b
           LIGHT_FRAG_CALC += "    ambient  += r.ambient;\n";
           LIGHT_FRAG_CALC += "    diffuse  += r.diffuse;\n";
           LIGHT_FRAG_CALC += "    specular += r.specular;\n";
-          LIGHT_FRAG_CALC += "  }\n\n";
+          LIGHT_FRAG_CALC += "  }\n";
         }
       }
 

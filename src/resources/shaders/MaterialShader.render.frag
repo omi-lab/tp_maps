@@ -220,7 +220,7 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
         vec2 coord = uv.xy + (vec2(x, y)*txlSize);
         if(coord.x>=0.0 && coord.x<=1.0 && coord.y>=0.0 && coord.y<=1.0)
         {
-          float extraBias = bias*abs(float(x))+abs(float(y));
+          float extraBias = bias*(abs(float(x))+abs(float(y)));
           shadow -= 1.0-sampleShadowMapLinear2D(lightTexture, coord, biasedDepth-extraBias, linearDepth-extraBias, light.near, light.far);
         }
       }
@@ -291,7 +291,7 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
         vec2 coord = uv.xy + (vec2(x, y)*txlSize);
         if(coord.x>=0.0 && coord.x<=1.0 && coord.y>=0.0 && coord.y<=1.0)
         {
-          float extraBias = bias*abs(float(x))+abs(float(y));
+          float extraBias = bias*(abs(float(x))+abs(float(y)));
           shadow -= 1.0-sampleShadowMapLinear2D(lightTexture, coord, biasedDepth-extraBias, linearDepth-extraBias, light.near, light.far);
         }
       }
@@ -320,7 +320,7 @@ float spotLightSampleShadow3D(vec3 norm, Light light, vec3 lightDirection_tangen
         vec2 coord = uv.xy + (vec2(x, y)*txlSize*(nDotL));
         if(coord.x>=0.0 && coord.x<=1.0 && coord.y>=0.0 && coord.y<=1.0)
         {
-          float extraBias = bias*abs(float(x))+abs(float(y));
+          float extraBias = bias*(abs(float(x))+abs(float(y)));
           shadow -= 1.0-sampleShadowMapLinear3D(lightTexture, coord, biasedDepth-extraBias, linearDepth-extraBias, level, light.near, light.far);
         }
       }
