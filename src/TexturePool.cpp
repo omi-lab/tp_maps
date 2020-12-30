@@ -7,6 +7,7 @@
 #include "tp_image_utils/ColorMap.h"
 
 #include "tp_utils/DebugUtils.h"
+#include "tp_utils/TimeUtils.h"
 #include "tp_utils/RefCount.h"
 
 namespace tp_maps
@@ -304,8 +305,6 @@ GLuint TexturePool::textureID(const TexturePoolKey& key)
       auto bIndex = key.d().bIndex;
       auto aIndex = key.d().aIndex;
 
-      auto defaultColor = key.d().defaultColor;
-
       size_t w=1;
       size_t h=1;
 
@@ -315,36 +314,69 @@ GLuint TexturePool::textureID(const TexturePoolKey& key)
       w = tpMax(w, aImage.width()); h = tpMax(h, aImage.height());
 
       i->second.rgbaImage.setSize(w, h);
+      TPPixel* p = i->second.rgbaImage.data();
 
-
-      for(size_t y=0; y<h; y++)
+      if(w==rImage.width() && h==rImage.height() &&
+         w==gImage.width() && h==gImage.height() &&
+         w==bImage.width() && h==bImage.height() &&
+         w==aImage.width() && h==aImage.height())
       {
-        for(size_t x=0; x<w; x++)
+        const TPPixel* r = rImage.constData();
+        const TPPixel* g = gImage.constData();
+        const TPPixel* b = bImage.constData();
+        const TPPixel* a = aImage.constData();
+
+        TPPixel* pMax = p + i->second.rgbaImage.size();
+        for(; p<pMax; p++, r++, g++, b++, a++)
         {
-          TPPixel p;
+          p->r = r->v[rIndex];
+          p->g = g->v[gIndex];
+          p->b = b->v[bIndex];
+          p->a = a->v[aIndex];
+        }
+      }
+      else if(!key.d().aName.isValid() &&
+              w==rImage.width() && h==rImage.height() &&
+              w==gImage.width() && h==gImage.height() &&
+              w==bImage.width() && h==bImage.height())
+      {
+        const TPPixel* r = rImage.constData();
+        const TPPixel* g = gImage.constData();
+        const TPPixel* b = bImage.constData();
 
-          auto getChannel = [&](const tp_image_utils::ColorMap& image, size_t index, uint8_t defaultValue)
+        auto a = key.d().defaultColor.a;
+
+        TPPixel* pMax = p + i->second.rgbaImage.size();
+        for(; p<pMax; p++, r++, g++, b++)
+        {
+          p->r = r->v[rIndex];
+          p->g = g->v[gIndex];
+          p->b = b->v[bIndex];
+          p->a = a;
+        }
+      }
+      else
+      {
+        auto c = key.d().defaultColor;
+        TPPixel rDefault{c.r,c.r,c.r,c.r};
+        TPPixel gDefault{c.g,c.g,c.g,c.g};
+        TPPixel bDefault{c.b,c.b,c.b,c.b};
+        TPPixel aDefault{c.a,c.a,c.a,c.a};
+
+        for(size_t y=0; y<h; y++)
+        {
+          for(size_t x=0; x<w; x++, p++)
           {
-            if(x<image.width() && y<image.height())
+            auto getChannel = [&](const tp_image_utils::ColorMap& image, size_t index, TPPixel defaultValue)
             {
-              auto c = image.pixel(x, y);
-              switch(index)
-              {
-              case 0: return c.r;
-              case 1: return c.g;
-              case 2: return c.b;
-              case 3: return c.a;
-              }
-            }
-            return defaultValue;
-          };
+              return image.pixel(x, y, defaultValue).v[index];
+            };
 
-          p.r = getChannel(rImage, rIndex, defaultColor.r);
-          p.g = getChannel(gImage, gIndex, defaultColor.g);
-          p.b = getChannel(bImage, bIndex, defaultColor.b);
-          p.a = getChannel(aImage, aIndex, defaultColor.a);
-
-          i->second.rgbaImage.setPixel(x, y, p);
+            p->r = getChannel(rImage, rIndex, rDefault);
+            p->g = getChannel(gImage, gIndex, gDefault);
+            p->b = getChannel(bImage, bIndex, bDefault);
+            p->a = getChannel(aImage, aIndex, aDefault);
+          }
         }
       }
     }
