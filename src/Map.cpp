@@ -416,7 +416,16 @@ struct Map::Private
   //################################################################################################
   void setDrawBuffers(const std::vector<GLenum>& buffers)
   {
-    glDrawBuffers(TPGLsizei(buffers.size()), buffers.data());
+    switch(openGLProfile)
+    {
+    default:
+      glDrawBuffers(TPGLsizei(buffers.size()), buffers.data());
+      break;
+
+    case OpenGLProfile::VERSION_100_ES:
+      break;
+    }
+
   }
 
   //################################################################################################

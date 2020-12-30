@@ -85,7 +85,7 @@ vec3 surfaceToCamera;
 const int shadowSamples=/*TP_SHADOW_SAMPLES*/;
 const float totalSadowSamples=float(((shadowSamples*2)+1) * ((shadowSamples*2)+1));
 
-const float pi = 3.14159265358979323846264338327950288419716939937510f;
+const float pi = 3.14159265;
 
 /*TP_GLSL_GLFRAGCOLOR_DEF*/
 /*TP_WRITE_FRAGMENT*/
@@ -118,6 +118,7 @@ float sampleShadowMapLinear2D(sampler2D shadowMap, vec2 coords, float compareLig
 }
 
 //##################################################################################################
+#ifndef NO_TEXTURE3D
 float sampleShadowMapLinear3D(sampler3D shadowMap, vec2 coords, float compareLight, float compareDark, float level, float near, float far)
 {
   vec2 pixelPos = (coords/txlSize) - 0.5;
@@ -134,6 +135,7 @@ float sampleShadowMapLinear3D(sampler3D shadowMap, vec2 coords, float compareLig
 
   return smoothstep(compareLight, compareDark, mix(mixA, mixB, fracPart.x));
 }
+#endif
 
 //##################################################################################################
 vec3 lightPosToTexture(vec4 fragPos_light, vec4 offset, mat4 proj)
@@ -218,7 +220,7 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
         vec2 coord = uv.xy + (vec2(x, y)*txlSize);
         if(coord.x>=0.0 && coord.x<=1.0 && coord.y>=0.0 && coord.y<=1.0)
         {
-          float extraBias = bias*float(abs(x)+abs(y));
+          float extraBias = bias*abs(float(x))+abs(float(y));
           shadow -= 1.0-sampleShadowMapLinear2D(lightTexture, coord, biasedDepth-extraBias, linearDepth-extraBias, light.near, light.far);
         }
       }
@@ -289,7 +291,7 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
         vec2 coord = uv.xy + (vec2(x, y)*txlSize);
         if(coord.x>=0.0 && coord.x<=1.0 && coord.y>=0.0 && coord.y<=1.0)
         {
-          float extraBias = bias*float(abs(x)+abs(y));
+          float extraBias = bias*abs(float(x))+abs(float(y));
           shadow -= 1.0-sampleShadowMapLinear2D(lightTexture, coord, biasedDepth-extraBias, linearDepth-extraBias, light.near, light.far);
         }
       }
@@ -299,6 +301,7 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
 }
 
 //##################################################################################################
+#ifndef NO_TEXTURE3D
 float spotLightSampleShadow3D(vec3 norm, Light light, vec3 lightDirection_tangent, sampler3D lightTexture, vec3 uv, float level)
 {
   float shadow = totalSadowSamples;
@@ -317,7 +320,7 @@ float spotLightSampleShadow3D(vec3 norm, Light light, vec3 lightDirection_tangen
         vec2 coord = uv.xy + (vec2(x, y)*txlSize*(nDotL));
         if(coord.x>=0.0 && coord.x<=1.0 && coord.y>=0.0 && coord.y<=1.0)
         {
-          float extraBias = bias*float(abs(x)+abs(y));
+          float extraBias = bias*abs(float(x))+abs(float(y));
           shadow -= 1.0-sampleShadowMapLinear3D(lightTexture, coord, biasedDepth-extraBias, linearDepth-extraBias, level, light.near, light.far);
         }
       }
@@ -325,6 +328,7 @@ float spotLightSampleShadow3D(vec3 norm, Light light, vec3 lightDirection_tangen
   }
   return maskLight(light, uv, shadow);
 }
+#endif
 
 //##################################################################################################
 LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, vec3 fragPos_light, float shadow)

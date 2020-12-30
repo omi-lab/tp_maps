@@ -85,10 +85,10 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
   {
   case OpenGLProfile::VERSION_110:
   {
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.150.render.glsl", ShaderType::Render   );
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.150.hdr.glsl"   , ShaderType::RenderHDR);
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.100.render.glsl", ShaderType::Render   );
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.100.hdr.glsl"   , ShaderType::RenderHDR);
     replace("/*TP_VERT_SHADER_HEADER*/",     "#version 110\n");
-    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 110\n");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 110\n#define NO_TEXTURE3D\n");
     replace("/*TP_GLSL_IN_V*/",              "attribute ");
     replace("/*TP_GLSL_IN_F*/",              "varying ");
     replace("/*TP_GLSL_OUT_V*/",             "varying ");
@@ -103,10 +103,10 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
 
   case OpenGLProfile::VERSION_120:
   {
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.150.render.glsl", ShaderType::Render   );
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.150.hdr.glsl"   , ShaderType::RenderHDR);
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.100.render.glsl", ShaderType::Render   );
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.100.hdr.glsl"   , ShaderType::RenderHDR);
     replace("/*TP_VERT_SHADER_HEADER*/",     "#version 120\n");
-    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 120\n");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 120\n#define NO_TEXTURE3D\n");
     replace("/*TP_GLSL_IN_V*/",              "attribute ");
     replace("/*TP_GLSL_IN_F*/",              "varying ");
     replace("/*TP_GLSL_OUT_V*/",             "varying ");
@@ -319,10 +319,10 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
 
   case OpenGLProfile::VERSION_100_ES:
   {
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.150.render.glsl", ShaderType::Render   );
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.150.hdr.glsl"   , ShaderType::RenderHDR);
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.100.render.glsl", ShaderType::Render   );
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.100.hdr.glsl"   , ShaderType::RenderHDR);
     replace("/*TP_VERT_SHADER_HEADER*/",     "#version 100\nprecision highp float;\n");
-    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 100\nprecision highp float;\n");
+    replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 100\nprecision highp float;\n#define NO_TEXTURE3D\n");
     replace("/*TP_GLSL_IN_V*/",              "attribute ");
     replace("/*TP_GLSL_IN_F*/",              "varying ");
     replace("/*TP_GLSL_OUT_V*/",             "varying ");
