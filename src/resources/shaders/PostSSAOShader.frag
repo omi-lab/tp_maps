@@ -125,6 +125,9 @@ void main()
 
   vec3 ambient = /*TP_GLSL_TEXTURE_2D*/(textureSampler, coord_tex).xyz*dim;
 
+  ambient = pow(ambient, vec3(1.0/1.2));
+
+
   vec3 diffuse = vec3(0.0);
   vec3 specular = vec3(0.0);
   float alpha = 1.0;

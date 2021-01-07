@@ -400,15 +400,27 @@ void main()
   vec3 t = normalize(outTangent);
   vec3 n = normalize(outNormal);
   vec3 b = cross(n, t);
-  t = cross(n, b);
+  t = cross(b, n);
 
   mat3 m3 = mat3(m);
   mat3 TBN = mat3(m3*t, m3*b, m3*n);
   mat3 invTBN = transposeMat3(TBN);
   mat3 TBNv = mat3(v) * TBN;
 
-  cameraOrigin_tangent = invTBN * cameraOrigin_world;
-  fragPos_tangent = invTBN * fragPos_world;
+  mat4 worldToTangent = m * mat4(vec4(t, 0.0), vec4(b, 0.0), vec4(n, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
+
+  //cameraOrigin_tangent = invTBN * cameraOrigin_world;
+  //fragPos_tangent = invTBN * fragPos_world;
+
+  {
+    vec4 a = worldToTangent * vec4(cameraOrigin_world, 1.0);
+    cameraOrigin_tangent = a.xyz/a.w;
+  }
+
+  {
+    vec4 a = worldToTangent * vec4(fragPos_world, 1.0);
+    fragPos_tangent = a.xyz/a.w;
+  }
 
   F0 = mix(vec3(0.04), albedo, metalness);
   surfaceToCamera = normalize(cameraOrigin_tangent-fragPos_tangent);
