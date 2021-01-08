@@ -250,6 +250,12 @@ void Layer::update()
 }
 
 //##################################################################################################
+void Layer::addedToMap()
+{
+
+}
+
+//##################################################################################################
 void Layer::childLayerDestroyed(Layer* layer)
 {
   tpRemoveOne(d->layers, layer);
@@ -263,6 +269,7 @@ void Layer::setMap(Map* map, Layer* parent)
   d->parent = parent;
   for(auto layer : d->layers)
     layer->setMap(map, this);
+  addedToMap();
 }
 
 //##################################################################################################

@@ -49,8 +49,7 @@ public:
   //################################################################################################
   //! Construct the layer.
   /*!
-  This will construct the layer, however the QGLFunctions will not be initialized until the layer
-  is added to the map.
+  This will construct the layer.
   */
   Layer();
 
@@ -246,6 +245,9 @@ protected:
   //################################################################################################
   //! Calls update on the map
   void update();
+
+  //################################################################################################
+  virtual void addedToMap();
 
 private:  
   //################################################################################################
