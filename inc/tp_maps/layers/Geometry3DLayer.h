@@ -48,10 +48,10 @@ public:
   Geometry3DPool* geometry3DPool() const;
 
   //################################################################################################
-  void setGeometry(const std::vector<Geometry3D>& geometry);
+  void setGeometry(const std::vector<tp_math_utils::Geometry3D>& geometry);
 
   //################################################################################################
-  void viewGeometry(const std::function<void(const std::vector<Geometry3D>&)>& closure) const;
+  void viewGeometry(const std::function<void(const std::vector<tp_math_utils::Geometry3D>&)>& closure) const;
 
   //################################################################################################
   enum class ShaderSelection

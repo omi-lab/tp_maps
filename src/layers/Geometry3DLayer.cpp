@@ -157,7 +157,7 @@ Geometry3DPool* Geometry3DLayer::geometry3DPool() const
 }
 
 //##################################################################################################
-void Geometry3DLayer::setGeometry(const std::vector<Geometry3D>& geometry)
+void Geometry3DLayer::setGeometry(const std::vector<tp_math_utils::Geometry3D>& geometry)
 {
   TP_TIME_SCOPE("Geometry3DLayer::setGeometry");
   d->checkClearGeometry();
@@ -166,7 +166,7 @@ void Geometry3DLayer::setGeometry(const std::vector<Geometry3D>& geometry)
 }
 
 //################################################################################################
-void Geometry3DLayer::viewGeometry(const std::function<void(const std::vector<Geometry3D>&)>& closure) const
+void Geometry3DLayer::viewGeometry(const std::function<void(const std::vector<tp_math_utils::Geometry3D>&)>& closure) const
 {
   d->geometry3DPool->viewGeometry(d->name, closure);
 }

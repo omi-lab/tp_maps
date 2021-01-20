@@ -55,26 +55,26 @@ struct GizmoLayer::Private
   //################################################################################################
   void generateRotationGeometry()
   {
-    auto makeCircle = [&](std::vector<Geometry3D>& geometry, const std::function<glm::vec3(const glm::vec3&)>& transform, const glm::vec3& color)
+    auto makeCircle = [&](std::vector<tp_math_utils::Geometry3D>& geometry, const std::function<glm::vec3(const glm::vec3&)>& transform, const glm::vec3& color)
     {
       auto& circle = geometry.emplace_back();
 
       circle.material.albedo = color;
 
-      circle.geometry.triangleFan   = GL_TRIANGLE_FAN;
-      circle.geometry.triangleStrip = GL_TRIANGLE_STRIP;
-      circle.geometry.triangles     = GL_TRIANGLES;
+      circle.triangleFan   = GL_TRIANGLE_FAN;
+      circle.triangleStrip = GL_TRIANGLE_STRIP;
+      circle.triangles     = GL_TRIANGLES;
 
-      circle.geometry.indexes.resize(4);
-      auto& top = circle.geometry.indexes.at(0);
-      auto& btm = circle.geometry.indexes.at(1);
-      auto& out = circle.geometry.indexes.at(2);
-      auto& mid = circle.geometry.indexes.at(3);
+      circle.indexes.resize(4);
+      auto& top = circle.indexes.at(0);
+      auto& btm = circle.indexes.at(1);
+      auto& out = circle.indexes.at(2);
+      auto& mid = circle.indexes.at(3);
 
-      top.type = circle.geometry.triangleStrip;
-      btm.type = circle.geometry.triangleStrip;
-      out.type = circle.geometry.triangleStrip;
-      mid.type = circle.geometry.triangleStrip;
+      top.type = circle.triangleStrip;
+      btm.type = circle.triangleStrip;
+      out.type = circle.triangleStrip;
+      mid.type = circle.triangleStrip;
 
       for(size_t a=0; a<=360; a+=6)
       {
@@ -86,18 +86,18 @@ struct GizmoLayer::Private
         tp_math_utils::Vertex3D vert;
 
         vert.vert = transform(glm::vec3(v*outerRadius, ringHeight));
-        circle.geometry.verts.push_back(vert);
+        circle.verts.push_back(vert);
         vert.vert = transform(glm::vec3(v*outerRadius, -ringHeight));
-        circle.geometry.verts.push_back(vert);
+        circle.verts.push_back(vert);
 
         auto iRad = (a%20)?innerRadius:spikeRadius;
 
         vert.vert = transform(glm::vec3(v*iRad, ringHeight));
-        circle.geometry.verts.push_back(vert);
+        circle.verts.push_back(vert);
         vert.vert = transform(glm::vec3(v*iRad, -ringHeight));
-        circle.geometry.verts.push_back(vert);
+        circle.verts.push_back(vert);
 
-        int i = int(circle.geometry.verts.size());
+        int i = int(circle.verts.size());
 
         top.indexes.push_back(i-4);
         top.indexes.push_back(i-2);
@@ -112,12 +112,12 @@ struct GizmoLayer::Private
         mid.indexes.push_back(i-1);
       }
 
-      circle.geometry.calculateFaceNormals();
+      circle.calculateFaceNormals();
     };
 
-    std::vector<Geometry3D> rotateXGeometry;
-    std::vector<Geometry3D> rotateYGeometry;
-    std::vector<Geometry3D> rotateZGeometry;
+    std::vector<tp_math_utils::Geometry3D> rotateXGeometry;
+    std::vector<tp_math_utils::Geometry3D> rotateYGeometry;
+    std::vector<tp_math_utils::Geometry3D> rotateZGeometry;
 
     makeCircle(rotateXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, glm::vec3(1,0,0));
     makeCircle(rotateYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, glm::vec3(0,1,0));
@@ -131,15 +131,15 @@ struct GizmoLayer::Private
   //################################################################################################
   void generateTranslationGeometry()
   {
-    auto makeArrow = [&](std::vector<Geometry3D>& geometry, const std::function<glm::vec3(const glm::vec3&)>& transform, const glm::vec3& color)
+    auto makeArrow = [&](std::vector<tp_math_utils::Geometry3D>& geometry, const std::function<glm::vec3(const glm::vec3&)>& transform, const glm::vec3& color)
     {
       auto& arrow = geometry.emplace_back();
 
       arrow.material.albedo = color;
 
-      arrow.geometry.triangleFan   = GL_TRIANGLE_FAN;
-      arrow.geometry.triangleStrip = GL_TRIANGLE_STRIP;
-      arrow.geometry.triangles     = GL_TRIANGLES;
+      arrow.triangleFan   = GL_TRIANGLE_FAN;
+      arrow.triangleStrip = GL_TRIANGLE_STRIP;
+      arrow.triangles     = GL_TRIANGLES;
 
       float stemRadius=0.05f;
       float coneRadius=0.1f;
@@ -151,15 +151,15 @@ struct GizmoLayer::Private
 
       // Point
       vert.vert = transform(glm::vec3(0.0f, 0.0f, coneEnd));
-      arrow.geometry.verts.push_back(vert);
+      arrow.verts.push_back(vert);
 
       // Origin
       vert.vert = transform(glm::vec3(0.0f, 0.0f, stemStart));
-      arrow.geometry.verts.push_back(vert);
+      arrow.verts.push_back(vert);
 
-      arrow.geometry.indexes.resize(1);
-      auto& indexes = arrow.geometry.indexes.at(0);
-      indexes.type = arrow.geometry.triangles;
+      arrow.indexes.resize(1);
+      auto& indexes = arrow.indexes.at(0);
+      indexes.type = arrow.triangles;
 
       for(size_t a=0; a<=360; a+=10)
       {
@@ -169,15 +169,15 @@ struct GizmoLayer::Private
         glm::vec2 v{x, y};
 
         vert.vert = transform(glm::vec3(v*stemRadius, stemStart));
-        arrow.geometry.verts.push_back(vert);
+        arrow.verts.push_back(vert);
 
         vert.vert = transform(glm::vec3(v*stemRadius, stemEnd));
-        arrow.geometry.verts.push_back(vert);
+        arrow.verts.push_back(vert);
 
         vert.vert = transform(glm::vec3(v*coneRadius, stemEnd));
-        arrow.geometry.verts.push_back(vert);
+        arrow.verts.push_back(vert);
 
-        int i = int(arrow.geometry.verts.size());
+        int i = int(arrow.verts.size());
 
         if(a==0)
           continue;
@@ -210,12 +210,12 @@ struct GizmoLayer::Private
         indexes.indexes.push_back(i-4);
       }
 
-      arrow.geometry.calculateFaceNormals();
+      arrow.calculateFaceNormals();
     };
 
-    std::vector<Geometry3D> translateXGeometry;
-    std::vector<Geometry3D> translateYGeometry;
-    std::vector<Geometry3D> translateZGeometry;
+    std::vector<tp_math_utils::Geometry3D> translateXGeometry;
+    std::vector<tp_math_utils::Geometry3D> translateYGeometry;
+    std::vector<tp_math_utils::Geometry3D> translateZGeometry;
 
     makeArrow(translateXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, glm::vec3(1,0,0));
     makeArrow(translateYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, glm::vec3(0,1,0));

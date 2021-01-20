@@ -19,7 +19,7 @@ namespace
 struct GeometryDetails_lt
 {
   std::vector<std::pair<GLenum, MaterialShader::VertexBuffer*>> vertexBuffers;
-  Material material;
+  tp_math_utils::Material material;
 };
 }
 //##################################################################################################

@@ -86,13 +86,13 @@ void LinesLayer::setLines(const std::vector<Lines>& lines)
 }
 
 //##################################################################################################
-void LinesLayer::setLinesFromGeometry(const std::vector<Geometry3D>& geometry)
+void LinesLayer::setLinesFromGeometry(const std::vector<tp_math_utils::Geometry3D>& geometry)
 {
   std::vector<Lines> lines;
 
   for(const auto& g : geometry)
   {
-    for(const auto& m : g.geometry.indexes)
+    for(const auto& m : g.indexes)
     {
       auto& l = lines.emplace_back();
       l.color = glm::vec4(g.material.albedo, 1.0f);
@@ -102,7 +102,7 @@ void LinesLayer::setLinesFromGeometry(const std::vector<Geometry3D>& geometry)
       {
         auto getVert = [&](size_t ii)
         {
-          return g.geometry.verts.at(size_t(m.indexes.at(ii))).vert;
+          return g.verts.at(size_t(m.indexes.at(ii))).vert;
         };
 
         switch(m.type)
@@ -168,11 +168,11 @@ void LinesLayer::setLinesFromGeometry(const std::vector<Geometry3D>& geometry)
 }
 
 //##################################################################################################
-void LinesLayer::setLinesFromGeometryNormals(const std::vector<Geometry3D>& geometry, float scale)
+void LinesLayer::setLinesFromGeometryNormals(const std::vector<tp_math_utils::Geometry3D>& geometry, float scale)
 {
   size_t vertCount=0;
   for(const auto& m : geometry)
-    vertCount += m.geometry.verts.size();
+    vertCount += m.verts.size();
   vertCount*=2;
 
   std::vector<tp_maps::Lines> lines;
@@ -195,7 +195,7 @@ void LinesLayer::setLinesFromGeometryNormals(const std::vector<Geometry3D>& geom
 
   for(const auto& m : geometry)
   {
-    for(const auto& v : m.geometry.verts)
+    for(const auto& v : m.verts)
     {
       r.lines.push_back(v.vert);
       g.lines.push_back(v.vert);

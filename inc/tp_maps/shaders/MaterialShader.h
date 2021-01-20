@@ -32,11 +32,11 @@ public:
 
   //################################################################################################
   //! Call this to set the material before drawing the geometry
-  void setMaterial(const Material& material);
+  void setMaterial(const tp_math_utils::Material& material);
 
   //################################################################################################
   //! Call this to set the lights before drawing the geometry
-  void setLights(const std::vector<Light>& lights, const std::vector<FBO>& lightBuffers);
+  void setLights(const std::vector<tp_math_utils::Light>& lights, const std::vector<FBO>& lightBuffers);
 
   //################################################################################################
   //! Call this to set the model, view, and projection matrices before drawing the geometry.

@@ -38,11 +38,11 @@ public:
 
   //################################################################################################
   //! Render a wire frame of the geometry.
-  void setLinesFromGeometry(const std::vector<Geometry3D>& geometry);
+  void setLinesFromGeometry(const std::vector<tp_math_utils::Geometry3D>& geometry);
 
   //################################################################################################
   //! Render the normals, tangents, and bitangents of the geometry.
-  void setLinesFromGeometryNormals(const std::vector<Geometry3D>& geometry, float scale);
+  void setLinesFromGeometryNormals(const std::vector<tp_math_utils::Geometry3D>& geometry, float scale);
 
   //################################################################################################
   float lineWidth() const;

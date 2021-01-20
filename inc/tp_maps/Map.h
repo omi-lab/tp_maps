@@ -102,10 +102,10 @@ public:
                            const std::function<void(RenderInfo&)>& end=std::function<void(RenderInfo&)>());
 
   //################################################################################################
-  void setLights(const std::vector<Light>& lights);
+  void setLights(const std::vector<tp_math_utils::Light>& lights);
 
   //################################################################################################
-  const std::vector<Light>& lights() const;
+  const std::vector<tp_math_utils::Light>& lights() const;
 
   //################################################################################################
   //! This will take ownership.

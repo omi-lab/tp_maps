@@ -48,7 +48,7 @@ private:
 
   //################################################################################################
   //! Called by use()
-  void setLights(const std::vector<Light>& lights, const std::vector<FBO>& lightBuffers);
+  void setLights(const std::vector<tp_math_utils::Light>& lights, const std::vector<FBO>& lightBuffers);
 
   PostSSAOShaderPrivate::Private* d;
 };

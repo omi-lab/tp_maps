@@ -27,7 +27,7 @@ struct PoolDetails_lt
 {
   int count{0};
   bool overwrite{false};
-  std::vector<Geometry3D> geometry;
+  std::vector<tp_math_utils::Geometry3D> geometry;
   std::vector<ProcessedGeometry3D> processedGeometry;
   std::vector<TextureKeys_lt> textureKeys;
 
@@ -58,7 +58,7 @@ struct PoolDetails_lt
 
       for(const auto& shape : geometry)
       {
-        for(const auto& part : shape.geometry.indexes)
+        for(const auto& part : shape.indexes)
         {
           ProcessedGeometry3D details;
           details.material = shape.material;
@@ -68,9 +68,9 @@ struct PoolDetails_lt
           for(size_t n=0; n<part.indexes.size(); n++)
           {
             auto idx = part.indexes.at(n);
-            if(size_t(idx)<shape.geometry.verts.size())
+            if(size_t(idx)<shape.verts.size())
             {
-              const auto& v = shape.geometry.verts.at(size_t(idx));
+              const auto& v = shape.verts.at(size_t(idx));
               indexes.push_back(GLuint(n));
               verts.emplace_back(MaterialShader::Vertex(v.vert, v.normal, v.tangent, v.bitangent, v.texture));
             }
@@ -222,7 +222,7 @@ TexturePool* Geometry3DPool::texturePool() const
 
 //##################################################################################################
 void Geometry3DPool::subscribe(const tp_utils::StringID& name,
-                               const std::function<std::vector<Geometry3D>()>& getGeometry,
+                               const std::function<std::vector<tp_math_utils::Geometry3D>()>& getGeometry,
                                bool overwrite)
 {
   auto& details = d->pools[name];
@@ -306,7 +306,7 @@ void Geometry3DPool::viewProcessedGeometry(const tp_utils::StringID& name,
 
 //##################################################################################################
 void Geometry3DPool::viewGeometry(const tp_utils::StringID& name,
-                                  const std::function<void(const std::vector<Geometry3D>&)>& closure) const
+                                  const std::function<void(const std::vector<tp_math_utils::Geometry3D>&)>& closure) const
 {
   auto i = d->pools.find(name);
   if(i==d->pools.end())

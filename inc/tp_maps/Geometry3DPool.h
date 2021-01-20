@@ -16,7 +16,7 @@ struct ProcessedGeometry3D
 {
   TP_REF_COUNT_OBJECTS("ProcessedGeometry3D");
   std::vector<std::pair<GLenum, MaterialShader::VertexBuffer*>> vertexBuffers;
-  Material material;
+  tp_math_utils::Material material;
 
   GLuint     rgbaTextureID{0}; //!< Albedo and alpha.
   GLuint specularTextureID{0}; //!< Specular.
@@ -46,7 +46,7 @@ public:
 
   //################################################################################################
   void subscribe(const tp_utils::StringID& name,
-                 const std::function<std::vector<Geometry3D>()>& getGeometry,
+                 const std::function<std::vector<tp_math_utils::Geometry3D>()>& getGeometry,
                  bool overwrite);
 
   //################################################################################################
@@ -62,7 +62,7 @@ public:
 
   //################################################################################################
   void viewGeometry(const tp_utils::StringID& name,
-                    const std::function<void(const std::vector<Geometry3D>&)>& closure) const;
+                    const std::function<void(const std::vector<tp_math_utils::Geometry3D>&)>& closure) const;
 
   //################################################################################################
   tp_utils::CallbackCollection<void()> changedCallbacks;

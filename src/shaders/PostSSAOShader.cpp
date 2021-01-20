@@ -75,7 +75,7 @@ struct PostSSAOShaderPrivate::Private
         const auto& light = lights.at(i);
         auto ii = std::to_string(i);
 
-        size_t levels = (light.type==LightType::Spot)?map->spotLightLevels():1;
+        size_t levels = (light.type==tp_math_utils::LightType::Spot)?map->spotLightLevels():1;
         auto ll = std::to_string(levels);
 
         AO_FRAG_VARS += replaceLight(ii, ll, "uniform mat4 viewToLight%;\n");
@@ -166,7 +166,7 @@ void PostSSAOShader::use(ShaderType shaderType)
 
 
 //##################################################################################################
-void PostSSAOShader::setLights(const std::vector<Light>& lights, const std::vector<FBO>& lightBuffers)
+void PostSSAOShader::setLights(const std::vector<tp_math_utils::Light>& lights, const std::vector<FBO>& lightBuffers)
 {
   TP_UNUSED(lights);
 

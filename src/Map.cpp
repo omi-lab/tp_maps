@@ -136,7 +136,7 @@ struct Map::Private
   FBO* currentReadFBO{&intermediateFBOs[0]};
   FBO* currentDrawFBO{&intermediateFBOs[0]};
 
-  std::vector<Light> lights;
+  std::vector<tp_math_utils::Light> lights;
   std::vector<FBO> lightBuffers;
   size_t lightTextureSize{1024};
   size_t spotLightLevels{1};
@@ -162,8 +162,8 @@ struct Map::Private
     q(q_)
   {
     {
-      Light light;
-      light.type = LightType::Spot;
+      tp_math_utils::Light light;
+      light.type = tp_math_utils::LightType::Spot;
 
       light.setPosition({1.52f, -1.52f, 5.4f});
       light.setDirection({-0.276, 0.276, -0.92});
@@ -176,8 +176,8 @@ struct Map::Private
     }
 
     {
-      Light light;
-      light.type = LightType::Directional;
+      tp_math_utils::Light light;
+      light.type = tp_math_utils::LightType::Directional;
 
       light.setPosition({-5.52f, -5.52f, 18.4f});
       light.setDirection({0.276, 0.276, -0.92});
@@ -982,7 +982,7 @@ void Map::setCustomRenderPass(RenderPass renderPass,
 }
 
 //##################################################################################################
-void Map::setLights(const std::vector<Light>& lights)
+void Map::setLights(const std::vector<tp_math_utils::Light>& lights)
 {
   LightingModelChanged lightingModelChanged=LightingModelChanged::No;
 
@@ -1018,7 +1018,7 @@ void Map::setLights(const std::vector<Light>& lights)
 }
 
 //##################################################################################################
-const std::vector<Light>& Map::lights() const
+const std::vector<tp_math_utils::Light>& Map::lights() const
 {
   return d->lights;
 }
@@ -1118,7 +1118,7 @@ size_t Map::maxSpotLightLevels() const
 size_t Map::spotLightLevels() const
 {
 #ifdef TP_ENABLE_3D_TEXTURE
-  return tpMin(Light::lightLevelOffsets().size(), d->spotLightLevels);
+  return tpMin(tp_math_utils::Light::lightLevelOffsets().size(), d->spotLightLevels);
 #else
   return 1;
 #endif
@@ -1776,7 +1776,7 @@ void Map::paintGLNoMakeCurrent()
         size_t levels=1;
 
 #ifdef TP_ENABLE_3D_TEXTURE
-        if(light.type == LightType::Spot)
+        if(light.type == tp_math_utils::LightType::Spot)
           levels=d->spotLightLevels;
 #endif
 

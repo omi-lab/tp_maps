@@ -88,14 +88,14 @@ void LightsLayer::render(RenderInfo& renderInfo)
 
     {
       auto bulb = tp_math_utils::Sphere::octahedralClass1(0.1f, 3, GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES);
-      std::vector<tp_maps::Geometry3D> geometry;
+      std::vector<tp_math_utils::Geometry3D> geometry;
       for(const auto& light : map()->lights())
       {
         auto& g = geometry.emplace_back();
-        g.geometry = bulb;
+        g = bulb;
         glm::mat4 m{1.0f};
         m = glm::translate(m, light.position());
-        g.geometry.transform(m);
+        g.transform(m);
       }
       d->bulbs->setLinesFromGeometry(geometry);
     }

@@ -19,7 +19,7 @@ struct Controller::Private
   std::unordered_map<tp_utils::StringID, Scissor> scissor;
   std::function<void(const MouseEvent&)> mouseClickCallback;
 
-  Light currentLight;
+  tp_math_utils::Light currentLight;
   Matrices lightMatrices;
 
   //################################################################################################
@@ -50,7 +50,7 @@ Matrices Controller::matrices(const tp_utils::StringID& coordinateSystem) const
 }
 
 //##################################################################################################
-void Controller::setCurrentLight(const Light& light, size_t level)
+void Controller::setCurrentLight(const tp_math_utils::Light& light, size_t level)
 {
   d->currentLight = light;
 
@@ -63,8 +63,8 @@ void Controller::setCurrentLight(const Light& light, size_t level)
 
   switch(light.type)
   {
-  case LightType::Global: [[fallthrough]];
-  case LightType::Directional:
+  case tp_math_utils::LightType::Global: [[fallthrough]];
+  case tp_math_utils::LightType::Directional:
   {
     projection = glm::ortho(-distance,  // <- Left
                             distance,   // <- Right
@@ -75,14 +75,14 @@ void Controller::setCurrentLight(const Light& light, size_t level)
     break;
   }
 
-  case LightType::Spot:
+  case tp_math_utils::LightType::Spot:
   {
     projection = glm::perspective(glm::radians(light.fov), 1.0f, light.near, light.far);
     break;
   }
   }
 
-  glm::mat4 offset = glm::translate(glm::mat4(1.0f), Light::lightLevelOffsets()[level] * d->currentLight.offsetScale);
+  glm::mat4 offset = glm::translate(glm::mat4(1.0f), tp_math_utils::Light::lightLevelOffsets()[level] * d->currentLight.offsetScale);
 
   Matrices vp;
   vp.p  = projection;

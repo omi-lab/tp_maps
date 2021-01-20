@@ -109,7 +109,7 @@ struct UniformLocations_lt
 //##################################################################################################
 struct MaterialShader::Private
 {
-  TP_REF_COUNT_OBJECTS("tp_maps::MaterialShader::Private");
+  TP_REF_COUNT_OBJECTS("tp_math_utils::MaterialShader::Private");
   TP_NONCOPYABLE(Private);
 
   MaterialShader* q;
@@ -206,7 +206,7 @@ MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, b
           const auto& light = lights.at(i);
           auto ii = std::to_string(i);
 
-          size_t levels = (light.type==LightType::Spot)?map->spotLightLevels():1;
+          size_t levels = (light.type==tp_math_utils::LightType::Spot)?map->spotLightLevels():1;
           auto ll = std::to_string(levels);
 
           LIGHT_VERT_VARS += replaceLight(ii, ll, "uniform mat4 worldToLight%_view;\n");
@@ -226,15 +226,15 @@ MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, b
 
           switch(light.type)
           {
-          case LightType::Global:[[fallthrough]];
-          case LightType::Directional:
+          case tp_math_utils::LightType::Global:[[fallthrough]];
+          case tp_math_utils::LightType::Directional:
           {
             LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform sampler2D light%Texture;\n");
             LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = directionalLight(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec4(0,0,0,0), worldToLight%_proj));\n");
             break;
           }
 
-          case LightType::Spot:
+          case tp_math_utils::LightType::Spot:
           {
             if(map->spotLightLevels() == 1)
             {
@@ -253,7 +253,7 @@ MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, b
               {
                 std::string levelTexCoord = std::to_string(float(l)/float(levels-1));
 
-                auto o = Light::lightLevelOffsets()[l] * light.offsetScale;
+                auto o = tp_math_utils::Light::lightLevelOffsets()[l] * light.offsetScale;
                 std::string offset = "vec4(" + std::to_string(o.x) + "," + std::to_string(o.y) + "," + std::to_string(o.z) + ",0.0)";
 
                 LIGHT_FRAG_CALC += replaceLight(ii, std::to_string(l), "    shadow += spotLightSampleShadow3D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View,"+offset+", worldToLight%_proj), " + levelTexCoord + ");\n");
@@ -461,7 +461,7 @@ void MaterialShader::use(ShaderType shaderType)
 }
 
 //##################################################################################################
-void MaterialShader::setMaterial(const Material& material)
+void MaterialShader::setMaterial(const tp_math_utils::Material& material)
 {
   auto exec = [&](const UniformLocations_lt& locations)
   {
@@ -485,7 +485,7 @@ void MaterialShader::setMaterial(const Material& material)
 }
 
 //##################################################################################################
-void MaterialShader::setLights(const std::vector<Light>& lights, const std::vector<FBO>& lightBuffers)
+void MaterialShader::setLights(const std::vector<tp_math_utils::Light>& lights, const std::vector<FBO>& lightBuffers)
 {
   auto exec = [&](const UniformLocations_lt& locations)
   {
