@@ -82,7 +82,7 @@ FontRenderer* LightsLayer::font() const
 //##################################################################################################
 void LightsLayer::render(RenderInfo& renderInfo)
 {
-  if(d->updateModels && renderInfo.pass == defaultRenderPass())
+  if(d->updateModels/* && renderInfo.pass == defaultRenderPass()*/)
   {
     d->updateModels = false;
 
