@@ -36,6 +36,8 @@ struct LightsLayer::Private
   TP_NONCOPYABLE(Private);
   Private() = default;
 
+  bool editLights;
+
   LinesLayer* bulbs{nullptr};
   FrustumLayer* frustums{nullptr};
 
@@ -49,9 +51,11 @@ struct LightsLayer::Private
 };
 
 //##################################################################################################
-LightsLayer::LightsLayer():
+LightsLayer::LightsLayer(bool editLights):
   d(new Private())
 {
+  d->editLights = editLights;
+
   d->bulbs = new tp_maps::LinesLayer();
   addChildLayer(d->bulbs);
 
@@ -107,6 +111,7 @@ void LightsLayer::render(RenderInfo& renderInfo)
       d->frustums->setCameraMatrices(lights);
     }
 
+    if(d->editLights)
     {
       const auto& lights = map()->lights();
       while(d->gizmoLayers.size()<lights.size())

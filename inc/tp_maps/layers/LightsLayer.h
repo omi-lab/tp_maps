@@ -16,7 +16,7 @@ class TP_MAPS_SHARED_EXPORT LightsLayer: public Layer
   TP_REF_COUNT_OBJECTS("LightsLayer");
 public:
   //################################################################################################
-  LightsLayer();
+  LightsLayer(bool editLights);
 
   //################################################################################################
   ~LightsLayer() override;
