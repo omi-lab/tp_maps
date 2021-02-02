@@ -40,6 +40,14 @@ struct GizmoLayer::Private
   Geometry3DLayer* translateYGeometryLayer{nullptr};
   Geometry3DLayer* translateZGeometryLayer{nullptr};
 
+  glm::vec3 rotationColorX{1,0,0};
+  glm::vec3 rotationColorY{0,1,0};
+  glm::vec3 rotationColorZ{0,0,1};
+
+  glm::vec3 translationColorX{1,0,0};
+  glm::vec3 translationColorY{0,1,0};
+  glm::vec3 translationColorZ{0,0,1};
+
   Modify_lt activeModification{Modify_lt::None};
   glm::ivec2 previousPos;
 
@@ -119,9 +127,9 @@ struct GizmoLayer::Private
     std::vector<tp_math_utils::Geometry3D> rotateYGeometry;
     std::vector<tp_math_utils::Geometry3D> rotateZGeometry;
 
-    makeCircle(rotateXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, glm::vec3(1,0,0));
-    makeCircle(rotateYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, glm::vec3(0,1,0));
-    makeCircle(rotateZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, glm::vec3(0,0,1));
+    makeCircle(rotateXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, rotationColorX);
+    makeCircle(rotateYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, rotationColorY);
+    makeCircle(rotateZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, rotationColorZ);
 
     rotateXGeometryLayer->setGeometry(rotateXGeometry);
     rotateYGeometryLayer->setGeometry(rotateYGeometry);
@@ -217,9 +225,9 @@ struct GizmoLayer::Private
     std::vector<tp_math_utils::Geometry3D> translateYGeometry;
     std::vector<tp_math_utils::Geometry3D> translateZGeometry;
 
-    makeArrow(translateXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, glm::vec3(1,0,0));
-    makeArrow(translateYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, glm::vec3(0,1,0));
-    makeArrow(translateZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, glm::vec3(0,0,1));
+    makeArrow(translateXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, translationColorX);
+    makeArrow(translateYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, translationColorY);
+    makeArrow(translateZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, translationColorZ);
 
     translateXGeometryLayer->setGeometry(translateXGeometry);
     translateYGeometryLayer->setGeometry(translateYGeometry);
@@ -260,6 +268,26 @@ void GizmoLayer::setEnableTranslation(bool x, bool y, bool z)
   d->translateXGeometryLayer->setVisible(x);
   d->translateYGeometryLayer->setVisible(y);
   d->translateZGeometryLayer->setVisible(z);
+}
+
+//##################################################################################################
+void GizmoLayer::setRotationColors(const glm::vec3& x, const glm::vec3& y, const glm::vec3& z)
+{
+  d->rotationColorX = x;
+  d->rotationColorY = y;
+  d->rotationColorZ = z;
+  d->updateRotationGeometry = true;
+  update();
+}
+
+//##################################################################################################
+void GizmoLayer::setTranslationColors(const glm::vec3& x, const glm::vec3& y, const glm::vec3& z)
+{
+  d->translationColorX = x;
+  d->translationColorY = y;
+  d->translationColorZ = z;
+  d->updateTranslationGeometry = true;
+  update();
 }
 
 //##################################################################################################
