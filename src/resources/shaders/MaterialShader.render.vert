@@ -12,8 +12,6 @@ uniform mat4 mvp;
 uniform mat4 v;
 
 /*TP_GLSL_OUT_V*/vec3 outNormal;
-/*TP_GLSL_OUT_V*/vec3 outTangent;
-/*TP_GLSL_OUT_V*/vec3 outBitangent;
 
 uniform vec3 cameraOrigin_world;
 /*TP_GLSL_OUT_V*/vec3 fragPos_world;
@@ -29,8 +27,6 @@ uniform vec3 cameraOrigin_world;
 void main()
 {
   outNormal    = inNormal;
-  outTangent   = inTangent;
-  outBitangent = inBitangent;
 
   gl_Position = mvp * vec4(inVertex, 1.0);
 

@@ -55,14 +55,13 @@ uniform mat4 m;
 uniform mat4 mv;
 uniform mat4 mvp;
 uniform mat4 v;
+uniform mat4 mInv;
 
 uniform vec3 cameraOrigin_world;
 
 /*TP_GLSL_IN_F*/vec3 fragPos_world;
 
 /*TP_GLSL_IN_F*/vec3 outNormal;
-/*TP_GLSL_IN_F*/vec3 outTangent;
-/*TP_GLSL_IN_F*/vec3 outBitangent;
 
 /*TP_GLSL_IN_F*/vec2 uv_tangent;
 vec3 fragPos_tangent;
@@ -377,6 +376,15 @@ mat3 transposeMat3(mat3 inMatrix)
 }
 
 //##################################################################################################
+mat4 transposeIntoMat4(vec3 i0, vec3 i1, vec3 i2)
+{
+  return mat4(vec4(i0.x, i1.x, i2.x, 0.0),
+              vec4(i0.y, i1.y, i2.y, 0.0),
+              vec4(i0.z, i1.z, i2.z, 0.0),
+              vec4(0.0, 0.0, 0.0, 1.0));
+}
+
+//##################################################################################################
 void main()
 {
   vec4     rgbaTex = /*TP_GLSL_TEXTURE_2D*/(    rgbaTexture, uv_tangent);
@@ -397,8 +405,10 @@ void main()
   vec3 specular = vec3(0,0,0);
 
   // Calculate the TBN matrix used to transform between world and tangent space.
-  vec3 t = normalize(outTangent);
   vec3 n = normalize(outNormal);
+  vec3 t1 = cross(vec3(1,0,0), outNormal);
+  vec3 t2 = cross(vec3(0,1,0), outNormal);
+  vec3 t = normalize((dot(t1, t1)>dot(t2,t2))?t1:t2);
   vec3 b = cross(n, t);
   t = cross(b, n);
 
@@ -407,10 +417,7 @@ void main()
   mat3 invTBN = transposeMat3(TBN);
   mat3 TBNv = mat3(v) * TBN;
 
-  mat4 worldToTangent = m * mat4(vec4(t, 0.0), vec4(b, 0.0), vec4(n, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
-
-  //cameraOrigin_tangent = invTBN * cameraOrigin_world;
-  //fragPos_tangent = invTBN * fragPos_world;
+  mat4 worldToTangent = transposeIntoMat4(t, b, n) * mInv;
 
   {
     vec4 a = worldToTangent * vec4(cameraOrigin_world, 1.0);

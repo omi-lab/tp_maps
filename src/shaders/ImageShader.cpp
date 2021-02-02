@@ -59,9 +59,7 @@ ImageShader::ImageShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const c
   {
     glBindAttribLocation(program, 0, "inVertex");
     glBindAttribLocation(program, 1, "inNormal");
-    glBindAttribLocation(program, 2, "inTangent");
-    glBindAttribLocation(program, 3, "inBitangent");
-    glBindAttribLocation(program, 4, "inTexture");
+    glBindAttribLocation(program, 2, "inTexture");
   },
   [this](GLuint program)
   {

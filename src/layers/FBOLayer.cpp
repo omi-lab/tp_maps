@@ -177,10 +177,10 @@ void FBOLayer::render(RenderInfo& renderInfo)
     std::vector<ImageShader::Vertex> verts;
 
     verts.clear();
-    verts.push_back(ImageShader::Vertex(topRight   , {0,0,1}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}));
-    verts.push_back(ImageShader::Vertex(bottomRight, {0,0,1}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}));
-    verts.push_back(ImageShader::Vertex(bottomLeft , {0,0,1}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}));
-    verts.push_back(ImageShader::Vertex(topLeft    , {0,0,1}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}));
+    verts.push_back(ImageShader::Vertex(topRight   , {0,0,1}, {1.0f, 1.0f}));
+    verts.push_back(ImageShader::Vertex(bottomRight, {0,0,1}, {1.0f, 0.0f}));
+    verts.push_back(ImageShader::Vertex(bottomLeft , {0,0,1}, {0.0f, 0.0f}));
+    verts.push_back(ImageShader::Vertex(topLeft    , {0,0,1}, {0.0f, 1.0f}));
 
     delete d->vertexBuffer;
     d->vertexBuffer = shader->generateVertexBuffer(map(), indexes, verts);

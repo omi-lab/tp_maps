@@ -78,6 +78,7 @@ struct UniformLocations_lt
   GLint                    mvMatrixLocation{0};
   GLint                   mvpMatrixLocation{0};
   GLint                     vMatrixLocation{0};
+  GLint                  mInvMatrixLocation{0};
 
   GLint                cameraOriginLocation{0};
 
@@ -330,9 +331,7 @@ void MaterialShader::compile(const char* vertShaderStr,
     {
       glBindAttribLocation(program, 0, "inVertex");
       glBindAttribLocation(program, 1, "inNormal");
-      glBindAttribLocation(program, 2, "inTangent");
-      glBindAttribLocation(program, 3, "inBitangent");
-      glBindAttribLocation(program, 4, "inTexture");
+      glBindAttribLocation(program, 2, "inTexture");
       bindLocations(program);
       break;
     }
@@ -354,6 +353,7 @@ void MaterialShader::compile(const char* vertShaderStr,
       locations.mvMatrixLocation          = glGetUniformLocation(program, "mv");
       locations.mvpMatrixLocation         = glGetUniformLocation(program, "mvp");
       locations.vMatrixLocation           = glGetUniformLocation(program, "v");
+      locations.mInvMatrixLocation        = glGetUniformLocation(program, "mInv");
 
       locations.cameraOriginLocation      = glGetUniformLocation(program, "cameraOrigin_world");
 
@@ -556,13 +556,15 @@ void MaterialShader::setMatrix(const glm::mat4& m, const glm::mat4& v, const glm
 {
   glm::mat4 mv = v*m;
   glm::mat4 mvp = p*v*m;
+  glm::mat4 mInv = glm::inverse(m);
 
   auto exec = [&](const UniformLocations_lt& locations)
   {
-    glUniformMatrix4fv(locations.mMatrixLocation  , 1, GL_FALSE, glm::value_ptr(m));
-    glUniformMatrix4fv(locations.mvMatrixLocation, 1, GL_FALSE, glm::value_ptr(mv));
-    glUniformMatrix4fv(locations.mvpMatrixLocation, 1, GL_FALSE, glm::value_ptr(mvp));
-    glUniformMatrix4fv(locations.vMatrixLocation, 1, GL_FALSE, glm::value_ptr(v));
+    glUniformMatrix4fv(locations.   mMatrixLocation, 1, GL_FALSE, glm::value_ptr(m   ));
+    glUniformMatrix4fv(locations.  mvMatrixLocation, 1, GL_FALSE, glm::value_ptr(mv  ));
+    glUniformMatrix4fv(locations. mvpMatrixLocation, 1, GL_FALSE, glm::value_ptr(mvp ));
+    glUniformMatrix4fv(locations.   vMatrixLocation, 1, GL_FALSE, glm::value_ptr(v   ));
+    glUniformMatrix4fv(locations.mInvMatrixLocation, 1, GL_FALSE, glm::value_ptr(mInv));
 
     if(locations.cameraOriginLocation>=0)
     {

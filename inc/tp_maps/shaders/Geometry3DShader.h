@@ -21,20 +21,14 @@ public:
   {
     glm::vec3 position;
     glm::vec3 normal;
-    glm::vec3 tangent;
-    glm::vec3 bitangent;
     glm::vec2 texture;
 
     Vertex()=default;
     Vertex(const glm::vec3& position_,
            const glm::vec3& normal_,
-           const glm::vec3& tangent_,
-           const glm::vec3& bitangent_,
            const glm::vec2& texture_):
       position(position_),
       normal(normal_),
-      tangent(tangent_),
-      bitangent(bitangent_),
       texture(texture_)
     {
 

@@ -166,10 +166,10 @@ void ImageLayer::render(RenderInfo& renderInfo)
 
     if(d->externalCoords)
     {
-      d->verts.push_back(ImageShader::Vertex(d->topRight   , {0,0,1}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, { t.x,  t.y}));
-      d->verts.push_back(ImageShader::Vertex(d->bottomRight, {0,0,1}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, { t.x, 0.0f}));
-      d->verts.push_back(ImageShader::Vertex(d->bottomLeft , {0,0,1}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}));
-      d->verts.push_back(ImageShader::Vertex(d->topLeft    , {0,0,1}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f,  t.y}));
+      d->verts.push_back(ImageShader::Vertex(d->topRight   , {0,0,1}, { t.x,  t.y}));
+      d->verts.push_back(ImageShader::Vertex(d->bottomRight, {0,0,1}, { t.x, 0.0f}));
+      d->verts.push_back(ImageShader::Vertex(d->bottomLeft , {0,0,1}, {0.0f, 0.0f}));
+      d->verts.push_back(ImageShader::Vertex(d->topLeft    , {0,0,1}, {0.0f,  t.y}));
     }
     else
     {
@@ -180,10 +180,10 @@ void ImageLayer::render(RenderInfo& renderInfo)
       float x = 0.0f;
       float y = 0.0f;
 
-      d->verts.push_back(ImageShader::Vertex({w,y,0}, {0,0,1}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, { t.x,  t.y}));
-      d->verts.push_back(ImageShader::Vertex({w,h,0}, {0,0,1}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, { t.x, 0.0f}));
-      d->verts.push_back(ImageShader::Vertex({x,h,0}, {0,0,1}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}));
-      d->verts.push_back(ImageShader::Vertex({x,y,0}, {0,0,1}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f,  t.y}));
+      d->verts.push_back(ImageShader::Vertex({w,y,0}, {0,0,1}, { t.x,  t.y}));
+      d->verts.push_back(ImageShader::Vertex({w,h,0}, {0,0,1}, { t.x, 0.0f}));
+      d->verts.push_back(ImageShader::Vertex({x,h,0}, {0,0,1}, {0.0f, 0.0f}));
+      d->verts.push_back(ImageShader::Vertex({x,y,0}, {0,0,1}, {0.0f,  t.y}));
     }
 
     delete d->vertexBuffer;

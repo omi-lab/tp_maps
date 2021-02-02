@@ -201,8 +201,6 @@ void LinesLayer::setLinesFromGeometryNormals(const std::vector<tp_math_utils::Ge
       g.lines.push_back(v.vert);
       b.lines.push_back(v.vert);
 
-      r.lines.push_back(v.vert + (v.tangent  * scale));
-      g.lines.push_back(v.vert + (v.bitangent* scale));
       b.lines.push_back(v.vert + (v.normal   * scale));
     }
   }
