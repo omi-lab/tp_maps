@@ -50,6 +50,10 @@ struct GizmoLayer::Private
 
   Modify_lt activeModification{Modify_lt::None};
   glm::ivec2 previousPos;
+  glm::vec3 intersectionPoint;
+  bool useIntersection{false};
+  glm::mat4 originalModelMatrix;
+  glm::mat4 originalModelToWorldMatrix;
 
   glm::vec3 scale{1.0f, 1.0f, 1.0f};
   float ringHeight{0.01f};
@@ -341,6 +345,13 @@ void GizmoLayer::render(RenderInfo& renderInfo)
 //##################################################################################################
 bool GizmoLayer::mouseEvent(const MouseEvent& event)
 {
+  auto intersectPlane = [&](const glm::vec3& axis, glm::vec3& intersectionPoint)
+  {
+    auto m = map()->controller()->matrix(coordinateSystem()) * d->originalModelToWorldMatrix;
+    tp_math_utils::Plane plane(glm::vec3(0,0,0), axis);
+    return map()->unProject(event.pos, intersectionPoint, plane, m);
+  };
+
   switch(event.type)
   {
   case MouseEventType::Press:
@@ -354,21 +365,26 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
     if(result)
     {
       d->previousPos = event.pos;
+      d->originalModelMatrix = modelMatrix();
+      d->originalModelToWorldMatrix = modelToWorldMatrix();
 
       if(result->layer == d->rotateXGeometryLayer)
       {
+        d->useIntersection = intersectPlane({1,0,0}, d->intersectionPoint);
         d->activeModification = Modify_lt::RotateX;
         return true;
       }
 
       if(result->layer == d->rotateYGeometryLayer)
       {
+        d->useIntersection = intersectPlane({0,1,0}, d->intersectionPoint);
         d->activeModification = Modify_lt::RotateY;
         return true;
       }
 
       if(result->layer == d->rotateZGeometryLayer)
       {
+        d->useIntersection = intersectPlane({0,0,1}, d->intersectionPoint);
         d->activeModification = Modify_lt::RotateZ;
         return true;
       }
@@ -415,7 +431,25 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
 
     auto rotate = [&](const glm::vec3& axis)
     {
-      float angle = float((std::abs(delta.y)>std::abs(delta.x))?delta.y:delta.x) / 3.0f;
+      float angle=0.0f;
+      if(d->useIntersection)
+      {
+        glm::vec3 intersectionPoint;
+         if(intersectPlane(axis, intersectionPoint))
+         {
+           mat = d->originalModelMatrix;
+           auto a = glm::normalize(d->intersectionPoint);
+           auto b = glm::normalize(intersectionPoint);
+           angle = glm::degrees(std::acos(glm::dot(a, b)));
+           if(glm::dot(axis, glm::cross(a, b))<0.0f)
+             angle = -angle;
+         }
+      }
+      else
+      {
+        angle = float((std::abs(delta.y)>std::abs(delta.x))?delta.y:delta.x) / 3.0f;
+      }
+
       mat = glm::rotate(mat, glm::radians(angle), axis);
       d->previousPos = event.pos;
     };
