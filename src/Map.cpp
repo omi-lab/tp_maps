@@ -1438,6 +1438,8 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
 
   auto originalWidth  = d->width;
   auto originalHeight = d->height;
+  d->width = width;
+  d->height = height;
   resizeGL(int(width), int(height));
 
   GLint originalFrameBuffer = 0;
@@ -1447,7 +1449,10 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
 
   // Configure the frame buffer that the image will be rendered to.
   if(!d->prepareBuffer(d->renderToImageBuffer, width, height, CreateColorBuffer::Yes, Multisample::No, HDR::No, 1, 0))
+  {
+    tpWarning() << "Error Map::renderToImage failed to create render buffer.";
     return false;
+  }
 
   DEBUG_printOpenGLError("renderToImage B");
 
@@ -1460,6 +1465,7 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
   DEBUG_printOpenGLError("renderToImage C2");
 
   // Read the texture that we just generated
+  glBindFramebuffer(GL_FRAMEBUFFER, d->renderToImageBuffer.frameBuffer);
   glReadPixels(0, 0, int(width), int(height), GL_RGBA, GL_UNSIGNED_BYTE, pixels);
   DEBUG_printOpenGLError("renderToImage C3");
 
@@ -1481,6 +1487,8 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
   }
 
   // Return to the original viewport settings
+  d->width = originalWidth;
+  d->height = originalHeight;
   resizeGL(int(originalWidth), int(originalHeight));
   glBindFramebuffer(GL_FRAMEBUFFER, originalFrameBuffer);
   glViewport(0, 0, TPGLsizei(d->width), TPGLsizei(d->height));
