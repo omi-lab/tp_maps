@@ -22,6 +22,8 @@ struct ProcessedGeometry3D
   GLuint specularTextureID{0}; //!< Specular.
   GLuint  normalsTextureID{0}; //!< Normals.
   GLuint     rmaoTextureID{0}; //!< Roughness, metalness, and ambient occlusion.
+
+  ProcessedGeometry3D const* alternativeMaterial{nullptr};
 };
 
 //##################################################################################################
@@ -45,9 +47,17 @@ public:
   TexturePool* texturePool() const;
 
   //################################################################################################
+  //! Add geometry and material to pool
+  /*!
+  \param name used to index the geometry/material.
+  \param getGeometry used to fetch geometry if not already in the pool.
+  \param overwrite what we have in the pool already.
+  \param isOnlyMaterial if true don't generate vertex buffers.
+  */
   void subscribe(const tp_utils::StringID& name,
                  const std::function<std::vector<tp_math_utils::Geometry3D>()>& getGeometry,
-                 bool overwrite);
+                 bool overwrite,
+                 bool isOnlyMaterial=false);
 
   //################################################################################################
   void unsubscribe(const tp_utils::StringID& name);
@@ -58,6 +68,7 @@ public:
   //################################################################################################
   void viewProcessedGeometry(const tp_utils::StringID& name,
                              Geometry3DShader* shader,
+                             const std::unordered_map<tp_utils::StringID, tp_utils::StringID>& alternativeMaterials,
                              const std::function<void(const std::vector<ProcessedGeometry3D>&)>& closure);
 
   //################################################################################################

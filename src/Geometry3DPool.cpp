@@ -27,6 +27,7 @@ struct PoolDetails_lt
 {
   int count{0};
   bool overwrite{false};
+  bool isOnlyMaterial{false};
   std::vector<tp_math_utils::Geometry3D> geometry;
   std::vector<ProcessedGeometry3D> processedGeometry;
   std::vector<TextureKeys_lt> textureKeys;
@@ -63,23 +64,26 @@ struct PoolDetails_lt
           ProcessedGeometry3D details;
           details.material = shape.material;
 
-          std::vector<GLuint> indexes;
-          std::vector<MaterialShader::Vertex> verts;
-          for(size_t n=0; n<part.indexes.size(); n++)
+          if(!isOnlyMaterial)
           {
-            auto idx = part.indexes.at(n);
-            if(size_t(idx)<shape.verts.size())
+            std::vector<GLuint> indexes;
+            std::vector<MaterialShader::Vertex> verts;
+            for(size_t n=0; n<part.indexes.size(); n++)
             {
-              const auto& v = shape.verts.at(size_t(idx));
-              indexes.push_back(GLuint(n));
-              verts.emplace_back(MaterialShader::Vertex(v.vert, v.normal, v.texture));
+              auto idx = part.indexes.at(n);
+              if(size_t(idx)<shape.verts.size())
+              {
+                const auto& v = shape.verts.at(size_t(idx));
+                indexes.push_back(GLuint(n));
+                verts.emplace_back(MaterialShader::Vertex(v.vert, v.normal, v.texture));
+              }
             }
-          }
 
-          std::pair<GLenum, MaterialShader::VertexBuffer*> p;
-          p.first = GLenum(part.type);
-          p.second = shader->generateVertexBuffer(map, indexes, verts);
-          details.vertexBuffers.push_back(p);
+            std::pair<GLenum, MaterialShader::VertexBuffer*> p;
+            p.first = GLenum(part.type);
+            p.second = shader->generateVertexBuffer(map, indexes, verts);
+            details.vertexBuffers.push_back(p);
+          }
 
           processedGeometry.push_back(details);
         }
@@ -223,7 +227,8 @@ TexturePool* Geometry3DPool::texturePool() const
 //##################################################################################################
 void Geometry3DPool::subscribe(const tp_utils::StringID& name,
                                const std::function<std::vector<tp_math_utils::Geometry3D>()>& getGeometry,
-                               bool overwrite)
+                               bool overwrite,
+                               bool isOnlyMaterial)
 {
   auto& details = d->pools[name];
   details.count++;
@@ -234,6 +239,7 @@ void Geometry3DPool::subscribe(const tp_utils::StringID& name,
     details.overwrite = false;
     details.geometry = getGeometry();
     details.updateVertexBuffer = true;
+    details.isOnlyMaterial = isOnlyMaterial;
     d->unsubscribeTextures(details.textureSubscriptions);
 
     std::unordered_set<TexturePoolKey> textureSubscriptions;
@@ -292,6 +298,7 @@ void Geometry3DPool::invalidate(const tp_utils::StringID& name)
 //##################################################################################################
 void Geometry3DPool::viewProcessedGeometry(const tp_utils::StringID& name,
                                            Geometry3DShader* shader,
+                                           const std::unordered_map<tp_utils::StringID, tp_utils::StringID>& alternativeMaterials,
                                            const std::function<void(const std::vector<ProcessedGeometry3D>&)>& closure)
 {
   auto i = d->pools.find(name);
@@ -300,6 +307,23 @@ void Geometry3DPool::viewProcessedGeometry(const tp_utils::StringID& name,
 
   i->second.checkUpdateVertexBuffer(shader, d->map());
   i->second.checkUpdateVertexBufferTextures(d->texturePool);
+
+  if(!i->second.isOnlyMaterial)
+  {
+    for(auto& mesh : i->second.processedGeometry)
+    {
+      mesh.alternativeMaterial = &mesh;
+      auto itr = alternativeMaterials.find(mesh.material.name);
+      if(itr != alternativeMaterials.end())
+      {
+        viewProcessedGeometry(itr->second, shader, {}, [&](const std::vector<ProcessedGeometry3D>& geometry)
+        {
+          if(!geometry.empty())
+            mesh.alternativeMaterial = &geometry.front();
+        });
+      }
+    }
+  }
 
   closure(i->second.processedGeometry);
 }

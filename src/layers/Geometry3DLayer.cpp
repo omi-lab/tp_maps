@@ -40,6 +40,7 @@ struct Geometry3DLayer::Private
   TexturePool* texturePool{&localTexturePool};
 
   ShaderSelection shaderSelection{ShaderSelection::Material};
+  std::unordered_map<tp_utils::StringID, tp_utils::StringID> alternativeMaterials;
 
   //################################################################################################
   Private(Geometry3DLayer* q_):
@@ -184,6 +185,19 @@ Geometry3DLayer::ShaderSelection Geometry3DLayer::shaderSelection() const
   return d->shaderSelection;
 }
 
+//################################################################################################
+void Geometry3DLayer::setAlternativeMaterials(const std::unordered_map<tp_utils::StringID, tp_utils::StringID>& alternativeMaterials)
+{
+  d->alternativeMaterials = alternativeMaterials;
+  update();
+}
+
+//################################################################################################
+const std::unordered_map<tp_utils::StringID, tp_utils::StringID>& Geometry3DLayer::alternativeMaterials() const
+{
+  return d->alternativeMaterials;
+}
+
 //##################################################################################################
 void Geometry3DLayer::render(RenderInfo& renderInfo)
 {
@@ -218,7 +232,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
 
     if(renderInfo.pass == RenderPass::Picking)
     {
-      d->geometry3DPool->viewProcessedGeometry(d->name, shader, [&](const std::vector<ProcessedGeometry3D>& processedGeometry)
+      d->geometry3DPool->viewProcessedGeometry(d->name, shader, {}, [&](const std::vector<ProcessedGeometry3D>& processedGeometry)
       {
         size_t iMax = processedGeometry.size();
         for(size_t i=0; i<iMax; i++)
@@ -237,7 +251,9 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     }
     else
     {
-      d->geometry3DPool->viewProcessedGeometry(d->name, shader, [&](const std::vector<ProcessedGeometry3D>& processedGeometry)
+      if(d->name == "1e7ab311-87a6-4177-87c8-e04f71b0dbc9")
+        return;
+      d->geometry3DPool->viewProcessedGeometry(d->name, shader, d->alternativeMaterials, [&](const std::vector<ProcessedGeometry3D>& processedGeometry)
       {
         for(const auto& details : processedGeometry)
         {
@@ -246,7 +262,6 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
             draw(shader, buff.first, buff.second);
         }
       });
-
     }
   };
 
@@ -269,11 +284,11 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     },
     [&](auto shader, const auto& details) //-- setMaterial -----------------------------------------
     {
-      shader->setMaterial(details.material);
-      shader->setTextures(details.rgbaTextureID,
-                          details.specularTextureID,
-                          details.normalsTextureID,
-                          details.rmaoTextureID,
+      shader->setMaterial(details.alternativeMaterial->material);
+      shader->setTextures(details.alternativeMaterial->rgbaTextureID,
+                          details.alternativeMaterial->specularTextureID,
+                          details.alternativeMaterial->normalsTextureID,
+                          details.alternativeMaterial->rmaoTextureID,
                           map()->spotLightTexture());
 
       shader->setDiscardOpacity((renderInfo.pass == RenderPass::Transparency)?0.01f:0.80f);

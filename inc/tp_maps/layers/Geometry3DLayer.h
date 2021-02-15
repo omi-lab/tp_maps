@@ -66,6 +66,12 @@ public:
   //################################################################################################
   ShaderSelection shaderSelection() const;
 
+  //################################################################################################
+  void setAlternativeMaterials(const std::unordered_map<tp_utils::StringID, tp_utils::StringID>& alternativeMaterials);
+
+  //################################################################################################
+  const std::unordered_map<tp_utils::StringID, tp_utils::StringID>& alternativeMaterials() const;
+
 protected:
   //################################################################################################
   void render(RenderInfo& renderInfo) override;
