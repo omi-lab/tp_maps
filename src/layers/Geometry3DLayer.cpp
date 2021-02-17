@@ -251,8 +251,6 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     }
     else
     {
-      if(d->name == "1e7ab311-87a6-4177-87c8-e04f71b0dbc9")
-        return;
       d->geometry3DPool->viewProcessedGeometry(d->name, shader, d->alternativeMaterials, [&](const std::vector<ProcessedGeometry3D>& processedGeometry)
       {
         for(const auto& details : processedGeometry)
