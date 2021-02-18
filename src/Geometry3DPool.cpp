@@ -230,9 +230,6 @@ void Geometry3DPool::subscribe(const tp_utils::StringID& name,
                                bool overwrite,
                                bool isOnlyMaterial)
 {
-  if(name == "1e7ab311-87a6-4177-87c8-e04f71b0dbc9")
-    tpDebug() << "subscribe spawn point.";
-
   auto& details = d->pools[name];
   details.count++;
   if(details.count==1 || overwrite || details.overwrite)
@@ -281,9 +278,6 @@ void Geometry3DPool::subscribe(const tp_utils::StringID& name,
 //##################################################################################################
 void Geometry3DPool::unsubscribe(const tp_utils::StringID& name)
 {
-  if(name == "1e7ab311-87a6-4177-87c8-e04f71b0dbc9")
-    tpDebug() << "unsubscribe spawn point.";
-
   auto i = d->pools.find(name);
   i->second.count--;
   if(!i->second.count)
@@ -297,9 +291,6 @@ void Geometry3DPool::unsubscribe(const tp_utils::StringID& name)
 //##################################################################################################
 void Geometry3DPool::invalidate(const tp_utils::StringID& name)
 {
-  if(name == "1e7ab311-87a6-4177-87c8-e04f71b0dbc9")
-    tpDebug() << "invalidate spawn point.";
-
   if(auto i = d->pools.find(name); i != d->pools.end())
     i->second.overwrite = true;
 }
@@ -310,9 +301,6 @@ void Geometry3DPool::viewProcessedGeometry(const tp_utils::StringID& name,
                                            const std::unordered_map<tp_utils::StringID, tp_utils::StringID>& alternativeMaterials,
                                            const std::function<void(const std::vector<ProcessedGeometry3D>&)>& closure)
 {
-  if(name == "1e7ab311-87a6-4177-87c8-e04f71b0dbc9")
-    tpDebug() << "viewProcessedGeometry spawn point.";
-
   auto i = d->pools.find(name);
   if(i==d->pools.end())
     return;
@@ -344,9 +332,6 @@ void Geometry3DPool::viewProcessedGeometry(const tp_utils::StringID& name,
 void Geometry3DPool::viewGeometry(const tp_utils::StringID& name,
                                   const std::function<void(const std::vector<tp_math_utils::Geometry3D>&)>& closure) const
 {
-  if(name == "1e7ab311-87a6-4177-87c8-e04f71b0dbc9")
-    tpDebug() << "viewGeometry spawn point.";
-
   auto i = d->pools.find(name);
   if(i==d->pools.end())
     return;
