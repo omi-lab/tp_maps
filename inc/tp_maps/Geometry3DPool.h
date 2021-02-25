@@ -19,7 +19,6 @@ struct ProcessedGeometry3D
   tp_math_utils::Material material;
 
   GLuint     rgbaTextureID{0}; //!< Albedo and alpha.
-  GLuint specularTextureID{0}; //!< Specular.
   GLuint  normalsTextureID{0}; //!< Normals.
   GLuint     rmaoTextureID{0}; //!< Roughness, metalness, and ambient occlusion.
 

@@ -58,7 +58,6 @@ struct LightLocations_lt
   GLint        directionLocation{0};
   GLint          ambientLocation{0};
   GLint          diffuseLocation{0};
-  GLint         specularLocation{0};
   GLint     diffuseScaleLocation{0};
   GLint         constantLocation{0};
   GLint           linearLocation{0};
@@ -91,13 +90,11 @@ struct UniformLocations_lt
   GLint       materialUseReflectionLocation{0};
 
   GLint         materialAlbedoScaleLocation{0};
-  GLint       materialSpecularScaleLocation{0};
 
   GLint                     txlSizeLocation{0};
   GLint              discardOpacityLocation{0};
 
   GLint      rgbaTextureLocation{0};
-  GLint  specularTextureLocation{0};
   GLint   normalsTextureLocation{0};
   GLint      rmaoTextureLocation{0};
   GLint spotLightTextureLocation{0};
@@ -366,13 +363,11 @@ void MaterialShader::compile(const char* vertShaderStr,
       locations. materialUseReflectionLocation = glGetUniformLocation(program, "material.useReflection" );
 
       locations.  materialAlbedoScaleLocation = glGetUniformLocation(program, "material.albedoScale"  );
-      locations.materialSpecularScaleLocation = glGetUniformLocation(program, "material.specularScale");
 
       locations.txlSizeLocation           = glGetUniformLocation(program, "txlSize");
       locations.discardOpacityLocation    = glGetUniformLocation(program, "discardOpacity");
 
       locations.     rgbaTextureLocation = glGetUniformLocation(program, "rgbaTexture"     );
-      locations. specularTextureLocation = glGetUniformLocation(program, "specularTexture" );
       locations.  normalsTextureLocation = glGetUniformLocation(program, "normalsTexture"  );
       locations.     rmaoTextureLocation = glGetUniformLocation(program, "rmaoTexture"     );
       locations.spotLightTextureLocation = glGetUniformLocation(program, "spotLightTexture");
@@ -394,7 +389,6 @@ void MaterialShader::compile(const char* vertShaderStr,
         lightLocations.directionLocation        = glGetUniformLocation(program, replaceLight(ii, "", "light%Direction_world").c_str());
         lightLocations.ambientLocation          = glGetUniformLocation(program, replaceLight(ii, "", "light%.ambient").c_str());
         lightLocations.diffuseLocation          = glGetUniformLocation(program, replaceLight(ii, "", "light%.diffuse").c_str());
-        lightLocations.specularLocation         = glGetUniformLocation(program, replaceLight(ii, "", "light%.specular").c_str());
         lightLocations.diffuseScaleLocation     = glGetUniformLocation(program, replaceLight(ii, "", "light%.diffuseScale").c_str());
 
         lightLocations.constantLocation         = glGetUniformLocation(program, replaceLight(ii, "", "light%.constant").c_str());
@@ -474,7 +468,6 @@ void MaterialShader::setMaterial(const tp_math_utils::Material& material)
     glUniform1f (locations. materialUseReflectionLocation, material.useReflection );
 
     glUniform1f(locations.    materialAlbedoScaleLocation, material.albedoScale   );
-    glUniform1f(locations.  materialSpecularScaleLocation, material.specularScale );
   };
 
   if(d->shaderType == ShaderType::Render)
@@ -503,7 +496,6 @@ void MaterialShader::setLights(const std::vector<tp_math_utils::Light>& lights, 
         if(lightLocations.directionLocation>=0) glUniform3fv(lightLocations.directionLocation, 1,  &direction.x        );
         if(lightLocations.  ambientLocation>=0) glUniform3fv(lightLocations.  ambientLocation, 1,  &light.ambient.x    );
         if(lightLocations.  diffuseLocation>=0) glUniform3fv(lightLocations.  diffuseLocation, 1,  &light.diffuse.x    );
-        if(lightLocations. specularLocation>=0) glUniform3fv(lightLocations. specularLocation, 1,  &light.specular.x   );
 
         glUniform1f (lightLocations.diffuseScaleLocation,      light.diffuseScale );
         glUniform1f (lightLocations.    constantLocation,      light.constant     );
@@ -634,7 +626,6 @@ void MaterialShader::drawVertexBuffer(GLenum mode, VertexBuffer* vertexBuffer)
 
 //##################################################################################################
 void MaterialShader::setTextures(GLuint rgbaTextureID,
-                                 GLuint specularTextureID,
                                  GLuint normalsTextureID,
                                  GLuint rmaoTextureID,
                                  GLuint spotLightTextureID)
@@ -646,20 +637,16 @@ void MaterialShader::setTextures(GLuint rgbaTextureID,
     glUniform1i(locations.rgbaTextureLocation, 0);
 
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, specularTextureID);
-    glUniform1i(locations.specularTextureLocation, 1);
+    glBindTexture(GL_TEXTURE_2D, normalsTextureID);
+    glUniform1i(locations.normalsTextureLocation, 1);
 
     glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, normalsTextureID);
-    glUniform1i(locations.normalsTextureLocation, 2);
+    glBindTexture(GL_TEXTURE_2D, rmaoTextureID);
+    glUniform1i(locations.rmaoTextureLocation, 2);
 
     glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, rmaoTextureID);
-    glUniform1i(locations.rmaoTextureLocation, 3);
-
-    glActiveTexture(GL_TEXTURE4);
     glBindTexture(GL_TEXTURE_2D, spotLightTextureID);
-    glUniform1i(locations.spotLightTextureLocation, 4);
+    glUniform1i(locations.spotLightTextureLocation, 3);
   };
 
   if(d->shaderType == ShaderType::Render)
@@ -672,7 +659,6 @@ void MaterialShader::setTextures(GLuint rgbaTextureID,
 void MaterialShader::setBlankTextures()
 {
   setTextures(d->emptyTextureID,
-              d->emptyTextureID,
               d->emptyNormalTextureID,
               d->emptyTextureID,
               map()->spotLightTexture());

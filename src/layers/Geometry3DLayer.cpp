@@ -284,7 +284,6 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     {
       shader->setMaterial(details.alternativeMaterial->material);
       shader->setTextures(details.alternativeMaterial->rgbaTextureID,
-                          details.alternativeMaterial->specularTextureID,
                           details.alternativeMaterial->normalsTextureID,
                           details.alternativeMaterial->rmaoTextureID,
                           map()->spotLightTexture());

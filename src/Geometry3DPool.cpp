@@ -17,7 +17,6 @@ namespace
 struct TextureKeys_lt
 {
   TexturePoolKey rgba;
-  TexturePoolKey specular;
   TexturePoolKey normals;
   TexturePoolKey rmao;
 };
@@ -104,7 +103,6 @@ struct PoolDetails_lt
         const auto& textureDetails = textureKeys.at(m);
 
         details.    rgbaTextureID = texturePool->textureID(textureDetails.rgba    );
-        details.specularTextureID = texturePool->textureID(textureDetails.specular);
         details. normalsTextureID = texturePool->textureID(textureDetails.normals );
         details.    rmaoTextureID = texturePool->textureID(textureDetails.rmao    );
       }
@@ -252,12 +250,10 @@ void Geometry3DPool::subscribe(const tp_utils::StringID& name,
       tileTextures = material.tileTextures;
 
       textureKeys.rgba     = TexturePoolKey(material.   albedoTexture, material.   albedoTexture, material.  albedoTexture, material.alphaTexture, 0, 1, 2, 0, TPPixel(uint8_t(material.  albedo.x*255.0f), uint8_t(material.  albedo.y*255.0f), uint8_t(material.  albedo.z*255.0f), uint8_t(material.alpha*255.0f)));
-      textureKeys.specular = TexturePoolKey(material. specularTexture, material. specularTexture, material.specularTexture,  tp_utils::StringID(), 0, 1, 2, 0, TPPixel(uint8_t(material.specular.x*255.0f), uint8_t(material.specular.y*255.0f), uint8_t(material.specular.z*255.0f), 255                           ));
       textureKeys.normals  = TexturePoolKey(material.  normalsTexture, material.  normalsTexture, material. normalsTexture,  tp_utils::StringID(), 0, 1, 2, 0, TPPixel(128                                , 128                                , 255                                , 255                           ));
-      textureKeys.rmao     = TexturePoolKey(material.roughnessTexture, material.metalnessTexture, material.      aoTexture,  tp_utils::StringID(), 0, 1, 2, 0, TPPixel(uint8_t(material. roughness*255.0f), uint8_t(material. metalness*255.0f), 255                                , 255                           ));
+      textureKeys.rmao     = TexturePoolKey(material.roughnessTexture, material.metalnessTexture,     tp_utils::StringID(),  tp_utils::StringID(), 0, 1, 2, 0, TPPixel(uint8_t(material. roughness*255.0f), uint8_t(material. metalness*255.0f), 255                                , 255                           ));
 
       textureSubscriptions.insert(textureKeys.rgba    );
-      textureSubscriptions.insert(textureKeys.specular);
       textureSubscriptions.insert(textureKeys.normals );
       textureSubscriptions.insert(textureKeys.rmao    );
     }

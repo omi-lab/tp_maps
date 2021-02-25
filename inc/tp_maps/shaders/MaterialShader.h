@@ -45,13 +45,11 @@ public:
   //################################################################################################
   /*!
   \param rgbaTextureID albedo and alpha texture.
-  \param specularTextureID specular texture.
   \param normalsTextureID normals texture.
   \param rmaoTextureID roughness, metalness, ambient occlusion texture.
   \param spotLightTextureID spot light mask texture.
   */
   void setTextures(GLuint rgbaTextureID,
-                   GLuint specularTextureID,
                    GLuint normalsTextureID,
                    GLuint rmaoTextureID,
                    GLuint spotLightTextureID);

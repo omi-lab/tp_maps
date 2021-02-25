@@ -11,7 +11,6 @@ struct Material
   float useReflection;
 
   float albedoScale;
-  float specularScale;
 };
 
 struct Light
@@ -19,7 +18,6 @@ struct Light
   vec3 position;
   vec3 ambient;
   vec3 diffuse;
-  vec3 specular;
   float diffuseScale;
 
   float constant;
@@ -41,7 +39,6 @@ struct LightResult
 };
 
 uniform sampler2D rgbaTexture;
-uniform sampler2D specularTexture;
 uniform sampler2D normalsTexture;
 uniform sampler2D rmaoTexture;
 uniform sampler2D spotLightTexture;
@@ -68,7 +65,6 @@ vec3 fragPos_tangent;
 vec3 cameraOrigin_tangent;
 
 vec3 albedo;
-vec3 specularColor;
 float roughness;
 float roughness2;
 float metalness;
@@ -256,7 +252,7 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
   float NdotL = mix(1.0, max(dot(norm, surfaceToLight), 0.0), material.useNdotL);
   r.diffuse = kD * albedo * radiance * NdotL * shadow;
 
-  r.specular = specularColor * specular * radiance * NdotL * shadow;
+  r.specular = specular * radiance * NdotL * shadow;
 
   return r;
 }
@@ -360,7 +356,7 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, vec3 
 
   float NdotL = mix(1.0, max(dot(norm, surfaceToLight), 0.0), material.useNdotL);
   r.diffuse = kD * albedo * radiance * NdotL * shadow;
-  r.specular = specularColor * specular * radiance * NdotL * shadow;
+  r.specular = specular * radiance * NdotL * shadow;
 
   return r;
 }
@@ -388,14 +384,12 @@ mat4 transposeIntoMat4(vec3 i0, vec3 i1, vec3 i2)
 void main()
 {
   vec4     rgbaTex = /*TP_GLSL_TEXTURE_2D*/(    rgbaTexture, uv_tangent);
-  vec3 specularTex = /*TP_GLSL_TEXTURE_2D*/(specularTexture, uv_tangent).xyz;
   vec3  normalsTex = /*TP_GLSL_TEXTURE_2D*/( normalsTexture, uv_tangent).xyz;
   vec3     rmaoTex = /*TP_GLSL_TEXTURE_2D*/(    rmaoTexture, uv_tangent).xyz;
 
   vec3 norm = normalize(normalsTex*2.0-1.0);
 
   albedo = rgbaTex.xyz * material.albedoScale;
-  specularColor = specularTex * material.specularScale;
   roughness = max(0.001, rmaoTex.x);
   roughness2 = roughness*roughness;
   metalness = rmaoTex.y;
@@ -435,10 +429,9 @@ void main()
   /*LIGHT_FRAG_CALC*/
 
   float alpha = rgbaTex.w;
-  vec3 materialSpecular = specularTex;
   float shininess = metalness;
 
   vec3 normal = TBNv*norm;
 
-  writeFragment(ambient, diffuse, specular, normal, alpha, materialSpecular, shininess);
+  writeFragment(ambient, diffuse, specular, normal, alpha, vec3(1,1,1), shininess);
 }
