@@ -46,6 +46,9 @@ public:
   TexturePool* texturePool() const;
 
   //################################################################################################
+  void incrementKeepHot(bool keepHot);
+
+  //################################################################################################
   //! Add geometry and material to pool
   /*!
   \param name used to index the geometry/material.

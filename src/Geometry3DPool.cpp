@@ -25,6 +25,7 @@ struct TextureKeys_lt
 struct PoolDetails_lt
 {
   int count{0};
+  bool isNew{true};
   bool overwrite{false};
   bool isOnlyMaterial{false};
   std::vector<tp_math_utils::Geometry3D> geometry;
@@ -40,6 +41,8 @@ struct PoolDetails_lt
   //################################################################################################
   void deleteVertexBuffers()
   {
+    TP_TIME_SCOPE("Geometry3DPool::PoolDetails_lt::deleteVertexBuffers");
+
     for(const auto& details : processedGeometry)
       for(const auto& buffer : details.vertexBuffers)
         delete buffer.second;
@@ -50,6 +53,8 @@ struct PoolDetails_lt
   //################################################################################################
   void checkUpdateVertexBuffer(Geometry3DShader* shader, Map* map)
   {
+    TP_TIME_SCOPE("Geometry3DPool::PoolDetails_lt::checkUpdateVertexBuffer");
+
     if(updateVertexBuffer)
     {
       deleteVertexBuffers();
@@ -93,6 +98,8 @@ struct PoolDetails_lt
   //################################################################################################
   void checkUpdateVertexBufferTextures(TexturePool* texturePool)
   {
+    TP_TIME_SCOPE("Geometry3DPool::PoolDetails_lt::checkUpdateVertexBufferTextures");
+
     if(updateVertexBufferTextures)
     {
       updateVertexBufferTextures=false;
@@ -122,6 +129,8 @@ struct Geometry3DPool::Private
   TexturePool* texturePool{nullptr};
 
   std::unordered_map<tp_utils::StringID, PoolDetails_lt> pools;
+
+  int keepHot{0};
 
   //################################################################################################
   Private(Geometry3DPool* q_, Map* map_):
@@ -159,14 +168,19 @@ struct Geometry3DPool::Private
   //################################################################################################
   tp_utils::Callback<void()> texturePoolChanged = [&]
   {
+    TP_TIME_SCOPE("Geometry3DPool::Private::texturePoolChanged");
+
     for(auto& i : pools)
       i.second.updateVertexBufferTextures=true;
+
     q->changedCallbacks();
   };
 
   //################################################################################################
   tp_utils::Callback<void()> invalidateBuffersCallback = [&]
   {
+    TP_TIME_SCOPE("Geometry3DPool::Private::invalidateBuffersCallback");
+
     for(auto& i : pools)
     {
       i.second.deleteVertexBuffers();
@@ -179,6 +193,8 @@ struct Geometry3DPool::Private
   //################################################################################################
   void unsubscribeTextures(std::unordered_set<TexturePoolKey>& textureSubscriptions)
   {
+    TP_TIME_SCOPE("Geometry3DPool::Private::unsubscribeTextures");
+
     if(texturePool)
       for(const auto& key : textureSubscriptions)
         texturePool->unsubscribe(key);
@@ -223,15 +239,40 @@ TexturePool* Geometry3DPool::texturePool() const
 }
 
 //##################################################################################################
+void Geometry3DPool::incrementKeepHot(bool keepHot)
+{
+  TP_TIME_SCOPE("Geometry3DPool::incrementKeepHot");
+
+  d->keepHot += keepHot?1:-1;
+  if(d->keepHot==0)
+  {
+    for(auto i = d->pools.begin(); i!=d->pools.end();)
+    {
+      if(!i->second.count)
+      {
+        i->second.deleteVertexBuffers();
+        d->unsubscribeTextures(i->second.textureSubscriptions);
+        i = d->pools.erase(i);
+      }
+      else
+        ++i;
+    }
+  }
+}
+
+//##################################################################################################
 void Geometry3DPool::subscribe(const tp_utils::StringID& name,
                                const std::function<std::vector<tp_math_utils::Geometry3D>()>& getGeometry,
                                bool overwrite,
                                bool isOnlyMaterial)
 {
+  TP_TIME_SCOPE("Geometry3DPool::subscribe");
+
   auto& details = d->pools[name];
   details.count++;
-  if(details.count==1 || overwrite || details.overwrite)
+  if(details.isNew || overwrite || details.overwrite)
   {
+    details.isNew = false;
     bool tileTextures=false;
 
     details.overwrite = false;
@@ -274,9 +315,11 @@ void Geometry3DPool::subscribe(const tp_utils::StringID& name,
 //##################################################################################################
 void Geometry3DPool::unsubscribe(const tp_utils::StringID& name)
 {
+  TP_TIME_SCOPE("Geometry3DPool::unsubscribe");
+
   auto i = d->pools.find(name);
   i->second.count--;
-  if(!i->second.count)
+  if(!i->second.count && d->keepHot==0)
   {
     i->second.deleteVertexBuffers();
     d->unsubscribeTextures(i->second.textureSubscriptions);
@@ -297,6 +340,8 @@ void Geometry3DPool::viewProcessedGeometry(const tp_utils::StringID& name,
                                            const std::unordered_map<tp_utils::StringID, tp_utils::StringID>& alternativeMaterials,
                                            const std::function<void(const std::vector<ProcessedGeometry3D>&)>& closure)
 {
+  TP_TIME_SCOPE("Geometry3DPool::viewProcessedGeometry");
+
   auto i = d->pools.find(name);
   if(i==d->pools.end())
     return;

@@ -22,6 +22,7 @@ struct Details_lt
   int count{0};
   tp_image_utils::ColorMap image;
   BasicTexture* texture{nullptr};
+  bool changed{true};
   bool overwrite{false};
   GLuint textureID{0};
 
@@ -131,61 +132,65 @@ TexturePool::~TexturePool()
 //##################################################################################################
 void TexturePool::subscribe(const tp_utils::StringID& name, const tp_image_utils::ColorMap& image)
 {
+  TP_TIME_SCOPE("TexturePool::subscribe(name)");
+
+  auto& details = d->images[name];
+  details.count++;
+
+  if(details.overwrite)
   {
-    auto& details = d->images[name];
-    details.count++;
+    details.overwrite = false;
 
-    if(details.overwrite)
+    if(details.textureID && d->map())
     {
-      details.overwrite = false;
-
-      if(details.textureID && d->map())
-      {
-        d->map()->makeCurrent();
-        d->map()->deleteTexture(details.textureID);
-      }
-      delete details.texture;
-
-      details.textureID = 0;
-      details.texture = nullptr;
+      d->map()->makeCurrent();
+      d->map()->deleteTexture(details.textureID);
     }
+    delete details.texture;
 
-    if(!details.texture)
+    details.textureID = 0;
+    details.texture = nullptr;
+    details.changed = true;
+  }
+
+  if(details.changed)
+  {
+    details.changed = false;
+    details.image = image;
+    for(auto& i : d->combinedImages)
     {
-      details.image = image;
-      for(auto& i : d->combinedImages)
+      auto& combinedDetails = i.second;
+      const auto& key = i.first;
+
+      bool changed=false;
+      if(key.d().rName == name){combinedDetails.rImage = image; changed=true;}
+      if(key.d().gName == name){combinedDetails.gImage = image; changed=true;}
+      if(key.d().bName == name){combinedDetails.bImage = image; changed=true;}
+      if(key.d().aName == name){combinedDetails.aImage = image; changed=true;}
+
+      if(changed)
       {
-        auto& combinedDetails = i.second;
-        const auto& key = i.first;
-
-        bool changed=false;
-        if(key.d().rName == name){combinedDetails.rImage = image; changed=true;}
-        if(key.d().gName == name){combinedDetails.gImage = image; changed=true;}
-        if(key.d().bName == name){combinedDetails.bImage = image; changed=true;}
-        if(key.d().aName == name){combinedDetails.aImage = image; changed=true;}
-
-        if(changed)
+        combinedDetails.composeImage = true;
+        if(combinedDetails.textureID && d->map())
         {
-          combinedDetails.composeImage = true;
-          if(combinedDetails.textureID && d->map())
-          {
-            d->map()->makeCurrent();
-            d->map()->deleteTexture(combinedDetails.textureID);
-          }
-          delete combinedDetails.texture;
-
-          combinedDetails.textureID = 0;
-          combinedDetails.texture = nullptr;
+          d->map()->makeCurrent();
+          d->map()->deleteTexture(combinedDetails.textureID);
         }
+        delete combinedDetails.texture;
+
+        combinedDetails.textureID = 0;
+        combinedDetails.texture = nullptr;
       }
-      changedCallbacks();
     }
+    changedCallbacks();
   }
 }
 
 //##################################################################################################
 void TexturePool::unsubscribe(const tp_utils::StringID& name)
 {
+  TP_TIME_SCOPE("TexturePool::unsubscribe(name)");
+
   auto i = d->images.find(name);
   if(i == d->images.end())
   {
@@ -210,6 +215,8 @@ void TexturePool::unsubscribe(const tp_utils::StringID& name)
 //##################################################################################################
 void TexturePool::subscribe(const TexturePoolKey& key)
 {
+  TP_TIME_SCOPE("TexturePool::unsubscribe(key)");
+
   auto& details = d->combinedImages[key];
   details.count++;
 
@@ -234,6 +241,8 @@ void TexturePool::subscribe(const TexturePoolKey& key)
 //##################################################################################################
 void TexturePool::unsubscribe(const TexturePoolKey& key)
 {
+  TP_TIME_SCOPE("TexturePool::unsubscribe(key)");
+
   auto i = d->combinedImages.find(key);
   if(i == d->combinedImages.end())
   {
