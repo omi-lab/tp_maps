@@ -11,7 +11,8 @@ namespace tp_maps
 enum class RotationRingStyle
 {
   Compass,
-  Arrows
+  ArrowsCW,
+  ArrowsCCW
 };
 
 //##################################################################################################

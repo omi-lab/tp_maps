@@ -14,6 +14,8 @@ namespace
 {
 
 /*
+https://google.github.io/filament/Filament.html#materialsystem/clearcoatmodel
+
 https://learnopengl.com/PBR/Theory
 
 https://youtu.be/yn5UJzMqxj0

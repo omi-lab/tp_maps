@@ -148,7 +148,9 @@ struct GizmoLayer::Private
         break;
       }
 
-      case RotationRingStyle::Arrows: //------------------------------------------------------------
+      case RotationRingStyle::ArrowsCW:   //--------------------------------------------------------
+        [[fallthrough]];
+      case RotationRingStyle::ArrowsCCW: //---------------------------------------------------------
       {
         size_t stemStart=0;
         size_t arrowStart=60;
@@ -292,6 +294,13 @@ struct GizmoLayer::Private
 
           else
             a+=5;
+        }
+
+        if(rotationRingStyle == RotationRingStyle::ArrowsCCW)
+        {
+          glm::mat4 m{1.0f};
+          m = glm::rotate(m, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+          circle.transform(m);
         }
         break;
       }

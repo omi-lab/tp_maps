@@ -566,7 +566,6 @@ bool CADController::mouseEvent(const MouseEvent& event)
   {
   case MouseEventType::Press: //--------------------------------------------------------------------
   {
-    tpDebug() << "MouseEventType::Press";
     if(d->mouseInteraction == Button::NoButton)
     {
       d->mouseInteraction = event.button;
@@ -578,7 +577,6 @@ bool CADController::mouseEvent(const MouseEvent& event)
 
   case MouseEventType::Move: //---------------------------------------------------------------------
   {
-    tpDebug() << "MouseEventType::Move";
     glm::ivec2 pos = event.pos;
 
     if(!d->mouseMoved)
@@ -651,7 +649,6 @@ bool CADController::mouseEvent(const MouseEvent& event)
 
   case MouseEventType::Wheel: //--------------------------------------------------------------------
   {
-    tpDebug() << "MouseEventType::Wheel";
     if(d->mode == CADControllerMode::Perspective)
     {
       changed = true;
@@ -697,7 +694,6 @@ bool CADController::mouseEvent(const MouseEvent& event)
 
   case MouseEventType::Release: //------------------------------------------------------------------
   {
-    tpDebug() << "MouseEventType::Release";
     if(event.button == d->mouseInteraction)
     {
       d->mouseInteraction = Button::NoButton;
@@ -719,14 +715,12 @@ bool CADController::mouseEvent(const MouseEvent& event)
 
   case MouseEventType::DoubleClick: //--------------------------------------------------------------
   {
-    tpDebug() << "MouseEventType::DoubleClick";
     d->mouseInteraction = Button::NoButton;
     break;
   }
 
   default: //---------------------------------------------------------------------------------------
   {
-    tpDebug() << "default";
     d->mouseInteraction = Button::NoButton;
     break;
   }
