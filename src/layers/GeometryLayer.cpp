@@ -30,7 +30,7 @@ struct GeometryLayer::Private
 
   GeometryLayer* q;
 
-  std::vector<Geometry> geometry;
+  std::vector<tp_math_utils::Geometry> geometry;
 
   //Processed geometry ready for rendering
   std::vector<GeometryDetails_lt> processedGeometry;
@@ -74,13 +74,13 @@ GeometryLayer::~GeometryLayer()
 }
 
 //##################################################################################################
-const std::vector<Geometry>& GeometryLayer::geometry() const
+const std::vector<tp_math_utils::Geometry>& GeometryLayer::geometry() const
 {
   return d->geometry;
 }
 
 //##################################################################################################
-void GeometryLayer::setGeometry(const std::vector<Geometry>& geometry)
+void GeometryLayer::setGeometry(const std::vector<tp_math_utils::Geometry>& geometry)
 {
   d->geometry = geometry;
   d->updateVertexBuffer = true;
@@ -104,7 +104,7 @@ void GeometryLayer::render(RenderInfo& renderInfo)
     d->deleteVertexBuffers();
     d->updateVertexBuffer=false;
 
-    for(const Geometry& shape : d->geometry)
+    for(const auto& shape : d->geometry)
     {
       GeometryDetails_lt details;
       details.material = shape.material;

@@ -18,10 +18,10 @@ public:
   ~GeometryLayer() override;
 
   //################################################################################################
-  const std::vector<Geometry>& geometry() const;
+  const std::vector<tp_math_utils::Geometry>& geometry() const;
 
   //################################################################################################
-  void setGeometry(const std::vector<Geometry>& geometry);
+  void setGeometry(const std::vector<tp_math_utils::Geometry>& geometry);
 
 protected:
   //################################################################################################

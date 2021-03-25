@@ -404,14 +404,6 @@ struct FBO
   HDR hdr{HDR::No}; //!< Yes if HDR and deferred rendering buffers have been created.
 };
 
-//##################################################################################################
-struct TP_MAPS_SHARED_EXPORT Geometry
-{
-  std::vector<glm::vec2> geometry;
-  glm::mat4 transform{1.0f};
-  tp_math_utils::Material material;
-};
-
 }
 
 #endif
