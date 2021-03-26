@@ -338,7 +338,7 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, vec3 
   // Attenuation
   float distance    = length(light.position - fragPos_world);
   float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
-  vec3  radiance    = mix(vec3(1.0), light.diffuseScale * light.diffuse  * attenuation, material.useAttenuation);
+  vec3  radiance    = mix(vec3(1.0), light.diffuseScale * light.diffuse * attenuation, material.useAttenuation);
 
   // Cook-Torrance BRDF
   float NDF = calcGGXDist(norm, halfV, roughness2);
