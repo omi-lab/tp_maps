@@ -18,13 +18,15 @@ struct BasicTexture::Private
 
   tp_image_utils::ColorMap image;
   bool imageReady{false};
+  bool makeSquare{true};
 };
 
 //##################################################################################################
-BasicTexture::BasicTexture(Map* map, const tp_image_utils::ColorMap& image):
+BasicTexture::BasicTexture(Map* map, const tp_image_utils::ColorMap& image, bool makeSquare):
   Texture(map),
   d(new Private())
 {
+  d->makeSquare = makeSquare;
   setImage(image);
 }
 
@@ -37,7 +39,11 @@ BasicTexture::~BasicTexture()
 //##################################################################################################
 void BasicTexture::setImage(const tp_image_utils::ColorMap& image, bool quiet)
 {
-  image.clone2IntoOther(d->image);
+  if(d->makeSquare)
+    image.clone2IntoOther(d->image);
+  else
+    d->image = image;
+
   d->imageReady = (d->image.constData() && d->image.width()>0 && d->image.height()>0);
 
   if(!quiet)

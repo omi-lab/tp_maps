@@ -17,6 +17,7 @@ struct Shader::Private
   tp_maps::OpenGLProfile openGLProfile;
   std::unordered_map<ShaderType, ShaderDetails> shaders;
   bool error{false};
+  ShaderType currentShaderType{ShaderType::Render};
 
   Private(Map* map_, tp_maps::OpenGLProfile profile_):
     map(map_),
@@ -135,7 +136,14 @@ void Shader::compile(const char* vertexShaderStr,
 //##################################################################################################
 void Shader::use(ShaderType shaderType)
 {
+  d->currentShaderType = shaderType;
   glUseProgram(d->shaders[shaderType].program);
+}
+
+//##################################################################################################
+ShaderType Shader::currentShaderType() const
+{
+  return d->currentShaderType;
 }
 
 //##################################################################################################

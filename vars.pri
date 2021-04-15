@@ -122,6 +122,12 @@ HEADERS += inc/tp_maps/shaders/FontShader.h
 SOURCES += src/shaders/FrameShader.cpp
 HEADERS += inc/tp_maps/shaders/FrameShader.h
 
+SOURCES += src/shaders/FullScreenShader.cpp
+HEADERS += inc/tp_maps/shaders/FullScreenShader.h
+
+SOURCES += src/shaders/BackgroundShader.cpp
+HEADERS += inc/tp_maps/shaders/BackgroundShader.h
+
 SOURCES += src/shaders/PostShader.cpp
 HEADERS += inc/tp_maps/shaders/PostShader.h
 
@@ -171,6 +177,9 @@ HEADERS += inc/tp_maps/layers/LightsLayer.h
 
 SOURCES += src/layers/GizmoLayer.cpp
 HEADERS += inc/tp_maps/layers/GizmoLayer.h
+
+SOURCES += src/layers/BackgroundLayer.cpp
+HEADERS += inc/tp_maps/layers/BackgroundLayer.h
 
 
 #-- Post Processing Layers -------------------------------------------------------------------------

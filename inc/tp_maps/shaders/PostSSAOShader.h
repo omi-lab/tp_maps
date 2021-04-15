@@ -17,18 +17,20 @@ struct PostSSAOParameters
 
 //##################################################################################################
 class PostSSAOShader;
+namespace detail
+{
 class PostSSAOShaderPrivate
 {
-private:
+  friend class tp_maps::PostSSAOShader;
+  PostSSAOShaderPrivate(Map* map, tp_maps::OpenGLProfile openGLProfile, const PostSSAOParameters& parameters);
   struct Private;
   Private* d;
-  friend class PostSSAOShader;
-  PostSSAOShaderPrivate(Map* map, tp_maps::OpenGLProfile openGLProfile, const PostSSAOParameters& parameters);
 };
+}
 
 //##################################################################################################
 //! A shader for Screen Space Ambient Occlusion.
-class TP_MAPS_SHARED_EXPORT PostSSAOShader:private PostSSAOShaderPrivate, public PostShader
+class TP_MAPS_SHARED_EXPORT PostSSAOShader: detail::PostSSAOShaderPrivate, public PostShader
 {
   friend class Map;
 public:
@@ -50,7 +52,7 @@ private:
   //! Called by use()
   void setLights(const std::vector<tp_math_utils::Light>& lights, const std::vector<FBO>& lightBuffers);
 
-  PostSSAOShaderPrivate::Private* d;
+  using detail::PostSSAOShaderPrivate::d;
 };
 
 }

@@ -21,6 +21,7 @@ struct Details_lt
   TP_REF_COUNT_OBJECTS("TexturePool::Details_lt");
   int count{0};
   tp_image_utils::ColorMap image;
+  bool makeSquare{true};
   BasicTexture* texture{nullptr};
   bool changed{true};
   bool overwrite{false};
@@ -130,7 +131,9 @@ TexturePool::~TexturePool()
 }
 
 //##################################################################################################
-void TexturePool::subscribe(const tp_utils::StringID& name, const tp_image_utils::ColorMap& image)
+void TexturePool::subscribe(const tp_utils::StringID& name,
+                            const tp_image_utils::ColorMap& image,
+                            bool makeSquare)
 {
   TP_TIME_SCOPE("TexturePool::subscribe(name)");
 
@@ -157,6 +160,7 @@ void TexturePool::subscribe(const tp_utils::StringID& name, const tp_image_utils
   {
     details.changed = false;
     details.image = image;
+    details.makeSquare = makeSquare;
     for(auto& i : d->combinedImages)
     {
       auto& combinedDetails = i.second;
@@ -280,7 +284,7 @@ GLuint TexturePool::textureID(const tp_utils::StringID& name)
 
   if(!i->second.texture)
   {
-    i->second.texture = new BasicTexture(d->map(), i->second.image);
+    i->second.texture = new BasicTexture(d->map(), i->second.image, i->second.makeSquare);
     i->second.texture->setTextureWrapS(i->second.textureWrapS);
     i->second.texture->setTextureWrapT(i->second.textureWrapT);
   }

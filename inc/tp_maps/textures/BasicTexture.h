@@ -17,7 +17,7 @@ class TP_MAPS_SHARED_EXPORT BasicTexture : public Texture
   TP_REF_COUNT_OBJECTS("BasicTexture");
 public:
   //################################################################################################
-  BasicTexture(Map* map, const tp_image_utils::ColorMap& image=tp_image_utils::ColorMap());
+  BasicTexture(Map* map, const tp_image_utils::ColorMap& image=tp_image_utils::ColorMap(), bool makeSquare=true);
 
   //################################################################################################
   ~BasicTexture() override;

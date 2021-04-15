@@ -190,6 +190,7 @@ TP_DECLARE_ID(                  frameShaderSID,                     "Frame shade
 TP_DECLARE_ID(               postSSAOShaderSID,                 "Post ssao shader");
 TP_DECLARE_ID(                postSSRShaderSID,                  "Post ssr shader");
 TP_DECLARE_ID(               postBlitShaderSID,                 "Post blit shader");
+TP_DECLARE_ID(             backgroundShaderSID,                "Background shader");
 
 //##################################################################################################
 int staticInit();

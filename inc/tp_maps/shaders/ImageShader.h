@@ -29,7 +29,7 @@ public:
   void setMatrix(const glm::mat4& matrix);
 
   //################################################################################################
-  //! Set the texture that will be draw, this needs to be done each frame before drawing
+  //! Set the texture that will be drawn, this needs to be done each frame before drawing
   void setTexture(GLuint textureID);
 
   //################################################################################################

@@ -24,6 +24,8 @@ struct LightLocations_lt
 };
 }
 
+namespace detail
+{
 //##################################################################################################
 struct PostSSAOShaderPrivate::Private
 {
@@ -101,16 +103,16 @@ struct PostSSAOShaderPrivate::Private
 
 //##################################################################################################
 PostSSAOShaderPrivate::PostSSAOShaderPrivate(Map* map, tp_maps::OpenGLProfile openGLProfile, const PostSSAOParameters& parameters):
-d(new Private(map, openGLProfile, parameters))
+  d(new Private(map, openGLProfile, parameters))
 {
 
+}
 }
 
 //##################################################################################################
 PostSSAOShader::PostSSAOShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const PostSSAOParameters& parameters):
   PostSSAOShaderPrivate(map, openGLProfile, parameters),
-  PostShader(map, openGLProfile, PostSSAOShaderPrivate::d->fragSrc),
-  d(PostSSAOShaderPrivate::d)
+  PostShader(map, openGLProfile, nullptr, d->fragSrc.data())
 {
   {
     auto s = shaderDetails(ShaderType::RenderHDR);
