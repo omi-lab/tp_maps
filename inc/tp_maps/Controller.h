@@ -2,6 +2,7 @@
 #define tp_maps_Controller_h
 
 #include "tp_maps/Globals.h"
+#include "tp_maps/MouseEvent.h"
 
 #include "json.hpp"
 
@@ -10,7 +11,6 @@
 namespace tp_maps
 {
 class Map;
-struct MouseEvent;
 struct KeyEvent;
 
 //##################################################################################################
@@ -145,6 +145,9 @@ protected:
   void callMouseClickCallback(const MouseEvent& event) const;
 
 private:
+  std::unordered_set<Button> m_hasMouseFocusFor; //!< Set when the controller accepts focus for a mouse press event.
+  std::unordered_set<int32_t> m_hasKeyFocusFor;  //!< Set when the controller accepts focus for a key press event.
+
   struct Private;
   Private* d;
   friend struct Private;

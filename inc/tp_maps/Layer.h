@@ -3,6 +3,7 @@
 
 #include "tp_maps/Globals.h"
 #include "tp_maps/RenderInfo.h"
+#include "tp_maps/MouseEvent.h"
 
 #include "tp_utils/StringID.h"
 #include "tp_utils/CallbackCollection.h"
@@ -18,7 +19,6 @@ namespace tp_maps
 {
 class Map;
 class RenderInfo;
-struct MouseEvent;
 struct KeyEvent;
 struct TextEditingEvent;
 struct TextInputEvent;
@@ -261,6 +261,9 @@ private:
   //################################################################################################
   //! Called by the Map.
   void clearMap();
+
+  std::unordered_set<Button> m_hasMouseFocusFor; //!< Set when this layer accepts focus for a mouse press event.
+  std::unordered_set<int32_t> m_hasKeyFocusFor;  //!< Set when this layer accepts focus for a key press event.
 
   struct Private;
   Private* d;

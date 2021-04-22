@@ -193,9 +193,31 @@ void Layer::invalidateBuffers()
 //##################################################################################################
 bool Layer::mouseEvent(const MouseEvent& event)
 {
+  if(event.type == MouseEventType::Release)
+  {
+    for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
+    {
+      Layer* layer = (*(--l));
+      if(auto i = layer->m_hasMouseFocusFor.find(event.button); i!=layer->m_hasMouseFocusFor.end())
+      {
+        layer->m_hasMouseFocusFor.erase(i);
+        if(layer->mouseEvent(event))
+          return true;
+      }
+    }
+  }
+
   for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
-    if((*(--l))->mouseEvent(event))
+  {
+    Layer* layer = (*(--l));
+    if(layer->mouseEvent(event))
+    {
+      if(event.type == MouseEventType::Press)
+        layer->m_hasMouseFocusFor.insert(event.button);
       return true;
+    }
+  }
+
   return false;
 }
 

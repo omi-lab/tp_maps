@@ -6,6 +6,7 @@
 #include "tp_maps/PickingResult.h"
 #include "tp_maps/Texture.h"
 #include "tp_maps/MouseEvent.h"
+#include "tp_maps/KeyEvent.h"
 #include "tp_maps/FontRenderer.h"
 #include "tp_maps/textures/DefaultSpritesTexture.h"
 
@@ -2004,19 +2005,93 @@ void Map::resizeGL(int w, int h)
 //##################################################################################################
 bool Map::mouseEvent(const MouseEvent& event)
 {
+  // If a layer or the controller has focus from a previous press event pass the release to it first.
+  if(event.type == MouseEventType::Release)
+  {
+    for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
+    {
+      Layer* layer = (*(--l));
+      if(auto i = layer->m_hasMouseFocusFor.find(event.button); i!=layer->m_hasMouseFocusFor.end())
+      {
+        layer->m_hasMouseFocusFor.erase(i);
+        if(layer->mouseEvent(event))
+          return true;
+      }
+    }
+
+    if(auto i = d->controller->m_hasMouseFocusFor.find(event.button); i!=d->controller->m_hasMouseFocusFor.end())
+    {
+      d->controller->m_hasMouseFocusFor.erase(i);
+      if(d->controller->mouseEvent(event))
+        return true;
+    }
+  }
+
   for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
-    if((*(--l))->mouseEvent(event))
+  {
+    Layer* layer = (*(--l));
+    if(layer->mouseEvent(event))
+    {
+      if(event.type == MouseEventType::Press)
+        layer->m_hasMouseFocusFor.insert(event.button);
       return true;
-  return d->controller->mouseEvent(event);
+    }
+  }
+
+  if(d->controller->mouseEvent(event))
+  {
+    if(event.type == MouseEventType::Press)
+      d->controller->m_hasMouseFocusFor.insert(event.button);
+    return true;
+  }
+
+  return false;
 }
 
 //##################################################################################################
 bool Map::keyEvent(const KeyEvent& event)
 {
+  // If a layer or the controller has focus from a previous press event pass the release to it first.
+  if(event.type == KeyEventType::Release)
+  {
+    for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
+    {
+      Layer* layer = (*(--l));
+      if(auto i = layer->m_hasKeyFocusFor.find(event.scancode); i!=layer->m_hasKeyFocusFor.end())
+      {
+        layer->m_hasKeyFocusFor.erase(i);
+        if(layer->keyEvent(event))
+          return true;
+      }
+    }
+
+    if(auto i = d->controller->m_hasKeyFocusFor.find(event.scancode); i!=d->controller->m_hasKeyFocusFor.end())
+    {
+      d->controller->m_hasKeyFocusFor.erase(i);
+      if(d->controller->keyEvent(event))
+        return true;
+    }
+  }
+
   for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
-    if((*(--l))->keyEvent(event))
+  {
+    Layer* layer = (*(--l));
+    if(layer->keyEvent(event))
+    {
+      if(event.type == KeyEventType::Press)
+        layer->m_hasKeyFocusFor.insert(event.scancode);
       return true;
-  return d->controller->keyEvent(event);
+    }
+  }
+
+  if(d->controller->keyEvent(event))
+  {
+    if(event.type == KeyEventType::Press)
+      d->controller->m_hasKeyFocusFor.insert(event.scancode);
+    return true;
+  }
+
+  return false;
 }
 
 //##################################################################################################
