@@ -27,6 +27,13 @@ public:
                ShaderType shaderType = ShaderType::Render);
 
   //################################################################################################
+  //! Builds the normal render shader and calls modifyShaders to allow you to alter it.
+  void compileRenderShader(const std::function<void(std::string& vert, std::string& frag)>& modifyShaders,
+                           const std::function<void(GLuint)>& bindLocations,
+                           const std::function<void(GLuint)>& getLocations,
+                           ShaderType shaderType = ShaderType::Render);
+
+  //################################################################################################
   //! Prepare OpenGL for rendering
   void use(ShaderType shaderType = ShaderType::Render) override;
 

@@ -74,8 +74,9 @@ vec3 surfaceToCamera;
 
 /*TP_GLSL_IN_F*/vec3 normal_view;
 
-
 /*LIGHT_FRAG_VARS*/
+
+/*POST_VARS*/
 
 const int shadowSamples=/*TP_SHADOW_SAMPLES*/;
 const float totalSadowSamples=float(((shadowSamples*2)+1) * ((shadowSamples*2)+1));
@@ -432,6 +433,8 @@ void main()
   float shininess = metalness;
 
   vec3 normal = TBNv*norm;
+
+  /*POST*/
 
   writeFragment(ambient, diffuse, specular, normal, alpha, vec3(1,1,1), shininess);
 }
