@@ -174,9 +174,9 @@ nlohmann::json GraphController::saveState() const
 //##################################################################################################
 void GraphController::loadState(const nlohmann::json& j)
 {
-  d->focalPoint    = tp_math_utils::getJSONVec3   (j, "Focal point"   , d->focalPoint   );
-  d->distanceX     = tp_utils::getJSONValue<double>(j, "DistanceX"     , d->distanceX    );
-  d->distanceY     = tp_utils::getJSONValue<double>(j, "DistanceY"     , d->distanceY    );
+  d->focalPoint    = tp_math_utils::getJSONVec3(j, "Focal point"   , d->focalPoint);
+  d->distanceX     = TPJSONDouble              (j, "DistanceX"     , d->distanceX );
+  d->distanceY     = TPJSONDouble              (j, "DistanceY"     , d->distanceY );
 
   map()->update();
 }

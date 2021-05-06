@@ -189,9 +189,9 @@ nlohmann::json FPSController::saveState() const
 //##################################################################################################
 void FPSController::loadState(const nlohmann::json& j)
 {
-  d->viewAngle     = tp_utils::getJSONValue<float>(j, "View angle"    , d->viewAngle    );
-  d->rotationAngle = tp_utils::getJSONValue<float>(j, "Rotation angle", d->rotationAngle);
-  d->cameraOrigin  = tp_math_utils::getJSONVec3   (j, "Camera origin" , d->cameraOrigin );
+  d->viewAngle     = TPJSONFloat               (j, "View angle"    , d->viewAngle    );
+  d->rotationAngle = TPJSONFloat               (j, "Rotation angle", d->rotationAngle);
+  d->cameraOrigin  = tp_math_utils::getJSONVec3(j, "Camera origin" , d->cameraOrigin );
 
   map()->update();
 }

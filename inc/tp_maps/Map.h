@@ -41,6 +41,7 @@ class TP_MAPS_SHARED_EXPORT Map
   friend class Layer;
   friend class Controller;
   friend class FontRenderer;
+  TP_NONCOPYABLE(Map);
 
 public:
   //################################################################################################

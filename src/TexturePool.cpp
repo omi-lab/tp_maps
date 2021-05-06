@@ -61,6 +61,8 @@ struct TexturePool::Private
   std::unordered_map<tp_utils::StringID, Details_lt> images;
   std::unordered_map<TexturePoolKey, CombinedDetails_lt> combinedImages;
 
+  int keepHot{0};
+
   //################################################################################################
   Private(Map* map_, Layer* layer_):
     m_map(map_),
@@ -128,6 +130,48 @@ TexturePool::TexturePool(Layer* layer):
 TexturePool::~TexturePool()
 {
   delete d;
+}
+
+//##################################################################################################
+void TexturePool::incrementKeepHot(bool keepHot)
+{
+  TP_TIME_SCOPE("TexturePool::incrementKeepHot");
+
+  d->keepHot += keepHot?1:-1;
+  if(d->keepHot==0)
+  {
+    for(auto i = d->images.begin(); i!=d->images.end();)
+    {
+      if(!i->second.count)
+      {
+        if(i->second.textureID && d->map())
+        {
+          d->map()->makeCurrent();
+          d->map()->deleteTexture(i->second.textureID);
+        }
+        delete i->second.texture;
+        i = d->images.erase(i);
+      }
+      else
+        ++i;
+    }
+
+    for(auto i = d->combinedImages.begin(); i!=d->combinedImages.end();)
+    {
+      if(!i->second.count)
+      {
+        if(i->second.textureID && d->map())
+        {
+          d->map()->makeCurrent();
+          d->map()->deleteTexture(i->second.textureID);
+        }
+        delete i->second.texture;
+        i = d->combinedImages.erase(i);
+      }
+      else
+        ++i;
+    }
+  }
 }
 
 //##################################################################################################
@@ -203,7 +247,7 @@ void TexturePool::unsubscribe(const tp_utils::StringID& name)
   }
 
   i->second.count--;
-  if(!i->second.count)
+  if(!d->keepHot && !i->second.count)
   {
     if(i->second.textureID && d->map())
     {
@@ -255,7 +299,7 @@ void TexturePool::unsubscribe(const TexturePoolKey& key)
   }
 
   i->second.count--;
-  if(!i->second.count)
+  if(!d->keepHot && !i->second.count)
   {
     if(i->second.textureID && d->map())
     {

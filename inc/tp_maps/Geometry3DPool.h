@@ -29,6 +29,7 @@ struct ProcessedGeometry3D
 class TP_MAPS_SHARED_EXPORT Geometry3DPool
 {
   TP_REF_COUNT_OBJECTS("Geometry3DPool");
+  TP_NONCOPYABLE(Geometry3DPool);
 public:
   //################################################################################################
   Geometry3DPool(Map* map);

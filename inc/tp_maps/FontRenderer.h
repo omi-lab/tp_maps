@@ -23,6 +23,7 @@ struct Glyph;
 class TP_MAPS_SHARED_EXPORT FontRenderer
 {
   friend class PreparedString;
+  TP_NONCOPYABLE(FontRenderer);
 public:
   //################################################################################################
   FontRenderer(Map* map, const std::shared_ptr<Font>& font);

@@ -109,9 +109,9 @@ struct PoolDetails_lt
         auto& details = processedGeometry.at(m);
         const auto& textureDetails = textureKeys.at(m);
 
-        details.    rgbaTextureID = texturePool->textureID(textureDetails.rgba    );
-        details. normalsTextureID = texturePool->textureID(textureDetails.normals );
-        details.    rmaoTextureID = texturePool->textureID(textureDetails.rmao    );
+        details.    rgbaTextureID = texturePool->textureID(textureDetails.rgba   );
+        details. normalsTextureID = texturePool->textureID(textureDetails.normals);
+        details.    rmaoTextureID = texturePool->textureID(textureDetails.rmao   );
       }
     }
   }
@@ -242,6 +242,8 @@ TexturePool* Geometry3DPool::texturePool() const
 void Geometry3DPool::incrementKeepHot(bool keepHot)
 {
   TP_TIME_SCOPE("Geometry3DPool::incrementKeepHot");
+
+  d->texturePool->incrementKeepHot(keepHot);
 
   d->keepHot += keepHot?1:-1;
   if(d->keepHot==0)

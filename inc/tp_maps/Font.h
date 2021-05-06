@@ -92,6 +92,7 @@ take these glyphs a
 class TP_MAPS_SHARED_EXPORT Font
 {
   friend class PreparedString;
+  TP_NONCOPYABLE(Font);
 public:
   //################################################################################################
   Font();

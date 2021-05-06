@@ -45,6 +45,7 @@ user events.
 class TP_MAPS_SHARED_EXPORT Layer
 {
   friend class Map;
+  TP_NONCOPYABLE(Layer);
 public:
   //################################################################################################
   //! Construct the layer.

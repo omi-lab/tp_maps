@@ -17,7 +17,7 @@ struct KeyEvent;
 class TP_MAPS_SHARED_EXPORT Controller
 {
   friend class Map;
-
+  TP_NONCOPYABLE(Controller);
 public:
   //################################################################################################
   //! Construct a Controller for map

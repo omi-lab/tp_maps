@@ -32,6 +32,9 @@ public:
   ~TexturePool();
 
   //################################################################################################
+  void incrementKeepHot(bool keepHot);
+
+  //################################################################################################
   void subscribe(const tp_utils::StringID& name,
                  const tp_image_utils::ColorMap& image,
                  bool makeSquare=true);

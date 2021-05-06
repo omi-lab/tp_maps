@@ -227,10 +227,10 @@ nlohmann::json FlatController::saveState() const
 //##################################################################################################
 void FlatController::loadState(const nlohmann::json& j)
 {
-  d->viewAngle     = tp_utils::getJSONValue<float>(j, "View angle"    , d->viewAngle    );
-  d->rotationAngle = tp_utils::getJSONValue<float>(j, "Rotation angle", d->rotationAngle);
-  d->focalPoint    = tp_math_utils::getJSONVec3   (j, "Focal point"   , d->focalPoint   );
-  d->distance      = tp_utils::getJSONValue<float>(j, "Distance"      , d->distance     );
+  d->viewAngle     = TPJSONFloat               (j, "View angle"    , d->viewAngle    );
+  d->rotationAngle = TPJSONFloat               (j, "Rotation angle", d->rotationAngle);
+  d->focalPoint    = tp_math_utils::getJSONVec3(j, "Focal point"   , d->focalPoint   );
+  d->distance      = TPJSONFloat               (j, "Distance"      , d->distance     );
 
   map()->update();
 }
