@@ -26,6 +26,13 @@ public:
   //################################################################################################
   void setTextureName(const tp_utils::StringID& textureName);
 
+  //################################################################################################
+  float rotationFactor() const;
+
+  //################################################################################################
+  //! A rotation value between 0 and 1.
+  void setRotationFactor(float rotationFactor);
+
 protected:
   //################################################################################################
   void render(RenderInfo& renderInfo) override;

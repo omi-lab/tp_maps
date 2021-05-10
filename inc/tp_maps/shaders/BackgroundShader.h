@@ -26,6 +26,10 @@ public:
   void setMatrix(const glm::mat4& v, const glm::mat4& p);
 
   //################################################################################################
+  //! A rotation value between 0 and 1.
+  void setRotationFactor(float rotationFactor);
+
+  //################################################################################################
   static inline const tp_utils::StringID& name(){return backgroundShaderSID();}
 
 private:

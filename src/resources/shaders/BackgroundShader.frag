@@ -8,6 +8,8 @@ const float discardOpacity=0.8;
 
 uniform mat4 vpInv;
 
+uniform float rotationFactor;
+
 /*TP_GLSL_GLFRAGCOLOR_DEF*/
 /*TP_WRITE_FRAGMENT*/
 
@@ -27,6 +29,8 @@ void main()
   vec2 textureCoord;
   textureCoord.x = 1.0 - (atan(d.y, d.x) / (2.0*3.1415926538) + 0.5);
   textureCoord.y = acos(d.z) / 3.1415926538;
+
+  textureCoord.x += rotationFactor;
 
   vec3 ambient = /*TP_GLSL_TEXTURE_2D*/(textureSampler, textureCoord).xyz;
 

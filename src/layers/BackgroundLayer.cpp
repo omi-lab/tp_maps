@@ -18,6 +18,7 @@ struct BackgroundLayer::Private
 
   TexturePool* texturePool;
   tp_utils::StringID textureName;
+  float rotationFactor{0.0f};
 
   //################################################################################################
   Private(TexturePool* texturePool_):
@@ -54,6 +55,19 @@ void BackgroundLayer::setTextureName(const tp_utils::StringID& textureName)
 }
 
 //##################################################################################################
+float BackgroundLayer::rotationFactor() const
+{
+  return d->rotationFactor;
+}
+
+//##################################################################################################
+void BackgroundLayer::setRotationFactor(float rotationFactor)
+{
+  d->rotationFactor = rotationFactor;
+  update();
+}
+
+//##################################################################################################
 void BackgroundLayer::render(RenderInfo& renderInfo)
 {
   if(renderInfo.pass != defaultRenderPass() || !d->textureName.isValid())
@@ -69,6 +83,7 @@ void BackgroundLayer::render(RenderInfo& renderInfo)
   shader->use(ShaderType::RenderHDR);
   shader->setTexture(d->texturePool->textureID(d->textureName));
   shader->setMatrix(matricies.v, matricies.p);
+  shader->setRotationFactor(d->rotationFactor);
   shader->draw();
 }
 
