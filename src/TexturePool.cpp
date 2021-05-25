@@ -545,4 +545,14 @@ void TexturePool::setTextureWrapT(const TexturePoolKey& key, GLint textureWrapT)
   }
 }
 
+//################################################################################################
+void TexturePool::viewImage(const tp_utils::StringID& name, const std::function<void(const tp_image_utils::ColorMap&)>& closure) const
+{
+  auto i = d->images.find(name);
+  if(i == d->images.end())
+    return;
+
+  closure(i->second.image);
+}
+
 }

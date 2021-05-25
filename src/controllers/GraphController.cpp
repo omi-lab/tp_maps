@@ -94,7 +94,7 @@ glm::dvec3 GraphController::focalPoint() const
 void GraphController::setFocalPoint(const glm::dvec3& focalPoint)
 {
   d->focalPoint = focalPoint;
-  map()->update();
+  update();
 }
 
 //##################################################################################################
@@ -143,7 +143,7 @@ double GraphController::distanceX() const
 void GraphController::setDistanceX(double distanceX)
 {
   d->distanceX = distanceX;
-  map()->update();
+  update();
 }
 
 //##################################################################################################
@@ -156,7 +156,7 @@ double GraphController::distanceY() const
 void GraphController::setDistanceY(double distanceY)
 {
   d->distanceY = distanceY;
-  map()->update();
+  update();
 }
 
 //##################################################################################################
@@ -178,7 +178,7 @@ void GraphController::loadState(const nlohmann::json& j)
   d->distanceX     = TPJSONDouble              (j, "DistanceX"     , d->distanceX );
   d->distanceY     = TPJSONDouble              (j, "DistanceY"     , d->distanceY );
 
-  map()->update();
+  update();
 }
 
 //##################################################################################################
@@ -281,12 +281,12 @@ bool GraphController::mouseEvent(const MouseEvent& event)
 
     if(d->mouseInteraction == Button::RightButton)
     {
-      map()->update();
+      update();
     }
     else if(d->mouseInteraction == Button::LeftButton && d->allowTranslation)
     {
       translate(dx, dy, 1);
-      map()->update();
+      update();
     }
 
     break;
@@ -354,7 +354,7 @@ bool GraphController::mouseEvent(const MouseEvent& event)
         d->focalPoint += scenePointA - scenePointB;
     }
 
-    map()->update();
+    update();
     break;
   }
 

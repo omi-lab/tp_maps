@@ -70,6 +70,9 @@ public:
   void setTextureWrapT(const TexturePoolKey& key, GLint textureWrapT);
 
   //################################################################################################
+  void viewImage(const tp_utils::StringID& name, const std::function<void(const tp_image_utils::ColorMap&)>& closure) const;
+
+  //################################################################################################
   tp_utils::CallbackCollection<void()> changedCallbacks;
 
 private:

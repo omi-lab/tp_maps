@@ -102,7 +102,7 @@ glm::vec3 FlatController::focalPoint() const
 void FlatController::setFocalPoint(const glm::vec3& focalPoint)
 {
   d->focalPoint = focalPoint;
-  map()->update();
+  update();
 }
 
 //##################################################################################################
@@ -115,7 +115,7 @@ float FlatController::distance() const
 void FlatController::setDistance(float distance)
 {
   d->distance = distance;
-  map()->update();
+  update();
 }
 
 //##################################################################################################
@@ -176,7 +176,7 @@ float FlatController::rotationAngle() const
 void FlatController::setRotationAngle(float rotationAngle)
 {
   d->rotationAngle = rotationAngle;
-  map()->update();
+  update();
 }
 
 //################################################################################################
@@ -189,7 +189,7 @@ float FlatController::viewAngle() const
 void FlatController::setViewAngle(float viewAngle)
 {
   d->viewAngle = viewAngle;
-  map()->update();
+  update();
 }
 
 //##################################################################################################
@@ -232,7 +232,7 @@ void FlatController::loadState(const nlohmann::json& j)
   d->focalPoint    = tp_math_utils::getJSONVec3(j, "Focal point"   , d->focalPoint   );
   d->distance      = TPJSONFloat               (j, "Distance"      , d->distance     );
 
-  map()->update();
+  update();
 }
 
 //##################################################################################################
@@ -351,12 +351,12 @@ bool FlatController::mouseEvent(const MouseEvent& event)
         if(d->rotationAngle>360)
           d->rotationAngle-=360;
       }
-      map()->update();
+      update();
     }
     else if(d->mouseInteraction == d->translateButton && d->allowTranslation)
     {
       translate(dx, dy, 1);
-      map()->update();
+      update();
     }
 
     break;
@@ -413,7 +413,7 @@ bool FlatController::mouseEvent(const MouseEvent& event)
         d->focalPoint += scenePointA - scenePointB;
     }
 
-    map()->update();
+    update();
     break;
   }
 

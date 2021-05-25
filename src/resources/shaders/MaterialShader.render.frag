@@ -169,23 +169,23 @@ float calcGGXGeom(vec3 surfaceToCamera, vec3 norm, vec3 lightViewHalfVector, flo
 }
 
 //##################################################################################################
-float GeometrySchlickGGX(float NdotV, float k)
+float geometrySchlickGGX(float NdotV, float k)
 {
-    float nom   = NdotV;
-    float denom = NdotV * (1.0 - k) + k;
+  float nom   = NdotV;
+  float denom = NdotV * (1.0 - k) + k;
 
-    return nom / denom;
+  return nom / denom;
 }
 
 //##################################################################################################
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float k)
+float geometrySmith(vec3 N, vec3 V, vec3 L, float k)
 {
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
-    float ggx1 = GeometrySchlickGGX(NdotV, k);
-    float ggx2 = GeometrySchlickGGX(NdotL, k);
+  float NdotV = max(dot(N, V), 0.0);
+  float NdotL = max(dot(N, L), 0.0);
+  float ggx1 = geometrySchlickGGX(NdotV, k);
+  float ggx2 = geometrySchlickGGX(NdotL, k);
 
-    return ggx1 * ggx2;
+  return ggx1 * ggx2;
 }
 
 //##################################################################################################
@@ -237,7 +237,7 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
 
   // Cook-Torrance BRDF
   float NDF = calcGGXDist(norm, halfV, roughness2);
-  float G   = GeometrySmith(norm, surfaceToCamera, surfaceToLight, roughness);
+  float G   = geometrySmith(norm, surfaceToCamera, surfaceToLight, roughness);
   vec3  F   = calcFresnel(halfV, norm, F0);
 
   vec3 kS = F;
@@ -343,7 +343,7 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, vec3 
 
   // Cook-Torrance BRDF
   float NDF = calcGGXDist(norm, halfV, roughness2);
-  float G   = GeometrySmith(norm, surfaceToCamera, surfaceToLight, roughness);
+  float G   = geometrySmith(norm, surfaceToCamera, surfaceToLight, roughness);
   vec3  F   = calcFresnel(halfV, norm, F0);
 
   vec3 kS = F;

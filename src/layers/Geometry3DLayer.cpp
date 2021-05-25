@@ -146,6 +146,7 @@ void Geometry3DLayer::setGeometry3DPool(Geometry3DPool* geometry3DPool)
   TP_TIME_SCOPE("Geometry3DLayer::setGeometry3DPool");
   d->checkClearGeometry();
   d->geometry3DPool = geometry3DPool;
+  setTexturePool(d->geometry3DPool->texturePool());
   d->geometry3DPoolChanged.disconnect();
   d->geometry3DPoolChanged.connect(d->geometry3DPool->changedCallbacks);
   d->geometry3DPoolChanged();

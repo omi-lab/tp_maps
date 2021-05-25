@@ -152,6 +152,16 @@ Controller::~Controller()
 }
 
 //##################################################################################################
+void Controller::update()
+{
+  if(d->map)
+  {
+    d->map->controllerUpdate();
+    d->map->update();
+  }
+}
+
+//##################################################################################################
 void Controller::setMatrix(const tp_utils::StringID& coordinateSystem, const glm::mat4& matrix)
 {
   d->matrices[coordinateSystem].vp = matrix;

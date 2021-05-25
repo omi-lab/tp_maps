@@ -233,7 +233,7 @@ void CADController::setMode(CADControllerMode mode)
     break;
   }
 
-  map()->update();
+  update();
 }
 
 //##################################################################################################
@@ -270,7 +270,7 @@ glm::vec3 CADController::cameraOrigin() const
 void CADController::setCameraOrigin(const glm::vec3& cameraOrigin)
 {
   d->cameraOrigin = cameraOrigin;
-  map()->update();
+  update();
 }
 
 //##################################################################################################
@@ -307,7 +307,7 @@ float CADController::rotationAngle() const
 void CADController::setRotationAngle(float rotationAngle)
 {
   d->rotationAngle = rotationAngle;
-  map()->update();
+  update();
 }
 
 //##################################################################################################
@@ -315,7 +315,7 @@ void CADController::setNearAndFar(float near, float far)
 {
   d->near = near;
   d->far = far;
-  map()->update();
+  update();
 }
 
 //##################################################################################################
@@ -334,7 +334,7 @@ float CADController::far() const
 void CADController::setFOV(float fov)
 {
   d->fov = fov;
-  map()->update();
+  update();
 }
 
 //##################################################################################################
@@ -389,7 +389,7 @@ void CADController::setOrientation(const glm::vec3& forward, const glm::vec3& up
     d->viewAngle = glm::degrees(std::acos(forward.z))-180.0f;
   }
 
-  map()->update();
+  update();
 }
 
 //##################################################################################################
@@ -426,7 +426,7 @@ void CADController::loadState(const nlohmann::json& j)
   d->near                  =                             TPJSONFloat (j, "near"                 , d->near                            );
   d->far                   =                             TPJSONFloat (j, "far"                  , d->far                             );
   d->fov                   =                             TPJSONFloat (j, "fov"                  , d->fov                             );
-  map()->update();
+  update();
 }
 
 
@@ -448,7 +448,7 @@ void CADController::copyState(const CADController& other)
 
   d->fov            = other.d->fov;
 
-  map()->update();
+  update();
 }
 
 //##################################################################################################
@@ -612,7 +612,7 @@ bool CADController::mouseEvent(const MouseEvent& event)
         d->strafe(dx*float(translationFactor), dy*float(translationFactor), d->mouseSpeedModifier);
       else
         d->translate(dx, dy, d->mouseSpeedModifier);
-      map()->update();
+      update();
     }
     else if(d->fullScreen || d->mouseInteraction == Button::RightButton)
     {
@@ -641,7 +641,7 @@ bool CADController::mouseEvent(const MouseEvent& event)
             d->rotationAngle-=360;
         }
       }
-      map()->update();
+      update();
     }
 
     break;
@@ -688,7 +688,7 @@ bool CADController::mouseEvent(const MouseEvent& event)
       }
     }
 
-    map()->update();
+    update();
     break;
   }
 
@@ -796,14 +796,14 @@ void CADController::animate(double timestampMS)
     {
       changed = true;
       d->translate(float(translateMeters), d->keyboardSpeedModifier);
-      map()->update();
+      update();
     }
 
     if(d->keyState[TP_DOWN_KEY]||d->keyState[TP_S_KEY] )
     {
       changed = true;
       d->translate(-float(translateMeters), d->keyboardSpeedModifier);
-      map()->update();
+      update();
     }
 
     if(d->keyState[TP_LEFT_KEY])
@@ -812,7 +812,7 @@ void CADController::animate(double timestampMS)
       d->rotationAngle -= float(rotateDegrees) * d->keyboardSpeedModifier;
       if(d->rotationAngle<0.0f)
         d->rotationAngle+=360.0f;
-      map()->update();
+      update();
     }
 
     if(d->keyState[TP_RIGHT_KEY])
@@ -821,35 +821,35 @@ void CADController::animate(double timestampMS)
       d->rotationAngle += float(rotateDegrees) * d->keyboardSpeedModifier;
       if(d->rotationAngle>360.0f)
         d->rotationAngle-=360.0f;
-      map()->update();
+      update();
     }
 
     if(d->keyState[TP_A_KEY] )
     {
       changed = true;
       d->strafe(-float(translateMeters), 0.0f, d->keyboardSpeedModifier);
-      map()->update();
+      update();
     }
 
     if(d->keyState[TP_D_KEY] )
     {
       changed = true;
       d->strafe(float(translateMeters), 0.0f, d->keyboardSpeedModifier);
-      map()->update();
+      update();
     }
 
     if(d->keyState[TP_PAGE_UP_KEY] || d->keyState[TP_SPACE_KEY])
     {
       changed = true;
       d->cameraOrigin.z += float(translateMeters) * d->keyboardSpeedModifier;
-      map()->update();
+      update();
     }
 
     if(d->keyState[TP_PAGE_DOWN_KEY]|| d->keyState[TP_L_CTRL_KEY])
     {
       changed = true;
       d->cameraOrigin.z -= float(translateMeters) * d->keyboardSpeedModifier;
-      map()->update();
+      update();
     }
   }
 }

@@ -114,7 +114,7 @@ glm::vec3 FPSController::cameraOrigin() const
 void FPSController::setCameraOrigin(const glm::vec3& cameraOrigin)
 {
   d->cameraOrigin = cameraOrigin;
-  map()->update();
+  update();
 }
 
 //##################################################################################################
@@ -151,7 +151,7 @@ float FPSController::rotationAngle() const
 void FPSController::setRotationAngle(float rotationAngle)
 {
   d->rotationAngle = rotationAngle;
-  map()->update();
+  update();
 }
 
 //##################################################################################################
@@ -171,7 +171,7 @@ void FPSController::setNearAndFar(float near, float far)
 {
   d->near = near;
   d->far = far;
-  map()->update();
+  update();
 }
 
 //##################################################################################################
@@ -193,7 +193,7 @@ void FPSController::loadState(const nlohmann::json& j)
   d->rotationAngle = TPJSONFloat               (j, "Rotation angle", d->rotationAngle);
   d->cameraOrigin  = tp_math_utils::getJSONVec3(j, "Camera origin" , d->cameraOrigin );
 
-  map()->update();
+  update();
 }
 
 //##################################################################################################
@@ -317,7 +317,7 @@ bool FPSController::mouseEvent(const MouseEvent& event)
         if(d->rotationAngle>360)
           d->rotationAngle-=360;
       }
-      map()->update();
+      update();
     }
 
     break;
@@ -415,13 +415,13 @@ void FPSController::animate(double timestampMS)
   if(d->keyState[TP_UP_KEY] ||d->keyState[TP_W_KEY] )
   {
     d->translate(float(translateMeters));
-    map()->update();
+    update();
   }
 
   if(d->keyState[TP_DOWN_KEY]||d->keyState[TP_S_KEY] )
   {
     d->translate(-float(translateMeters));
-    map()->update();
+    update();
   }
 
   if(d->keyState[TP_LEFT_KEY])
@@ -429,7 +429,7 @@ void FPSController::animate(double timestampMS)
     d->rotationAngle -= float(rotateDegrees);
     if(d->rotationAngle<0.0f)
       d->rotationAngle+=360.0f;
-    map()->update();
+    update();
   }
 
   if(d->keyState[TP_RIGHT_KEY])
@@ -437,31 +437,31 @@ void FPSController::animate(double timestampMS)
     d->rotationAngle += float(rotateDegrees);
     if(d->rotationAngle>360.0f)
       d->rotationAngle-=360.0f;
-    map()->update();
+    update();
   }
 
   if(d->keyState[TP_A_KEY] )
   {
     d->strafe(-float(translateMeters));
-    map()->update();
+    update();
   }
 
   if(d->keyState[TP_D_KEY] )
   {
     d->strafe(float(translateMeters));
-    map()->update();
+    update();
   }
 
   if(d->keyState[TP_PAGE_UP_KEY] || d->keyState[TP_SPACE_KEY])
   {
     d->cameraOrigin.z += float(translateMeters);
-    map()->update();
+    update();
   }
 
   if(d->keyState[TP_PAGE_DOWN_KEY]|| d->keyState[TP_L_CTRL_KEY])
   {
     d->cameraOrigin.z -= float(translateMeters);
-    map()->update();
+    update();
   }
 }
 

@@ -201,6 +201,13 @@ public:
   */
   tp_utils::CallbackCollection<void()> invalidateBuffersCallbacks;
 
+  //################################################################################################
+  //! Called each time the controller triggers an update.
+  /*!
+  This is usually trigged as a result of the view changing for example the camera moving.
+  */
+  tp_utils::CallbackCollection<void()> controllerUpdate;
+
 protected:
   //################################################################################################
   //! Return the list of map layers
