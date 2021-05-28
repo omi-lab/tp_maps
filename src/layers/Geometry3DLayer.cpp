@@ -173,6 +173,12 @@ void Geometry3DLayer::viewGeometry(const std::function<void(const std::vector<tp
   d->geometry3DPool->viewGeometry(d->name, closure);
 }
 
+//################################################################################################
+void Geometry3DLayer::viewGeometry(const std::function<void(const std::vector<tp_math_utils::Geometry3D>&, const std::vector<tp_math_utils::Material>&)>& closure) const
+{
+  d->geometry3DPool->viewGeometry(d->name, d->alternativeMaterials, closure);
+}
+
 //##################################################################################################
 void Geometry3DLayer::setShaderSelection(ShaderSelection shaderSelection)
 {

@@ -382,4 +382,35 @@ void Geometry3DPool::viewGeometry(const tp_utils::StringID& name,
   closure(i->second.geometry);
 }
 
+//##################################################################################################
+void Geometry3DPool::viewGeometry(const tp_utils::StringID& name,
+                                  const std::unordered_map<tp_utils::StringID, tp_utils::StringID>& alternativeMaterials,
+                                  const std::function<void(const std::vector<tp_math_utils::Geometry3D>&, const std::vector<tp_math_utils::Material>&)>& closure) const
+{
+  auto i = d->pools.find(name);
+  if(i==d->pools.end())
+    return;
+
+  std::vector<tp_math_utils::Material> materials;
+  materials.reserve(i->second.geometry.size());
+
+  for(const auto& mesh : i->second.geometry)
+  {
+    auto itr = alternativeMaterials.find(mesh.material.name);
+    if(itr != alternativeMaterials.end())
+    {
+      auto j = d->pools.find(itr->second);
+      if(j!=d->pools.end() && !j->second.geometry.empty())
+      {
+        materials.push_back(j->second.geometry.front().material);
+        continue;
+      }
+    }
+
+    materials.push_back(mesh.material);
+  }
+
+  closure(i->second.geometry, materials);
+}
+
 }

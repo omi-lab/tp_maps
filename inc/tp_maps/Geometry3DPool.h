@@ -79,6 +79,11 @@ public:
                     const std::function<void(const std::vector<tp_math_utils::Geometry3D>&)>& closure) const;
 
   //################################################################################################
+  void viewGeometry(const tp_utils::StringID& name,
+                    const std::unordered_map<tp_utils::StringID, tp_utils::StringID>& alternativeMaterials,
+                    const std::function<void(const std::vector<tp_math_utils::Geometry3D>&, const std::vector<tp_math_utils::Material>&)>& closure) const;
+
+  //################################################################################################
   tp_utils::CallbackCollection<void()> changedCallbacks;
 
 private:

@@ -54,6 +54,9 @@ public:
   void viewGeometry(const std::function<void(const std::vector<tp_math_utils::Geometry3D>&)>& closure) const;
 
   //################################################################################################
+  void viewGeometry(const std::function<void(const std::vector<tp_math_utils::Geometry3D>&, const std::vector<tp_math_utils::Material>&)>& closure) const;
+
+  //################################################################################################
   enum class ShaderSelection
   {
     Material, //!< Render the 3D geometry as a shaded material using the MaterialShader.
