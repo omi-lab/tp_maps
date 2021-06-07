@@ -127,6 +127,7 @@ struct Map::Private
   glm::vec3 backgroundColor{0.0f, 0.0f, 0.0f};
 
   OpenGLProfile openGLProfile{TP_DEFAULT_PROFILE};
+  bool visible{true};
 
   // The first is multisampled the second and third are not.
   // We don't want to multisample multiple times it just makes the result blury. So what we do here
@@ -830,9 +831,21 @@ void Map::setOpenGLProfile(OpenGLProfile openGLProfile)
 }
 
 //##################################################################################################
+void Map::setVisible(bool visible)
+{
+  d->visible = visible;
+}
+
+//##################################################################################################
 OpenGLProfile Map::openGLProfile() const
 {
   return d->openGLProfile;
+}
+
+//##################################################################################################
+bool Map::visible() const
+{
+  return d->visible;
 }
 
 //##################################################################################################

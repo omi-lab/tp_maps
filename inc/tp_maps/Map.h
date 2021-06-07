@@ -58,10 +58,23 @@ protected:
   //! Only ever call this before any calls to render.
   void setOpenGLProfile(OpenGLProfile openGLProfile);
 
+  //################################################################################################
+  void setVisible(bool visible);
 public:
 
   //################################################################################################
   OpenGLProfile openGLProfile() const;
+
+  //################################################################################################
+  //! Returns true if the 3D view is currently visible
+  /*!
+  Exactly what this means is patform dependent, in a desktop application this is true if the widget
+  is currently on screen and false if the widget is for example in a tab that is not currently
+  selected.
+
+  \return True if the 3D view is currently visible
+  */
+  bool visible() const;
 
   //################################################################################################
   bool initialized() const;
