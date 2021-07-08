@@ -259,6 +259,7 @@ void FontRenderer::generate()
 
   //-- Generate the glyphs -------------------------------------------------------------------------
   std::vector<GlyphDetails_lt*> glyphs;
+  glyphs.reserve(requiredCharacters().size());
   for(const auto character : requiredCharacters())
   {
     auto current = new GlyphDetails_lt();

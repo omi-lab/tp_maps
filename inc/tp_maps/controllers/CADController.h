@@ -32,7 +32,7 @@ std::vector<std::string> cadControllerModes();
 std::string cadControllerModeToString(CADControllerMode mode);
 
 //##################################################################################################
-CADControllerMode cadControllerModeFromString(std::string mode);
+CADControllerMode cadControllerModeFromString(const std::string& mode);
 
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT CADController : public Controller

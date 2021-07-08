@@ -36,10 +36,10 @@ public:
   TexturePoolKey();
 
   //################################################################################################
-  TexturePoolKey(tp_utils::StringID rName_,
-                 tp_utils::StringID gName_,
-                 tp_utils::StringID bName_,
-                 tp_utils::StringID aName_,
+  TexturePoolKey(const tp_utils::StringID& rName_,
+                 const tp_utils::StringID& gName_,
+                 const tp_utils::StringID& bName_,
+                 const tp_utils::StringID& aName_,
                  size_t rIndex_,
                  size_t gIndex_,
                  size_t bIndex_,

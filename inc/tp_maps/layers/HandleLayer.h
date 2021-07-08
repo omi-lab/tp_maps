@@ -21,6 +21,7 @@ class Texture;
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT HandleDetails
 {
+  TP_NONCOPYABLE(HandleDetails);
   friend class HandleLayer;
   HandleLayer* m_layer;
 public:

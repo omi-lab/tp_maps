@@ -24,6 +24,7 @@ This allows the map to cache shaders.
 */
 class TP_MAPS_SHARED_EXPORT Shader
 {
+  TP_NONCOPYABLE(Shader);
   friend class Map;
 public:
   //################################################################################################
@@ -75,6 +76,7 @@ private:
 //##################################################################################################
 class ShaderPointer
 {
+  TP_NONCOPYABLE(ShaderPointer);
   friend class Shader;
   const Shader* m_shader;
 public:

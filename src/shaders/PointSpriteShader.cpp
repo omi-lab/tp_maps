@@ -246,6 +246,7 @@ PointSpriteShader::VertexBuffer* PointSpriteShader::generateVertexBuffer(Map* ma
   {
     const PointSpriteShader::PointSprite* p = pointSptrites.data();
     const PointSpriteShader::PointSprite* pMax = p + pointSptrites.size();
+    indexes.reserve(pointSptrites.size()*6);
     for(; p<pMax; p++)
     {
       indexes.push_back(GLuint(verts.size()+0));

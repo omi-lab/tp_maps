@@ -125,6 +125,7 @@ void GeometryLayer::render(RenderInfo& renderInfo)
         {
           std::vector<GLuint> indexes;
           std::vector<MaterialShader::Vertex> verts;
+          verts.reserve(c.vertices.size());
           for(size_t n=0; n<c.vertices.size(); n++)
           {
             const auto& v = c.vertices.at(n);

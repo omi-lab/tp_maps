@@ -72,6 +72,10 @@ struct PoolDetails_lt
           {
             std::vector<GLuint> indexes;
             std::vector<MaterialShader::Vertex> verts;
+
+            indexes.reserve(part.indexes.size());
+            verts.reserve(part.indexes.size());
+
             for(size_t n=0; n<part.indexes.size(); n++)
             {
               auto idx = part.indexes.at(n);

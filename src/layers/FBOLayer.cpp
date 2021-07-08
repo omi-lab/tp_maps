@@ -99,28 +99,28 @@ void FBOLayer::render(RenderInfo& renderInfo)
   case FBOLayerSource::CurrentDrawColor:
   {
     textureID = map()->currentDrawFBO().textureID;
-    shader = static_cast<ImageShader*>(map()->getShader<ImageShader>());
+    shader = map()->getShader<ImageShader>();
     break;
   }
 
   case FBOLayerSource::CurrentDrawDepth:
   {
     textureID = map()->currentDrawFBO().depthID;
-    shader = static_cast<ImageShader*>(map()->getShader<DepthImageShader>());
+    shader = map()->getShader<DepthImageShader>();
     break;
   }
 
   case FBOLayerSource::CurrentReadColor:
   {
     textureID = map()->currentReadFBO().textureID;
-    shader = static_cast<ImageShader*>(map()->getShader<ImageShader>());
+    shader = map()->getShader<ImageShader>();
     break;
   }
 
   case FBOLayerSource::CurrentReadDepth:
   {
     textureID = map()->currentReadFBO().depthID;
-    shader = static_cast<ImageShader*>(map()->getShader<DepthImageShader>());
+    shader = map()->getShader<DepthImageShader>();
     break;
   }
 
@@ -133,9 +133,9 @@ void FBOLayer::render(RenderInfo& renderInfo)
       levels = l.levels;
 
       if(levels>1)
-        shader = static_cast<ImageShader*>(map()->getShader<Image3DShader>());
+        shader = map()->getShader<Image3DShader>();
       else
-        shader = static_cast<ImageShader*>(map()->getShader<ImageShader>());
+        shader = map()->getShader<ImageShader>();
     }
     break;
   }
@@ -149,9 +149,9 @@ void FBOLayer::render(RenderInfo& renderInfo)
       levels = l.levels;
 
       if(levels>1)
-        shader = static_cast<ImageShader*>(map()->getShader<DepthImage3DShader>());
+        shader = map()->getShader<DepthImage3DShader>();
       else
-        shader = static_cast<ImageShader*>(map()->getShader<DepthImageShader>());
+        shader = map()->getShader<DepthImageShader>();
     }
     break;
   }

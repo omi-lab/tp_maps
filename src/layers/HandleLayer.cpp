@@ -226,6 +226,7 @@ void HandleLayer::render(RenderInfo& renderInfo)
     }
 
     std::vector<PointSpriteShader::PointSprite> pointSprites;
+    pointSprites.reserve(d->handles.size());
     {
       HandleDetails** h = d->handles.data();
       HandleDetails** hMax = h + d->handles.size();

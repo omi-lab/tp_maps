@@ -18,6 +18,7 @@ texture and provide a OpenGL texture ID.
 */
 class TP_MAPS_SHARED_EXPORT Texture
 {
+  TP_NONCOPYABLE(Texture);
   Map* m_map;
   GLint m_magFilterOption{GL_LINEAR};
   GLint m_minFilterOption{GL_LINEAR_MIPMAP_LINEAR};

@@ -32,8 +32,12 @@ struct TP_MAPS_SHARED_EXPORT SpriteCoords
 //##################################################################################################
 class SpriteTexture
 {
+  TP_NONCOPYABLE(SpriteTexture);
   TP_REF_COUNT_OBJECTS("SpriteTexture");
 public:
+  //################################################################################################
+  SpriteTexture()=default;
+
   //################################################################################################
   ~SpriteTexture();
 

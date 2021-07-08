@@ -12,6 +12,7 @@ class Layer;
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT PickingResult
 {
+  TP_NONCOPYABLE(PickingResult);
 public:
   //################################################################################################
   PickingResult(const tp_utils::StringID& pickingType_,

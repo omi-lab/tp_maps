@@ -41,7 +41,7 @@ std::string cadControllerModeToString(CADControllerMode mode)
 }
 
 //##################################################################################################
-CADControllerMode cadControllerModeFromString(std::string mode)
+CADControllerMode cadControllerModeFromString(const std::string& mode)
 {
   if(mode == "Perspective")return CADControllerMode::Perspective;
   if(mode == "OrthoXZ")    return CADControllerMode::OrthoXZ;

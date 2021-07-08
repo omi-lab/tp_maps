@@ -1292,6 +1292,7 @@ std::vector<glm::ivec2> generateTestOrder(int size)
   glm::ivec2 current(size/2, size/2);
 
   testOrder.push_back(current);
+  testOrder.reserve(size*size);
 
   int direction=0;
 

@@ -38,7 +38,7 @@ struct TP_MAPS_SHARED_EXPORT PickingDetails
   //! The number of picking ID to reserve
   uint32_t count;
 
-  PickingDetails(size_t index_=0, PickingCallback callback_=PickingCallback(), uint32_t count_=1):
+  PickingDetails(size_t index_=0, const PickingCallback& callback_=PickingCallback(), uint32_t count_=1):
     index(index_),
     callback(callback_),
     count(count_)

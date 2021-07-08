@@ -51,7 +51,7 @@ struct ImageLayer::Private
   Private(ImageLayer* q_, Texture* texture_):
     q(q_),
     texture(texture_),
-    getShader([](Map* map){return static_cast<ImageShader*>(map->getShader<ImageShader>());})
+    getShader([](Map* map){return map->getShader<ImageShader>();})
   {
 
   }
