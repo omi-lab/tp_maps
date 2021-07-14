@@ -36,4 +36,3 @@
         <file alias="WriteFragment.100.render.glsl">resources/shaders/WriteFragment.100.render.glsl</file>
     </qresource>
 </RCC>
-
