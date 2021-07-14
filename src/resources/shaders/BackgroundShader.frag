@@ -34,6 +34,7 @@ void main()
 
   vec3 ambient = /*TP_GLSL_TEXTURE_2D*/(textureSampler, textureCoord).xyz;
 
+  //Note: GammaCorrection
   ambient = pow(ambient, vec3(2.2));
 
   vec3 diffuse = vec3(0.0);
