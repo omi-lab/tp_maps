@@ -10,7 +10,7 @@ ShaderResource& fragShaderStr(){static ShaderResource s{"/tp_maps/PostSSRShader.
 
 //##################################################################################################
 PostSSRShader::PostSSRShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
-  PostShader(map, openGLProfile, nullptr, fragShaderStr().data(openGLProfile, ShaderType::RenderHDR))
+  PostShader(map, openGLProfile, nullptr, fragShaderStr().data(openGLProfile, ShaderType::RenderExtendedFBO))
 {
 
 }

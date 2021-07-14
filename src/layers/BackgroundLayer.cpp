@@ -80,7 +80,7 @@ void BackgroundLayer::render(RenderInfo& renderInfo)
 
   auto matricies = map()->controller()->matrices(defaultSID());
 
-  shader->use(ShaderType::RenderHDR);
+  shader->use(ShaderType::RenderExtendedFBO);
   shader->setTexture(d->texturePool->textureID(d->textureName));
   shader->setMatrix(matricies.v, matricies.p);
   shader->setRotationFactor(d->rotationFactor);

@@ -184,7 +184,7 @@ MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, b
     };
 
     compileRenderShader([](auto,auto){}, [](auto){}, [](auto){}, ShaderType::Render);
-    compileRenderShader([](auto,auto){}, [](auto){}, [](auto){}, ShaderType::RenderHDR);
+    compileRenderShader([](auto,auto){}, [](auto){}, [](auto){}, ShaderType::RenderExtendedFBO);
     compileOtherShader(vertShaderStrPicking(), fragShaderStrPicking(), ShaderType::Picking);
     compileOtherShader(vertShaderStrLight(), fragShaderStrLight(), ShaderType::Light);
   }
@@ -210,7 +210,7 @@ void MaterialShader::compile(const char* vertShaderStr,
     switch(shaderType)
     {
     case ShaderType::Render: [[fallthrough]];
-    case ShaderType::RenderHDR:
+    case ShaderType::RenderExtendedFBO:
     {
       glBindAttribLocation(program, 0, "inVertex");
       glBindAttribLocation(program, 1, "inNormal");
@@ -298,7 +298,7 @@ void MaterialShader::compile(const char* vertShaderStr,
       break;
     }
 
-    case ShaderType::RenderHDR:
+    case ShaderType::RenderExtendedFBO:
     {
       exec(d->renderHDRLocations);
       break;
@@ -477,7 +477,7 @@ void MaterialShader::setMaterial(const tp_math_utils::Material& material)
   if(d->shaderType == ShaderType::Render)
     exec(d->renderLocations);
 
-  else if(d->shaderType == ShaderType::RenderHDR)
+  else if(d->shaderType == ShaderType::RenderExtendedFBO)
     exec(d->renderHDRLocations);
 }
 
@@ -543,7 +543,7 @@ void MaterialShader::setLights(const std::vector<tp_math_utils::Light>& lights, 
 
   if(d->shaderType == ShaderType::Render)
     exec(d->renderLocations);
-  else if(d->shaderType == ShaderType::RenderHDR)
+  else if(d->shaderType == ShaderType::RenderExtendedFBO)
     exec(d->renderHDRLocations);
 }
 
@@ -577,7 +577,7 @@ void MaterialShader::setMatrix(const glm::mat4& m, const glm::mat4& v, const glm
     break;
   }
 
-  case ShaderType::RenderHDR:
+  case ShaderType::RenderExtendedFBO:
   {
     exec(d->renderHDRLocations);
     break;
@@ -655,7 +655,7 @@ void MaterialShader::setTextures(GLuint rgbaTextureID,
 
   if(d->shaderType == ShaderType::Render)
     exec(d->renderLocations);
-  else if(d->shaderType == ShaderType::RenderHDR)
+  else if(d->shaderType == ShaderType::RenderExtendedFBO)
     exec(d->renderHDRLocations);
 }
 
@@ -678,7 +678,7 @@ void MaterialShader::setDiscardOpacity(float discardOpacity)
 
   if(d->shaderType == ShaderType::Render)
     exec(d->renderLocations);
-  else if(d->shaderType == ShaderType::RenderHDR)
+  else if(d->shaderType == ShaderType::RenderExtendedFBO)
     exec(d->renderHDRLocations);
 }
 

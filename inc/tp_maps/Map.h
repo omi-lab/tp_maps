@@ -88,7 +88,7 @@ public:
 
   //################################################################################################
   //! Prints error and returns true if there is an FBO error detected.
-  static bool printFBOError(const std::string& description);
+  static bool printFBOError(FBO& buffer, const std::string& description);
 
   //################################################################################################
   //!Sets the background clear color
@@ -200,12 +200,20 @@ public:
   size_t shadowSamples() const;
 
   //################################################################################################
-  //! Enable high dynamic range and deferred rendering buffers.
+  //! Enable high dynamic range rendering buffers.
   void setHDR(HDR hdr);
 
   //################################################################################################
   //! Returns true if HDR is enabled and supported.
   HDR hdr() const;
+
+  //################################################################################################
+  //! Enable high deferred rendering buffers.
+  void setExtendedFBO(ExtendedFBO extendedFBO);
+
+  //################################################################################################
+  //! Returns true if HDR is enabled and supported.
+  ExtendedFBO extendedFBO() const;
 
   //################################################################################################
   //! Called when buffers become invalid.

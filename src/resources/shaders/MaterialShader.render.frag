@@ -388,6 +388,8 @@ void main()
   vec3  normalsTex = /*TP_GLSL_TEXTURE_2D*/( normalsTexture, uv_tangent).xyz;
   vec3     rmaoTex = /*TP_GLSL_TEXTURE_2D*/(    rmaoTexture, uv_tangent).xyz;
 
+  rgbaTex.xyz = pow(rgbaTex.xyz, vec3(2.2));
+
   vec3 norm = normalize(normalsTex*2.0-1.0);
 
   albedo = rgbaTex.xyz * material.albedoScale;

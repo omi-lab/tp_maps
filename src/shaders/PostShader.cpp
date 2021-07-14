@@ -50,7 +50,7 @@ PostShader::PostShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const cha
   FullScreenShader(map, openGLProfile),
   d(new Private())
 {
-  compile(vertexShader, fragmentShader, d->bindLocations(), d->getLocations(), ShaderType::RenderHDR);
+  compile(vertexShader, fragmentShader, d->bindLocations(), d->getLocations(), ShaderType::RenderExtendedFBO);
 }
 
 //##################################################################################################

@@ -127,7 +127,7 @@ void PointSpriteShader::use(ShaderType shaderType)
   {
   case ShaderType::Light: [[fallthrough]];
   case ShaderType::Render: [[fallthrough]];
-  case ShaderType::RenderHDR:
+  case ShaderType::RenderExtendedFBO:
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);

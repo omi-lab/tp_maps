@@ -55,7 +55,7 @@ BackgroundShader::BackgroundShader(Map* map, tp_maps::OpenGLProfile openGLProfil
   };
 
   comp(ShaderType::Render);
-  comp(ShaderType::RenderHDR);
+  comp(ShaderType::RenderExtendedFBO);
 }
 
 //##################################################################################################

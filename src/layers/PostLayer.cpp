@@ -74,7 +74,7 @@ void PostLayer::render(RenderInfo& renderInfo)
   if(shader->error())
     return;
 
-  shader->use(ShaderType::RenderHDR);
+  shader->use(ShaderType::RenderExtendedFBO);
   shader->setReadFBO(map()->currentReadFBO());
   shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);
   shader->draw();

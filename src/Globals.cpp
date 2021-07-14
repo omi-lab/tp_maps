@@ -88,7 +88,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
   case OpenGLProfile::VERSION_110:
   {
     replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.100.render.glsl", ShaderType::Render   );
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.100.hdr.glsl"   , ShaderType::RenderHDR);
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.100.hdr.glsl"   , ShaderType::RenderExtendedFBO);
     replace("/*TP_VERT_SHADER_HEADER*/",     "#version 110\n");
     replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 110\n#define NO_TEXTURE3D\n");
     replace("/*TP_GLSL_IN_V*/",              "attribute ");
@@ -106,7 +106,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
   case OpenGLProfile::VERSION_120:
   {
     replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.100.render.glsl", ShaderType::Render   );
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.100.hdr.glsl"   , ShaderType::RenderHDR);
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.100.hdr.glsl"   , ShaderType::RenderExtendedFBO);
     replace("/*TP_VERT_SHADER_HEADER*/",     "#version 120\n");
     replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 120\n#define NO_TEXTURE3D\n");
     replace("/*TP_GLSL_IN_V*/",              "attribute ");
@@ -124,7 +124,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
   case OpenGLProfile::VERSION_130:
   {
     replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.150.render.glsl", ShaderType::Render   );
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.150.hdr.glsl"   , ShaderType::RenderHDR);
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.150.hdr.glsl"   , ShaderType::RenderExtendedFBO);
     replace("/*TP_VERT_SHADER_HEADER*/",     "#version 130\nprecision highp float;\n");
     replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 130\nprecision highp float;\n");
     replace("/*TP_GLSL_IN_V*/",              "in ");
@@ -142,7 +142,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
   case OpenGLProfile::VERSION_140:
   {
     replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.150.render.glsl", ShaderType::Render   );
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.150.hdr.glsl"   , ShaderType::RenderHDR);
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.150.hdr.glsl"   , ShaderType::RenderExtendedFBO);
     replace("/*TP_VERT_SHADER_HEADER*/",     "#version 140\nprecision highp float;\n");
     replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 140\nprecision highp float;\n");
     replace("/*TP_GLSL_IN_V*/",              "in ");
@@ -160,7 +160,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
   case OpenGLProfile::VERSION_150:
   {
     replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.150.render.glsl", ShaderType::Render   );
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.150.hdr.glsl"   , ShaderType::RenderHDR);
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.150.hdr.glsl"   , ShaderType::RenderExtendedFBO);
     replace("/*TP_VERT_SHADER_HEADER*/",     "#version 150\nprecision highp float;\n");
     replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 150\nprecision highp float;\n");
     replace("/*TP_GLSL_IN_V*/",              "in ");
@@ -178,7 +178,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
   case OpenGLProfile::VERSION_330:
   {
     replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderHDR);
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
     replace("/*TP_VERT_SHADER_HEADER*/",     "#version 330\nprecision highp float;\n");
     replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 330\nprecision highp float;\n");
     replace("/*TP_GLSL_IN_V*/",              "in ");
@@ -196,7 +196,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
   case OpenGLProfile::VERSION_400:
   {
     replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderHDR);
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
     replace("/*TP_VERT_SHADER_HEADER*/",     "#version 400\nprecision highp float;\n");
     replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 400\nprecision highp float;\n");
     replace("/*TP_GLSL_IN_V*/",              "in ");
@@ -214,7 +214,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
   case OpenGLProfile::VERSION_410:
   {
     replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderHDR);
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
     replace("/*TP_VERT_SHADER_HEADER*/",     "#version 410\nprecision highp float;\n");
     replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 410\nprecision highp float;\n");
     replace("/*TP_GLSL_IN_V*/",              "in ");
@@ -232,7 +232,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
   case OpenGLProfile::VERSION_420:
   {
     replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderHDR);
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
     replace("/*TP_VERT_SHADER_HEADER*/",     "#version 420\nprecision highp float;\n");
     replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 420\nprecision highp float;\n");
     replace("/*TP_GLSL_IN_V*/",              "in ");
@@ -250,7 +250,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
   case OpenGLProfile::VERSION_430:
   {
     replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderHDR);
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
     replace("/*TP_VERT_SHADER_HEADER*/",     "#version 430\nprecision highp float;\n");
     replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 430\nprecision highp float;\n");
     replace("/*TP_GLSL_IN_V*/",              "in ");
@@ -268,7 +268,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
   case OpenGLProfile::VERSION_440:
   {
     replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderHDR);
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
     replace("/*TP_VERT_SHADER_HEADER*/",     "#version 440\nprecision highp float;\n");
     replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 440\nprecision highp float;\n");
     replace("/*TP_GLSL_IN_V*/",              "in ");
@@ -286,7 +286,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
   case OpenGLProfile::VERSION_450:
   {
     replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderHDR);
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
     replace("/*TP_VERT_SHADER_HEADER*/",     "#version 450\nprecision highp float;\n");
     replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 450\nprecision highp float;\n");
     replace("/*TP_GLSL_IN_V*/",              "in ");
@@ -304,7 +304,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
   case OpenGLProfile::VERSION_460:
   {
     replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderHDR);
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
     replace("/*TP_VERT_SHADER_HEADER*/",     "#version 460\nprecision highp float;\n");
     replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 460\nprecision highp float;\n");
     replace("/*TP_GLSL_IN_V*/",              "in ");
@@ -322,7 +322,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
   case OpenGLProfile::VERSION_100_ES:
   {
     replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.100.render.glsl", ShaderType::Render   );
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.100.hdr.glsl"   , ShaderType::RenderHDR);
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.100.hdr.glsl"   , ShaderType::RenderExtendedFBO);
     replace("/*TP_VERT_SHADER_HEADER*/",     "#version 100\nprecision highp float;\n");
     replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 100\nprecision highp float;\n#define NO_TEXTURE3D\n");
     replace("/*TP_GLSL_IN_V*/",              "attribute ");
@@ -340,7 +340,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
   case OpenGLProfile::VERSION_300_ES:
   {
     replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderHDR);
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
     replace("/*TP_VERT_SHADER_HEADER*/",     "#version 300 es\nprecision highp float;\nprecision highp sampler3D;");
     replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 300 es\nprecision highp float;\nprecision highp sampler3D;");
     replace("/*TP_GLSL_IN_V*/",              "in ");
@@ -358,7 +358,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
   case OpenGLProfile::VERSION_310_ES:
   {
     replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderHDR);
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
     replace("/*TP_VERT_SHADER_HEADER*/",     "#version 310 es\nprecision highp float;\nprecision highp sampler3D;");
     replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 310 es\nprecision highp float;\nprecision highp sampler3D;");
     replace("/*TP_GLSL_IN_V*/",              "in ");
@@ -376,7 +376,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
   case OpenGLProfile::VERSION_320_ES:
   {
     replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderHDR);
+    replaceRC("/*TP_WRITE_FRAGMENT*/", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
     replace("/*TP_VERT_SHADER_HEADER*/",     "#version 320 es\nprecision highp float;\nprecision highp sampler3D;");
     replace("/*TP_FRAG_SHADER_HEADER*/",     "#version 320 es\nprecision highp float;\nprecision highp sampler3D;");
     replace("/*TP_GLSL_IN_V*/",              "in ");

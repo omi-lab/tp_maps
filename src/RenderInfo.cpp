@@ -41,8 +41,8 @@ ShaderType RenderInfo::shaderType() const
   if(pass == RenderPass::Picking)
     return ShaderType::Picking;
 
-  if(hdr == HDR::Yes)
-    return ShaderType::RenderHDR;
+  if(extendedFBO == ExtendedFBO::Yes)
+    return ShaderType::RenderExtendedFBO;
 
   return ShaderType::Render;
 }

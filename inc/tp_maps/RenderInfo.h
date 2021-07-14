@@ -61,6 +61,9 @@ public:
   //! Are we rendering to HDR buffers.
   HDR hdr{HDR::No};
 
+  //! Do we have extra buffers for normals and specular.
+  ExtendedFBO extendedFBO{ExtendedFBO::No};
+
   //! If this is a picking pass this will contain the type of picking request
   /*!
   Picking passes can be used for different purposes for example:

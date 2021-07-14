@@ -219,7 +219,7 @@ enum class RenderPass
 enum class ShaderType
 {
   Render,
-  RenderHDR,
+  RenderExtendedFBO,
   Picking,
   Light
 };
@@ -279,8 +279,15 @@ enum class Multisample
 //##################################################################################################
 enum class HDR
 {
-  No,
-  Yes
+  No, //!< 8 bit FBO buffers.
+  Yes //!< floating point FBO buffers.
+};
+
+//##################################################################################################
+enum class ExtendedFBO
+{
+  No, //!< FBOs will just have color and depth buffers.
+  Yes //!< FBOs will also have normals and specular buffers.
 };
 
 //##################################################################################################
@@ -289,8 +296,6 @@ enum class Alpha
   No,
   Yes
 };
-
-
 
 //##################################################################################################
 //! Replace key with value in result.
@@ -375,7 +380,8 @@ struct FBO
   GLuint textureID{0};  //!< The color buffer texture.
   GLuint depthID{0};    //!< The depth buffer texture.
 
-  // These are used for HDR deferred rendering, useful for SSR and post processing.
+  // These are used for deferred rendering, useful for SSR and post processing. Only created if
+  // using ExtendedFBO::Yes.
   GLuint normalsID{0};  //!< The normals of each fragment, useful for ray marching.
   GLuint specularID{0}; //!< The specular colors of each fragment, as well as the shininess in the alpha.
 
@@ -403,7 +409,8 @@ struct FBO
   std::vector<Matrices> worldToTexture; //!< For lighting this is used to map world coords onto the texture, per level.
 
   Multisample multisample{Multisample::No}; //!< Yes if multisample buffers have been created.
-  HDR hdr{HDR::No}; //!< Yes if HDR and deferred rendering buffers have been created.
+  HDR hdr{HDR::No};                         //!< Yes if HDR buffers have been created.
+  ExtendedFBO extendedFBO{ExtendedFBO::No}; //!< Yes if deferred rendering buffers have been created.
 };
 
 }

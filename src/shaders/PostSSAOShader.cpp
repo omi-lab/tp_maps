@@ -44,7 +44,7 @@ struct PostSSAOShaderPrivate::Private
   Private(Map* map, tp_maps::OpenGLProfile openGLProfile, const PostSSAOParameters& parameters_):
     parameters(parameters_)
   {
-    fragSrc = fragShaderStr().dataStr(openGLProfile, ShaderType::RenderHDR);
+    fragSrc = fragShaderStr().dataStr(openGLProfile, ShaderType::RenderExtendedFBO);
 
     std::string AO_FRAG_VARS;
     std::string AO_FRAG_CALC;
@@ -115,7 +115,7 @@ PostSSAOShader::PostSSAOShader(Map* map, tp_maps::OpenGLProfile openGLProfile, c
   PostShader(map, openGLProfile, nullptr, d->fragSrc.data())
 {
   {
-    auto s = shaderDetails(ShaderType::RenderHDR);
+    auto s = shaderDetails(ShaderType::RenderExtendedFBO);
     d->ssaoKernelLocation = glGetUniformLocation(s.program, "ssaoKernel");
 
     const auto& lights = map->lights();
