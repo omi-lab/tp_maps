@@ -308,7 +308,7 @@ void Geometry3DPool::subscribe(const tp_utils::StringID& name,
     details.textureSubscriptions.swap(textureSubscriptions);
     for(const auto& key : details.textureSubscriptions)
     {
-      d->texturePool->subscribe(key);
+      d->texturePool->subscribe(key, false);
       d->texturePool->setTextureWrapS(key, tileTextures?GL_REPEAT:GL_CLAMP_TO_EDGE);
       d->texturePool->setTextureWrapT(key, tileTextures?GL_REPEAT:GL_CLAMP_TO_EDGE);
     }

@@ -43,7 +43,8 @@ struct CombinedDetails_lt
   tp_image_utils::ColorMap aImage;
 
   tp_image_utils::ColorMap rgbaImage;
-  bool composeImage{true};
+  bool composeImage{true};  
+  bool makeSquare{true};
 
   BasicTexture* texture{nullptr};
   GLuint textureID{0};
@@ -261,12 +262,15 @@ void TexturePool::unsubscribe(const tp_utils::StringID& name)
 }
 
 //##################################################################################################
-void TexturePool::subscribe(const TexturePoolKey& key)
+void TexturePool::subscribe(const TexturePoolKey& key,
+                            bool makeSquare)
 {
   TP_TIME_SCOPE("TexturePool::unsubscribe(key)");
 
   auto& details = d->combinedImages[key];
   details.count++;
+
+  details.makeSquare = makeSquare;
 
   auto findImage = [&](tp_image_utils::ColorMap& image, const tp_utils::StringID& name)
   {
@@ -438,7 +442,7 @@ GLuint TexturePool::textureID(const TexturePoolKey& key)
       }
     }
 
-    i->second.texture = new BasicTexture(d->map(), i->second.rgbaImage);
+    i->second.texture = new BasicTexture(d->map(), i->second.rgbaImage, i->second.makeSquare);
     i->second.texture->setTextureWrapS(i->second.textureWrapS);
     i->second.texture->setTextureWrapT(i->second.textureWrapT);
   }

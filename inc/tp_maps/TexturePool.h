@@ -43,7 +43,8 @@ public:
   void unsubscribe(const tp_utils::StringID& name);
 
   //################################################################################################
-  void subscribe(const TexturePoolKey& key);
+  void subscribe(const TexturePoolKey& key,
+                 bool makeSquare=true);
 
   //################################################################################################
   void unsubscribe(const TexturePoolKey& key);
