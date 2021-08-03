@@ -86,6 +86,14 @@ void LinesLayer::setLines(const std::vector<Lines>& lines)
 }
 
 //##################################################################################################
+void LinesLayer::updateLines(const std::function<void(std::vector<Lines>&)>& closure)
+{
+  closure(d->lines);
+  d->updateVertexBuffer = true;
+  update();
+}
+
+//##################################################################################################
 void LinesLayer::setLinesFromGeometry(const std::vector<tp_math_utils::Geometry3D>& geometry)
 {
   std::vector<Lines> lines;

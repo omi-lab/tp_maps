@@ -37,6 +37,9 @@ public:
   void setLines(const std::vector<Lines>& lines);
 
   //################################################################################################
+  void updateLines(const std::function<void(std::vector<Lines>&)>& closure);
+
+  //################################################################################################
   //! Render a wire frame of the geometry.
   void setLinesFromGeometry(const std::vector<tp_math_utils::Geometry3D>& geometry);
 
