@@ -124,7 +124,8 @@ struct MaterialShader::Private
   GLint  pickingMVPMatrixLocation{0};
   GLint         pickingIDLocation{0};
 
-  GLint    lightMVPMatrixLocation{0};
+  GLint    lightMVPMatrixLocation{0};  
+  GLint  lightRGBATextureLocation{0};
 
   GLuint emptyTextureID{0};
   GLuint emptyNormalTextureID{0};
@@ -313,7 +314,8 @@ void MaterialShader::compile(const char* vertShaderStr,
 
     case ShaderType::Light:
     {
-      d->lightMVPMatrixLocation = glGetUniformLocation(program, "mvp");
+      d->lightMVPMatrixLocation = glGetUniformLocation(program, "mvp");      
+      d->lightRGBATextureLocation = glGetUniformLocation(program, "rgbaTexture");
       break;
     }
     }
@@ -657,6 +659,12 @@ void MaterialShader::setTextures(GLuint rgbaTextureID,
     exec(d->renderLocations);
   else if(d->shaderType == ShaderType::RenderExtendedFBO)
     exec(d->renderHDRLocations);
+  else if(d->shaderType == ShaderType::Light)
+  {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, rgbaTextureID);
+    glUniform1i(d->lightRGBATextureLocation, 0);
+  }
 }
 
 //##################################################################################################
