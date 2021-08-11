@@ -49,7 +49,7 @@ struct Geometry3DLayer::Private
     localTexturePool(q)
   {
     geometry3DPool->setTexturePool(texturePool);
-    geometry3DPoolChanged.connect(geometry3DPool->changedCallbacks);
+    geometry3DPoolChanged.connect(geometry3DPool->changed);
   }
 
   //################################################################################################
@@ -148,7 +148,7 @@ void Geometry3DLayer::setGeometry3DPool(Geometry3DPool* geometry3DPool)
   d->geometry3DPool = geometry3DPool;
   setTexturePool(d->geometry3DPool->texturePool());
   d->geometry3DPoolChanged.disconnect();
-  d->geometry3DPoolChanged.connect(d->geometry3DPool->changedCallbacks);
+  d->geometry3DPoolChanged.connect(d->geometry3DPool->changed);
   d->geometry3DPoolChanged();
 }
 

@@ -84,7 +84,7 @@ public:
                     const std::function<void(const std::vector<tp_math_utils::Geometry3D>&, const std::vector<tp_math_utils::Material>&)>& closure) const;
 
   //################################################################################################
-  tp_utils::CallbackCollection<void()> changedCallbacks;
+  tp_utils::CallbackCollection<void()> changed;
 
 private:
   struct Private;

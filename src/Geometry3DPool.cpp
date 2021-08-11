@@ -177,7 +177,7 @@ struct Geometry3DPool::Private
     for(auto& i : pools)
       i.second.updateVertexBufferTextures=true;
 
-    q->changedCallbacks();
+    q->changed();
   };
 
   //################################################################################################
@@ -232,7 +232,7 @@ void Geometry3DPool::setTexturePool(TexturePool* texturePool)
 {
   d->texturePool = texturePool;
   d->texturePoolChanged.disconnect();
-  d->texturePoolChanged.connect(texturePool->changedCallbacks);
+  d->texturePoolChanged.connect(texturePool->changed);
   d->texturePoolChanged();
 }
 
@@ -315,7 +315,7 @@ void Geometry3DPool::subscribe(const tp_utils::StringID& name,
 
     details.updateVertexBufferTextures=true;
   }
-  changedCallbacks();
+  changed();
 }
 
 //##################################################################################################

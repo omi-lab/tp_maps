@@ -231,7 +231,7 @@ void TexturePool::subscribe(const tp_utils::StringID& name,
         combinedDetails.texture = nullptr;
       }
     }
-    changedCallbacks();
+    changed();
   }
 }
 
@@ -473,7 +473,7 @@ void TexturePool::setTextureWrapS(const tp_utils::StringID& name, GLint textureW
     d->map()->makeCurrent();
     d->map()->deleteTexture(i->second.textureID);
     i->second.textureID = 0;
-    changedCallbacks();
+    changed();
   }
 }
 
@@ -497,7 +497,7 @@ void TexturePool::setTextureWrapT(const tp_utils::StringID& name, GLint textureW
     d->map()->makeCurrent();
     d->map()->deleteTexture(i->second.textureID);
     i->second.textureID = 0;
-    changedCallbacks();
+    changed();
   }
 }
 
@@ -521,7 +521,7 @@ void TexturePool::setTextureWrapS(const TexturePoolKey& key, GLint textureWrapS)
     d->map()->makeCurrent();
     d->map()->deleteTexture(i->second.textureID);
     i->second.textureID = 0;
-    changedCallbacks();
+    changed();
   }
 }
 
@@ -545,7 +545,7 @@ void TexturePool::setTextureWrapT(const TexturePoolKey& key, GLint textureWrapT)
     d->map()->makeCurrent();
     d->map()->deleteTexture(i->second.textureID);
     i->second.textureID = 0;
-    changedCallbacks();
+    changed();
   }
 }
 
