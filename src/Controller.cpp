@@ -17,7 +17,6 @@ struct Controller::Private
   Map* map;
   std::unordered_map<tp_utils::StringID, Matrices> matrices;
   std::unordered_map<tp_utils::StringID, Scissor> scissor;
-  std::function<void(const MouseEvent&)> mouseClickCallback;
 
   tp_math_utils::Light currentLight;
   Matrices lightMatrices;
@@ -134,12 +133,6 @@ void Controller::loadState(const nlohmann::json& j)
 }
 
 //##################################################################################################
-void Controller::setMouseClickCallback(const std::function<void(const MouseEvent&)>& mouseClickCallback)
-{
-  d->mouseClickCallback = mouseClickCallback;
-}
-
-//##################################################################################################
 Map* Controller::map() const
 {
   return d->map;
@@ -209,13 +202,6 @@ bool Controller::keyEvent(const KeyEvent& event)
 void Controller::animate(double timestampMS)
 {
   TP_UNUSED(timestampMS);
-}
-
-//##################################################################################################
-void Controller::callMouseClickCallback(const MouseEvent& event) const
-{
-  if(d->mouseClickCallback)
-    d->mouseClickCallback(event);
 }
 
 }

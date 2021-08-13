@@ -207,8 +207,8 @@ void GraphController::updateMatrices()
   double width  = double(map()->width());
   double height = double(map()->height());
 
-  double fh = 1.0f;
-  double fw = 1.0f;
+  double fh = 1.0;
+  double fw = 1.0;
   if(width>height)
     fw = width/height;
   else
@@ -306,7 +306,7 @@ bool GraphController::mouseEvent(const MouseEvent& event)
         {
           MouseEvent e = event;
           e.type = MouseEventType::Click;
-          callMouseClickCallback(e);
+          mouseClicked(e);
         }
       }
       else if(event.button == Button::LeftButton)

@@ -376,7 +376,7 @@ bool FlatController::mouseEvent(const MouseEvent& event)
         {
           MouseEvent e = event;
           e.type = MouseEventType::Click;
-          callMouseClickCallback(e);
+          mouseClicked(e);
         }
       }
       else if(event.button == Button::LeftButton)

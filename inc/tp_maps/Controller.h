@@ -4,6 +4,8 @@
 #include "tp_maps/Globals.h"
 #include "tp_maps/MouseEvent.h"
 
+#include "tp_utils/CallbackCollection.h"
+
 #include "json.hpp"
 
 #include <functional>
@@ -97,7 +99,7 @@ public:
   virtual void loadState(const nlohmann::json& j);
 
   //################################################################################################
-  void setMouseClickCallback(const std::function<void(const MouseEvent&)>& mouseClickCallback);
+  tp_utils::CallbackCollection<void(const tp_maps::MouseEvent& event)> mouseClicked;
 
   //################################################################################################
   //! Returns the Map that this should control
@@ -143,9 +145,6 @@ protected:
   //################################################################################################
   //! Update the state of the animation
   virtual void animate(double timestampMS);
-
-  //################################################################################################
-  void callMouseClickCallback(const MouseEvent& event) const;
 
 private:
   std::unordered_set<Button> m_hasMouseFocusFor; //!< Set when the controller accepts focus for a mouse press event.

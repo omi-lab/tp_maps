@@ -337,7 +337,7 @@ bool FPSController::mouseEvent(const MouseEvent& event)
         {
           MouseEvent e = event;
           e.type = MouseEventType::Click;
-          callMouseClickCallback(e);
+          mouseClicked(e);
         }
       }
     }
