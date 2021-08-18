@@ -292,8 +292,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
       shader->setMaterial(details.alternativeMaterial->material);
       shader->setTextures(details.alternativeMaterial->rgbaTextureID,
                           details.alternativeMaterial->normalsTextureID,
-                          details.alternativeMaterial->rmaoTextureID,
-                          map()->spotLightTexture());
+                          details.alternativeMaterial->rmaoTextureID);
       shader->setDiscardOpacity((renderInfo.pass == RenderPass::Transparency)?0.01f:0.80f);
     },
     [&](auto shader, auto first, auto second) //-- draw --------------------------------------------

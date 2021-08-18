@@ -122,10 +122,6 @@ public:
   const std::vector<tp_math_utils::Light>& lights() const;
 
   //################################################################################################
-  //! This will take ownership.
-  void setSpotLightTexture(Texture* spotLightTexture);
-
-  //################################################################################################
   //! Add a layer to the map
   /*!
   The default implementation simply appends the layer to the vector of layers and then
@@ -357,17 +353,6 @@ public:
   //################################################################################################
   //! Returns the depth textures for each light.
   const std::vector<FBO>& lightBuffers() const;
-
-  //################################################################################################
-  //! If there is a spot light texture this returns its ID.
-  /*!
-  This texture is used to shape the spot lights; typically a spot light is circular and  bright in
-  the middle with a fade around the outside. The texture may contain several paterns the one that is
-  selected is controled by the uv coordinates of the light.
-
-  \return OpenGL texture ID for the spot light texture.
-  */
-  GLuint spotLightTexture() const;
 
   //################################################################################################
   //! Return the map's window width

@@ -24,8 +24,7 @@ struct Light
   float linear;
   float quadratic;
 
-  vec2 spotLightUV;
-  vec2 spotLightWH;
+  float spotLightBlend;
 
   float near;
   float far;
@@ -41,7 +40,6 @@ struct LightResult
 uniform sampler2D rgbaTexture;
 uniform sampler2D normalsTexture;
 uniform sampler2D rmaoTexture;
-uniform sampler2D spotLightTexture;
 
 uniform Material material;
 
@@ -262,8 +260,14 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
 float maskLight(Light light, vec3 uv, float shadow)
 {
   float mask = 0.0;
-  if(uv.x>=0.0 && uv.x<=1.0 && uv.y>=0.0 && uv.y<=1.0)
-    mask = /*TP_GLSL_TEXTURE_2D*/(spotLightTexture, (uv.xy*light.spotLightWH) + light.spotLightUV).x;
+  if(light.spotLightBlend>0.0001 && uv.x>=0.0 && uv.x<=1.0 && uv.y>=0.0 && uv.y<=1.0)
+  {
+    float l = length(uv.xy*2.0-1.0);
+    mask = 1.0-clamp((l-(1.0-light.spotLightBlend))/light.spotLightBlend, 0.0, 1.0);
+  }
+
+
+    //mask = /*TP_GLSL_TEXTURE_2D*/(spotLightTexture, (uv.xy*light.spotLightWH) + light.spotLightUV).x;
 
   return mix(1.0, mask, material.useLightMask) * shadow;
 }

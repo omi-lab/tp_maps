@@ -64,8 +64,7 @@ struct LightLocations_lt
   GLint         constantLocation{0};
   GLint           linearLocation{0};
   GLint        quadraticLocation{0};
-  GLint      spotLightUVLocation{0};
-  GLint      spotLightWHLocation{0};
+  GLint   spotLightBlendLocation{0};
   GLint             nearLocation{0};
   GLint              farLocation{0};
 
@@ -99,7 +98,6 @@ struct UniformLocations_lt
   GLint      rgbaTextureLocation{0};
   GLint   normalsTextureLocation{0};
   GLint      rmaoTextureLocation{0};
-  GLint spotLightTextureLocation{0};
 
   std::vector<LightLocations_lt> lightLocations;
 };
@@ -257,7 +255,6 @@ void MaterialShader::compile(const char* vertShaderStr,
       locations.     rgbaTextureLocation = glGetUniformLocation(program, "rgbaTexture"     );
       locations.  normalsTextureLocation = glGetUniformLocation(program, "normalsTexture"  );
       locations.     rmaoTextureLocation = glGetUniformLocation(program, "rmaoTexture"     );
-      locations.spotLightTextureLocation = glGetUniformLocation(program, "spotLightTexture");
 
       const auto& lights = map()->lights();
       size_t iMax = tpMin(d->maxLights, lights.size());
@@ -281,8 +278,7 @@ void MaterialShader::compile(const char* vertShaderStr,
         lightLocations.constantLocation         = glGetUniformLocation(program, replaceLight(ii, "", "light%.constant").c_str());
         lightLocations.linearLocation           = glGetUniformLocation(program, replaceLight(ii, "", "light%.linear").c_str());
         lightLocations.quadraticLocation        = glGetUniformLocation(program, replaceLight(ii, "", "light%.quadratic").c_str());
-        lightLocations.spotLightUVLocation      = glGetUniformLocation(program, replaceLight(ii, "", "light%.spotLightUV").c_str());
-        lightLocations.spotLightWHLocation      = glGetUniformLocation(program, replaceLight(ii, "", "light%.spotLightWH").c_str());
+        lightLocations.spotLightBlendLocation   = glGetUniformLocation(program, replaceLight(ii, "", "light%.spotLightBlend").c_str());
 
         lightLocations.nearLocation             = glGetUniformLocation(program, replaceLight(ii, "", "light%.near").c_str());
         lightLocations.farLocation              = glGetUniformLocation(program, replaceLight(ii, "", "light%.far").c_str());
@@ -503,14 +499,13 @@ void MaterialShader::setLights(const std::vector<tp_math_utils::Light>& lights, 
         if(lightLocations.  ambientLocation>=0) glUniform3fv(lightLocations.  ambientLocation, 1,  &light.ambient.x    );
         if(lightLocations.  diffuseLocation>=0) glUniform3fv(lightLocations.  diffuseLocation, 1,  &light.diffuse.x    );
 
-        glUniform1f (lightLocations.diffuseScaleLocation,      light.diffuseScale );
-        glUniform1f (lightLocations.    constantLocation,      light.constant     );
-        glUniform1f (lightLocations.      linearLocation,      light.linear       );
-        glUniform1f (lightLocations.   quadraticLocation,      light.quadratic    );
-        glUniform2fv(lightLocations. spotLightUVLocation, 1,  &light.spotLightUV.x);
-        glUniform2fv(lightLocations. spotLightWHLocation, 1,  &light.spotLightWH.x);
-        glUniform1f (lightLocations.        nearLocation,      light.near         );
-        glUniform1f (lightLocations.         farLocation,      light.far          );
+        glUniform1f(lightLocations.  diffuseScaleLocation, light.diffuseScale  );
+        glUniform1f(lightLocations.      constantLocation, light.constant      );
+        glUniform1f(lightLocations.        linearLocation, light.linear        );
+        glUniform1f(lightLocations.     quadraticLocation, light.quadratic     );
+        glUniform1f(lightLocations.spotLightBlendLocation, light.spotLightBlend);
+        glUniform1f(lightLocations.          nearLocation, light.near          );
+        glUniform1f(lightLocations.           farLocation, light.far           );
       }
     }
 
@@ -633,8 +628,7 @@ void MaterialShader::drawVertexBuffer(GLenum mode, VertexBuffer* vertexBuffer)
 //##################################################################################################
 void MaterialShader::setTextures(GLuint rgbaTextureID,
                                  GLuint normalsTextureID,
-                                 GLuint rmaoTextureID,
-                                 GLuint spotLightTextureID)
+                                 GLuint rmaoTextureID)
 {
   auto exec = [&](const UniformLocations_lt& locations)
   {
@@ -649,10 +643,6 @@ void MaterialShader::setTextures(GLuint rgbaTextureID,
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, rmaoTextureID);
     glUniform1i(locations.rmaoTextureLocation, 2);
-
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, spotLightTextureID);
-    glUniform1i(locations.spotLightTextureLocation, 3);
   };
 
   if(d->shaderType == ShaderType::Render)
@@ -672,8 +662,7 @@ void MaterialShader::setBlankTextures()
 {
   setTextures(d->emptyTextureID,
               d->emptyNormalTextureID,
-              d->emptyTextureID,
-              map()->spotLightTexture());
+              d->emptyTextureID);
 }
 
 //##################################################################################################

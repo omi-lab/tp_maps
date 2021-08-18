@@ -151,9 +151,6 @@ struct Map::Private
   size_t maxSamples{1};
   size_t samples{1};
 
-  Texture* spotLightTexture{nullptr};
-  GLuint spotLightTextureID{0};
-
   FBO pickingBuffer;
   FBO renderToImageBuffer;
 
@@ -824,15 +821,6 @@ void Map::preDelete()
   for(auto& lightBuffer : d->lightBuffers)
     d->deleteBuffer(lightBuffer);
 
-  if(d->spotLightTextureID)
-  {
-    deleteTexture(d->spotLightTextureID);
-    d->spotLightTextureID = 0;
-  }
-
-  delete d->spotLightTexture;
-  d->spotLightTexture=nullptr;
-
   d->preDeleteCalled = true;
 }
 
@@ -1072,19 +1060,6 @@ void Map::setLights(const std::vector<tp_math_utils::Light>& lights)
 const std::vector<tp_math_utils::Light>& Map::lights() const
 {
   return d->lights;
-}
-
-//##################################################################################################
-void Map::setSpotLightTexture(Texture* spotLightTexture)
-{
-  delete d->spotLightTexture;
-  d->spotLightTexture = spotLightTexture;
-  if(d->spotLightTextureID)
-  {
-    makeCurrent();
-    deleteTexture(d->spotLightTextureID);
-    d->spotLightTextureID = 0;
-  }
 }
 
 //##################################################################################################
@@ -1669,18 +1644,6 @@ const std::vector<FBO>& Map::lightBuffers() const
 }
 
 //##################################################################################################
-GLuint Map::spotLightTexture() const
-{
-  if(!d->spotLightTexture || !d->spotLightTexture->imageReady())
-    d->spotLightTexture = new DefaultSpritesTexture(d->q);
-
-  if(!d->spotLightTextureID)
-    d->spotLightTextureID = d->spotLightTexture->bindTexture();
-
-  return d->spotLightTextureID;
-}
-
-//##################################################################################################
 int Map::width() const
 {
   return int(d->width);
@@ -1756,8 +1719,6 @@ void Map::initializeGL()
     for(auto& lightTexture : d->lightBuffers)
       d->invalidateBuffer(lightTexture);
     d->lightBuffers.clear();
-
-    d->spotLightTextureID = 0;
 
     for(auto i : d->layers)
       i->invalidateBuffers();

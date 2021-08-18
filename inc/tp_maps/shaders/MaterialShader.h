@@ -54,12 +54,10 @@ public:
   \param rgbaTextureID albedo and alpha texture.
   \param normalsTextureID normals texture.
   \param rmaoTextureID roughness, metalness, ambient occlusion texture.
-  \param spotLightTextureID spot light mask texture.
   */
   void setTextures(GLuint rgbaTextureID,
                    GLuint normalsTextureID,
-                   GLuint rmaoTextureID,
-                   GLuint spotLightTextureID);
+                   GLuint rmaoTextureID);
 
   //################################################################################################
   void setBlankTextures();
