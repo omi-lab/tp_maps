@@ -204,11 +204,11 @@ public:
   HDR hdr() const;
 
   //################################################################################################
-  //! Enable high deferred rendering buffers.
+  //! Enable deferred rendering buffers.
   void setExtendedFBO(ExtendedFBO extendedFBO);
 
   //################################################################################################
-  //! Returns true if HDR is enabled and supported.
+  //! Returns true if extended rendering buffers are enabled.
   ExtendedFBO extendedFBO() const;
 
   //################################################################################################
