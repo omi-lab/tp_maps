@@ -190,6 +190,7 @@ TP_DECLARE_ID(                  frameShaderSID,                     "Frame shade
 TP_DECLARE_ID(               postSSAOShaderSID,                 "Post ssao shader");
 TP_DECLARE_ID(                postSSRShaderSID,                  "Post ssr shader");
 TP_DECLARE_ID(               postBlitShaderSID,                 "Post blit shader");
+TP_DECLARE_ID(            postOutlineShaderSID,              "Post outline shader");
 TP_DECLARE_ID(              postGammaShaderSID,                "Post gamma shader");
 TP_DECLARE_ID(             backgroundShaderSID,                "Background shader");
 
@@ -199,20 +200,26 @@ int staticInit();
 //##################################################################################################
 enum class RenderPass
 {
-  LightFBOs,     //!< Render depth maps from the point of view of lights to FBOs.
-  PrepareDrawFBO,//!< Prepare the initial draw FBO ready for drawing to (read FBO is not ready).
-  SwapDrawFBO,   //!< Swap the draw and read FBO (read FBO now contains previous draw FBO).
-  Background,    //!< Render background without writing to the depth buffer.
-  Normal,        //!< Render normal 3D geometry.
-  Transparency,  //!< Render transparent 3D geometry.
-  FinishDrawFBO, //!< Swap the draw into the read FBO and bind the default FBO.
-  Text,          //!< Render text on top of scene.
-  GUI,           //!< Render UI on top of scene and text.
-  Picking,       //!< Picking render.
-  Custom1,       //!< See map->setCustomRenderPass() for further details.
-  Custom2,       //!< See map->setCustomRenderPass() for further details.
-  Custom3,       //!< See map->setCustomRenderPass() for further details.
-  Custom4        //!< See map->setCustomRenderPass() for further details.
+  LightFBOs,         //!< Render depth maps from the point of view of lights to FBOs.
+  PrepareDrawFBO,    //!< Prepare the initial draw FBO ready for drawing to (read FBO is not ready).
+  SwapDrawFBO,       //!< Swap the draw and read FBO (read FBO now contains previous draw FBO).
+  SwapDrawFBONoClear,//!< Same as above but does not clear the draw depth or color buffers.
+  Background,        //!< Render background without writing to the depth buffer.
+  Normal,            //!< Render normal 3D geometry.
+  Transparency,      //!< Render transparent 3D geometry.
+  FinishDrawFBO,     //!< Swap the draw into the read FBO and bind the default FBO.
+  Text,              //!< Render text on top of scene.
+  GUI,               //!< Render UI on top of scene and text.
+  Picking,           //!< Picking render.
+  Custom1,           //!< See map->setCustomRenderPass() for further details.
+  Custom2,           //!< See map->setCustomRenderPass() for further details.
+  Custom3,           //!< See map->setCustomRenderPass() for further details.
+  Custom4,           //!< See map->setCustomRenderPass() for further details.
+  Custom5,           //!< See map->setCustomRenderPass() for further details.
+  Custom6,           //!< See map->setCustomRenderPass() for further details.
+  Custom7,           //!< See map->setCustomRenderPass() for further details.
+  Custom8,           //!< See map->setCustomRenderPass() for further details.
+  CustomEnd          //!< Don't use this.
 };
 
 //##################################################################################################

@@ -143,6 +143,9 @@ HEADERS += inc/tp_maps/shaders/PostGammaShader.h
 SOURCES += src/shaders/PostBlitShader.cpp
 HEADERS += inc/tp_maps/shaders/PostBlitShader.h
 
+SOURCES += src/shaders/PostOutlineShader.cpp
+HEADERS += inc/tp_maps/shaders/PostOutlineShader.h
+
 
 #-- Layers -----------------------------------------------------------------------------------------
 SOURCES += src/layers/GridLayer.cpp
@@ -201,6 +204,9 @@ HEADERS += inc/tp_maps/layers/PostSSAOLayer.h
 
 SOURCES += src/layers/PostSSRLayer.cpp
 HEADERS += inc/tp_maps/layers/PostSSRLayer.h
+
+SOURCES += src/layers/PostOutlineLayer.cpp
+HEADERS += inc/tp_maps/layers/PostOutlineLayer.h
 
 
 #-- Textures ---------------------------------------------------------------------------------------

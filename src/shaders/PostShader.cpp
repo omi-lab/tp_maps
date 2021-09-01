@@ -23,6 +23,8 @@ struct PostShader::Private
   GLint projectionMatrixLocation   {0};
   GLint invProjectionMatrixLocation{0};
 
+  GLint pixelSizeLocation{0};
+
   //################################################################################################
   std::function<void(GLuint)> bindLocations()
   {
@@ -41,6 +43,8 @@ struct PostShader::Private
 
       projectionMatrixLocation = glGetUniformLocation(program, "projectionMatrix");
       invProjectionMatrixLocation = glGetUniformLocation(program, "invProjectionMatrix");
+
+      pixelSizeLocation = glGetUniformLocation(program, "pixelSize");
     };
   }
 };
@@ -97,6 +101,7 @@ void PostShader::setProjectionMatrix(const glm::mat4& projectionMatrix)
   glm::mat4 invProjectionMatrix = glm::inverse(projectionMatrix);
   glUniformMatrix4fv(d->projectionMatrixLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
   glUniformMatrix4fv(d->invProjectionMatrixLocation, 1, GL_FALSE, glm::value_ptr(invProjectionMatrix));
+  glUniform2f(d->pixelSizeLocation, 1.0f/float(map()->width()), 1.0f/float(map()->height()));
 }
 
 }

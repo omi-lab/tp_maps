@@ -88,6 +88,15 @@ static void APIENTRY tpOutputOpenGLDebug(GLenum source,
 namespace tp_maps
 {
 
+namespace
+{
+struct CustomPassCallbacks_lt
+{
+  std::function<void(RenderInfo&)> start;
+  std::function<void(RenderInfo&)> end;
+};
+}
+
 //##################################################################################################
 struct Map::Private
 {
@@ -111,14 +120,7 @@ struct Map::Private
   };
 
   // Callback that get called to prepare and cleanup custom render passes.
-  std::function<void(RenderInfo&)> custom1Start;
-  std::function<void(RenderInfo&)> custom1End;
-  std::function<void(RenderInfo&)> custom2Start;
-  std::function<void(RenderInfo&)> custom2End;
-  std::function<void(RenderInfo&)> custom3Start;
-  std::function<void(RenderInfo&)> custom3End;
-  std::function<void(RenderInfo&)> custom4Start;
-  std::function<void(RenderInfo&)> custom4End;
+  CustomPassCallbacks_lt customCallbacks[int(RenderPass::CustomEnd) - int(RenderPass::Custom1)];
 
   RenderInfo renderInfo;
 
@@ -329,8 +331,8 @@ struct Map::Private
     case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
     case OpenGLProfile::VERSION_320_ES:
 
-      //          (GLenum target, GLint level,    GLint internalformat,    GLsizei width,    GLsizei height, GLint border,      GLenum format,     GLenum type, const void *pixels);
-      glTexImage2D(GL_TEXTURE_2D,           0, TP_GL_DEPTH_COMPONENT32, TPGLsizei(width), TPGLsizei(height),            0, GL_DEPTH_COMPONENT, GL_FLOAT,            nullptr);
+      //          (GLenum target, GLint level,    GLint internalformat,    GLsizei width,    GLsizei height, GLint border,      GLenum format,  GLenum type, const void *pixels);
+      glTexImage2D(GL_TEXTURE_2D,           0, TP_GL_DEPTH_COMPONENT32, TPGLsizei(width), TPGLsizei(height),            0, GL_DEPTH_COMPONENT,     GL_FLOAT,            nullptr);
       break;
 
     default:
@@ -459,7 +461,8 @@ struct Map::Private
                      HDR hdr,
                      ExtendedFBO extendedFBO,
                      size_t levels,
-                     size_t level)
+                     size_t level,
+                     bool clear)
   {
     DEBUG_printOpenGLError("prepareBuffer Start");
 
@@ -622,8 +625,12 @@ struct Map::Private
     glViewport(0, 0, TPGLsizei(width), TPGLsizei(height));
 
     glDepthMask(true);
-    glClearDepthf(1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    if(clear)
+    {
+      glClearDepthf(1.0f);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
 
     DEBUG_printOpenGLError("prepareBuffer end");
 
@@ -993,31 +1000,9 @@ void Map::setCustomRenderPass(RenderPass renderPass,
                               const std::function<void(RenderInfo&)>& start,
                               const std::function<void(RenderInfo&)>& end)
 {
-  switch(renderPass)
-  {
-  case RenderPass::Custom1:
-    d->custom1Start = start;
-    d->custom1End   = end;
-    break;
-
-  case RenderPass::Custom2:
-    d->custom2Start = start;
-    d->custom2End   = end;
-    break;
-
-  case RenderPass::Custom3:
-    d->custom3Start = start;
-    d->custom3End   = end;
-    break;
-
-  case RenderPass::Custom4:
-    d->custom4Start = start;
-    d->custom4End   = end;
-    break;
-
-  default:
-    break;
-  }
+  auto& callbacks = d->customCallbacks[int(renderPass) - int(RenderPass::Custom1)];
+  callbacks.start = start;
+  callbacks.end = end;
 }
 
 //##################################################################################################
@@ -1379,7 +1364,7 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
 
   //------------------------------------------------------------------------------------------------
   // Configure the frame buffer that the picking values will be rendered to.
-  if(!d->prepareBuffer(d->renderToImageBuffer, d->width, d->height, CreateColorBuffer::Yes, Multisample::No, HDR::No, ExtendedFBO::No, 1, 0))
+  if(!d->prepareBuffer(d->renderToImageBuffer, d->width, d->height, CreateColorBuffer::Yes, Multisample::No, HDR::No, ExtendedFBO::No, 1, 0, true))
     return nullptr;
 
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -1488,7 +1473,7 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
   DEBUG_printOpenGLError("renderToImage A");
 
   // Configure the frame buffer that the image will be rendered to.
-  if(!d->prepareBuffer(d->renderToImageBuffer, width, height, CreateColorBuffer::Yes, Multisample::No, HDR::No, ExtendedFBO::No, 1, 0))
+  if(!d->prepareBuffer(d->renderToImageBuffer, width, height, CreateColorBuffer::Yes, Multisample::No, HDR::No, ExtendedFBO::No, 1, 0, true))
   {
     tpWarning() << "Error Map::renderToImage failed to create render buffer.";
     return false;
@@ -1560,7 +1545,7 @@ bool Map::renderToImage(size_t width, size_t height, tp_image_utils::ColorMapF& 
   DEBUG_printOpenGLError("renderToImage A");
 
   // Configure the frame buffer that the image will be rendered to.
-  if(!d->prepareBuffer(d->renderToImageBuffer, width, height, CreateColorBuffer::Yes, Multisample::No, HDR::Yes, ExtendedFBO::No, 1, 0))
+  if(!d->prepareBuffer(d->renderToImageBuffer, width, height, CreateColorBuffer::Yes, Multisample::No, HDR::Yes, ExtendedFBO::No, 1, 0, true))
     return false;
 
   DEBUG_printOpenGLError("renderToImage B");
@@ -1818,7 +1803,7 @@ void Map::paintGLNoMakeCurrent()
         lightBuffer.worldToTexture.resize(levels);
         for(size_t l=0; l<levels; l++)
         {
-          if(!d->prepareBuffer(lightBuffer, d->lightTextureSize, d->lightTextureSize, CreateColorBuffer::No, Multisample::No, HDR::No, ExtendedFBO::No, levels, l))
+          if(!d->prepareBuffer(lightBuffer, d->lightTextureSize, d->lightTextureSize, CreateColorBuffer::No, Multisample::No, HDR::No, ExtendedFBO::No, levels, l, true))
             return;
 
           d->controller->setCurrentLight(light, l);
@@ -1844,7 +1829,7 @@ void Map::paintGLNoMakeCurrent()
       glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
       d->currentDrawFBO = &d->intermediateFBOs[0];
       d->currentReadFBO = &d->intermediateFBOs[0];
-      if(!d->prepareBuffer(*d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, Multisample::Yes, hdr(), extendedFBO(), 1, 0))
+      if(!d->prepareBuffer(*d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, Multisample::Yes, hdr(), extendedFBO(), 1, 0, true))
       {
         printOpenGLError("RenderPass::PrepareDrawFBO");
         return;
@@ -1864,13 +1849,32 @@ void Map::paintGLNoMakeCurrent()
       d->currentReadFBO = d->currentDrawFBO;
       d->currentDrawFBO = (d->currentReadFBO!=&d->intermediateFBOs[1])?&d->intermediateFBOs[1]:&d->intermediateFBOs[2];
 
-      if(!d->prepareBuffer(*d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, Multisample::No, hdr(), extendedFBO(), 1, 0))
+      if(!d->prepareBuffer(*d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, Multisample::No, hdr(), extendedFBO(), 1, 0, true))
       {
         printOpenGLError("RenderPass::SwapDrawFBO");
         return;
       }
 #endif
       DEBUG_printOpenGLError("RenderPass::SwapDrawFBO end");
+      break;
+    }
+
+    case RenderPass::SwapDrawFBONoClear: //---------------------------------------------------------
+    {
+      DEBUG_printOpenGLError("RenderPass::SwapDrawFBONoClear start");
+#ifdef TP_FBO_SUPPORTED
+      d->renderInfo.hdr = hdr();
+      d->renderInfo.extendedFBO = extendedFBO();
+      d->swapMultisampledBuffer(*d->currentDrawFBO);
+      std::swap(d->currentReadFBO, d->currentDrawFBO);
+
+      if(!d->prepareBuffer(*d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, d->currentDrawFBO->multisample, hdr(), extendedFBO(), 1, 0, false))
+      {
+        printOpenGLError("RenderPass::SwapDrawFBONoClear");
+        return;
+      }
+#endif
+      DEBUG_printOpenGLError("RenderPass::SwapDrawFBONoClear end");
       break;
     }
 
@@ -1951,62 +1955,32 @@ void Map::paintGLNoMakeCurrent()
     }
 
     case RenderPass::Custom1: //--------------------------------------------------------------------
-    {
-      DEBUG_printOpenGLError("RenderPass::Custom1 start");
-      if(d->custom1Start)
-        d->custom1Start(d->renderInfo);
-
-      d->render();
-
-      if(d->custom1End)
-        d->custom1End(d->renderInfo);
-
-      DEBUG_printOpenGLError("RenderPass::Custom1 end");
-      break;
-    }
-
     case RenderPass::Custom2: //--------------------------------------------------------------------
-    {
-      DEBUG_printOpenGLError("RenderPass::Custom2 start");
-      if(d->custom2Start)
-        d->custom2Start(d->renderInfo);
-
-      d->render();
-
-      if(d->custom2End)
-        d->custom2End(d->renderInfo);
-
-      DEBUG_printOpenGLError("RenderPass::Custom2 end");
-      break;
-    }
-
     case RenderPass::Custom3: //--------------------------------------------------------------------
+    case RenderPass::Custom4: //--------------------------------------------------------------------
+    case RenderPass::Custom5: //--------------------------------------------------------------------
+    case RenderPass::Custom6: //--------------------------------------------------------------------
+    case RenderPass::Custom7: //--------------------------------------------------------------------
+    case RenderPass::Custom8: //--------------------------------------------------------------------
     {
-      DEBUG_printOpenGLError("RenderPass::Custom3 start");
-      if(d->custom3Start)
-        d->custom3Start(d->renderInfo);
+      int c = int(renderPass) - int(RenderPass::Custom1);
+      auto& callbacks = d->customCallbacks[c];
+
+      DEBUG_printOpenGLError("RenderPass::Custom"+std::to_string(c+1)+" start");
+      if(callbacks.start)
+        callbacks.start(d->renderInfo);
 
       d->render();
 
-      if(d->custom3End)
-        d->custom3End(d->renderInfo);
+      if(callbacks.end)
+        callbacks.end(d->renderInfo);
 
-      DEBUG_printOpenGLError("RenderPass::Custom3 end");
+      DEBUG_printOpenGLError("RenderPass::Custom"+std::to_string(c+1)+" end");
       break;
     }
 
-    case RenderPass::Custom4: //--------------------------------------------------------------------
+    case RenderPass::CustomEnd: //------------------------------------------------------------------
     {
-      DEBUG_printOpenGLError("RenderPass::Custom4 start");
-      if(d->custom4Start)
-        d->custom4Start(d->renderInfo);
-
-      d->render();
-
-      if(d->custom4End)
-        d->custom4End(d->renderInfo);
-
-      DEBUG_printOpenGLError("RenderPass::Custom4 end");
       break;
     }
     }

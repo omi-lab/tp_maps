@@ -24,6 +24,7 @@ TP_DEFINE_ID(                  frameShaderSID,                     "Frame shader
 TP_DEFINE_ID(               postSSAOShaderSID,                 "Post ssao shader");
 TP_DEFINE_ID(                postSSRShaderSID,                  "Post ssr shader");
 TP_DEFINE_ID(               postBlitShaderSID,                 "Post blit shader");
+TP_DEFINE_ID(            postOutlineShaderSID,              "Post outline shader");
 TP_DEFINE_ID(              postGammaShaderSID,                "Post gamma shader");
 TP_DEFINE_ID(             backgroundShaderSID,                "Background shader");
 

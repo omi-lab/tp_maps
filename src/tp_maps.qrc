@@ -29,6 +29,7 @@
         <file alias="PostSSRShader.frag">resources/shaders/PostSSRShader.frag</file>
         <file alias="PostGammaShader.frag">resources/shaders/PostGammaShader.frag</file>
         <file alias="PostBlitShader.frag">resources/shaders/PostBlitShader.frag</file>
+        <file alias="PostOutlineShader.frag">resources/shaders/PostOutlineShader.frag</file>
         <file alias="WriteFragment.hdr.glsl">resources/shaders/WriteFragment.hdr.glsl</file>
         <file alias="WriteFragment.render.glsl">resources/shaders/WriteFragment.render.glsl</file>
         <file alias="WriteFragment.150.hdr.glsl">resources/shaders/WriteFragment.150.hdr.glsl</file>
