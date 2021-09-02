@@ -5,11 +5,13 @@
 
 #include "tp_math_utils/JSONUtils.h"
 #include "tp_math_utils/Plane.h"
+#include "tp_math_utils/AngleBetweenVectors.h"
 
 #include "tp_utils/JSONUtils.h"
 #include "tp_utils/DebugUtils.h"
 
 #include "glm/gtx/transform.hpp"
+#include "glm/gtx/euler_angles.hpp"
 
 namespace tp_maps
 {
@@ -71,8 +73,9 @@ struct CADController::Private
 
   double timestampMS{0.0};
 
-  float viewAngle{-90.0f};   //!< In degrees.
-  float rotationAngle{0.0f}; //!< In degrees.
+  float viewAngle    {-90.0f}; //!< In degrees.
+  float rotationAngle{  0.0f}; //!< In degrees.
+  float rollAngle    {  0.0f}; //!< In degrees.
   glm::vec3 cameraOrigin{0, 0, 1.8f};
 
   float distance{10.0f};     //!< Distance for ortho projections.
@@ -297,16 +300,29 @@ void CADController::setVariableViewAngle(bool variableViewAngle)
   d->variableViewAngle = variableViewAngle;
 }
 
-//################################################################################################
+//##################################################################################################
 float CADController::rotationAngle() const
 {
   return d->rotationAngle;
 }
 
-//################################################################################################
+//##################################################################################################
 void CADController::setRotationAngle(float rotationAngle)
 {
   d->rotationAngle = rotationAngle;
+  update();
+}
+
+//##################################################################################################
+float CADController::rollAngle() const
+{
+  return d->rollAngle;
+}
+
+//##################################################################################################
+void CADController::setRollAngle(float rollAngle)
+{
+  d->rollAngle = rollAngle;
   update();
 }
 
@@ -364,31 +380,14 @@ glm::vec3 CADController::up() const
 //##################################################################################################
 void CADController::setOrientation(const glm::vec3& forward, const glm::vec3& up)
 {
-  // Calculate the rotation first
-  {
-    glm::vec2 direction;
+  glm::mat4 m = glm::lookAt(glm::vec3(0.0f,0.0f,0.0f), forward, up);
 
-    float dotUp = glm::dot(glm::vec3(0,0,1), up);
-    float dotForward = glm::dot(glm::vec3(0,0,1), forward);
+  glm::vec3 v;
+  glm::extractEulerAngleZXZ(m, v.x, v.y, v.z);
 
-    if(std::fabs(dotForward) < std::fabs(dotUp))
-      direction = forward;
-    else
-      direction = glm::vec2(up);
-
-    direction = glm::normalize(direction);
-
-    d->rotationAngle = glm::degrees(std::atan2(direction.x,direction.y));
-    if(d->rotationAngle<0.0f)
-      d->rotationAngle += 360.0f;
-  }
-
-
-  // Then the view angle
-  {
-    d->viewAngle = glm::degrees(std::acos(forward.z))-180.0f;
-  }
-
+  d->rollAngle = glm::degrees(v.x);
+  d->viewAngle = glm::degrees(v.y);
+  d->rotationAngle = glm::degrees(v.z);
   update();
 }
 
@@ -499,9 +498,7 @@ void CADController::updateMatrices()
   {
   case CADControllerMode::Perspective:
   {
-    view = glm::mat4(1.0f);
-    view = glm::rotate(view, glm::radians(d->viewAngle), glm::vec3(1.0f, 0.0f, 0.0f));
-    view = glm::rotate(view, glm::radians(d->rotationAngle), glm::vec3(0.0f, 0.0f, 1.0f));
+    view = glm::eulerAngleZXZ(glm::radians(d->rollAngle), glm::radians(d->viewAngle), glm::radians(d->rotationAngle));
     view = glm::translate(view, -d->cameraOrigin);
 
     projection = glm::perspective(glm::radians(d->fov), fw/fh, d->near, d->far);
@@ -621,13 +618,13 @@ bool CADController::mouseEvent(const MouseEvent& event)
         if(d->variableViewAngle)
         {
           changed = true;
-          d->viewAngle += dy*0.2f * d->mouseSpeedModifier;
+          d->viewAngle -= dy*0.2f * d->mouseSpeedModifier;
 
-          if(d->viewAngle>0)
-            d->viewAngle = 0;
+          if(d->viewAngle<0.0)
+            d->viewAngle = 0.0;
 
-          if(d->viewAngle<-180)
-            d->viewAngle = -180;
+          if(d->viewAngle>180.0f)
+            d->viewAngle = 180.0f;
         }
 
         if(d->allowRotation)
@@ -795,14 +792,14 @@ void CADController::animate(double timestampMS)
     if(d->keyState[TP_UP_KEY] ||d->keyState[TP_W_KEY] )
     {
       changed = true;
-      d->translate(float(translateMeters), d->keyboardSpeedModifier);
+      d->translate(-float(translateMeters), d->keyboardSpeedModifier);
       update();
     }
 
     if(d->keyState[TP_DOWN_KEY]||d->keyState[TP_S_KEY] )
     {
       changed = true;
-      d->translate(-float(translateMeters), d->keyboardSpeedModifier);
+      d->translate(float(translateMeters), d->keyboardSpeedModifier);
       update();
     }
 
@@ -827,14 +824,14 @@ void CADController::animate(double timestampMS)
     if(d->keyState[TP_A_KEY] )
     {
       changed = true;
-      d->strafe(-float(translateMeters), 0.0f, d->keyboardSpeedModifier);
+      d->strafe(float(translateMeters), 0.0f, d->keyboardSpeedModifier);
       update();
     }
 
     if(d->keyState[TP_D_KEY] )
     {
       changed = true;
-      d->strafe(float(translateMeters), 0.0f, d->keyboardSpeedModifier);
+      d->strafe(-float(translateMeters), 0.0f, d->keyboardSpeedModifier);
       update();
     }
 
