@@ -618,13 +618,7 @@ bool CADController::mouseEvent(const MouseEvent& event)
         if(d->variableViewAngle)
         {
           changed = true;
-          d->viewAngle -= dy*0.2f * d->mouseSpeedModifier;
-
-          if(d->viewAngle<0.0)
-            d->viewAngle = 0.0;
-
-          if(d->viewAngle>180.0f)
-            d->viewAngle = 180.0f;
+          d->viewAngle = std::clamp(d->viewAngle + (dy*0.2f * d->mouseSpeedModifier), -180.0f, 0.0f);
         }
 
         if(d->allowRotation)
