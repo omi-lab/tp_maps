@@ -21,11 +21,27 @@ struct PostLayer::Private
 
   bool bypass{false};
 
+  FullScreenShader::Object object;
+
+  bool rectangle{true};
+  glm::vec2 holeSize{0.5f, 0.5f};
+  glm::vec2 size{1.0f, 1.0f};
+
   //################################################################################################
   Private(PostLayer* q_):
     q(q_)
   {
 
+  }
+
+  //################################################################################################
+  void freeObject()
+  {
+    if(q->map())
+    {
+      q->map()->makeCurrent();
+      FullScreenShader::freeObject(object);
+    }
   }
 };
 
@@ -36,8 +52,6 @@ PostLayer::PostLayer(Map* map, RenderPass customRenderPass):
   setDefaultRenderPass(customRenderPass);
   map->setCustomRenderPass(customRenderPass, [](RenderInfo&)
   {
-    //glDisable(GL_DEPTH_TEST);
-    //glDepthMask(false);
   },[](RenderInfo&)
   {
 
@@ -47,6 +61,7 @@ PostLayer::PostLayer(Map* map, RenderPass customRenderPass):
 //##################################################################################################
 PostLayer::~PostLayer()
 {
+  d->freeObject();
   delete d;
 }
 
@@ -64,6 +79,23 @@ void PostLayer::setBypass(bool bypass)
 }
 
 //##################################################################################################
+void PostLayer::setRectangle(const glm::vec2& size)
+{
+  d->rectangle = true;
+  d->size = size;
+  d->freeObject();
+}
+
+//##################################################################################################
+void PostLayer::setFrame(const glm::vec2& holeSize, const glm::vec2& size)
+{
+  d->rectangle = false;
+  d->holeSize = holeSize;
+  d->size = size;
+  d->freeObject();
+}
+
+//##################################################################################################
 void PostLayer::render(RenderInfo& renderInfo)
 {
   if(renderInfo.pass != defaultRenderPass())
@@ -74,10 +106,27 @@ void PostLayer::render(RenderInfo& renderInfo)
   if(shader->error())
     return;
 
+  if(d->object.size<1)
+  {
+    if(d->rectangle)
+      FullScreenShader::makeRectangleObject(d->object, d->size);
+    else
+      FullScreenShader::makeFrameObject(d->object, d->holeSize, d->size);
+  }
+
   shader->use(ShaderType::RenderExtendedFBO);
   shader->setReadFBO(map()->currentReadFBO());
   shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);
   shader->draw();
 }
+
+
+//##################################################################################################
+void PostLayer::invalidateBuffers()
+{
+  FullScreenShader::invalidateObject(d->object);
+  Layer::invalidateBuffers();
+}
+
 
 }

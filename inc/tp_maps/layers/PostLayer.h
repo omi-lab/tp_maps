@@ -28,9 +28,29 @@ public:
   //################################################################################################
   void setBypass(bool bypass);
 
+  //################################################################################################
+  //! Make the post layer a rectangle, size=1=fullscreen
+  void setRectangle(const glm::vec2& size);
+
+  //################################################################################################
+  //! Make the post layer a rectangle, size=1=fullscreen
+  /*!
+  Typically this is used where the coordinateSystem() chosen for this layer view a larger area of
+  the scene and you want to place a frame around it. Think of the camera view in blender where you
+  have the camera in the middle surrounded by a semi transparent frame. This mode is used to draw
+  frames like that.
+
+  \param holeSize at the middle of the frame, 1=fullscreen
+  \param size at the outside of the frame, 1=fullscreen
+   */
+  void setFrame(const glm::vec2& holeSize, const glm::vec2& size);
+
 protected:
   //################################################################################################
   void render(RenderInfo& renderInfo) override;
+
+  //################################################################################################
+  void invalidateBuffers() override;
 
   //################################################################################################
   virtual PostShader* makeShader()=0;
