@@ -22,6 +22,9 @@ public:
   ~PostLayer() override;
 
   //################################################################################################
+  void setFrameCoordinateSystem(const tp_utils::StringID& frameCoordinateSystem);
+
+  //################################################################################################
   //! If true just blit read to draw buffers.
   bool bypass() const;
 
@@ -43,7 +46,11 @@ public:
   \param holeSize at the middle of the frame, 1=fullscreen
   \param size at the outside of the frame, 1=fullscreen
    */
-  void setFrame(const glm::vec2& holeSize, const glm::vec2& size);
+  void setFrame(const glm::vec2& holeSize, const glm::vec2& size);  
+
+  //################################################################################################
+  void setBlit(bool blitRectangle, bool blitFrame);
+
 
 protected:
   //################################################################################################

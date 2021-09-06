@@ -19,6 +19,8 @@ struct FullScreenShader::Private
   TP_REF_COUNT_OBJECTS("tp_maps::FullScreenShader::Private");
   TP_NONCOPYABLE(Private);
 
+  GLint  frameMatrixLocation{0};
+
   Object object;
 
   //################################################################################################
@@ -58,7 +60,20 @@ void FullScreenShader::compile(const char* vertexShader,
 
     if(bindLocations)
       bindLocations(program);
-  }, getLocations, shaderType);
+  }, [&](GLuint program)
+  {
+    d->frameMatrixLocation = glGetUniformLocation(program, "frameMatrix");
+
+    if(getLocations)
+      getLocations(program);
+
+  }, shaderType);
+}
+
+//##################################################################################################
+void FullScreenShader::setFrameMatrix(const glm::mat4& frameMatrix)
+{
+  glUniformMatrix4fv(d->frameMatrixLocation, 1, GL_FALSE, glm::value_ptr(frameMatrix));
 }
 
 //##################################################################################################
@@ -67,16 +82,16 @@ void FullScreenShader::draw()
   draw(d->object);
 }
 
-//################################################################################################
+//##################################################################################################
 void FullScreenShader::draw(const Object& object)
 {
 #ifdef TP_VERTEX_ARRAYS_SUPPORTED
   tpBindVertexArray(object.vaoID);
-  glDrawArrays(GL_TRIANGLE_FAN, 0, object.size);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, object.size);
   tpBindVertexArray(0);
 #else
   object.bindVBO();
-  glDrawArrays(GL_TRIANGLE_FAN, 0, object.size);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, object.size);
 #endif
 }
 
@@ -112,7 +127,9 @@ void FullScreenShader::makeRectangleObject(FullScreenShader::Object& object, con
   glm::vec2 z = (1.0f-size)/2.0f;
   glm::vec2 o = 1.0f - z;
 
-  std::vector<glm::vec2> verts{{z.x,z.y}, {o.x,z.y}, {o.x,o.y}, {z.x,o.y}};
+  std::swap(z.y, o.y);
+
+  std::vector<glm::vec2> verts{{z.x,z.y}, {z.x,o.y}, {o.x,z.y}, {o.x,o.y}};
   makeObject(object, verts);
 }
 
@@ -124,6 +141,9 @@ void FullScreenShader::makeFrameObject(FullScreenShader::Object& object, const g
 
   glm::vec2 oz = (1.0f-size)/2.0f;
   glm::vec2 oo = 1.0f - oz;
+
+  std::swap(iz.y, io.y);
+  std::swap(oz.y, oo.y);
 
   std::vector<glm::vec2> verts{{oz.x, oz.y},
                                {iz.x, iz.y},

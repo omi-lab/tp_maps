@@ -25,6 +25,9 @@ public:
                ShaderType shaderType = ShaderType::Render);
 
   //################################################################################################
+  void setFrameMatrix(const glm::mat4& frameMatrix);
+
+  //################################################################################################
   struct Object
   {
     GLsizei size{0};
