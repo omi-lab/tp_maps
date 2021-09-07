@@ -79,6 +79,7 @@ struct UniformLocations_lt
   GLint                   mvpMatrixLocation{0};
   GLint                     vMatrixLocation{0};
   GLint                  mInvMatrixLocation{0};
+  GLint                    uvMatrixLocation{0};
 
   GLint                cameraOriginLocation{0};
 
@@ -236,6 +237,7 @@ void MaterialShader::compile(const char* vertShaderStr,
       locations.mvpMatrixLocation         = glGetUniformLocation(program, "mvp");
       locations.vMatrixLocation           = glGetUniformLocation(program, "v");
       locations.mInvMatrixLocation        = glGetUniformLocation(program, "mInv");
+      locations.uvMatrixLocation          = glGetUniformLocation(program, "uvMatrix");
 
       locations.cameraOriginLocation      = glGetUniformLocation(program, "cameraOrigin_world");
 
@@ -470,6 +472,8 @@ void MaterialShader::setMaterial(const tp_math_utils::Material& material)
     glUniform1f (locations. materialUseReflectionLocation, material.useReflection );
 
     glUniform1f(locations.    materialAlbedoScaleLocation, material.albedoScale   );
+
+    glUniformMatrix3fv(locations.uvMatrixLocation, 1, GL_FALSE, glm::value_ptr(material.uvMatrix()));
   };
 
   if(d->shaderType == ShaderType::Render)

@@ -10,6 +10,7 @@ uniform mat4 m;
 uniform mat4 mv;
 uniform mat4 mvp;
 uniform mat4 v;
+uniform mat3 uvMatrix;
 
 /*TP_GLSL_OUT_V*/vec3 outNormal;
 
@@ -32,7 +33,8 @@ void main()
 
   fragPos_world = (m * vec4(inVertex, 1.0)).xyz;
 
-  uv_tangent = inTexture;
+  vec3 uv = uvMatrix * vec3(inTexture, 1.0f);
+  uv_tangent = uv.xy;// / uv.z;
 
 /*LIGHT_VERT_CALC*/
 
