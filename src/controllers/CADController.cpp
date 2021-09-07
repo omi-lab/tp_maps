@@ -73,9 +73,9 @@ struct CADController::Private
 
   double timestampMS{0.0};
 
-  float viewAngle    {90.0f}; //!< In degrees.
-  float rotationAngle{ 0.0f}; //!< In degrees.
-  float rollAngle    { 0.0f}; //!< In degrees.
+  float viewAngle    { 90.0f}; //!< In degrees.
+  float rotationAngle{  0.0f}; //!< In degrees.
+  float rollAngle    {180.0f}; //!< In degrees.
   glm::vec3 cameraOrigin{0, 0, 1.8f};
 
   float distance{10.0f};     //!< Distance for ortho projections.
@@ -625,11 +625,11 @@ bool CADController::mouseEvent(const MouseEvent& event)
         {
           changed = true;
           d->rotationAngle += dx*0.2f*d->mouseSpeedModifier;
-          if(d->rotationAngle<0)
-            d->rotationAngle+=360;
+          if(d->rotationAngle<0.0f)
+            d->rotationAngle+=360.0f;
 
-          if(d->rotationAngle>360)
-            d->rotationAngle-=360;
+          if(d->rotationAngle>360.0f)
+            d->rotationAngle-=360.0f;
         }
       }
       update();
