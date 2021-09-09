@@ -197,6 +197,9 @@ struct Map::Private
   //################################################################################################
   void deleteShaders()
   {
+    if(shaders.empty())
+      return;
+
     q->makeCurrent();
 
     for(const auto& i : shaders)
@@ -956,6 +959,70 @@ void Map::animate(double timestampMS)
     l->animate(timestampMS);
 }
 
+namespace
+{
+//##################################################################################################
+Map*& inPaintState()
+{
+  static Map* inPaint{nullptr};
+  return inPaint;
+}
+}
+
+//##################################################################################################
+Map* Map::inPaint() const
+{
+  return inPaintState();
+}
+
+//##################################################################################################
+void Map::setInPaint(bool inPaint)
+{
+  Map*& s=inPaintState();
+  if(inPaint)
+  {
+    assert(s!=this); // This has already set inPaint.
+    assert(!s);      // Something else has already set inPaint.
+    s=this;
+  }
+  else
+  {
+    assert(s==this); // This has NOT set inPaint.
+    s=nullptr;
+  }
+}
+
+//##################################################################################################
+void Map::invalidateBuffers()
+{
+  d->initialized = false;
+
+  for(auto& i : d->shaders)
+  {
+    i.second->invalidate();
+    delete i.second;
+  }
+  d->shaders.clear();
+
+  for(size_t i=0; i<3; i++)
+    d->invalidateBuffer(d->intermediateFBOs[i]);
+
+  d->invalidateBuffer(d->pickingBuffer);
+  d->invalidateBuffer(d->renderToImageBuffer);
+
+  for(auto& lightTexture : d->lightBuffers)
+    d->invalidateBuffer(lightTexture);
+  d->lightBuffers.clear();
+
+  for(auto i : d->layers)
+    i->invalidateBuffers();
+
+  for(auto i : d->fontRenderers)
+    i->invalidateBuffers();
+
+  invalidateBuffersCallbacks();
+}
+
 //##################################################################################################
 Controller* Map::controller()
 {
@@ -1358,6 +1425,8 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
     return nullptr;
 
   makeCurrent();
+  setInPaint(true);
+  TP_CLEANUP([&]{setInPaint(false);});
 
   GLint originalFrameBuffer = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
@@ -1593,7 +1662,10 @@ bool Map::renderToImage(size_t width, size_t height, tp_image_utils::ColorMapF& 
 void Map::deleteTexture(GLuint id)
 {
   if(id>0)
+  {
+    makeCurrent();
     glDeleteTextures(1, &id);
+  }
 }
 
 //##################################################################################################
@@ -1687,32 +1759,7 @@ void Map::initializeGL()
   d->updateSamplesRequired = true;
 
   //Invalidate old state before initializing new state
-  {
-    for(auto& i : d->shaders)
-    {
-      i.second->invalidate();
-      delete i.second;
-    }
-    d->shaders.clear();
-
-    for(size_t i=0; i<3; i++)
-      d->invalidateBuffer(d->intermediateFBOs[i]);
-
-    d->invalidateBuffer(d->pickingBuffer);
-    d->invalidateBuffer(d->renderToImageBuffer);
-
-    for(auto& lightTexture : d->lightBuffers)
-      d->invalidateBuffer(lightTexture);
-    d->lightBuffers.clear();
-
-    for(auto i : d->layers)
-      i->invalidateBuffers();
-
-    for(auto i : d->fontRenderers)
-      i->invalidateBuffers();
-
-    invalidateBuffersCallbacks();
-  }
+  invalidateBuffers();
 
   // Initialize GL
   // On some platforms the context isn't current, so fix that first
@@ -1740,6 +1787,8 @@ void Map::initializeGL()
 void Map::paintGL()
 {
   makeCurrent();
+  setInPaint(true);
+  TP_CLEANUP([&]{setInPaint(false);});
   paintGLNoMakeCurrent();
 }
 

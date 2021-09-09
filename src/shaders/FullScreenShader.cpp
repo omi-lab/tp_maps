@@ -21,21 +21,17 @@ struct FullScreenShader::Private
 
   GLint  frameMatrixLocation{0};
 
-  Object object;
+  std::unique_ptr<Object> object;
 
-  //################################################################################################
-  Private()
-  {
-    FullScreenShader::makeRectangleObject(object, {1.0f, 1.0f});
-  }
+  Private()=default;
 };
 
 //##################################################################################################
 FullScreenShader::FullScreenShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
   Shader(map, openGLProfile),
-  d(new Private())
-{
-
+  d(new Private)
+{  
+  d->object.reset(makeRectangleObject({1.0f, 1.0f}));
 }
 
 //##################################################################################################
@@ -79,7 +75,7 @@ void FullScreenShader::setFrameMatrix(const glm::mat4& frameMatrix)
 //##################################################################################################
 void FullScreenShader::draw()
 {
-  draw(d->object);
+  draw(*d->object);
 }
 
 //##################################################################################################
@@ -96,6 +92,27 @@ void FullScreenShader::draw(const Object& object)
 }
 
 //##################################################################################################
+FullScreenShader::Object::Object(const Shader* shader_):
+  shader(shader_)
+{
+
+}
+
+//##################################################################################################
+FullScreenShader::Object::~Object()
+{
+  if(!shader.shader())
+    return;
+
+  shader.shader()->map()->makeCurrent();
+
+  glDeleteBuffers(1, &vboID);
+#ifdef TP_VERTEX_ARRAYS_SUPPORTED
+    tpDeleteVertexArrays(1, &vaoID);
+#endif
+}
+
+//##################################################################################################
 void FullScreenShader::Object::bindVBO()
 {
   glBindBuffer(GL_ARRAY_BUFFER, vboID);
@@ -104,25 +121,28 @@ void FullScreenShader::Object::bindVBO()
 }
 
 //##################################################################################################
-void FullScreenShader::makeObject(Object& object, const std::vector<glm::vec2>& verts)
+FullScreenShader::Object* FullScreenShader::makeObject(const std::vector<glm::vec2>& verts)
 {
-  object.size = GLsizei(verts.size());
+  FullScreenShader::Object* object = new FullScreenShader::Object(this);
+  object->size = GLsizei(verts.size());
 
-  glGenBuffers(1, &object.vboID);
-  glBindBuffer(GL_ARRAY_BUFFER, object.vboID);
+  glGenBuffers(1, &object->vboID);
+  glBindBuffer(GL_ARRAY_BUFFER, object->vboID);
   glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(verts.size()*sizeof(glm::vec2)), verts.data(), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 #ifdef TP_VERTEX_ARRAYS_SUPPORTED
-  tpGenVertexArrays(1, &object.vaoID);
-  tpBindVertexArray(object.vaoID);
-  object.bindVBO();
+  tpGenVertexArrays(1, &object->vaoID);
+  tpBindVertexArray(object->vaoID);
+  object->bindVBO();
   tpBindVertexArray(0);
 #endif
+
+  return object;
 }
 
 //##################################################################################################
-void FullScreenShader::makeRectangleObject(FullScreenShader::Object& object, const glm::vec2& size)
+FullScreenShader::Object* FullScreenShader::makeRectangleObject(const glm::vec2& size)
 {
   glm::vec2 z = (1.0f-size)/2.0f;
   glm::vec2 o = 1.0f - z;
@@ -130,11 +150,11 @@ void FullScreenShader::makeRectangleObject(FullScreenShader::Object& object, con
   std::swap(z.y, o.y);
 
   std::vector<glm::vec2> verts{{z.x,z.y}, {z.x,o.y}, {o.x,z.y}, {o.x,o.y}};
-  makeObject(object, verts);
+  return makeObject(verts);
 }
 
 //##################################################################################################
-void FullScreenShader::makeFrameObject(FullScreenShader::Object& object, const glm::vec2& holeSize, const glm::vec2& size)
+FullScreenShader::Object* FullScreenShader::makeFrameObject(const glm::vec2& holeSize, const glm::vec2& size)
 {
   glm::vec2 iz = (1.0f-holeSize)/2.0f;
   glm::vec2 io = 1.0f - iz;
@@ -156,28 +176,7 @@ void FullScreenShader::makeFrameObject(FullScreenShader::Object& object, const g
                                {oz.x, oz.y},
                                {iz.x, iz.y}};
 
-  makeObject(object, verts);
+  return makeObject(verts);
 }
-
-//##################################################################################################
-void FullScreenShader::freeObject(FullScreenShader::Object& object)
-{
-  if(object.size>0)
-  {
-    glDeleteBuffers(1, &object.vboID);
-#ifdef TP_VERTEX_ARRAYS_SUPPORTED
-    tpDeleteVertexArrays(1, &object.vaoID);
-#endif
-  }
-
-  invalidateObject(object);
-}
-
-//##################################################################################################
-void FullScreenShader::invalidateObject(FullScreenShader::Object& object)
-{
-  object = FullScreenShader::Object();
-}
-
 
 }

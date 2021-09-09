@@ -185,6 +185,7 @@ void GeometryLayer::invalidateBuffers()
 {
   d->deleteVertexBuffers();
   d->updateVertexBuffer=true;
+  Layer::invalidateBuffers();
 }
 
 }

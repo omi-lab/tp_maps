@@ -6,6 +6,7 @@
 
 #include "tp_utils/TimeUtils.h"
 #include "tp_utils/DebugUtils.h"
+#include "tp_utils/StackTrace.h"
 
 namespace tp_maps
 {
@@ -129,31 +130,47 @@ struct Geometry3DPool::Private
   Map* m_map;
   Layer* m_layer;
 
-  TexturePool ownedTexturePool;
-  TexturePool* texturePool{nullptr};
+  std::unique_ptr<TexturePool> ownedTexturePool;
+  TexturePool* texturePool;
 
   std::unordered_map<tp_utils::StringID, PoolDetails_lt> pools;
 
   int keepHot{0};
 
   //################################################################################################
-  Private(Geometry3DPool* q_, Map* map_):
+  Private(Geometry3DPool* q_, Map* map_, TexturePool* texturePool_):
     q(q_),
     m_map(map_),
     m_layer(nullptr),
-    ownedTexturePool(m_map)
+    texturePool(texturePool_)
   {
+    if(!texturePool)
+    {
+      ownedTexturePool = std::make_unique<TexturePool>(m_map);
+      texturePool = ownedTexturePool.get();
+    }
+
     invalidateBuffersCallback.connect(m_map->invalidateBuffersCallbacks);
+    texturePoolChanged.connect(texturePool->changed);
+    texturePoolChanged();
   }
 
   //################################################################################################
-  Private(Geometry3DPool* q_, Layer* layer_):
+  Private(Geometry3DPool* q_, Layer* layer_, TexturePool* texturePool_):
     q(q_),
     m_map(nullptr),
     m_layer(layer_),
-    ownedTexturePool(m_layer)
+    texturePool(texturePool_)
   {
+    if(!texturePool)
+    {
+      ownedTexturePool = std::make_unique<TexturePool>(m_layer);
+      texturePool = ownedTexturePool.get();
+    }
+
     invalidateBuffersCallback.connect(m_layer->invalidateBuffersCallbacks);
+    texturePoolChanged.connect(texturePool->changed);
+    texturePoolChanged();
   }
 
   //################################################################################################
@@ -169,9 +186,39 @@ struct Geometry3DPool::Private
     return m_layer?m_layer->map():m_map;
   }
 
+  //################################################################################################  
+#ifdef TP_MAPS_DEBUG
+  void checkForDuplicateIDs()
+  {
+#ifdef TP_VERTEX_ARRAYS_SUPPORTED
+    std::unordered_set<GLuint> vaoIDs;
+    std::unordered_set<GLuint> iboIDs;
+#endif
+    std::unordered_set<GLuint> vboIDs;
+
+    for(auto& pool : pools)
+    {
+      for(const auto& processedGeometry : pool.second.processedGeometry)
+      {
+        for(const auto& mesh : processedGeometry.vertexBuffers)
+        {
+          assert(!tpContains(vaoIDs, mesh.second->vaoID)); vaoIDs.insert(mesh.second->vaoID);
+          assert(!tpContains(iboIDs, mesh.second->iboID)); iboIDs.insert(mesh.second->iboID);
+          assert(!tpContains(vboIDs, mesh.second->vboID)); vboIDs.insert(mesh.second->vboID);
+        }
+      }
+    }
+  }
+#  define CHECK_FOR_DUPLICATE_IDS() TP_CLEANUP([&]{checkForDuplicateIDs();})
+#else
+#  define CHECK_FOR_DUPLICATE_IDS() do{}while(false)
+#endif
+
   //################################################################################################
   tp_utils::Callback<void()> texturePoolChanged = [&]
   {
+    CHECK_FOR_DUPLICATE_IDS();
+
     TP_TIME_SCOPE("Geometry3DPool::Private::texturePoolChanged");
 
     for(auto& i : pools)
@@ -184,6 +231,7 @@ struct Geometry3DPool::Private
   tp_utils::Callback<void()> invalidateBuffersCallback = [&]
   {
     TP_TIME_SCOPE("Geometry3DPool::Private::invalidateBuffersCallback");
+    CHECK_FOR_DUPLICATE_IDS();
 
     for(auto& i : pools)
     {
@@ -198,6 +246,7 @@ struct Geometry3DPool::Private
   void unsubscribeTextures(std::unordered_set<TexturePoolKey>& textureSubscriptions)
   {
     TP_TIME_SCOPE("Geometry3DPool::Private::unsubscribeTextures");
+    CHECK_FOR_DUPLICATE_IDS();
 
     if(texturePool)
       for(const auto& key : textureSubscriptions)
@@ -207,16 +256,21 @@ struct Geometry3DPool::Private
   }
 };
 
+#ifdef TP_MAPS_DEBUG
+#  undef CHECK_FOR_DUPLICATE_IDS
+#  define CHECK_FOR_DUPLICATE_IDS() TP_CLEANUP([&]{d->checkForDuplicateIDs();})
+#endif
+
 //##################################################################################################
-Geometry3DPool::Geometry3DPool(Map* map):
-  d(new Private(this, map))
+Geometry3DPool::Geometry3DPool(Map* map, TexturePool* texturePool):
+  d(new Private(this, map, texturePool))
 {
-  setTexturePool(&d->ownedTexturePool);
+
 }
 
 //##################################################################################################
-Geometry3DPool::Geometry3DPool(Layer* layer):
-  d(new Private(this, layer))
+Geometry3DPool::Geometry3DPool(Layer* layer, TexturePool* texturePool):
+  d(new Private(this, layer, texturePool))
 {
 
 }
@@ -225,15 +279,6 @@ Geometry3DPool::Geometry3DPool(Layer* layer):
 Geometry3DPool::~Geometry3DPool()
 {
   delete d;
-}
-
-//##################################################################################################
-void Geometry3DPool::setTexturePool(TexturePool* texturePool)
-{
-  d->texturePool = texturePool;
-  d->texturePoolChanged.disconnect();
-  d->texturePoolChanged.connect(texturePool->changed);
-  d->texturePoolChanged();
 }
 
 //##################################################################################################
@@ -246,6 +291,7 @@ TexturePool* Geometry3DPool::texturePool() const
 void Geometry3DPool::incrementKeepHot(bool keepHot)
 {
   TP_TIME_SCOPE("Geometry3DPool::incrementKeepHot");
+  CHECK_FOR_DUPLICATE_IDS();
 
   d->texturePool->incrementKeepHot(keepHot);
 
@@ -273,6 +319,7 @@ void Geometry3DPool::subscribe(const tp_utils::StringID& name,
                                bool isOnlyMaterial)
 {
   TP_TIME_SCOPE("Geometry3DPool::subscribe");
+  CHECK_FOR_DUPLICATE_IDS();
 
   auto& details = d->pools[name];
   details.count++;
@@ -322,6 +369,7 @@ void Geometry3DPool::subscribe(const tp_utils::StringID& name,
 void Geometry3DPool::unsubscribe(const tp_utils::StringID& name)
 {
   TP_TIME_SCOPE("Geometry3DPool::unsubscribe");
+  CHECK_FOR_DUPLICATE_IDS();
 
   auto i = d->pools.find(name);
   i->second.count--;
@@ -336,6 +384,7 @@ void Geometry3DPool::unsubscribe(const tp_utils::StringID& name)
 //##################################################################################################
 void Geometry3DPool::invalidate(const tp_utils::StringID& name)
 {
+  CHECK_FOR_DUPLICATE_IDS();
   if(auto i = d->pools.find(name); i != d->pools.end())
     i->second.overwrite = true;
 }
@@ -347,6 +396,9 @@ void Geometry3DPool::viewProcessedGeometry(const tp_utils::StringID& name,
                                            const std::function<void(const std::vector<ProcessedGeometry3D>&)>& closure)
 {
   TP_TIME_SCOPE("Geometry3DPool::viewProcessedGeometry");
+  CHECK_FOR_DUPLICATE_IDS();
+
+  d->map()->makeCurrent();
 
   auto i = d->pools.find(name);
   if(i==d->pools.end())
@@ -379,6 +431,7 @@ void Geometry3DPool::viewProcessedGeometry(const tp_utils::StringID& name,
 void Geometry3DPool::viewGeometry(const tp_utils::StringID& name,
                                   const std::function<void(const std::vector<tp_math_utils::Geometry3D>&)>& closure) const
 {
+  CHECK_FOR_DUPLICATE_IDS();
   auto i = d->pools.find(name);
   if(i==d->pools.end())
     return;
@@ -391,6 +444,7 @@ void Geometry3DPool::viewGeometry(const tp_utils::StringID& name,
                                   const std::unordered_map<tp_utils::StringID, tp_utils::StringID>& alternativeMaterials,
                                   const std::function<void(const std::vector<tp_math_utils::Geometry3D>&, const std::vector<tp_math_utils::Material>&)>& closure) const
 {
+  CHECK_FOR_DUPLICATE_IDS();
   auto i = d->pools.find(name);
   if(i==d->pools.end())
     return;

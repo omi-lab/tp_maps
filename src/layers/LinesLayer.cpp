@@ -294,6 +294,7 @@ void LinesLayer::invalidateBuffers()
 {
   d->deleteVertexBuffers();
   d->updateVertexBuffer=true;
+  Layer::invalidateBuffers();
 }
 
 }

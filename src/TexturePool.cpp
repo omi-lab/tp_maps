@@ -80,8 +80,6 @@ struct TexturePool::Private
   {
     if(map())
     {
-      map()->makeCurrent();
-
       for(auto& i : images)
         map()->deleteTexture(i.second.textureID);
 
@@ -147,7 +145,6 @@ void TexturePool::incrementKeepHot(bool keepHot)
       {
         if(i->second.textureID && d->map())
         {
-          d->map()->makeCurrent();
           d->map()->deleteTexture(i->second.textureID);
         }
         delete i->second.texture;
@@ -163,7 +160,6 @@ void TexturePool::incrementKeepHot(bool keepHot)
       {
         if(i->second.textureID && d->map())
         {
-          d->map()->makeCurrent();
           d->map()->deleteTexture(i->second.textureID);
         }
         delete i->second.texture;
@@ -190,10 +186,7 @@ void TexturePool::subscribe(const tp_utils::StringID& name,
     details.overwrite = false;
 
     if(details.textureID && d->map())
-    {
-      d->map()->makeCurrent();
       d->map()->deleteTexture(details.textureID);
-    }
     delete details.texture;
 
     details.textureID = 0;
@@ -221,10 +214,7 @@ void TexturePool::subscribe(const tp_utils::StringID& name,
       {
         combinedDetails.composeImage = true;
         if(combinedDetails.textureID && d->map())
-        {
-          d->map()->makeCurrent();
           d->map()->deleteTexture(combinedDetails.textureID);
-        }
         delete combinedDetails.texture;
 
         combinedDetails.textureID = 0;
@@ -251,10 +241,7 @@ void TexturePool::unsubscribe(const tp_utils::StringID& name)
   if(!d->keepHot && !i->second.count)
   {
     if(i->second.textureID && d->map())
-    {
-      d->map()->makeCurrent();
       d->map()->deleteTexture(i->second.textureID);
-    }
     delete i->second.texture;
 
     d->images.erase(i);
@@ -306,10 +293,7 @@ void TexturePool::unsubscribe(const TexturePoolKey& key)
   if(!d->keepHot && !i->second.count)
   {
     if(i->second.textureID && d->map())
-    {
-      d->map()->makeCurrent();
       d->map()->deleteTexture(i->second.textureID);
-    }
     delete i->second.texture;
 
     d->combinedImages.erase(i);
@@ -326,6 +310,8 @@ void TexturePool::invalidate(const tp_utils::StringID& name)
 //##################################################################################################
 GLuint TexturePool::textureID(const tp_utils::StringID& name)
 {
+  d->map()->makeCurrent();
+
   auto i = d->images.find(name);
   if(i == d->images.end())
     return 0;
@@ -346,6 +332,8 @@ GLuint TexturePool::textureID(const tp_utils::StringID& name)
 //##################################################################################################
 GLuint TexturePool::textureID(const TexturePoolKey& key)
 {
+  d->map()->makeCurrent();
+
   auto i = d->combinedImages.find(key);
   if(i == d->combinedImages.end())
     return 0;

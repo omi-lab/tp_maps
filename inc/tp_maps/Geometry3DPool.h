@@ -32,16 +32,13 @@ class TP_MAPS_SHARED_EXPORT Geometry3DPool
   TP_NONCOPYABLE(Geometry3DPool);
 public:
   //################################################################################################
-  Geometry3DPool(Map* map);
+  Geometry3DPool(Map* map, TexturePool* texturePool=nullptr);
 
   //################################################################################################
-  Geometry3DPool(Layer* layer);
+  Geometry3DPool(Layer* layer, TexturePool* texturePool=nullptr);
 
   //################################################################################################
   ~Geometry3DPool();
-
-  //################################################################################################
-  void setTexturePool(TexturePool* texturePool);
 
   //################################################################################################
   TexturePool* texturePool() const;

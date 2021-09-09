@@ -21,8 +21,8 @@ struct PostLayer::Private
 
   bool bypass{false};
 
-  FullScreenShader::Object rectangleObject;
-  FullScreenShader::Object frameObject;
+  FullScreenShader::Object* rectangleObject{nullptr};
+  FullScreenShader::Object* frameObject{nullptr};
   tp_utils::StringID frameCoordinateSystem;
 
   bool rectangle{true};
@@ -42,12 +42,11 @@ struct PostLayer::Private
   //################################################################################################
   void freeObject()
   {
-    if(q->map())
-    {
-      q->map()->makeCurrent();
-      FullScreenShader::freeObject(rectangleObject);
-      FullScreenShader::freeObject(frameObject);
-    }
+    delete rectangleObject;
+    delete frameObject;
+
+    rectangleObject = nullptr;
+    frameObject = nullptr;
   }
 };
 
@@ -121,15 +120,16 @@ void PostLayer::render(RenderInfo& renderInfo)
   if(renderInfo.pass != defaultRenderPass())
     return;
 
-  if(d->rectangleObject.size<1)
-  {
-    FullScreenShader::makeRectangleObject(d->rectangleObject, d->size);
-    FullScreenShader::makeFrameObject(d->frameObject, d->holeSize, d->size);
-  }
 
   // Blit shader stuff
   {
     auto shader = map()->getShader<PostBlitShader>();
+
+    if(!d->rectangleObject)
+    {
+      d->rectangleObject = shader->makeRectangleObject(d->size);
+      d->frameObject = shader->makeFrameObject(d->holeSize, d->size);
+    }
 
     if(shader->error())
       return;
@@ -140,10 +140,10 @@ void PostLayer::render(RenderInfo& renderInfo)
     shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);
 
     if(d->blitRectangle)
-      shader->draw(d->rectangleObject);
+      shader->draw(*d->rectangleObject);
 
     if(d->blitFrame)
-      shader->draw(d->frameObject);
+      shader->draw(*d->frameObject);
   }
 
   // Post shader stuff
@@ -159,17 +159,21 @@ void PostLayer::render(RenderInfo& renderInfo)
     shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);
 
     if(d->rectangle)
-      shader->draw(d->rectangleObject);
+      shader->draw(*d->rectangleObject);
     else
-      shader->draw(d->frameObject);
+      shader->draw(*d->frameObject);
   }
 }
 
 //##################################################################################################
 void PostLayer::invalidateBuffers()
 {
-  FullScreenShader::invalidateObject(d->rectangleObject);
-  FullScreenShader::invalidateObject(d->frameObject);
+  delete d->rectangleObject;
+  delete d->frameObject;
+
+  d->rectangleObject = nullptr;
+  d->frameObject = nullptr;
+
   Layer::invalidateBuffers();
 }
 

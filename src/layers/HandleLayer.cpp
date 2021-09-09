@@ -283,6 +283,7 @@ void HandleLayer::invalidateBuffers()
   d->updateVertexBuffer=true;
   d->textureID = 0;
   d->bindBeforeRender = true;
+  Layer::invalidateBuffers();
 }
 
 //##################################################################################################

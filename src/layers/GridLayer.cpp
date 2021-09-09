@@ -192,6 +192,7 @@ void GridLayer::invalidateBuffers()
 {
   d->deleteVertexBuffers();
   d->updateVertexBuffer=true;
+  Layer::invalidateBuffers();
 }
 
 }

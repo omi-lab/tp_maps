@@ -21,7 +21,7 @@ class TP_MAPS_SHARED_EXPORT Geometry3DLayer: public Layer
   TP_REF_COUNT_OBJECTS("Geometry3DLayer");
 public:
   //################################################################################################
-  Geometry3DLayer();
+  Geometry3DLayer(Geometry3DPool* geometry3DPool=nullptr);
 
   //################################################################################################
   ~Geometry3DLayer() override;
@@ -33,16 +33,10 @@ public:
   const tp_utils::StringID& name() const;
 
   //################################################################################################
-  void setTexturePool(TexturePool* texturePool);
-
-  //################################################################################################
   TexturePool* texturePool() const;
 
   //################################################################################################
   void setTextures(const std::unordered_map<tp_utils::StringID, tp_image_utils::ColorMap>& textures);
-
-  //################################################################################################
-  void setGeometry3DPool(Geometry3DPool* geometry3DPool);
 
   //################################################################################################
   Geometry3DPool* geometry3DPool() const;

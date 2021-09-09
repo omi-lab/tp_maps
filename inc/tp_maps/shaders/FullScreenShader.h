@@ -30,6 +30,15 @@ public:
   //################################################################################################
   struct Object
   {
+    //##############################################################################################
+    Object(const Shader* shader_);
+
+    //##############################################################################################
+    ~Object();
+
+    //##############################################################################################
+    void bindVBO();
+
     GLsizei size{0};
     GLuint vboID{0};
 
@@ -37,7 +46,7 @@ public:
     GLuint vaoID{0};
   #endif
 
-    void bindVBO();
+    ShaderPointer shader;
   };
 
   //################################################################################################
@@ -47,19 +56,13 @@ public:
   void draw(const Object& object);
 
   //################################################################################################
-  static void makeObject(Object& object, const std::vector<glm::vec2>& verts);
+  Object* makeObject(const std::vector<glm::vec2>& verts);
 
   //################################################################################################
-  static void makeRectangleObject(Object& object, const glm::vec2& size);
+  Object* makeRectangleObject(const glm::vec2& size);
 
   //################################################################################################
-  static void makeFrameObject(Object& object, const glm::vec2& holeSize, const glm::vec2& size);
-
-  //################################################################################################
-  static void freeObject(Object& object);
-
-  //################################################################################################
-  static void invalidateObject(Object& object);
+  Object* makeFrameObject(const glm::vec2& holeSize, const glm::vec2& size);
 
 private:
   struct Private;

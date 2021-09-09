@@ -33,22 +33,25 @@ struct Geometry3DLayer::Private
 
   std::vector<tp_utils::StringID> subscribedTextures;
 
-  Geometry3DPool localGeometry3DPool;
-  Geometry3DPool* geometry3DPool{&localGeometry3DPool};
+  std::unique_ptr<Geometry3DPool> localGeometry3DPool;
 
-  TexturePool localTexturePool;
-  TexturePool* texturePool{&localTexturePool};
+  Geometry3DPool* geometry3DPool;
+
 
   ShaderSelection shaderSelection{ShaderSelection::Material};
   std::unordered_map<tp_utils::StringID, tp_utils::StringID> alternativeMaterials;
 
   //################################################################################################
-  Private(Geometry3DLayer* q_):
+  Private(Geometry3DLayer* q_, Geometry3DPool* geometry3DPool_):
     q(q_),
-    localGeometry3DPool(q),
-    localTexturePool(q)
+    geometry3DPool(geometry3DPool_)
   {
-    geometry3DPool->setTexturePool(texturePool);
+    if(!geometry3DPool)
+    {
+      localGeometry3DPool = std::make_unique<Geometry3DPool>(q);
+      geometry3DPool = localGeometry3DPool.get();
+    }
+
     geometry3DPoolChanged.connect(geometry3DPool->changed);
   }
 
@@ -56,7 +59,7 @@ struct Geometry3DLayer::Private
   ~Private()
   {
     for(const auto& name : subscribedTextures)
-      texturePool->unsubscribe(name);
+      geometry3DPool->texturePool()->unsubscribe(name);
   }
 
   //################################################################################################
@@ -79,8 +82,8 @@ struct Geometry3DLayer::Private
 };
 
 //##################################################################################################
-Geometry3DLayer::Geometry3DLayer():
-  d(new Private(this))
+Geometry3DLayer::Geometry3DLayer(Geometry3DPool* geometry3DPool):
+  d(new Private(this, geometry3DPool))
 {
 
 }
@@ -104,23 +107,23 @@ const tp_utils::StringID& Geometry3DLayer::name() const
   return d->name;
 }
 
-//##################################################################################################
-void Geometry3DLayer::setTexturePool(TexturePool* texturePool)
-{  
-  TP_TIME_SCOPE("Geometry3DLayer::setTexturePool");
-  for(const auto& name : d->subscribedTextures)
-    d->texturePool->unsubscribe(name);
-  d->subscribedTextures.clear();
+////##################################################################################################
+//void Geometry3DLayer::setTexturePool(TexturePool* texturePool)
+//{
+//  TP_TIME_SCOPE("Geometry3DLayer::setTexturePool");
+//  for(const auto& name : d->subscribedTextures)
+//    d->texturePool->unsubscribe(name);
+//  d->subscribedTextures.clear();
 
-  d->texturePool = texturePool;
-  d->localGeometry3DPool.setTexturePool(d->texturePool);
-  update();
-}
+//  d->texturePool = texturePool;
+//  d->localGeometry3DPool.setTexturePool(d->texturePool);
+//  update();
+//}
 
 //##################################################################################################
 TexturePool* Geometry3DLayer::texturePool() const
 {
-  return d->texturePool;
+  return d->geometry3DPool->texturePool();
 }
 
 //##################################################################################################
@@ -131,26 +134,26 @@ void Geometry3DLayer::setTextures(const std::unordered_map<tp_utils::StringID, t
   subscribedTextures.reserve(textures.size());
   for(const auto& i : textures)
   {
-    d->texturePool->subscribe(i.first, i.second);
+    d->geometry3DPool->texturePool()->subscribe(i.first, i.second);
     subscribedTextures.push_back(i.first);
   }
 
   d->subscribedTextures.swap(subscribedTextures);
   for(const auto& name : subscribedTextures)
-    d->texturePool->unsubscribe(name);
+    d->geometry3DPool->texturePool()->unsubscribe(name);
 }
 
-//##################################################################################################
-void Geometry3DLayer::setGeometry3DPool(Geometry3DPool* geometry3DPool)
-{
-  TP_TIME_SCOPE("Geometry3DLayer::setGeometry3DPool");
-  d->checkClearGeometry();
-  d->geometry3DPool = geometry3DPool;
-  setTexturePool(d->geometry3DPool->texturePool());
-  d->geometry3DPoolChanged.disconnect();
-  d->geometry3DPoolChanged.connect(d->geometry3DPool->changed);
-  d->geometry3DPoolChanged();
-}
+////##################################################################################################
+//void Geometry3DLayer::setGeometry3DPool(Geometry3DPool* geometry3DPool)
+//{
+//  TP_TIME_SCOPE("Geometry3DLayer::setGeometry3DPool");
+//  d->checkClearGeometry();
+//  d->geometry3DPool = geometry3DPool;
+//  setTexturePool(d->geometry3DPool->texturePool());
+//  d->geometry3DPoolChanged.disconnect();
+//  d->geometry3DPoolChanged.connect(d->geometry3DPool->changed);
+//  d->geometry3DPoolChanged();
+//}
 
 //##################################################################################################
 Geometry3DPool* Geometry3DLayer::geometry3DPool() const
@@ -295,9 +298,9 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
                           details.alternativeMaterial->rmaoTextureID);
       shader->setDiscardOpacity((renderInfo.pass == RenderPass::Transparency)?0.01f:0.80f);
     },
-    [&](auto shader, auto first, auto second) //-- draw --------------------------------------------
+    [&](auto shader, GLenum mode, Geometry3DShader::VertexBuffer* vertexBuffer) //-- draw ----------
     {
-      shader->draw(first, second);
+      shader->draw(mode, vertexBuffer);
     },
     renderInfo);
   }

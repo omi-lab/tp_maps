@@ -430,6 +430,17 @@ public:
   //! Update the state of the animation
   virtual void animate(double timestampMS);
 
+protected:
+  //################################################################################################
+  //! Used by make current to detect when we are in a paint event and to detect nested paint events.
+  Map* inPaint() const;
+
+  //################################################################################################
+  void setInPaint(bool inPaint);
+
+  //################################################################################################
+  void invalidateBuffers();
+
 private:
   //################################################################################################
   //! Called by the Layer when it is destroyed
