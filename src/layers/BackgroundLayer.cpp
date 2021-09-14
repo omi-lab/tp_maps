@@ -83,6 +83,7 @@ void BackgroundLayer::render(RenderInfo& renderInfo)
   shader->use(ShaderType::RenderExtendedFBO);
   shader->setTexture(d->texturePool->textureID(d->textureName));
   shader->setMatrix(matricies.v, matricies.p);
+  shader->setFrameMatrix(glm::mat4(1.0f));
   shader->setRotationFactor(d->rotationFactor);
   shader->draw();
 }
