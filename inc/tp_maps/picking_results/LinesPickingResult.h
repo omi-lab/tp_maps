@@ -17,10 +17,9 @@ public:
   LinesPickingResult(const tp_utils::StringID& pickingType_,
                       const PickingDetails& details_,
                       const RenderInfo& renderInfo_,
-                      LinesLayer* linesLayer_,
+                      Layer* layer_,
                       size_t index_);
 
-  LinesLayer* linesLayer;
   size_t index;
 };
 

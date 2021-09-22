@@ -199,7 +199,7 @@ TP_DECLARE_ID(             backgroundShaderSID,                "Background shade
 int staticInit();
 
 //##################################################################################################
-enum class RenderPass
+enum class RenderPass : size_t
 {
   LightFBOs,         //!< Render depth maps from the point of view of lights to FBOs.
   PrepareDrawFBO,    //!< Prepare the initial draw FBO ready for drawing to (read FBO is not ready).

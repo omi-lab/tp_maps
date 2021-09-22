@@ -1,5 +1,6 @@
 #include "tp_maps/layers/FrustumLayer.h"
 #include "tp_maps/shaders/LineShader.h"
+#include "tp_maps/picking_results/LinesPickingResult.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/RenderInfo.h"
 #include "tp_maps/Controller.h"
@@ -159,7 +160,7 @@ void FrustumLayer::setRaysColor(const glm::vec4& raysColor)
 //##################################################################################################
 void FrustumLayer::render(RenderInfo& renderInfo)
 {
-  if(renderInfo.pass != RenderPass::Normal)
+  if(renderInfo.pass != RenderPass::Normal && renderInfo.pass != RenderPass::Picking)
     return;
 
   auto shader = map()->getShader<LineShader>();
@@ -243,10 +244,28 @@ void FrustumLayer::render(RenderInfo& renderInfo)
   shader->setMatrix(map()->controller()->matrix(coordinateSystem()));
   shader->setLineWidth(1.0f);
 
-  for(const LinesDetails_lt& line : d->processedGeometry)
+  if(renderInfo.pass==RenderPass::Picking)
   {
-    shader->setColor(line.color);
-    shader->drawLines(GL_LINES, line.vertexBuffer);
+    size_t i=0;
+    for(const LinesDetails_lt& line : d->processedGeometry)
+    {
+      auto pickingID = renderInfo.pickingIDMat(PickingDetails(0, [&, i](const PickingResult& r) -> PickingResult*
+      {
+        return new LinesPickingResult(r.pickingType, r.details, r.renderInfo, this, i);
+      }));
+
+      shader->setColor(pickingID);
+      shader->drawLines(GL_LINES, line.vertexBuffer);
+      i++;
+    }
+  }
+  else
+  {
+    for(const LinesDetails_lt& line : d->processedGeometry)
+    {
+      shader->setColor(line.color);
+      shader->drawLines(GL_LINES, line.vertexBuffer);
+    }
   }
 }
 

@@ -3,10 +3,12 @@
 #include "tp_maps/layers/LinesLayer.h"
 #include "tp_maps/layers/FrustumLayer.h"
 #include "tp_maps/layers/GizmoLayer.h"
+#include "tp_maps/shaders/FontShader.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/Controller.h"
 #include "tp_maps/RenderInfo.h"
-#include "tp_maps/shaders/FontShader.h"
+#include "tp_maps/PickingResult.h"
+#include "tp_maps/picking_results/LinesPickingResult.h"
 
 #include "tp_math_utils/Sphere.h"
 
@@ -38,16 +40,24 @@ struct LightsLayer::Private
 
   bool editLights;
 
+  size_t lightIndex{0};
+
   LinesLayer* bulbs{nullptr};
   FrustumLayer* frustums{nullptr};
 
   std::vector<GizmoLayer*> gizmoLayers;
 
-  bool updateModels{true};
-
   FontRenderer* font{nullptr};
-  bool regenerateText{true};
   std::vector<LabelDetails_lt> labels;
+
+  size_t clickIndex{0};
+  bool clickActive{false};
+  bool mouseMoved{false};
+
+  bool updateModels{true};
+  bool updateFrustums{true};
+  bool regenerateText{true};
+  bool updateVisibility{true};
 };
 
 //##################################################################################################
@@ -84,11 +94,26 @@ FontRenderer* LightsLayer::font() const
 }
 
 //##################################################################################################
+void LightsLayer::setLightIndex(size_t lightIndex)
+{
+  d->lightIndex = lightIndex;
+  d->updateVisibility = true;
+  update();
+}
+
+//##################################################################################################
+size_t LightsLayer::lightIndex() const
+{
+  return d->lightIndex;
+}
+
+//##################################################################################################
 void LightsLayer::render(RenderInfo& renderInfo)
 {
-  if(d->updateModels/* && renderInfo.pass == defaultRenderPass()*/)
+  if(d->updateModels)
   {
     d->updateModels = false;
+    d->updateVisibility = true;
 
     {
       auto bulb = tp_math_utils::Sphere::octahedralClass1(0.1f, 3, GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES);
@@ -102,14 +127,6 @@ void LightsLayer::render(RenderInfo& renderInfo)
         g.transform(m);
       }
       d->bulbs->setLinesFromGeometry(geometry);
-    }
-
-    {
-      std::vector<glm::mat4> lights;
-      lights.reserve(map()->lightBuffers().size());
-      for(const auto& light : map()->lightBuffers())
-        lights.push_back(light.worldToTexture.empty()?glm::mat4(1.0f):light.worldToTexture.front().vp);
-      d->frustums->setCameraMatrices(lights);
     }
 
     if(d->editLights)
@@ -150,6 +167,25 @@ void LightsLayer::render(RenderInfo& renderInfo)
     }
   }
 
+  if(d->updateFrustums && size_t(renderInfo.pass) > size_t(RenderPass::LightFBOs))
+  {
+    d->updateFrustums = false;
+
+    {
+      std::vector<glm::mat4> lights;
+      lights.reserve(map()->lightBuffers().size());
+      for(const auto& light : map()->lightBuffers())
+        lights.push_back(light.worldToTexture.empty()?glm::mat4(1.0f):light.worldToTexture.front().vp);
+      d->frustums->setCameraMatrices(lights);
+    }
+  }
+
+  if(d->updateVisibility)
+  {
+    for(size_t i=0; i<d->gizmoLayers.size(); i++)
+      d->gizmoLayers.at(i)->setVisible(d->lightIndex == i);
+  }
+
   //Draw the text.
   if(renderInfo.pass == RenderPass::Text && font())
   {
@@ -174,7 +210,6 @@ void LightsLayer::render(RenderInfo& renderInfo)
         label.preparedString.reset(new tp_maps::FontShader::PreparedString(shader, font(), tpFromUTF8(light.name.keyString()), config));
         label.position = light.position();
       }
-
     }
 
     float width  = float(map()->width());
@@ -188,8 +223,13 @@ void LightsLayer::render(RenderInfo& renderInfo)
 
     shader->use();
     shader->setColor({0.0f, 0.0f, 0.0f, 1.0f});
-    for(const auto& label : d->labels)
+    for(size_t i=0; i<d->labels.size(); i++)
     {
+      // if(d->lightIndex != i)
+      //   continue;
+
+      const auto& label = d->labels.at(i);
+
       auto p = tpProj(m, label.position);
       if(std::fabs(p.z)>1.0f)
         continue;
@@ -204,12 +244,87 @@ void LightsLayer::render(RenderInfo& renderInfo)
 
   Layer::render(renderInfo);
 }
+//##################################################################################################
+bool LightsLayer::mouseEvent(const tp_maps::MouseEvent& event)
+{
+  if(tp_maps::Layer::mouseEvent(event))
+    return true;
+
+  switch(event.type)
+  {
+  case tp_maps::MouseEventType::Press: //-----------------------------------------------------------
+  {
+    if(event.button != tp_maps::Button::LeftButton)
+      return false;
+
+    tp_maps::PickingResult* pickingResult = map()->performPicking("LightsLayer", event.pos);
+    TP_CLEANUP([&]{delete pickingResult;});
+    if(!pickingResult)
+    {
+      d->clickActive = false;
+      return false;
+    }
+
+    if(pickingResult->layer == d->bulbs || pickingResult->layer == d->frustums)
+    {
+      if(auto linesPickingResult = dynamic_cast<LinesPickingResult*>(pickingResult); linesPickingResult)
+      {
+        d->clickIndex = linesPickingResult->index;
+        d->mouseMoved = false;
+        d->clickActive = true;
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  case tp_maps::MouseEventType::Move: //------------------------------------------------------------
+  {
+    if(event.button != tp_maps::Button::LeftButton)
+      return false;
+
+    if(d->clickActive)
+    {
+      d->mouseMoved = true;
+      return true;
+    }
+    return false;
+  }
+
+  case tp_maps::MouseEventType::Release: //---------------------------------------------------------
+  {
+    if(event.button != tp_maps::Button::LeftButton)
+      return false;
+
+    if(d->clickActive)
+    {
+      if(!d->mouseMoved)
+      {
+        setLightIndex(d->clickIndex);
+        lightIndexChanged();
+      }
+
+      d->clickActive = false;
+      return true;
+    }
+
+    return false;
+  }
+
+  default: //---------------------------------------------------------------------------------------
+    break;
+  }
+
+  return false;
+}
 
 //##################################################################################################
 void LightsLayer::lightsChanged(LightingModelChanged lightingModelChanged)
 {
   TP_UNUSED(lightingModelChanged);
   d->updateModels = true;
+  d->updateFrustums = true;
   d->regenerateText = true;
 }
 

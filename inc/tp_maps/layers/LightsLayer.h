@@ -22,9 +22,6 @@ public:
   ~LightsLayer() override;
 
   //################################################################################################
-  tp_utils::CallbackCollection<void()> lightsEdited;
-
-  //################################################################################################
   //! Set the font that will be used to render text
   /*!
   \note This does not take ownership.
@@ -35,10 +32,24 @@ public:
   //################################################################################################
   FontRenderer* font() const;
 
+  //################################################################################################
+  void setLightIndex(size_t lightIndex);
+
+  //################################################################################################
+  size_t lightIndex() const;
+
+  tp_utils::CallbackCollection<void()> lightIndexChanged;
+
+  //################################################################################################
+  tp_utils::CallbackCollection<void()> lightsEdited;
+
 protected:
 
   //################################################################################################
   void render(RenderInfo& renderInfo) override;
+
+  //################################################################################################
+  bool mouseEvent(const tp_maps::MouseEvent& event) override;
 
   //################################################################################################
   void lightsChanged(LightingModelChanged lightingModelChanged) override;
