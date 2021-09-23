@@ -201,6 +201,7 @@ int staticInit();
 //##################################################################################################
 enum class RenderPass : size_t
 {
+  PreRender,         //!< Executed at the start of a render to update models.
   LightFBOs,         //!< Render depth maps from the point of view of lights to FBOs.
   PrepareDrawFBO,    //!< Prepare the initial draw FBO ready for drawing to (read FBO is not ready).
   SwapDrawFBO,       //!< Swap the draw and read FBO (read FBO now contains previous draw FBO).

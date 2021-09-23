@@ -214,8 +214,19 @@ struct Map::Private
     controller->updateMatrices();
 
     for(auto l : layers)
+    {
       if(l->visible())
-        l->render(renderInfo);
+      {
+        try
+        {
+          l->render(renderInfo);
+        }
+        catch (...)
+        {
+          tpWarning() << "Exception caught in Map::Private::render!";
+        }
+      }
+    }
   }
 
   //################################################################################################
@@ -1075,6 +1086,12 @@ void Map::setCustomRenderPass(RenderPass renderPass,
 //##################################################################################################
 void Map::setLights(const std::vector<tp_math_utils::Light>& lights)
 {
+  if(inPaint() && d->renderInfo.pass != RenderPass::PreRender)
+  {
+    tpWarning() << "Error lights set while in render. This is only valid in the PreRender pass!";
+    tp_utils::printStackTrace();
+  }
+
   LightingModelChanged lightingModelChanged=LightingModelChanged::No;
 
   if(d->lights.size() != lights.size())
@@ -1808,6 +1825,9 @@ void Map::paintGLNoMakeCurrent()
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
 #endif
 
+  d->renderInfo.pass = RenderPass::PreRender;
+  d->render();
+
 #if 0
   //Make the background flicker to show when the map is updateing
   glClearColor(1.0f, 1.0f, float(std::rand()%255)/255.0f, 1.0f);
@@ -1818,227 +1838,238 @@ void Map::paintGLNoMakeCurrent()
 
   for(auto renderPass : d->renderPasses)
   {
-    d->renderInfo.pass = renderPass;
-    switch(renderPass)
+    try
     {
-    case RenderPass::LightFBOs: //------------------------------------------------------------------
-    {
-      DEBUG_printOpenGLError("RenderPass::LightFBOs start");
+      d->renderInfo.pass = renderPass;
+      switch(renderPass)
+      {
+      case RenderPass::PreRender: //----------------------------------------------------------------
+        break;
+
+      case RenderPass::LightFBOs: //----------------------------------------------------------------
+      {
+        DEBUG_printOpenGLError("RenderPass::LightFBOs start");
 #ifdef TP_FBO_SUPPORTED      
-      d->renderInfo.hdr = HDR::No;
-      d->renderInfo.extendedFBO = ExtendedFBO::No;
+        d->renderInfo.hdr = HDR::No;
+        d->renderInfo.extendedFBO = ExtendedFBO::No;
 
-      while(d->lightBuffers.size() < d->lights.size())
-        d->lightBuffers.emplace_back();
+        while(d->lightBuffers.size() < d->lights.size())
+          d->lightBuffers.emplace_back();
 
-      while(d->lightBuffers.size() > d->lights.size())
-      {
-        auto buffer = tpTakeLast(d->lightBuffers);
-        d->deleteBuffer(buffer);
-      }
-      DEBUG_printOpenGLError("RenderPass::LightFBOs delete buffers");
+        while(d->lightBuffers.size() > d->lights.size())
+        {
+          auto buffer = tpTakeLast(d->lightBuffers);
+          d->deleteBuffer(buffer);
+        }
+        DEBUG_printOpenGLError("RenderPass::LightFBOs delete buffers");
 
-      glEnable(GL_DEPTH_TEST);
-      glDepthFunc(GL_LESS);
-      glDepthMask(true);
-      DEBUG_printOpenGLError("RenderPass::LightFBOs enable depth");
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glDepthMask(true);
+        DEBUG_printOpenGLError("RenderPass::LightFBOs enable depth");
 
-      for(size_t i=0; i<d->lightBuffers.size(); i++)
-      {
-        const auto& light = d->lights.at(i);
-        auto& lightBuffer = d->lightBuffers.at(i);
+        for(size_t i=0; i<d->lightBuffers.size(); i++)
+        {
+          const auto& light = d->lights.at(i);
+          auto& lightBuffer = d->lightBuffers.at(i);
 
-        size_t levels=1;
+          size_t levels=1;
 
 #ifdef TP_ENABLE_3D_TEXTURE
-        if(light.type == tp_math_utils::LightType::Spot)
-          levels=d->spotLightLevels;
+          if(light.type == tp_math_utils::LightType::Spot)
+            levels=d->spotLightLevels;
 #endif
 
-        lightBuffer.worldToTexture.resize(levels);
-        for(size_t l=0; l<levels; l++)
-        {
-          if(!d->prepareBuffer(lightBuffer, d->lightTextureSize, d->lightTextureSize, CreateColorBuffer::No, Multisample::No, HDR::No, ExtendedFBO::No, levels, l, true))
-            return;
+          lightBuffer.worldToTexture.resize(levels);
+          for(size_t l=0; l<levels; l++)
+          {
+            if(!d->prepareBuffer(lightBuffer, d->lightTextureSize, d->lightTextureSize, CreateColorBuffer::No, Multisample::No, HDR::No, ExtendedFBO::No, levels, l, true))
+              return;
 
-          d->controller->setCurrentLight(light, l);
-          lightBuffer.worldToTexture[l] = d->controller->lightMatrices();
-          d->render();
+            d->controller->setCurrentLight(light, l);
+            lightBuffer.worldToTexture[l] = d->controller->lightMatrices();
+            d->render();
+          }
         }
-      }
-      DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers");
+        DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers");
 
-      glViewport(0, 0, TPGLsizei(d->width), TPGLsizei(d->height));
-      glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
-      DEBUG_printOpenGLError("RenderPass::LightFBOs bind default buffer");
+        glViewport(0, 0, TPGLsizei(d->width), TPGLsizei(d->height));
+        glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
+        DEBUG_printOpenGLError("RenderPass::LightFBOs bind default buffer");
 #endif
-      break;
-    }
+        break;
+      }
 
-    case RenderPass::PrepareDrawFBO: //-------------------------------------------------------------
-    {
-      DEBUG_printOpenGLError("RenderPass::PrepareDrawFBO start");
-#ifdef TP_FBO_SUPPORTED
-      d->renderInfo.hdr = hdr();
-      d->renderInfo.extendedFBO = extendedFBO();
-      glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
-      d->currentDrawFBO = &d->intermediateFBOs[0];
-      d->currentReadFBO = &d->intermediateFBOs[0];
-
-      if(!d->prepareBuffer(*d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, Multisample::Yes, hdr(), extendedFBO(), 1, 0, true))
+      case RenderPass::PrepareDrawFBO: //-----------------------------------------------------------
       {
-        printOpenGLError("RenderPass::PrepareDrawFBO");
-        return;
-      }
-#endif
-      DEBUG_printOpenGLError("RenderPass::PrepareDrawFBO end");
-      break;
-    }
-
-    case RenderPass::SwapDrawFBO: //----------------------------------------------------------------
-    {
-      DEBUG_printOpenGLError("RenderPass::SwapDrawFBO start");
+        DEBUG_printOpenGLError("RenderPass::PrepareDrawFBO start");
 #ifdef TP_FBO_SUPPORTED
-      d->renderInfo.hdr = hdr();
-      d->renderInfo.extendedFBO = extendedFBO();
-      d->swapMultisampledBuffer(*d->currentDrawFBO);
-      d->currentReadFBO = d->currentDrawFBO;
-      d->currentDrawFBO = (d->currentReadFBO!=&d->intermediateFBOs[1])?&d->intermediateFBOs[1]:&d->intermediateFBOs[2];
+        d->renderInfo.hdr = hdr();
+        d->renderInfo.extendedFBO = extendedFBO();
+        glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
+        d->currentDrawFBO = &d->intermediateFBOs[0];
+        d->currentReadFBO = &d->intermediateFBOs[0];
 
-      if(!d->prepareBuffer(*d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, Multisample::No, hdr(), extendedFBO(), 1, 0, true))
+        if(!d->prepareBuffer(*d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, Multisample::Yes, hdr(), extendedFBO(), 1, 0, true))
+        {
+          printOpenGLError("RenderPass::PrepareDrawFBO");
+          return;
+        }
+#endif
+        DEBUG_printOpenGLError("RenderPass::PrepareDrawFBO end");
+        break;
+      }
+
+      case RenderPass::SwapDrawFBO: //--------------------------------------------------------------
       {
-        printOpenGLError("RenderPass::SwapDrawFBO");
-        return;
-      }
-#endif
-      DEBUG_printOpenGLError("RenderPass::SwapDrawFBO end");
-      break;
-    }
-
-    case RenderPass::SwapDrawFBONoClear: //---------------------------------------------------------
-    {
-      DEBUG_printOpenGLError("RenderPass::SwapDrawFBONoClear start");
+        DEBUG_printOpenGLError("RenderPass::SwapDrawFBO start");
 #ifdef TP_FBO_SUPPORTED
-      d->renderInfo.hdr = hdr();
-      d->renderInfo.extendedFBO = extendedFBO();
-      d->swapMultisampledBuffer(*d->currentDrawFBO);
-      std::swap(d->currentReadFBO, d->currentDrawFBO);
+        d->renderInfo.hdr = hdr();
+        d->renderInfo.extendedFBO = extendedFBO();
+        d->swapMultisampledBuffer(*d->currentDrawFBO);
+        d->currentReadFBO = d->currentDrawFBO;
+        d->currentDrawFBO = (d->currentReadFBO!=&d->intermediateFBOs[1])?&d->intermediateFBOs[1]:&d->intermediateFBOs[2];
 
-      if(!d->prepareBuffer(*d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, d->currentDrawFBO->multisample, hdr(), extendedFBO(), 1, 0, false))
+        if(!d->prepareBuffer(*d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, Multisample::No, hdr(), extendedFBO(), 1, 0, true))
+        {
+          printOpenGLError("RenderPass::SwapDrawFBO");
+          return;
+        }
+#endif
+        DEBUG_printOpenGLError("RenderPass::SwapDrawFBO end");
+        break;
+      }
+
+      case RenderPass::SwapDrawFBONoClear: //-------------------------------------------------------
       {
-        printOpenGLError("RenderPass::SwapDrawFBONoClear");
-        return;
-      }
-#endif
-      DEBUG_printOpenGLError("RenderPass::SwapDrawFBONoClear end");
-      break;
-    }
-
-    case RenderPass::Background: //-----------------------------------------------------------------
-    {
-      DEBUG_printOpenGLError("RenderPass::Background start");
-      glDisable(GL_DEPTH_TEST);
-      glDepthMask(false);
-      d->render();
-      DEBUG_printOpenGLError("RenderPass::Background end");
-      break;
-    }
-
-    case RenderPass::Normal: //---------------------------------------------------------------------
-    {
-      DEBUG_printOpenGLError("RenderPass::Normal start");
-      glEnable(GL_DEPTH_TEST);
-      glDepthFunc(GL_LESS);
-      glDepthMask(true);
-      d->render();
-      DEBUG_printOpenGLError("RenderPass::Normal end");
-      break;
-    }
-
-    case RenderPass::Transparency: //---------------------------------------------------------------
-    {
-      DEBUG_printOpenGLError("RenderPass::Transparency start");
-      glEnable(GL_DEPTH_TEST);
-      glDepthFunc(GL_LESS);
-      glDepthMask(false);
-      d->render();
-      DEBUG_printOpenGLError("RenderPass::Transparency end");
-      break;
-    }
-
-    case RenderPass::FinishDrawFBO: //--------------------------------------------------------------
-    {
-      DEBUG_printOpenGLError("RenderPass::FinishDrawFBO start");
+        DEBUG_printOpenGLError("RenderPass::SwapDrawFBONoClear start");
 #ifdef TP_FBO_SUPPORTED
-      d->renderInfo.hdr = HDR::No;
-      d->renderInfo.extendedFBO = ExtendedFBO::No;
-      d->swapMultisampledBuffer(*d->currentDrawFBO);
-      std::swap(d->currentDrawFBO, d->currentReadFBO);
-      glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
+        d->renderInfo.hdr = hdr();
+        d->renderInfo.extendedFBO = extendedFBO();
+        d->swapMultisampledBuffer(*d->currentDrawFBO);
+        std::swap(d->currentReadFBO, d->currentDrawFBO);
+
+        if(!d->prepareBuffer(*d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, d->currentDrawFBO->multisample, hdr(), extendedFBO(), 1, 0, false))
+        {
+          printOpenGLError("RenderPass::SwapDrawFBONoClear");
+          return;
+        }
 #endif
-      DEBUG_printOpenGLError("RenderPass::FinishDrawFBO end");
-      break;
-    }
+        DEBUG_printOpenGLError("RenderPass::SwapDrawFBONoClear end");
+        break;
+      }
 
-    case RenderPass::Text: //-----------------------------------------------------------------------
+      case RenderPass::Background: //---------------------------------------------------------------
+      {
+        DEBUG_printOpenGLError("RenderPass::Background start");
+        glDisable(GL_DEPTH_TEST);
+        glDepthMask(false);
+        d->render();
+        DEBUG_printOpenGLError("RenderPass::Background end");
+        break;
+      }
+
+      case RenderPass::Normal: //-------------------------------------------------------------------
+      {
+        DEBUG_printOpenGLError("RenderPass::Normal start");
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glDepthMask(true);
+        d->render();
+        DEBUG_printOpenGLError("RenderPass::Normal end");
+        break;
+      }
+
+      case RenderPass::Transparency: //-------------------------------------------------------------
+      {
+        DEBUG_printOpenGLError("RenderPass::Transparency start");
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glDepthMask(false);
+        d->render();
+        DEBUG_printOpenGLError("RenderPass::Transparency end");
+        break;
+      }
+
+      case RenderPass::FinishDrawFBO: //------------------------------------------------------------
+      {
+        DEBUG_printOpenGLError("RenderPass::FinishDrawFBO start");
+#ifdef TP_FBO_SUPPORTED
+        d->renderInfo.hdr = HDR::No;
+        d->renderInfo.extendedFBO = ExtendedFBO::No;
+        d->swapMultisampledBuffer(*d->currentDrawFBO);
+        std::swap(d->currentDrawFBO, d->currentReadFBO);
+        glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
+#endif
+        DEBUG_printOpenGLError("RenderPass::FinishDrawFBO end");
+        break;
+      }
+
+      case RenderPass::Text: //---------------------------------------------------------------------
+      {
+        DEBUG_printOpenGLError("RenderPass::Text start");
+        glDisable(GL_DEPTH_TEST);
+        glDepthMask(false);
+        d->render();
+        DEBUG_printOpenGLError("RenderPass::Text end");
+        break;
+      }
+
+      case RenderPass::GUI: //----------------------------------------------------------------------
+      {
+        DEBUG_printOpenGLError("RenderPass::GUI start");
+        glEnable(GL_SCISSOR_TEST);
+        glDisable(GL_DEPTH_TEST);
+        auto s = pixelScale();
+        glScissor(0, 0, GLsizei(float(width())*s), GLsizei(float(height())*s));
+        glDepthMask(false);
+        d->render();
+        glDisable(GL_SCISSOR_TEST);
+        DEBUG_printOpenGLError("RenderPass::GUI end");
+        break;
+      }
+
+      case RenderPass::Picking: //------------------------------------------------------------------
+      {
+        tpWarning() << "Error: Performing a picking render pass in paintGL does not make sense.";
+        break;
+      }
+
+      case RenderPass::Custom1: //------------------------------------------------------------------
+      case RenderPass::Custom2: //------------------------------------------------------------------
+      case RenderPass::Custom3: //------------------------------------------------------------------
+      case RenderPass::Custom4: //------------------------------------------------------------------
+      case RenderPass::Custom5: //------------------------------------------------------------------
+      case RenderPass::Custom6: //------------------------------------------------------------------
+      case RenderPass::Custom7: //------------------------------------------------------------------
+      case RenderPass::Custom8: //------------------------------------------------------------------
+      {
+        int c = int(renderPass) - int(RenderPass::Custom1);
+        auto& callbacks = d->customCallbacks[c];
+
+        DEBUG_printOpenGLError("RenderPass::Custom"+std::to_string(c+1)+" start");
+        if(callbacks.start)
+          callbacks.start(d->renderInfo);
+
+        d->render();
+
+        if(callbacks.end)
+          callbacks.end(d->renderInfo);
+
+        DEBUG_printOpenGLError("RenderPass::Custom"+std::to_string(c+1)+" end");
+        break;
+      }
+
+      case RenderPass::CustomEnd: //----------------------------------------------------------------
+      {
+        break;
+      }
+      }
+    }
+    catch (...)
     {
-      DEBUG_printOpenGLError("RenderPass::Text start");
-      glDisable(GL_DEPTH_TEST);
-      glDepthMask(false);
-      d->render();
-      DEBUG_printOpenGLError("RenderPass::Text end");
-      break;
-    }
-
-    case RenderPass::GUI: //------------------------------------------------------------------------
-    {
-      DEBUG_printOpenGLError("RenderPass::GUI start");
-      glEnable(GL_SCISSOR_TEST);
-      glDisable(GL_DEPTH_TEST);
-      auto s = pixelScale();
-      glScissor(0, 0, GLsizei(float(width())*s), GLsizei(float(height())*s));
-      glDepthMask(false);
-      d->render();
-      glDisable(GL_SCISSOR_TEST);
-      DEBUG_printOpenGLError("RenderPass::GUI end");
-      break;
-    }
-
-    case RenderPass::Picking: //--------------------------------------------------------------------
-    {
-      tpWarning() << "Error: Performing a picking render pass in paintGL does not make sense.";
-      break;
-    }
-
-    case RenderPass::Custom1: //--------------------------------------------------------------------
-    case RenderPass::Custom2: //--------------------------------------------------------------------
-    case RenderPass::Custom3: //--------------------------------------------------------------------
-    case RenderPass::Custom4: //--------------------------------------------------------------------
-    case RenderPass::Custom5: //--------------------------------------------------------------------
-    case RenderPass::Custom6: //--------------------------------------------------------------------
-    case RenderPass::Custom7: //--------------------------------------------------------------------
-    case RenderPass::Custom8: //--------------------------------------------------------------------
-    {
-      int c = int(renderPass) - int(RenderPass::Custom1);
-      auto& callbacks = d->customCallbacks[c];
-
-      DEBUG_printOpenGLError("RenderPass::Custom"+std::to_string(c+1)+" start");
-      if(callbacks.start)
-        callbacks.start(d->renderInfo);
-
-      d->render();
-
-      if(callbacks.end)
-        callbacks.end(d->renderInfo);
-
-      DEBUG_printOpenGLError("RenderPass::Custom"+std::to_string(c+1)+" end");
-      break;
-    }
-
-    case RenderPass::CustomEnd: //------------------------------------------------------------------
-    {
-      break;
-    }
+      tpWarning() << "Exception caught in  Map::paintGLNoMakeCurrent pass!";
+      tpWarning() << "Pass: " << size_t(renderPass);
     }
   }
 
