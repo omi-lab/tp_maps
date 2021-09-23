@@ -1090,6 +1090,7 @@ void Map::setLights(const std::vector<tp_math_utils::Light>& lights)
   {
     tpWarning() << "Error lights set while in render. This is only valid in the PreRender pass!";
     tp_utils::printStackTrace();
+    return;
   }
 
   LightingModelChanged lightingModelChanged=LightingModelChanged::No;
