@@ -1532,9 +1532,11 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
 
   auto originalWidth  = d->width;
   auto originalHeight = d->height;
-  d->width = width;
-  d->height = height;
   resizeGL(int(width), int(height));
+
+  makeCurrent();
+  setInPaint(true);
+  TP_CLEANUP([&]{setInPaint(false);});
 
   GLint originalFrameBuffer = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
@@ -1607,6 +1609,10 @@ bool Map::renderToImage(size_t width, size_t height, tp_image_utils::ColorMapF& 
   auto originalWidth  = d->width;
   auto originalHeight = d->height;
   resizeGL(int(width), int(height));
+
+  makeCurrent();
+  setInPaint(true);
+  TP_CLEANUP([&]{setInPaint(false);});
 
   GLint originalFrameBuffer = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
@@ -1878,6 +1884,7 @@ void Map::paintGLNoMakeCurrent()
       glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
       d->currentDrawFBO = &d->intermediateFBOs[0];
       d->currentReadFBO = &d->intermediateFBOs[0];
+
       if(!d->prepareBuffer(*d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, Multisample::Yes, hdr(), extendedFBO(), 1, 0, true))
       {
         printOpenGLError("RenderPass::PrepareDrawFBO");
