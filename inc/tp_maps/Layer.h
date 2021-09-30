@@ -24,19 +24,6 @@ struct TextEditingEvent;
 struct TextInputEvent;
 
 //##################################################################################################
-//! A directory of picking callbacks, and a description of how different layers handle picking callbacks.
-/*!
-\defgroup PickingCallbacks Picking Callbacks
-
-It is possible to add picking callbacks to layers. Each different type of layer handles its
-callbacks differently. For example the image layer passed a pointer to the layer as the opaque,
-whereas picking callbacks that are passed to the WebLayer should expect a pointer to the
-WebLayerItem in the opaque.
-
-This page attempts to document all the different schemes together.
-*/
-
-//##################################################################################################
 //! The base class for layers in the map.
 /*!
 Layers are the main way of interacting with the map. They can be used to draw in it, and receive
