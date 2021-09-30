@@ -206,6 +206,28 @@ enum class RenderPass : size_t
   PrepareDrawFBO,    //!< Prepare the initial draw FBO ready for drawing to (read FBO is not ready).
   SwapDrawFBO,       //!< Swap the draw and read FBO (read FBO now contains previous draw FBO).
   SwapDrawFBONoClear,//!< Same as above but does not clear the draw depth or color buffers.
+
+  SwapToFBO0,        //!< Swap the draw and read FBO (draw=FBO0, read=previous draw FBO). Multisample.
+  SwapToFBO1,        //!< Swap the draw and read FBO (draw=FBO1, read=previous draw FBO).
+  SwapToFBO2,        //!< Swap the draw and read FBO (draw=FBO2, read=previous draw FBO).
+  SwapToFBO3,        //!< Swap the draw and read FBO (draw=FBO3, read=previous draw FBO).
+  SwapToFBO4,        //!< Swap the draw and read FBO (draw=FBO4, read=previous draw FBO).
+  SwapToFBO5,        //!< Swap the draw and read FBO (draw=FBO5, read=previous draw FBO).
+
+  SwapToFBO0NoClear, //!< Same as above but does not clear the draw depth or color buffers. Multisample.
+  SwapToFBO1NoClear, //!< Same as above but does not clear the draw depth or color buffers.
+  SwapToFBO2NoClear, //!< Same as above but does not clear the draw depth or color buffers.
+  SwapToFBO3NoClear, //!< Same as above but does not clear the draw depth or color buffers.
+  SwapToFBO4NoClear, //!< Same as above but does not clear the draw depth or color buffers.
+  SwapToFBO5NoClear, //!< Same as above but does not clear the draw depth or color buffers.
+
+  BlitFromFBO0,      //!< Blit from FBO0 into the current draw buffer. Multisample.
+  BlitFromFBO1,      //!< Blit from FBO1 into the current draw buffer.
+  BlitFromFBO2,      //!< Blit from FBO2 into the current draw buffer.
+  BlitFromFBO3,      //!< Blit from FBO3 into the current draw buffer.
+  BlitFromFBO4,      //!< Blit from FBO4 into the current draw buffer.
+  BlitFromFBO5,      //!< Blit from FBO5 into the current draw buffer.
+
   Background,        //!< Render background without writing to the depth buffer.
   Normal,            //!< Render normal 3D geometry.
   Transparency,      //!< Render transparent 3D geometry.
@@ -221,7 +243,20 @@ enum class RenderPass : size_t
   Custom6,           //!< See map->setCustomRenderPass() for further details.
   Custom7,           //!< See map->setCustomRenderPass() for further details.
   Custom8,           //!< See map->setCustomRenderPass() for further details.
-  CustomEnd          //!< Don't use this.
+  CustomEnd,         //!< Don't use this.
+  Stage0,
+  Stage1,
+  Stage2,
+  Stage4
+};
+
+//##################################################################################################
+enum class RenderStage : size_t
+{
+  Stage0, //!< Start from the first RenderPass::Stage0 pass and don't execute earlier passes.
+  Stage1, //!< Start from the first RenderPass::Stage1 pass and don't execute earlier passes.
+  Stage2, //!< Start from the first RenderPass::Stage2 pass and don't execute earlier passes.
+  Stage4  //!< Start from the first RenderPass::Stage4 pass and don't execute earlier passes.
 };
 
 //##################################################################################################

@@ -135,7 +135,7 @@ struct Map::Private
   // We don't want to multisample multiple times it just makes the result blury. So what we do here
   // is have 3 buffers, the first has the 3D geometry drawn to it and is multisampled after this the
   // render pipeline toggles between the second and third for the remaining post processing steps.
-  FBO intermediateFBOs[3];
+  FBO intermediateFBOs[6];
 
   FBO* currentReadFBO{&intermediateFBOs[0]};
   FBO* currentDrawFBO{&intermediateFBOs[0]};
@@ -789,7 +789,7 @@ struct Map::Private
     buffer.textureID   = 0;
     buffer.depthID     = 0;
     buffer.normalsID   = 0;
-    buffer.specularID   = 0;
+    buffer.specularID  = 0;
 
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
     buffer.multisampleFrameBuffer = 0;
@@ -833,7 +833,7 @@ void Map::preDelete()
   while(!d->fontRenderers.empty())
     delete tpTakeFirst(d->fontRenderers);
 
-  for(size_t i=0; i<3; i++)
+  for(size_t i=0; i<6; i++)
     d->deleteBuffer(d->intermediateFBOs[i]);
 
   d->deleteBuffer(d->pickingBuffer);
@@ -1015,7 +1015,7 @@ void Map::invalidateBuffers()
   }
   d->shaders.clear();
 
-  for(size_t i=0; i<3; i++)
+  for(size_t i=0; i<6; i++)
     d->invalidateBuffer(d->intermediateFBOs[i]);
 
   d->invalidateBuffer(d->pickingBuffer);
