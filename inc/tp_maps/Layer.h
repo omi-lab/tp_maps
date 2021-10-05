@@ -232,7 +232,7 @@ protected:
 
   //################################################################################################
   //! Calls update on the map
-  void update();
+  void update(RenderFromStage renderFromStage=RenderFromStage::Stage0);
 
   //################################################################################################
   virtual void addedToMap();

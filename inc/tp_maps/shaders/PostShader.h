@@ -12,10 +12,25 @@ class TP_MAPS_SHARED_EXPORT PostShader: public FullScreenShader
 {
 public:
   //################################################################################################
-  PostShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const char* vertexShader, const char* fragmentShader);
+  PostShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+
+  //################################################################################################
+  PostShader(Map* map,
+             tp_maps::OpenGLProfile openGLProfile,
+             const char* vertexShader,
+             const char* fragmentShader,
+             const std::function<void(GLuint)>& bindLocations=std::function<void(GLuint)>(),
+             const std::function<void(GLuint)>& getLocations=std::function<void(GLuint)>());
 
   //################################################################################################
   ~PostShader();
+
+  //################################################################################################
+  void compile(const char* vertexShader,
+               const char* fragmentShader,
+               const std::function<void(GLuint)>& bindLocations,
+               const std::function<void(GLuint)>& getLocations,
+               ShaderType shaderType = ShaderType::RenderExtendedFBO);
 
   //################################################################################################
   void setReadFBO(const FBO& readFBO);

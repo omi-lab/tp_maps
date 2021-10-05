@@ -12,11 +12,6 @@ uniform vec2 pixelSize;
 
 /*TP_GLSL_GLFRAGCOLOR_DEF*/
 
-bool hit(int x, int y)
-{
-  return (/*TP_GLSL_TEXTURE_2D*/(depthSampler, coord_tex).x<1.0f);
-}
-
 void main()
 {
   if(/*TP_GLSL_TEXTURE_2D*/(depthSampler, coord_tex).x<1.0f)

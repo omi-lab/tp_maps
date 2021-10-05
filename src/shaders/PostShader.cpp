@@ -26,15 +26,15 @@ struct PostShader::Private
   GLint pixelSizeLocation{0};
 
   //################################################################################################
-  std::function<void(GLuint)> bindLocations()
+  std::function<void(GLuint)> bindLocations(const std::function<void(GLuint)>& bindLocations)
   {
-    return std::function<void(GLuint)>();
+    return bindLocations;
   }
 
   //################################################################################################
-  std::function<void(GLuint)> getLocations()
+  std::function<void(GLuint)> getLocations(const std::function<void(GLuint)>& getLocations)
   {
-    return [&](GLuint program)
+    return [=](GLuint program)
     {
       textureLocation  = glGetUniformLocation(program, "textureSampler");
       depthLocation    = glGetUniformLocation(program, "depthSampler");
@@ -45,22 +45,49 @@ struct PostShader::Private
       invProjectionMatrixLocation = glGetUniformLocation(program, "invProjectionMatrix");
 
       pixelSizeLocation = glGetUniformLocation(program, "pixelSize");
+
+      if(getLocations)
+        getLocations(program);
     };
   }
 };
 
 //##################################################################################################
-PostShader::PostShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const char* vertexShader, const char* fragmentShader):
+PostShader::PostShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
   FullScreenShader(map, openGLProfile),
   d(new Private())
 {
-  compile(vertexShader, fragmentShader, d->bindLocations(), d->getLocations(), ShaderType::RenderExtendedFBO);
+
+}
+
+//##################################################################################################
+PostShader::PostShader(Map* map,
+                       tp_maps::OpenGLProfile openGLProfile,
+                       const char* vertexShader,
+                       const char* fragmentShader,
+                       const std::function<void(GLuint)>& bindLocations,
+                       const std::function<void(GLuint)>& getLocations):
+  FullScreenShader(map, openGLProfile),
+  d(new Private())
+{
+  FullScreenShader::compile(vertexShader, fragmentShader, d->bindLocations(bindLocations), d->getLocations(getLocations), ShaderType::RenderExtendedFBO);
 }
 
 //##################################################################################################
 PostShader::~PostShader()
 {
   delete d;
+}
+
+//################################################################################################
+void PostShader::compile(const char* vertexShader,
+                         const char* fragmentShader,
+                         const std::function<void(GLuint)>& bindLocations,
+                         const std::function<void(GLuint)>& getLocations,
+                         ShaderType shaderType)
+
+{
+  FullScreenShader::compile(vertexShader, fragmentShader, d->bindLocations(bindLocations), d->getLocations(getLocations), shaderType);
 }
 
 //##################################################################################################

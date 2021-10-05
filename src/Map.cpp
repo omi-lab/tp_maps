@@ -119,6 +119,8 @@ struct Map::Private
     RenderPass::GUI
   };
 
+  RenderFromStage renderFromStage{RenderFromStage::Stage0};
+
   // Callback that get called to prepare and cleanup custom render passes.
   CustomPassCallbacks_lt customCallbacks[int(RenderPass::CustomEnd) - int(RenderPass::Custom1)];
 
@@ -1743,6 +1745,13 @@ glm::vec2 Map::screenSize() const
 }
 
 //##################################################################################################
+void Map::update(RenderFromStage renderFromStage)
+{
+  if(renderFromStage<d->renderFromStage)
+    d->renderFromStage = renderFromStage;
+}
+
+//##################################################################################################
 float Map::pixelScale()
 {
   return 1.0f;
@@ -1837,8 +1846,107 @@ void Map::paintGLNoMakeCurrent()
   glClearDepthf(1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  for(auto renderPass : d->renderPasses)
+  size_t rp=0;
+
+  // Skip the passes that don't need a full render.
+  if(d->renderFromStage != RenderFromStage::Stage0 && d->renderFromStage != RenderFromStage::Reset)
   {
+    for(; rp<d->renderPasses.size(); rp++)
+    {
+      auto renderPass = d->renderPasses.at(rp);
+
+      size_t stageIndex = size_t(renderPass)-size_t(RenderPass::Stage0);
+      if(stageIndex == size_t(d->renderFromStage))
+      {
+        rp++;
+        break;
+      }
+
+#ifdef TP_FBO_SUPPORTED
+      switch(renderPass)
+      {
+      case RenderPass::PreRender: //----------------------------------------------------------------
+      case RenderPass::LightFBOs: //----------------------------------------------------------------
+        break;
+
+      case RenderPass::PrepareDrawFBO: //-----------------------------------------------------------
+      {
+        d->currentDrawFBO = &d->intermediateFBOs[0];
+        d->currentReadFBO = &d->intermediateFBOs[0];
+        break;
+      }
+
+      case RenderPass::SwapToFBO0: //---------------------------------------------------------------
+      case RenderPass::SwapToFBO1: //---------------------------------------------------------------
+      case RenderPass::SwapToFBO2: //---------------------------------------------------------------
+      case RenderPass::SwapToFBO3: //---------------------------------------------------------------
+      case RenderPass::SwapToFBO4: //---------------------------------------------------------------
+      case RenderPass::SwapToFBO5: //---------------------------------------------------------------
+      {
+        size_t fboIndex = size_t(renderPass) - size_t(RenderPass::SwapToFBO0);
+        d->currentReadFBO = d->currentDrawFBO;
+        d->currentDrawFBO = &d->intermediateFBOs[fboIndex];
+        break;
+      }
+
+      case RenderPass::SwapToFBO0NoClear: //--------------------------------------------------------
+      case RenderPass::SwapToFBO1NoClear: //--------------------------------------------------------
+      case RenderPass::SwapToFBO2NoClear: //--------------------------------------------------------
+      case RenderPass::SwapToFBO3NoClear: //--------------------------------------------------------
+      case RenderPass::SwapToFBO4NoClear: //--------------------------------------------------------
+      case RenderPass::SwapToFBO5NoClear: //--------------------------------------------------------
+      {
+        size_t fboIndex = size_t(renderPass) - size_t(RenderPass::SwapToFBO0NoClear);
+        d->currentReadFBO = d->currentDrawFBO;
+        d->currentDrawFBO = &d->intermediateFBOs[fboIndex];
+        break;
+      }
+
+      case RenderPass::BlitFromFBO0: //-------------------------------------------------------------
+      case RenderPass::BlitFromFBO1: //-------------------------------------------------------------
+      case RenderPass::BlitFromFBO2: //-------------------------------------------------------------
+      case RenderPass::BlitFromFBO3: //-------------------------------------------------------------
+      case RenderPass::BlitFromFBO4: //-------------------------------------------------------------
+      case RenderPass::BlitFromFBO5: //-------------------------------------------------------------
+      case RenderPass::Background: //---------------------------------------------------------------
+      case RenderPass::Normal: //-------------------------------------------------------------------
+      case RenderPass::Transparency: //-------------------------------------------------------------
+        break;
+
+      case RenderPass::FinishDrawFBO: //------------------------------------------------------------
+      {
+        std::swap(d->currentDrawFBO, d->currentReadFBO);
+        break;
+      }
+
+      case RenderPass::Text: //---------------------------------------------------------------------
+      case RenderPass::GUI: //----------------------------------------------------------------------
+      case RenderPass::Picking: //------------------------------------------------------------------
+      case RenderPass::Custom1: //------------------------------------------------------------------
+      case RenderPass::Custom2: //------------------------------------------------------------------
+      case RenderPass::Custom3: //------------------------------------------------------------------
+      case RenderPass::Custom4: //------------------------------------------------------------------
+      case RenderPass::Custom5: //------------------------------------------------------------------
+      case RenderPass::Custom6: //------------------------------------------------------------------
+      case RenderPass::Custom7: //------------------------------------------------------------------
+      case RenderPass::Custom8: //------------------------------------------------------------------
+      case RenderPass::CustomEnd: //----------------------------------------------------------------
+      case RenderPass::Stage0: //-------------------------------------------------------------------
+      case RenderPass::Stage1: //-------------------------------------------------------------------
+      case RenderPass::Stage2: //-------------------------------------------------------------------
+      case RenderPass::Stage4: //-------------------------------------------------------------------
+        break;
+      }
+#endif
+    }
+  }
+
+  d->renderFromStage = RenderFromStage::Reset;
+
+  for(; rp<d->renderPasses.size(); rp++)
+  {
+    auto renderPass = d->renderPasses.at(rp);
+
     try
     {
       d->renderInfo.pass = renderPass;
@@ -1921,42 +2029,101 @@ void Map::paintGLNoMakeCurrent()
         break;
       }
 
-      case RenderPass::SwapDrawFBO: //--------------------------------------------------------------
+      case RenderPass::SwapToFBO0: //---------------------------------------------------------------
+      case RenderPass::SwapToFBO1: //---------------------------------------------------------------
+      case RenderPass::SwapToFBO2: //---------------------------------------------------------------
+      case RenderPass::SwapToFBO3: //---------------------------------------------------------------
+      case RenderPass::SwapToFBO4: //---------------------------------------------------------------
+      case RenderPass::SwapToFBO5: //---------------------------------------------------------------
       {
-        DEBUG_printOpenGLError("RenderPass::SwapDrawFBO start");
+        DEBUG_printOpenGLError("RenderPass::SwapToFBOn start");
 #ifdef TP_FBO_SUPPORTED
+        size_t fboIndex = size_t(renderPass) - size_t(RenderPass::SwapToFBO0);
+        Multisample multisample = fboIndex==0?Multisample::Yes:Multisample::No;
+
         d->renderInfo.hdr = hdr();
         d->renderInfo.extendedFBO = extendedFBO();
         d->swapMultisampledBuffer(*d->currentDrawFBO);
         d->currentReadFBO = d->currentDrawFBO;
-        d->currentDrawFBO = (d->currentReadFBO!=&d->intermediateFBOs[1])?&d->intermediateFBOs[1]:&d->intermediateFBOs[2];
+        d->currentDrawFBO = &d->intermediateFBOs[fboIndex];
 
-        if(!d->prepareBuffer(*d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, Multisample::No, hdr(), extendedFBO(), 1, 0, true))
+        if(!d->prepareBuffer(*d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, multisample, hdr(), extendedFBO(), 1, 0, true))
         {
           printOpenGLError("RenderPass::SwapDrawFBO");
           return;
         }
 #endif
-        DEBUG_printOpenGLError("RenderPass::SwapDrawFBO end");
+        DEBUG_printOpenGLError("RenderPass::SwapToFBOn end");
         break;
       }
 
-      case RenderPass::SwapDrawFBONoClear: //-------------------------------------------------------
+      case RenderPass::SwapToFBO0NoClear: //--------------------------------------------------------
+      case RenderPass::SwapToFBO1NoClear: //--------------------------------------------------------
+      case RenderPass::SwapToFBO2NoClear: //--------------------------------------------------------
+      case RenderPass::SwapToFBO3NoClear: //--------------------------------------------------------
+      case RenderPass::SwapToFBO4NoClear: //--------------------------------------------------------
+      case RenderPass::SwapToFBO5NoClear: //--------------------------------------------------------
       {
-        DEBUG_printOpenGLError("RenderPass::SwapDrawFBONoClear start");
+        DEBUG_printOpenGLError("RenderPass::SwapToFBOnNoClear start");
 #ifdef TP_FBO_SUPPORTED
+        size_t fboIndex = size_t(renderPass) - size_t(RenderPass::SwapToFBO0NoClear);
+        Multisample multisample = fboIndex==0?Multisample::Yes:Multisample::No;
+
         d->renderInfo.hdr = hdr();
         d->renderInfo.extendedFBO = extendedFBO();
         d->swapMultisampledBuffer(*d->currentDrawFBO);
-        std::swap(d->currentReadFBO, d->currentDrawFBO);
+        d->currentReadFBO = d->currentDrawFBO;
+        d->currentDrawFBO = &d->intermediateFBOs[fboIndex];
 
-        if(!d->prepareBuffer(*d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, d->currentDrawFBO->multisample, hdr(), extendedFBO(), 1, 0, false))
+        if(!d->prepareBuffer(*d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, multisample, hdr(), extendedFBO(), 1, 0, false))
         {
           printOpenGLError("RenderPass::SwapDrawFBONoClear");
           return;
         }
 #endif
-        DEBUG_printOpenGLError("RenderPass::SwapDrawFBONoClear end");
+        DEBUG_printOpenGLError("RenderPass::SwapToFBOnNoClear end");
+        break;
+      }
+
+      case RenderPass::BlitFromFBO0: //-------------------------------------------------------------
+      case RenderPass::BlitFromFBO1: //-------------------------------------------------------------
+      case RenderPass::BlitFromFBO2: //-------------------------------------------------------------
+      case RenderPass::BlitFromFBO3: //-------------------------------------------------------------
+      case RenderPass::BlitFromFBO4: //-------------------------------------------------------------
+      case RenderPass::BlitFromFBO5: //-------------------------------------------------------------
+      {
+        DEBUG_printOpenGLError("RenderPass::BlitFromFBOn start");
+#ifdef TP_FBO_SUPPORTED
+        size_t fboIndex = size_t(renderPass) - size_t(RenderPass::BlitFromFBO0);
+        FBO* readFBO = &d->intermediateFBOs[fboIndex];
+
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, readFBO->frameBuffer);
+
+        glReadBuffer(GL_COLOR_ATTACHMENT0);
+        DEBUG_printOpenGLError("RenderPass::BlitFromFBOn a");
+        d->setDrawBuffers({GL_COLOR_ATTACHMENT0});
+        DEBUG_printOpenGLError("RenderPass::BlitFromFBOn b");
+        glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+        DEBUG_printOpenGLError("RenderPass::BlitFromFBOn blit color 0 and depth");
+
+        if(readFBO->extendedFBO == ExtendedFBO::Yes)
+        {
+          glReadBuffer(GL_COLOR_ATTACHMENT1);
+          d->setDrawBuffers({GL_COLOR_ATTACHMENT1});
+          glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+          DEBUG_printOpenGLError("RenderPass::BlitFromFBOn blit color 1");
+
+          glReadBuffer(GL_COLOR_ATTACHMENT2);
+          d->setDrawBuffers({GL_COLOR_ATTACHMENT2});
+          glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+          DEBUG_printOpenGLError("RenderPass::BlitFromFBOn blit color 2");
+
+          d->setDrawBuffers({GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2});
+        }
+        else
+          d->setDrawBuffers({GL_COLOR_ATTACHMENT0});
+#endif
+        DEBUG_printOpenGLError("RenderPass::BlitFromFBOn end");
         break;
       }
 
@@ -2062,6 +2229,14 @@ void Map::paintGLNoMakeCurrent()
       }
 
       case RenderPass::CustomEnd: //----------------------------------------------------------------
+      {
+        break;
+      }
+
+      case RenderPass::Stage0: //-------------------------------------------------------------------
+      case RenderPass::Stage1: //-------------------------------------------------------------------
+      case RenderPass::Stage2: //-------------------------------------------------------------------
+      case RenderPass::Stage4: //-------------------------------------------------------------------
       {
         break;
       }

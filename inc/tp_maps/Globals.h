@@ -204,8 +204,8 @@ enum class RenderPass : size_t
   PreRender,         //!< Executed at the start of a render to update models.
   LightFBOs,         //!< Render depth maps from the point of view of lights to FBOs.
   PrepareDrawFBO,    //!< Prepare the initial draw FBO ready for drawing to (read FBO is not ready).
-  SwapDrawFBO,       //!< Swap the draw and read FBO (read FBO now contains previous draw FBO).
-  SwapDrawFBONoClear,//!< Same as above but does not clear the draw depth or color buffers.
+  //SwapDrawFBO,       //!< Swap the draw and read FBO (read FBO now contains previous draw FBO).
+  //SwapDrawFBONoClear,//!< Same as above but does not clear the draw depth or color buffers.
 
   SwapToFBO0,        //!< Swap the draw and read FBO (draw=FBO0, read=previous draw FBO). Multisample.
   SwapToFBO1,        //!< Swap the draw and read FBO (draw=FBO1, read=previous draw FBO).
@@ -251,12 +251,13 @@ enum class RenderPass : size_t
 };
 
 //##################################################################################################
-enum class RenderStage : size_t
+enum class RenderFromStage : size_t
 {
   Stage0, //!< Start from the first RenderPass::Stage0 pass and don't execute earlier passes.
   Stage1, //!< Start from the first RenderPass::Stage1 pass and don't execute earlier passes.
   Stage2, //!< Start from the first RenderPass::Stage2 pass and don't execute earlier passes.
-  Stage4  //!< Start from the first RenderPass::Stage4 pass and don't execute earlier passes.
+  Stage4, //!< Start from the first RenderPass::Stage4 pass and don't execute earlier passes.
+  Reset   //!< The render stage will be set to this after a render, ready for the next call to update.
 };
 
 //##################################################################################################

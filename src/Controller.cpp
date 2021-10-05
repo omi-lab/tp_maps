@@ -145,12 +145,12 @@ Controller::~Controller()
 }
 
 //##################################################################################################
-void Controller::update()
+void Controller::update(RenderFromStage renderFromStage)
 {
   if(d->map)
   {
     d->map->controllerUpdate();
-    d->map->update();
+    d->map->update(renderFromStage);
   }
 }
 

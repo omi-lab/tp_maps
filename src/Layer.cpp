@@ -265,10 +265,10 @@ void Layer::lightsChanged(LightingModelChanged lightingModelChanged)
 }
 
 //##################################################################################################
-void Layer::update()
+void Layer::update(RenderFromStage renderFromStage)
 {
   if(d->map)
-    d->map->update();
+    d->map->update(renderFromStage);
 }
 
 //##################################################################################################

@@ -377,7 +377,7 @@ public:
 
   //################################################################################################
   //! Called to queue a refresh
-  virtual void update() = 0;
+  virtual void update(RenderFromStage renderFromStage=RenderFromStage::Stage0);
 
   //################################################################################################
   virtual float pixelScale();
