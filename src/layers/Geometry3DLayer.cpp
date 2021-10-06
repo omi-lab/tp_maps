@@ -107,19 +107,6 @@ const tp_utils::StringID& Geometry3DLayer::name() const
   return d->name;
 }
 
-////##################################################################################################
-//void Geometry3DLayer::setTexturePool(TexturePool* texturePool)
-//{
-//  TP_TIME_SCOPE("Geometry3DLayer::setTexturePool");
-//  for(const auto& name : d->subscribedTextures)
-//    d->texturePool->unsubscribe(name);
-//  d->subscribedTextures.clear();
-
-//  d->texturePool = texturePool;
-//  d->localGeometry3DPool.setTexturePool(d->texturePool);
-//  update();
-//}
-
 //##################################################################################################
 TexturePool* Geometry3DLayer::texturePool() const
 {
@@ -142,18 +129,6 @@ void Geometry3DLayer::setTextures(const std::unordered_map<tp_utils::StringID, t
   for(const auto& name : subscribedTextures)
     d->geometry3DPool->texturePool()->unsubscribe(name);
 }
-
-////##################################################################################################
-//void Geometry3DLayer::setGeometry3DPool(Geometry3DPool* geometry3DPool)
-//{
-//  TP_TIME_SCOPE("Geometry3DLayer::setGeometry3DPool");
-//  d->checkClearGeometry();
-//  d->geometry3DPool = geometry3DPool;
-//  setTexturePool(d->geometry3DPool->texturePool());
-//  d->geometry3DPoolChanged.disconnect();
-//  d->geometry3DPoolChanged.connect(d->geometry3DPool->changed);
-//  d->geometry3DPoolChanged();
-//}
 
 //##################################################################################################
 Geometry3DPool* Geometry3DLayer::geometry3DPool() const

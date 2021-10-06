@@ -81,7 +81,7 @@ void Controller::setCurrentLight(const tp_math_utils::Light& light, size_t level
   }
   }
 
-  glm::mat4 offset = glm::translate(glm::mat4(1.0f), tp_math_utils::Light::lightLevelOffsets()[level] * d->currentLight.offsetScale);
+  glm::mat4 offset = glm::translate(glm::mat4(1.0f), glm::vec3(tp_math_utils::Light::lightLevelOffsets()[level], 0.0f) * d->currentLight.offsetScale);
 
   Matrices vp;
   vp.p  = projection;

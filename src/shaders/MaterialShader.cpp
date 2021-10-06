@@ -4,6 +4,7 @@
 #include "tp_math_utils/Globals.h"
 
 #include "tp_utils/DebugUtils.h"
+#include "tp_utils/TimeUtils.h"
 
 #include "glm/gtc/type_ptr.hpp"
 
@@ -66,7 +67,8 @@ struct LightLocations_lt
   GLint        quadraticLocation{0};
   GLint   spotLightBlendLocation{0};
   GLint             nearLocation{0};
-  GLint              farLocation{0};
+  GLint              farLocation{0};  
+  GLint      offsetScaleLocation{0};
 
   GLint   lightTextureIDLocation{0};
 };
@@ -166,6 +168,7 @@ MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, b
   Geometry3DShader(map, openGLProfile),
   d(new Private(this))
 {
+  TP_TIME_SCOPE("MaterialShader::MaterialShader");
   auto bindTexture = [&](const TPPixel& color)
   {
     tp_image_utils::ColorMap textureData{1, 1, nullptr, color};
@@ -183,8 +186,11 @@ MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, b
       compile(vertStr.data(openGLProfile, shaderType), fragStr.data(openGLProfile, shaderType), [](auto){}, [](auto){}, shaderType);
     };
 
-    compileRenderShader([](auto,auto){}, [](auto){}, [](auto){}, ShaderType::Render);
-    compileRenderShader([](auto,auto){}, [](auto){}, [](auto){}, ShaderType::RenderExtendedFBO);
+    if(map->extendedFBO() == ExtendedFBO::Yes)
+      compileRenderShader([](auto,auto){}, [](auto){}, [](auto){}, ShaderType::RenderExtendedFBO);
+    else
+      compileRenderShader([](auto,auto){}, [](auto){}, [](auto){}, ShaderType::Render);
+
     compileOtherShader(vertShaderStrPicking(), fragShaderStrPicking(), ShaderType::Picking);
     compileOtherShader(vertShaderStrLight(), fragShaderStrLight(), ShaderType::Light);
   }
@@ -285,6 +291,8 @@ void MaterialShader::compile(const char* vertShaderStr,
         lightLocations.nearLocation             = glGetUniformLocation(program, replaceLight(ii, "", "light%.near").c_str());
         lightLocations.farLocation              = glGetUniformLocation(program, replaceLight(ii, "", "light%.far").c_str());
 
+        lightLocations.offsetScaleLocation      = glGetUniformLocation(program, replaceLight(ii, "", "light%.offsetScale").c_str());
+
         lightLocations.lightTextureIDLocation   = glGetUniformLocation(program, replaceLight(ii, "", "light%Texture").c_str());
       }
     };
@@ -379,7 +387,7 @@ void MaterialShader::compileRenderShader(const std::function<void(std::string& v
       case tp_math_utils::LightType::Directional:
       {
         LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform sampler2D light%Texture;\n");
-        LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = directionalLight(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec4(0,0,0,0), worldToLight%_proj));\n");
+        LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = directionalLight(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec2(0,0), worldToLight%_proj));\n");
         break;
       }
 
@@ -389,8 +397,7 @@ void MaterialShader::compileRenderShader(const std::function<void(std::string& v
         {
           LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform sampler2D light%Texture;\n");
           LIGHT_FRAG_CALC += replaceLight(ii, ll, "    float shadow=0.0;\n");
-          LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow += spotLightSampleShadow2D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec4(0,0,0,0), worldToLight%_proj));\n");
-          //LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = spotLight2D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec4(0,0,0,0), worldToLight%_proj));\n");
+          LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow += spotLightSampleShadow2D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec2(0,0), worldToLight%_proj));\n");
           LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totalSadowSamples;\n");
         }
         else
@@ -402,18 +409,19 @@ void MaterialShader::compileRenderShader(const std::function<void(std::string& v
           {
             std::string levelTexCoord = std::to_string(float(l)/float(levels-1));
 
-            auto o = tp_math_utils::Light::lightLevelOffsets()[l] * light.offsetScale;
-            std::string offset = "vec4(" + std::to_string(o.x) + "," + std::to_string(o.y) + "," + std::to_string(o.z) + ",0.0)";
+            auto o = tp_math_utils::Light::lightLevelOffsets()[l];// * glm::vec2(light.offsetScale);
+            std::string offset = "vec2(" + std::to_string(o.x) + "," + std::to_string(o.y) + ") * light%.offsetScale.xy";
+            //std::string offset = "vec2(0,0)";
 
             LIGHT_FRAG_CALC += replaceLight(ii, std::to_string(l), "    shadow += spotLightSampleShadow3D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View,"+offset+", worldToLight%_proj), " + levelTexCoord + ");\n");
           }
 
           LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totalSadowSamples * @.0;\n");
-          //LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = spotLight3D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec4(0,0,0,0), worldToLight%_proj), shadow);\n");
+          //LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = spotLight3D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec2(0,0), worldToLight%_proj), shadow);\n");
         }
 
         LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow = mix(1.0, shadow, material.useShadow);\n");
-        LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = spotLight(norm, light%, ldNormalized, lightPosToTexture(fragPos_light%View, vec4(0,0,0,0), worldToLight%_proj), shadow);\n");
+        LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = spotLight(norm, light%, ldNormalized, lightPosToTexture(fragPos_light%View, vec2(0,0), worldToLight%_proj), shadow);\n");
         break;
       }
       }
@@ -498,10 +506,11 @@ void MaterialShader::setLights(const std::vector<tp_math_utils::Light>& lights, 
         glm::vec3 position = light.position();
         glm::vec3 direction = light.direction();
 
-        if(lightLocations. positionLocation>=0) glUniform3fv(lightLocations. positionLocation, 1,    &position.x       );
-        if(lightLocations.directionLocation>=0) glUniform3fv(lightLocations.directionLocation, 1,  &direction.x        );
-        if(lightLocations.  ambientLocation>=0) glUniform3fv(lightLocations.  ambientLocation, 1,  &light.ambient.x    );
-        if(lightLocations.  diffuseLocation>=0) glUniform3fv(lightLocations.  diffuseLocation, 1,  &light.diffuse.x    );
+        if(lightLocations.   positionLocation>=0)glUniform3fv(lightLocations.   positionLocation, 1, &position.x         );
+        if(lightLocations.  directionLocation>=0)glUniform3fv(lightLocations.  directionLocation, 1, &direction.x        );
+        if(lightLocations.    ambientLocation>=0)glUniform3fv(lightLocations.    ambientLocation, 1, &light.ambient.x    );
+        if(lightLocations.    diffuseLocation>=0)glUniform3fv(lightLocations.    diffuseLocation, 1, &light.diffuse.x    );
+        if(lightLocations.offsetScaleLocation>=0)glUniform3fv(lightLocations.offsetScaleLocation, 1, &light.offsetScale.x);
 
         glUniform1f(lightLocations.  diffuseScaleLocation, light.diffuseScale  );
         glUniform1f(lightLocations.      constantLocation, light.constant      );

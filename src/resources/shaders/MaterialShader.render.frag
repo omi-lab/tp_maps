@@ -28,6 +28,8 @@ struct Light
 
   float near;
   float far;
+
+  vec3 offsetScale;
 };
 
 struct LightResult
@@ -132,9 +134,9 @@ float sampleShadowMapLinear3D(sampler3D shadowMap, vec2 coords, float compareLig
 #endif
 
 //##################################################################################################
-vec3 lightPosToTexture(vec4 fragPos_light, vec4 offset, mat4 proj)
+vec3 lightPosToTexture(vec4 fragPos_light, vec2 offset, mat4 proj)
 {
-  vec4 fp = proj * (fragPos_light+offset);
+  vec4 fp = proj * (fragPos_light+vec4(offset,0.0,0.0));
   return vec3((vec3(0.5, 0.5, 0.5) * (fp.xyz / fp.w)) + vec3(0.5, 0.5, 0.5));
 }
 

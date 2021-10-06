@@ -1,6 +1,7 @@
 #include "tp_maps/Shader.h"
 
 #include "tp_utils/DebugUtils.h"
+#include "tp_utils/TimeUtils.h"
 
 #include <unordered_map>
 
@@ -107,6 +108,18 @@ void Shader::compile(const char* vertexShaderStr,
     d->error=true;
     return;
   }
+
+#if 0
+  tp_utils::ElapsedTimer printSlowShaderCompileTimer;
+  printSlowShaderCompileTimer.start();
+  TP_CLEANUP([&]
+  {
+    if(printSlowShaderCompileTimer.elapsed()>100)
+      tpWarning() << "Slow shader compile:\n" <<
+                     "================== vert ==================\n" << vertexShaderStr <<
+                     "\n================== frag ==================\n" << fragmentShaderStr;
+  });
+#endif
 
   glAttachShader(s.program, s.vertexShader);
   glAttachShader(s.program, s.fragmentShader);
