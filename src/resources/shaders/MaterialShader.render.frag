@@ -41,7 +41,7 @@ struct LightResult
 
 uniform sampler2D rgbaTexture;
 uniform sampler2D normalsTexture;
-uniform sampler2D rmaoTexture;
+uniform sampler2D rmttrTexture;
 
 uniform Material material;
 
@@ -68,6 +68,8 @@ vec3 albedo;
 float roughness;
 float roughness2;
 float metalness;
+float transmission;
+float transmissionRoughness;
 
 vec3 F0;
 vec3 surfaceToCamera;
@@ -226,7 +228,6 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
   shadow /= totalSadowSamples;
 
   r.ambient = material.useAmbient * light.ambient * albedo;
-
   vec3 surfaceToLight  = -lightDirection_tangent;
   vec3 halfV = normalize(surfaceToCamera + surfaceToLight);
 
@@ -392,7 +393,7 @@ void main()
 {
   vec4     rgbaTex = /*TP_GLSL_TEXTURE_2D*/(    rgbaTexture, uv_tangent);
   vec3  normalsTex = /*TP_GLSL_TEXTURE_2D*/( normalsTexture, uv_tangent).xyz;
-  vec3     rmaoTex = /*TP_GLSL_TEXTURE_2D*/(    rmaoTexture, uv_tangent).xyz;
+  vec4    rmttrTex = /*TP_GLSL_TEXTURE_2D*/(    rmttrTexture, uv_tangent);
 
   //Note: GammaCorrection
   rgbaTex.xyz = pow(rgbaTex.xyz, vec3(2.2));
@@ -400,9 +401,11 @@ void main()
   vec3 norm = normalize(normalsTex*2.0-1.0);
 
   albedo = rgbaTex.xyz * material.albedoScale;
-  roughness = max(0.001, rmaoTex.x);
+  roughness = max(0.001, rmttrTex.x);
   roughness2 = roughness*roughness;
-  metalness = rmaoTex.y;
+  metalness = rmttrTex.y;
+  transmission = rmttrTex.z;
+  transmissionRoughness = rmttrTex.w;
 
   vec3 ambient  = vec3(0,0,0);
   vec3 diffuse  = vec3(0,0,0);
@@ -439,6 +442,12 @@ void main()
   /*LIGHT_FRAG_CALC*/
 
   float alpha = rgbaTex.w;
+  // Use transparency to display transmission and transmissionRoughness.
+  if(transmissionRoughness > 0.0)
+    transmission *= (1.0 - transmissionRoughness);
+  if(transmission > 0.0)
+    alpha = 0.5 + 0.5 * (1.0 - transmission);
+
   float shininess = metalness;
 
   vec3 normal = TBNv*norm;

@@ -270,7 +270,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
       shader->setMaterial(details.alternativeMaterial->material);
       shader->setTextures(details.alternativeMaterial->rgbaTextureID,
                           details.alternativeMaterial->normalsTextureID,
-                          details.alternativeMaterial->rmaoTextureID);
+                          details.alternativeMaterial->rmttrTextureID);
       shader->setDiscardOpacity((renderInfo.pass == RenderPass::Transparency)?0.01f:0.80f);
     },
     [&](auto shader, GLenum mode, Geometry3DShader::VertexBuffer* vertexBuffer) //-- draw ----------

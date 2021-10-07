@@ -100,7 +100,7 @@ struct UniformLocations_lt
 
   GLint      rgbaTextureLocation{0};
   GLint   normalsTextureLocation{0};
-  GLint      rmaoTextureLocation{0};
+  GLint     rmttrTextureLocation{0};
 
   std::vector<LightLocations_lt> lightLocations;
 };
@@ -262,7 +262,7 @@ void MaterialShader::compile(const char* vertShaderStr,
 
       locations.     rgbaTextureLocation = glGetUniformLocation(program, "rgbaTexture"     );
       locations.  normalsTextureLocation = glGetUniformLocation(program, "normalsTexture"  );
-      locations.     rmaoTextureLocation = glGetUniformLocation(program, "rmaoTexture"     );
+      locations.    rmttrTextureLocation = glGetUniformLocation(program, "rmttrTexture"    );
 
       const auto& lights = map()->lights();
       size_t iMax = tpMin(d->maxLights, lights.size());
@@ -641,7 +641,7 @@ void MaterialShader::drawVertexBuffer(GLenum mode, VertexBuffer* vertexBuffer)
 //##################################################################################################
 void MaterialShader::setTextures(GLuint rgbaTextureID,
                                  GLuint normalsTextureID,
-                                 GLuint rmaoTextureID)
+                                 GLuint rmttrTextureID)
 {
   auto exec = [&](const UniformLocations_lt& locations)
   {
@@ -654,8 +654,8 @@ void MaterialShader::setTextures(GLuint rgbaTextureID,
     glUniform1i(locations.normalsTextureLocation, 1);
 
     glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, rmaoTextureID);
-    glUniform1i(locations.rmaoTextureLocation, 2);
+    glBindTexture(GL_TEXTURE_2D, rmttrTextureID);
+    glUniform1i(locations.rmttrTextureLocation, 2);
   };
 
   if(d->shaderType == ShaderType::Render)

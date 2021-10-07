@@ -53,11 +53,11 @@ public:
   /*!
   \param rgbaTextureID albedo and alpha texture.
   \param normalsTextureID normals texture.
-  \param rmaoTextureID roughness, metalness, ambient occlusion texture.
+  \param rmttrTextureID roughness, metalness, transmission, transmission roughness texture.
   */
   void setTextures(GLuint rgbaTextureID,
                    GLuint normalsTextureID,
-                   GLuint rmaoTextureID);
+                   GLuint rmttrTextureID);
 
   //################################################################################################
   void setBlankTextures();

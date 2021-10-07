@@ -20,7 +20,7 @@ struct ProcessedGeometry3D
 
   GLuint     rgbaTextureID{0}; //!< Albedo and alpha.
   GLuint  normalsTextureID{0}; //!< Normals.
-  GLuint     rmaoTextureID{0}; //!< Roughness, metalness, and ambient occlusion.
+  GLuint    rmttrTextureID{0}; //!< Roughness, metalness, transmission and transmission roughness.
 
   ProcessedGeometry3D const* alternativeMaterial{nullptr};
 };
