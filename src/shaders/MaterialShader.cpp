@@ -125,7 +125,8 @@ struct MaterialShader::Private
   GLint  pickingMVPMatrixLocation{0};
   GLint         pickingIDLocation{0};
 
-  GLint    lightMVPMatrixLocation{0};  
+  GLint    lightMVPMatrixLocation{0};
+  GLint     lightUVMatrixLocation{0};
   GLint  lightRGBATextureLocation{0};
 
   GLuint emptyTextureID{0};
@@ -221,17 +222,23 @@ void MaterialShader::compile(const char* vertShaderStr,
       glBindAttribLocation(program, 0, "inVertex");
       glBindAttribLocation(program, 1, "inNormal");
       glBindAttribLocation(program, 2, "inTexture");
-      bindLocations(program);
       break;
     }
 
-    case ShaderType::Picking: [[fallthrough]];
-    case ShaderType::Light:
+    case ShaderType::Picking:
     {
       glBindAttribLocation(program, 0, "inVertex");
       break;
     }
+    case ShaderType::Light:
+    {
+      glBindAttribLocation(program, 0, "inVertex");
+      glBindAttribLocation(program, 2, "inTexture");
+      break;
     }
+    }
+
+    bindLocations(program);
 
   },
   [&](GLuint program)
@@ -314,13 +321,14 @@ void MaterialShader::compile(const char* vertShaderStr,
     case ShaderType::Picking:
     {
       d->pickingMVPMatrixLocation = glGetUniformLocation(program, "mvp");
-      d->pickingIDLocation         = glGetUniformLocation(program, "pickingID");
+      d->pickingIDLocation        = glGetUniformLocation(program, "pickingID");
       break;
     }
 
     case ShaderType::Light:
     {
-      d->lightMVPMatrixLocation = glGetUniformLocation(program, "mvp");      
+      d->lightMVPMatrixLocation = glGetUniformLocation(program, "mvp");
+      d->lightUVMatrixLocation    = glGetUniformLocation(program, "uvMatrix");
       d->lightRGBATextureLocation = glGetUniformLocation(program, "rgbaTexture");
       break;
     }
@@ -398,7 +406,7 @@ void MaterialShader::compileRenderShader(const std::function<void(std::string& v
           LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform sampler2D light%Texture;\n");
           LIGHT_FRAG_CALC += replaceLight(ii, ll, "    float shadow=0.0;\n");
           LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow += spotLightSampleShadow2D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec2(0,0), worldToLight%_proj));\n");
-          LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totalSadowSamples;\n");
+          LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totalShadowSamples;\n");
         }
         else
         {
@@ -416,7 +424,7 @@ void MaterialShader::compileRenderShader(const std::function<void(std::string& v
             LIGHT_FRAG_CALC += replaceLight(ii, std::to_string(l), "    shadow += spotLightSampleShadow3D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View,"+offset+", worldToLight%_proj), " + levelTexCoord + ");\n");
           }
 
-          LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totalSadowSamples * @.0;\n");
+          LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totalShadowSamples * @.0;\n");
           //LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = spotLight3D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec2(0,0), worldToLight%_proj), shadow);\n");
         }
 
@@ -489,6 +497,10 @@ void MaterialShader::setMaterial(const tp_math_utils::Material& material)
 
   else if(d->shaderType == ShaderType::RenderExtendedFBO)
     exec(d->renderHDRLocations);
+
+  else if(d->shaderType == ShaderType::Light)
+    glUniformMatrix3fv(d->lightUVMatrixLocation, 1, GL_FALSE, glm::value_ptr(material.uvMatrix()));
+
 }
 
 //##################################################################################################

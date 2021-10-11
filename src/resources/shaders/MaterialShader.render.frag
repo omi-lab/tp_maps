@@ -81,7 +81,7 @@ vec3 surfaceToCamera;
 /*POST_VARS*/
 
 const int shadowSamples=/*TP_SHADOW_SAMPLES*/;
-const float totalSadowSamples=float(((shadowSamples*2)+1) * ((shadowSamples*2)+1));
+const float totalShadowSamples=float(((shadowSamples*2)+1) * ((shadowSamples*2)+1));
 
 const float pi = 3.14159265;
 
@@ -202,7 +202,7 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
   LightResult r;
 
   // Shadow
-  float shadow = totalSadowSamples;
+  float shadow = totalShadowSamples;
   float nDotL = dot(norm, -lightDirection_tangent);
 
   if(nDotL>0.0 && uv.z>0.0 && uv.z<1.0)
@@ -225,7 +225,7 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
     }
   }
 
-  shadow /= totalSadowSamples;
+  shadow /= totalShadowSamples;
 
   r.ambient = material.useAmbient * light.ambient * albedo;
   vec3 surfaceToLight  = -lightDirection_tangent;
@@ -278,7 +278,7 @@ float maskLight(Light light, vec3 uv, float shadow)
 //##################################################################################################
 float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangent, sampler2D lightTexture, vec3 uv)
 {
-  float shadow = totalSadowSamples;
+  float shadow = totalShadowSamples;
   float nDotL = dot(norm, -lightDirection_tangent);
 
   if(nDotL>0.0 && uv.z>0.0 && uv.z<1.0)
@@ -307,7 +307,7 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
 #ifndef NO_TEXTURE3D
 float spotLightSampleShadow3D(vec3 norm, Light light, vec3 lightDirection_tangent, sampler3D lightTexture, vec3 uv, float level)
 {
-  float shadow = totalSadowSamples;
+  float shadow = totalShadowSamples;
   float nDotL = dot(norm, -lightDirection_tangent);
 
   if(nDotL>0.0 && uv.z>0.0 && uv.z<1.0)
@@ -441,7 +441,7 @@ void main()
 
   /*LIGHT_FRAG_CALC*/
 
-  float alpha = rgbaTex.w;
+  float alpha = rgbaTex.a;
   // Use transparency to display transmission and transmissionRoughness.
   if(transmissionRoughness > 0.0)
     transmission *= (1.0 - transmissionRoughness);
