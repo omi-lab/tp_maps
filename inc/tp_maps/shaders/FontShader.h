@@ -40,8 +40,7 @@ public:
   {
   public:
     //##############################################################################################
-    PreparedString(const Shader *shader,
-                   FontRenderer* fontRenderer,
+    PreparedString(FontRenderer* fontRenderer,
                    const std::u16string& text,
                    const PreparedStringConfig& config=PreparedStringConfig());
 

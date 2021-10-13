@@ -82,7 +82,7 @@ LightsLayer::~LightsLayer()
 //##################################################################################################
 void LightsLayer::setFont(FontRenderer* font)
 {
-  d->regenerateText = false;
+  d->regenerateText = true;
   d->font = font;
   update();
 }
@@ -207,7 +207,7 @@ void LightsLayer::render(RenderInfo& renderInfo)
       {
         const auto& light = lights.at(l);
         auto& label = d->labels.at(l);
-        label.preparedString.reset(new tp_maps::FontShader::PreparedString(shader, font(), tpFromUTF8(light.name.keyString()), config));
+        label.preparedString.reset(new tp_maps::FontShader::PreparedString(font(), tpFromUTF8(light.name.keyString()), config));
         label.position = light.position();
       }
     }
@@ -244,6 +244,7 @@ void LightsLayer::render(RenderInfo& renderInfo)
 
   Layer::render(renderInfo);
 }
+
 //##################################################################################################
 bool LightsLayer::mouseEvent(const tp_maps::MouseEvent& event)
 {

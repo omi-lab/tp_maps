@@ -1141,7 +1141,7 @@ void Map::addLayer(Layer* layer)
 }
 
 //##################################################################################################
-void Map::insertLayer(size_t i, Layer *layer)
+void Map::insertLayer(size_t i, Layer* layer)
 {
   if(layer->map())
   {
@@ -1152,6 +1152,9 @@ void Map::insertLayer(size_t i, Layer *layer)
 
   d->layers.insert(d->layers.begin()+int(i), layer);
   layer->setMap(this, nullptr);
+
+  layerInserted(i, layer);
+
   update();
 }
 
@@ -1244,7 +1247,12 @@ size_t Map::shadowSamples() const
 //##################################################################################################
 void Map::setHDR(HDR hdr)
 {
-  d->hdr = hdr;
+  if(d->hdr != hdr)
+  {
+    d->hdr = hdr;
+    d->deleteShaders();
+    update();
+  }
 }
 
 //##################################################################################################
@@ -1256,7 +1264,12 @@ HDR Map::hdr() const
 //##################################################################################################
 void Map::setExtendedFBO(ExtendedFBO extendedFBO)
 {
-  d->extendedFBO = extendedFBO;
+  if(d->extendedFBO != extendedFBO)
+  {
+    d->extendedFBO = extendedFBO;
+    d->deleteShaders();
+    update();
+  }
 }
 
 //##################################################################################################

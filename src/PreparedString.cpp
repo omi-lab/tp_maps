@@ -68,21 +68,21 @@ const FontGeometry& PreparedString::fontGeometry() const
 }
 
 //##################################################################################################
+const PreparedStringConfig& PreparedString::config() const
+{
+  return d->config;
+}
+
+//##################################################################################################
 void PreparedString::invalidateBuffers()
 {
-
+  d->regenerateBuffers = true;
 }
 
 //##################################################################################################
 void PreparedString::regenerateBuffers()
 {
   d->regenerateBuffers = true;
-}
-
-//##################################################################################################
-const PreparedStringConfig& PreparedString::config() const
-{
-  return d->config;
 }
 
 }

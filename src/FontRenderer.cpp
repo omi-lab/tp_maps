@@ -59,7 +59,7 @@ struct FontRenderer::Private
       map->makeCurrent();
       map->deleteTexture(textureID);
       textureID = 0;
-      bindTexture = false;
+      bindTexture = true;
     }
   }
 
@@ -110,6 +110,8 @@ void FontRenderer::squeeze()
 void FontRenderer::invalidateBuffers()
 {
   d->textureID = 0;
+  d->bindTexture = true;
+
   for(auto preparedString : preparedStrings())
     preparedString->invalidateBuffers();
 }

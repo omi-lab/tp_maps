@@ -46,7 +46,6 @@ struct FontShader::PreparedString::Private
   TP_NONCOPYABLE(Private);
 
   Map* map;
-  ShaderPointer shader;
 
   //The Vertex Array Object
   GLuint vaoID{0};
@@ -64,9 +63,8 @@ struct FontShader::PreparedString::Private
   bool valid{false};
 
   //################################################################################################
-  Private(Map* map_, const Shader* shader_):
-    map(map_),
-    shader(shader_)
+  Private(Map* map_):
+    map(map_)
   {
 
   }
@@ -278,12 +276,11 @@ void FontShader::drawPreparedString(PreparedString& preparedString)
 }
 
 //##################################################################################################
-FontShader::PreparedString::PreparedString(const Shader* shader,
-                                           FontRenderer* fontRenderer,
+FontShader::PreparedString::PreparedString(FontRenderer* fontRenderer,
                                            const std::u16string& text,
                                            const PreparedStringConfig& config):
   tp_maps::PreparedString(fontRenderer, text, config),
-  d(new Private(fontRenderer->map(), shader))
+  d(new Private(fontRenderer->map()))
 {
 
 }

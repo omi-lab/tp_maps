@@ -138,6 +138,9 @@ public:
   void insertLayer(size_t i, Layer* layer);
 
   //################################################################################################
+  tp_utils::CallbackCollection<void(size_t, Layer*)> layerInserted;
+
+  //################################################################################################
   //! Remove a layer from the map
   /*!
   \param layer The layer to remove from the map
