@@ -25,7 +25,26 @@ PostOutlineLayer::PostOutlineLayer(Map* map, RenderPass customRenderPass1, Rende
   PostLayer(map, customRenderPass2),
   d(new Private(customRenderPass1))
 {
+  setDefaultRenderPass(customRenderPass1);
+  map->setCustomRenderPass(customRenderPass1, [](RenderInfo&)
+  {
+    glDepthMask(true);
+    glEnable(GL_DEPTH_TEST);
+  },[](RenderInfo&)
+  {
+    glDepthMask(false);
+    glDisable(GL_DEPTH_TEST);
+  });
 
+  setDefaultRenderPass(customRenderPass2);
+  map->setCustomRenderPass(customRenderPass2, [](RenderInfo&)
+  {
+    glDepthMask(false);
+    glEnable(GL_DEPTH_TEST);
+  },[](RenderInfo&)
+  {
+    glDisable(GL_DEPTH_TEST);
+  });
 }
 
 //##################################################################################################
