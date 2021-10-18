@@ -58,7 +58,6 @@ PostLayer::PostLayer(Map* map, RenderPass customRenderPass):
   map->setCustomRenderPass(customRenderPass, [](RenderInfo&)
   {
     glDepthMask(false);
-    glDisable(GL_DEPTH_TEST);
   },[](RenderInfo&)
   {
 
