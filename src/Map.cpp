@@ -560,7 +560,12 @@ struct Map::Private
       if(!buffer.textureID)
         create2DDepthTexture(buffer.textureID, width, height);
 
+#ifdef TP_GLES3
+      // glFramebufferTexture3D is not supported in GLES.
+      glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, buffer.depthID, 0, GLint(level));
+#else
       glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, buffer.depthID, 0, GLint(level));
+#endif
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.textureID, 0);
       DEBUG_printOpenGLError("prepareBuffer bind 3D texture to FBO as color but to store depth");
     }
