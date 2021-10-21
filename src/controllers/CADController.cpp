@@ -113,8 +113,6 @@ struct CADController::Private
     keyState[TP_L_SHIFT_KEY]    = false;
     keyState[TP_R_SHIFT_KEY]    = false;
 
-    keyState[TP_L_CTRL_KEY]     = false;
-
     keyState[TP_PAGE_UP_KEY ]   = false;
     keyState[TP_PAGE_DOWN_KEY ] = false;
   }
