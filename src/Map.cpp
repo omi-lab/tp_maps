@@ -1213,7 +1213,12 @@ void Map::setMaxSpotLightLevels(size_t maxSpotLightLevels)
 {
   if(d->spotLightLevels != maxSpotLightLevels)
   {
-    d->spotLightLevels = maxSpotLightLevels;
+#ifdef TP_ENABLE_3D_TEXTURE
+    d->spotLightLevels = tpMin(tp_math_utils::Light::lightLevelOffsets().size(), maxSpotLightLevels);
+#else
+    tpWarning() << "TP_ENABLE_3D_TEXTURE not defined. Only 1 spot light level used.";
+    d->spotLightLevels = 1;
+#endif
 
     d->deleteShaders();
 
@@ -1233,11 +1238,7 @@ size_t Map::maxSpotLightLevels() const
 //##################################################################################################
 size_t Map::spotLightLevels() const
 {
-#ifdef TP_ENABLE_3D_TEXTURE
-  return tpMin(tp_math_utils::Light::lightLevelOffsets().size(), d->spotLightLevels);
-#else
-  return 1;
-#endif
+  return d->spotLightLevels;
 }
 
 //##################################################################################################
