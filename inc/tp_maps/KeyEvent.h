@@ -21,6 +21,9 @@ struct TP_MAPS_SHARED_EXPORT KeyEvent
 
   int32_t scancode{0};
 
+  //! Are any modifier keys currently pressed.
+  KeyboardModifier modifiers{KeyboardModifier::None};
+
   KeyEvent(KeyEventType type_=KeyEventType::Press):
     type(type_)
   {

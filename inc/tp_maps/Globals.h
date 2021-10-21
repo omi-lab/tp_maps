@@ -458,6 +458,28 @@ struct FBO
   ExtendedFBO extendedFBO{ExtendedFBO::No}; //!< Yes if deferred rendering buffers have been created.
 };
 
+//##################################################################################################
+enum class KeyboardModifier : size_t
+{
+  None    = 0b00000000,
+  Shift   = 0b00000001,
+  Control = 0b00000010,
+  Alt     = 0b00000100
+};
+
+
+//##################################################################################################
+[[nodiscard]] KeyboardModifier operator|(KeyboardModifier lhs,KeyboardModifier rhs);
+
+//##################################################################################################
+[[nodiscard]] KeyboardModifier operator&(KeyboardModifier lhs,KeyboardModifier rhs);
+
+//##################################################################################################
+[[nodiscard]] bool keyboardModifierAnySet(KeyboardModifier mask, KeyboardModifier bit);
+
+//##################################################################################################
+[[nodiscard]] bool keyboardModifierAllSet(KeyboardModifier mask, KeyboardModifier bit);
+
 }
 
 #endif

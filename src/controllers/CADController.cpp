@@ -834,7 +834,7 @@ void CADController::animate(double timestampMS)
       update();
     }
 
-    if(d->keyState[TP_PAGE_DOWN_KEY]|| d->keyState[TP_L_CTRL_KEY])
+    if(d->keyState[TP_PAGE_DOWN_KEY])
     {
       changed = true;
       d->cameraOrigin.z -= float(translateMeters) * d->keyboardSpeedModifier;

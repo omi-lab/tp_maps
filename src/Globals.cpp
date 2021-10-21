@@ -439,4 +439,28 @@ const std::string& ShaderResource::dataStr(OpenGLProfile openGLProfile, ShaderTy
   return parsed;
 }
 
+//##################################################################################################
+KeyboardModifier operator|(KeyboardModifier lhs,KeyboardModifier rhs)
+{
+  return KeyboardModifier(size_t(lhs) | size_t(rhs));
+}
+
+//##################################################################################################
+KeyboardModifier operator&(KeyboardModifier lhs,KeyboardModifier rhs)
+{
+  return KeyboardModifier(size_t(lhs) & size_t(rhs));
+}
+
+//##################################################################################################
+bool keyboardModifierAnySet(KeyboardModifier mask, KeyboardModifier bit)
+{
+  return (mask & bit) != KeyboardModifier::None;
+}
+
+//##################################################################################################
+bool keyboardModifierAllSet(KeyboardModifier mask, KeyboardModifier bit)
+{
+  return (mask & bit) == bit;
+}
+
 }

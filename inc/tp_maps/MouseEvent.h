@@ -44,6 +44,9 @@ struct TP_MAPS_SHARED_EXPORT MouseEvent
   //! Mouse wheel delta, where applicable.
   int delta{0};
 
+  //! Are any modifier keys currently pressed.
+  KeyboardModifier modifiers{KeyboardModifier::None};
+
   MouseEvent(MouseEventType type_=MouseEventType::Press):
     type(type_)
   {

@@ -64,8 +64,6 @@ struct FPSController::Private
     keyState[TP_L_SHIFT_KEY]    = false;
     keyState[TP_R_SHIFT_KEY]    = false;
 
-    keyState[TP_L_CTRL_KEY]     = false;
-
     keyState[TP_PAGE_UP_KEY ]   = false;
     keyState[TP_PAGE_DOWN_KEY ] = false;
   }
@@ -458,7 +456,7 @@ void FPSController::animate(double timestampMS)
     update();
   }
 
-  if(d->keyState[TP_PAGE_DOWN_KEY]|| d->keyState[TP_L_CTRL_KEY])
+  if(d->keyState[TP_PAGE_DOWN_KEY])
   {
     d->cameraOrigin.z -= float(translateMeters);
     update();
