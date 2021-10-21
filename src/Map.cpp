@@ -1211,7 +1211,17 @@ size_t Map::maxSamples() const
 //##################################################################################################
 void Map::setMaxSpotLightLevels(size_t maxSpotLightLevels)
 {
-  d->spotLightLevels = maxSpotLightLevels;
+  if(d->spotLightLevels != maxSpotLightLevels)
+  {
+    d->spotLightLevels = maxSpotLightLevels;
+
+    d->deleteShaders();
+
+    for(auto l : d->layers)
+      l->lightsChanged(LightingModelChanged::Yes);
+
+    update();
+  }
 }
 
 //##################################################################################################
