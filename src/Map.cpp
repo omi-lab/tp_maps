@@ -548,26 +548,48 @@ struct Map::Private
 #ifdef TP_ENABLE_3D_TEXTURE
     if(levels != 1)
     {
-      //Its not possible to bind a 3D texture as a depth buffer, so we bind it as the color buffer
-      //and copy the depth values to that color buffer. We do however still require an actual depth
-      //buffer to perform depth tests against. So here textureID gets prepared as a 2D depth buffer.
-      //The 2D depth buffer is bound as GL_DEPTH_ATTACHMENT.
+      //It's not possible to bind a 3D texture as a depth buffer, so we bind it as the color buffer
+      //and copy the depth values to that color buffer.
       //The 3D depth buffer is bound as GL_COLOR_ATTACHMENT0.
-
       if(!buffer.depthID)
         create3DDepthTexture(buffer.depthID, width, height, levels);
 
       if(!buffer.textureID)
-        create2DDepthTexture(buffer.textureID, width, height);
+      {
+        // For most OpenGL versions, we do however still require an actual depth
+        //buffer to perform depth tests against. So here textureID gets prepared as a 2D depth buffer.
+        //The 2D depth buffer is bound as GL_DEPTH_ATTACHMENT.
+        switch(openGLProfile)
+        {
+        default:
+          create2DDepthTexture(buffer.textureID, width, height);
+          break;
+
+        case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
+        case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
+        case OpenGLProfile::VERSION_320_ES:
+          break;
+        }
+      }
 
 #ifdef TP_GLES3
-      // glFramebufferTexture3D is not supported in GLES.
-      glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, buffer.depthID, 0, GLint(level));
+        // glFramebufferTexture3D is not supported in GLES.
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, buffer.depthID, 0, GLint(level));
 #else
-      glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, buffer.depthID, 0, GLint(level));
+        glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, buffer.depthID, 0, GLint(level));
 #endif
-      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.textureID, 0);
-      DEBUG_printOpenGLError("prepareBuffer bind 3D texture to FBO as color but to store depth");
+        switch(openGLProfile)
+        {
+        default:
+          glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.textureID, 0);
+          break;
+
+        case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
+        case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
+        case OpenGLProfile::VERSION_320_ES:
+          break;
+        }
+        DEBUG_printOpenGLError("prepareBuffer bind 3D texture to FBO as color but to store depth");
     }
     else
 #endif
@@ -1975,6 +1997,28 @@ void Map::paintGLNoMakeCurrent()
   for(; rp<d->renderPasses.size(); rp++)
   {
     auto renderPass = d->renderPasses.at(rp);
+
+#ifdef TP_ENABLE_TIME_SCOPE
+  tp_utils::ElapsedTimer timer;
+  timer.start();
+  static int64_t passRenderTime{0};
+  static int64_t passCount{0};
+  TP_CLEANUP([&]
+  {
+      passRenderTime += timer.elapsed();
+      ++passCount;
+
+      if (passCount % 10 == 0)
+      {
+        tpWarning() << "Total time to render pass " << size_t(renderPass) << ": after "
+<< passCount << " passes: " << passRenderTime;
+
+        // Reset
+        passRenderTime = 0;
+        passCount = 0;
+      }
+  });
+#endif
 
     try
     {
