@@ -573,23 +573,23 @@ struct Map::Private
       }
 
 #ifdef TP_GLES3
-        // glFramebufferTexture3D is not supported in GLES.
-        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, buffer.depthID, 0, GLint(level));
+      // glFramebufferTexture3D is not supported in GLES.
+      glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, buffer.depthID, 0, GLint(level));
 #else
-        glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, buffer.depthID, 0, GLint(level));
+      glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, buffer.depthID, 0, GLint(level));
 #endif
-        switch(openGLProfile)
-        {
-        default:
-          glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.textureID, 0);
-          break;
+      switch(openGLProfile)
+      {
+      default:
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.textureID, 0);
+        break;
 
-        case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
-        case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
-        case OpenGLProfile::VERSION_320_ES:
-          break;
-        }
-        DEBUG_printOpenGLError("prepareBuffer bind 3D texture to FBO as color but to store depth");
+      case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
+      case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
+      case OpenGLProfile::VERSION_320_ES:
+        break;
+      }
+      DEBUG_printOpenGLError("prepareBuffer bind 3D texture to FBO as color but to store depth");
     }
     else
 #endif
@@ -1997,29 +1997,6 @@ void Map::paintGLNoMakeCurrent()
   for(; rp<d->renderPasses.size(); rp++)
   {
     auto renderPass = d->renderPasses.at(rp);
-
-#ifdef TP_ENABLE_TIME_SCOPE
-  tp_utils::ElapsedTimer timer;
-  timer.start();
-  static int64_t passRenderTime{0};
-  static int64_t passCount{0};
-  TP_CLEANUP([&]
-  {
-      passRenderTime += timer.elapsed();
-      ++passCount;
-
-      if (passCount % 10 == 0)
-      {
-        tpWarning() << "Total time to render pass " << size_t(renderPass) << ": after "
-<< passCount << " passes: " << passRenderTime;
-
-        // Reset
-        passRenderTime = 0;
-        passCount = 0;
-      }
-  });
-#endif
-
     try
     {
       d->renderInfo.pass = renderPass;
@@ -2030,6 +2007,7 @@ void Map::paintGLNoMakeCurrent()
 
       case RenderPass::LightFBOs: //----------------------------------------------------------------
       {
+        TP_FUNCTION_TIME("LightFBOs");
         DEBUG_printOpenGLError("RenderPass::LightFBOs start");
 #ifdef TP_FBO_SUPPORTED      
         d->renderInfo.hdr = HDR::No;
@@ -2084,6 +2062,7 @@ void Map::paintGLNoMakeCurrent()
 
       case RenderPass::PrepareDrawFBO: //-----------------------------------------------------------
       {
+        TP_FUNCTION_TIME("PrepareDrawFBO");
         DEBUG_printOpenGLError("RenderPass::PrepareDrawFBO start");
 #ifdef TP_FBO_SUPPORTED
         d->renderInfo.hdr = hdr();
@@ -2109,9 +2088,11 @@ void Map::paintGLNoMakeCurrent()
       case RenderPass::SwapToFBO4: //---------------------------------------------------------------
       case RenderPass::SwapToFBO5: //---------------------------------------------------------------
       {
-        DEBUG_printOpenGLError("RenderPass::SwapToFBOn start");
 #ifdef TP_FBO_SUPPORTED
         size_t fboIndex = size_t(renderPass) - size_t(RenderPass::SwapToFBO0);
+        TP_FUNCTION_TIME("SwapToFBO" + std::to_string(fboIndex));
+        DEBUG_printOpenGLError("RenderPass::SwapToFBO" + std::to_string(fboIndex) + " start");
+
         Multisample multisample = fboIndex==0?Multisample::Yes:Multisample::No;
 
         d->renderInfo.hdr = hdr();
@@ -2122,11 +2103,11 @@ void Map::paintGLNoMakeCurrent()
 
         if(!d->prepareBuffer(*d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, multisample, hdr(), extendedFBO(), 1, 0, true))
         {
-          printOpenGLError("RenderPass::SwapDrawFBO");
+          printOpenGLError("RenderPass::SwapDrawFBO" + std::to_string(fboIndex));
           return;
         }
+        DEBUG_printOpenGLError("RenderPass::SwapToFBO" + std::to_string(fboIndex) + "  end");
 #endif
-        DEBUG_printOpenGLError("RenderPass::SwapToFBOn end");
         break;
       }
 
@@ -2137,9 +2118,11 @@ void Map::paintGLNoMakeCurrent()
       case RenderPass::SwapToFBO4NoClear: //--------------------------------------------------------
       case RenderPass::SwapToFBO5NoClear: //--------------------------------------------------------
       {
-        DEBUG_printOpenGLError("RenderPass::SwapToFBOnNoClear start");
 #ifdef TP_FBO_SUPPORTED
         size_t fboIndex = size_t(renderPass) - size_t(RenderPass::SwapToFBO0NoClear);
+        TP_FUNCTION_TIME("SwapToFBO" + std::to_string(fboIndex) + "NoClear");
+        DEBUG_printOpenGLError("RenderPass::SwapToFBO" + std::to_string(fboIndex) + "NoClear start");
+
         Multisample multisample = fboIndex==0?Multisample::Yes:Multisample::No;
 
         d->renderInfo.hdr = hdr();
@@ -2150,11 +2133,11 @@ void Map::paintGLNoMakeCurrent()
 
         if(!d->prepareBuffer(*d->currentDrawFBO, d->width, d->height, CreateColorBuffer::Yes, multisample, hdr(), extendedFBO(), 1, 0, false))
         {
-          printOpenGLError("RenderPass::SwapDrawFBONoClear");
+          printOpenGLError("RenderPass::SwapDrawFBO" + std::to_string(fboIndex) + "NoClear");
           return;
         }
+        DEBUG_printOpenGLError("RenderPass::SwapToFBO" + std::to_string(fboIndex) + "NoClear end");
 #endif
-        DEBUG_printOpenGLError("RenderPass::SwapToFBOnNoClear end");
         break;
       }
 
@@ -2165,43 +2148,46 @@ void Map::paintGLNoMakeCurrent()
       case RenderPass::BlitFromFBO4: //-------------------------------------------------------------
       case RenderPass::BlitFromFBO5: //-------------------------------------------------------------
       {
-        DEBUG_printOpenGLError("RenderPass::BlitFromFBOn start");
 #ifdef TP_FBO_SUPPORTED
         size_t fboIndex = size_t(renderPass) - size_t(RenderPass::BlitFromFBO0);
+        TP_FUNCTION_TIME("BlitFromFBO" + std::to_string(fboIndex));
+        DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " start");
+
         FBO* readFBO = &d->intermediateFBOs[fboIndex];
 
         glBindFramebuffer(GL_READ_FRAMEBUFFER, readFBO->frameBuffer);
 
         glReadBuffer(GL_COLOR_ATTACHMENT0);
-        DEBUG_printOpenGLError("RenderPass::BlitFromFBOn a");
+        DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " a");
         d->setDrawBuffers({GL_COLOR_ATTACHMENT0});
-        DEBUG_printOpenGLError("RenderPass::BlitFromFBOn b");
+        DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " b");
         glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-        DEBUG_printOpenGLError("RenderPass::BlitFromFBOn blit color 0 and depth");
+        DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " blit color 0 and depth");
 
         if(readFBO->extendedFBO == ExtendedFBO::Yes)
         {
           glReadBuffer(GL_COLOR_ATTACHMENT1);
           d->setDrawBuffers({GL_COLOR_ATTACHMENT1});
           glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), GL_COLOR_BUFFER_BIT, GL_NEAREST);
-          DEBUG_printOpenGLError("RenderPass::BlitFromFBOn blit color 1");
+          DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " blit color 1");
 
           glReadBuffer(GL_COLOR_ATTACHMENT2);
           d->setDrawBuffers({GL_COLOR_ATTACHMENT2});
           glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), GL_COLOR_BUFFER_BIT, GL_NEAREST);
-          DEBUG_printOpenGLError("RenderPass::BlitFromFBOn blit color 2");
+          DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " blit color 2");
 
           d->setDrawBuffers({GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2});
         }
         else
           d->setDrawBuffers({GL_COLOR_ATTACHMENT0});
+        DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " end");
 #endif
-        DEBUG_printOpenGLError("RenderPass::BlitFromFBOn end");
         break;
       }
 
       case RenderPass::Background: //---------------------------------------------------------------
       {
+        TP_FUNCTION_TIME("Background");
         DEBUG_printOpenGLError("RenderPass::Background start");
         glDisable(GL_DEPTH_TEST);
         glDepthMask(false);
@@ -2212,6 +2198,7 @@ void Map::paintGLNoMakeCurrent()
 
       case RenderPass::Normal: //-------------------------------------------------------------------
       {
+        TP_FUNCTION_TIME("Normal");
         DEBUG_printOpenGLError("RenderPass::Normal start");
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
@@ -2223,6 +2210,7 @@ void Map::paintGLNoMakeCurrent()
 
       case RenderPass::Transparency: //-------------------------------------------------------------
       {
+        TP_FUNCTION_TIME("Transparency");
         DEBUG_printOpenGLError("RenderPass::Transparency start");
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
@@ -2234,6 +2222,7 @@ void Map::paintGLNoMakeCurrent()
 
       case RenderPass::FinishDrawFBO: //------------------------------------------------------------
       {
+        TP_FUNCTION_TIME("FinishDrawFBO");
         DEBUG_printOpenGLError("RenderPass::FinishDrawFBO start");
 #ifdef TP_FBO_SUPPORTED
         d->renderInfo.hdr = HDR::No;
@@ -2248,6 +2237,7 @@ void Map::paintGLNoMakeCurrent()
 
       case RenderPass::Text: //---------------------------------------------------------------------
       {
+        TP_FUNCTION_TIME("Text");
         DEBUG_printOpenGLError("RenderPass::Text start");
         glDisable(GL_DEPTH_TEST);
         glDepthMask(false);
@@ -2258,6 +2248,7 @@ void Map::paintGLNoMakeCurrent()
 
       case RenderPass::GUI: //----------------------------------------------------------------------
       {
+        TP_FUNCTION_TIME("GUI");
         DEBUG_printOpenGLError("RenderPass::GUI start");
         glEnable(GL_SCISSOR_TEST);
         glDisable(GL_DEPTH_TEST);
@@ -2272,6 +2263,7 @@ void Map::paintGLNoMakeCurrent()
 
       case RenderPass::Picking: //------------------------------------------------------------------
       {
+        TP_FUNCTION_TIME("Picking");
         tpWarning() << "Error: Performing a picking render pass in paintGL does not make sense.";
         break;
       }
@@ -2286,9 +2278,11 @@ void Map::paintGLNoMakeCurrent()
       case RenderPass::Custom8: //------------------------------------------------------------------
       {
         int c = int(renderPass) - int(RenderPass::Custom1);
+        TP_FUNCTION_TIME("Custom" + std::to_string(c+1));
+        DEBUG_printOpenGLError("RenderPass::Custom"+std::to_string(c+1)+" start");
+
         auto& callbacks = d->customCallbacks[c];
 
-        DEBUG_printOpenGLError("RenderPass::Custom"+std::to_string(c+1)+" start");
         if(callbacks.start)
           callbacks.start(d->renderInfo);
 
