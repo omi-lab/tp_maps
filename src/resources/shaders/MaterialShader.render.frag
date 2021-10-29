@@ -232,8 +232,10 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
   vec3 halfV = normalize(surfaceToCamera + surfaceToLight);
 
   // Attenuation
-  float distance    = length(light.position - fragPos_world);
-  float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+  //float distance    = length(light.position - fragPos_world);
+  //float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+  // No attenuation for directional lights.
+  float attenuation = 1.0;
   vec3  radiance    = mix(vec3(1.0), light.diffuseScale * light.diffuse  * attenuation, material.useAttenuation);
 
   // Cook-Torrance BRDF
@@ -345,7 +347,10 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, vec3 
 
   // Attenuation
   float distance    = length(light.position - fragPos_world);
-  float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+  // Use a simplified attenuation function.
+  //float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+  float attenuation = 1.0 / (0.1 * distance);
+  //if (attenuation > 1.0) attenuation = 1.0;
   vec3  radiance    = mix(vec3(1.0), light.diffuseScale * light.diffuse * attenuation, material.useAttenuation);
 
   // Cook-Torrance BRDF
@@ -363,8 +368,9 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, vec3 
   vec3  specular    = numerator / max(denominator, 0.001);
 
   float NdotL = mix(1.0, max(dot(norm, surfaceToLight), 0.0), material.useNdotL);
-  r.diffuse = kD * albedo * radiance * NdotL * shadow;
-  r.specular = specular * radiance * NdotL * shadow;
+  vec3 localLightAmount = radiance * NdotL * shadow;
+  r.diffuse = kD * albedo * localLightAmount;
+  r.specular = specular * localLightAmount;
 
   return r;
 }
