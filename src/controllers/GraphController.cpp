@@ -325,7 +325,7 @@ bool GraphController::mouseEvent(const MouseEvent& event)
     glm::dvec3 scenePointA;
     bool moveOrigin = map()->unProject(event.pos, scenePointA, tp_math_utils::Plane());
 
-    if(d->mouseInteraction == Button::RightButton)
+    if(d->mouseInteraction == Button::RightButton || tp_maps::keyboardModifierAnySet(event.modifiers, tp_maps::KeyboardModifier::Control | tp_maps::KeyboardModifier::Shift))
     {
       if(event.delta<0)
         d->distanceY *= 1.1;
