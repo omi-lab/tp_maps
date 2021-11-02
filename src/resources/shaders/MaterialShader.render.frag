@@ -356,7 +356,7 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, vec3 
   vec3  maxRadiance = 5.0 * light.diffuseScale * light.diffuse;
   vec3  radiance    = mix(maxRadiance, maxRadiance * attenuation, material.useAttenuation);
 
-  if (light.offsetScale.x > 1)
+  if (light.offsetScale.x > 1.0)
     radiance /= 4.18 * pow(light.offsetScale.x, 3.0); // 4/3*pi = 4.18
 
   // Cook-Torrance BRDF

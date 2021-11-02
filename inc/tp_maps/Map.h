@@ -228,6 +228,9 @@ public:
   */
   tp_utils::CallbackCollection<void()> controllerUpdate;
 
+  //################################################################################################
+  tp_utils::CallbackCollection<void(double)> animateCallbacks;
+
 protected:
   //################################################################################################
   //! Return the list of map layers

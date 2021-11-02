@@ -140,9 +140,6 @@ public:
   void setDefaultRenderPass(RenderPass defaultRenderPass);
 
   //################################################################################################
-  tp_utils::CallbackCollection<void(double)> animateCallbacks;
-
-  //################################################################################################
   //! Called when buffers become invalid.
   /*!
   This is called when the OpenGL context becomes invalid, all OpenGL resources should be ignored.
