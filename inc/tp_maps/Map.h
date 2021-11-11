@@ -37,7 +37,7 @@ class FontRenderer;
 
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT Map
-{  
+{
   friend class Layer;
   friend class Controller;
   friend class FontRenderer;
@@ -48,7 +48,7 @@ public:
   Map(bool enableDepthBuffer = false);
 
   //################################################################################################
-  virtual ~Map();  
+  virtual ~Map();
 
 protected:
   //################################################################################################
@@ -185,6 +185,9 @@ public:
   //################################################################################################
   //! The calculated number of spot light levels in a 3D texture. (<=maxSpotLightLevels)
   size_t spotLightLevels() const;
+
+  //################################################################################################
+  size_t renderedLightLevels() const;
 
   //################################################################################################
   void setShadowSamples(size_t shadowSamples);
@@ -383,7 +386,7 @@ public:
 
   //################################################################################################
   //! Called to queue a refresh
-  virtual void update(RenderFromStage renderFromStage=RenderFromStage::Stage0);
+  virtual void update(RenderFromStage renderFromStage=RenderFromStage::Full);
 
   //################################################################################################
   virtual float pixelScale();
@@ -446,6 +449,12 @@ protected:
 
   //################################################################################################
   void invalidateBuffers();
+
+  //################################################################################################
+  void skipRenderPasses(size_t& rp);
+
+  //################################################################################################
+  void executeRenderPasses(size_t& rp, GLint& originalFrameBuffer);
 
 private:
   //################################################################################################

@@ -229,7 +229,7 @@ protected:
 
   //################################################################################################
   //! Calls update on the map
-  void update(RenderFromStage renderFromStage=RenderFromStage::Stage0);
+  void update(RenderFromStage renderFromStage=RenderFromStage::Full);
 
   //################################################################################################
   virtual void addedToMap();

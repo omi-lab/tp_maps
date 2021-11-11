@@ -119,7 +119,7 @@ struct Map::Private
     RenderPass::GUI
   };
 
-  RenderFromStage renderFromStage{RenderFromStage::Stage0};
+  RenderFromStage renderFromStage{RenderFromStage::Full};
 
   // Callback that get called to prepare and cleanup custom render passes.
   CustomPassCallbacks_lt customCallbacks[int(RenderPass::CustomEnd) - int(RenderPass::Custom1)];
@@ -147,6 +147,11 @@ struct Map::Private
   size_t lightTextureSize{1024};
   size_t spotLightLevels{1};
   size_t shadowSamples{0};
+  size_t lightLevelIndex{0};
+
+  // @TODO Sarah make this configurable through Scene Builder 3D view config.
+  const int64_t maxLightRenderTime = 30; // 30ms
+  tp_utils::ElapsedTimer renderTimer;
 
   HDR hdr{HDR::No};
   ExtendedFBO extendedFBO{ExtendedFBO::No};
@@ -1266,6 +1271,12 @@ size_t Map::spotLightLevels() const
 }
 
 //##################################################################################################
+size_t Map::renderedLightLevels() const
+{
+  return d->lightLevelIndex;
+}
+
+//##################################################################################################
 void Map::setShadowSamples(size_t shadowSamples)
 {
   if(d->shadowSamples != shadowSamples)
@@ -1902,7 +1913,19 @@ void Map::paintGLNoMakeCurrent()
   size_t rp=0;
 
   // Skip the passes that don't need a full render.
-  if(d->renderFromStage != RenderFromStage::Stage0 && d->renderFromStage != RenderFromStage::Reset)
+  skipRenderPasses(rp);
+
+  d->renderFromStage = RenderFromStage::Reset;
+
+  executeRenderPasses(rp, originalFrameBuffer);
+
+  printOpenGLError("Map::paintGL");
+}
+
+//################################################################################################
+void Map::skipRenderPasses(size_t& rp)
+{
+  if(d->renderFromStage != RenderFromStage::Full && d->renderFromStage != RenderFromStage::Reset)
   {
     for(; rp<d->renderPasses.size(); rp++)
     {
@@ -1993,9 +2016,11 @@ void Map::paintGLNoMakeCurrent()
 #endif
     }
   }
+}
 
-  d->renderFromStage = RenderFromStage::Reset;
-
+//################################################################################################
+void Map::executeRenderPasses(size_t& rp, GLint& originalFrameBuffer)
+{
   for(; rp<d->renderPasses.size(); rp++)
   {
     auto renderPass = d->renderPasses.at(rp);
@@ -2011,7 +2036,7 @@ void Map::paintGLNoMakeCurrent()
       {
         TP_FUNCTION_TIME("LightFBOs");
         DEBUG_printOpenGLError("RenderPass::LightFBOs start");
-#ifdef TP_FBO_SUPPORTED      
+#ifdef TP_FBO_SUPPORTED
         d->renderInfo.hdr = HDR::No;
         d->renderInfo.extendedFBO = ExtendedFBO::No;
 
@@ -2030,29 +2055,46 @@ void Map::paintGLNoMakeCurrent()
         glDepthMask(true);
         DEBUG_printOpenGLError("RenderPass::LightFBOs enable depth");
 
-        for(size_t i=0; i<d->lightBuffers.size(); i++)
-        {
-          const auto& light = d->lights.at(i);
-          auto& lightBuffer = d->lightBuffers.at(i);
-
-          size_t levels=1;
-
+        d->renderTimer.start();
+        size_t levels = 1;
 #ifdef TP_ENABLE_3D_TEXTURE
-          if(light.type == tp_math_utils::LightType::Spot)
-            levels=d->spotLightLevels;
+        levels = d->spotLightLevels;
 #endif
-
-          lightBuffer.worldToTexture.resize(levels);
-          for(size_t l=0; l<levels; l++)
+        d->lightLevelIndex = 0;
+        int64_t renderTime = 0;
+        // Only render 1 light level at once.
+        // Keep rendering more levels for better soft shadows, until time is up.
+        while (renderTime < d->maxLightRenderTime && d->lightLevelIndex < levels)
+        {
+          for(size_t i=0; i<d->lightBuffers.size(); i++)
           {
-            if(!d->prepareBuffer(lightBuffer, d->lightTextureSize, d->lightTextureSize, CreateColorBuffer::No, Multisample::No, HDR::No, ExtendedFBO::No, levels, l, true))
+            const auto& light = d->lights.at(i);
+            auto& lightBuffer = d->lightBuffers.at(i);
+
+            // Multi light levels only supported for Spot lights.
+            if (d->lightLevelIndex == 0)
+            {
+              lightBuffer.worldToTexture.resize((light.type == tp_math_utils::LightType::Spot)?levels:1);
+            }
+            else
+            {
+              if (light.type != tp_math_utils::LightType::Spot)
+                break;
+            }
+
+            if(!d->prepareBuffer(lightBuffer, d->lightTextureSize, d->lightTextureSize, CreateColorBuffer::No, Multisample::No, HDR::No, ExtendedFBO::No, levels, d->lightLevelIndex, true))
               return;
 
-            d->controller->setCurrentLight(light, l);
-            lightBuffer.worldToTexture[l] = d->controller->lightMatrices();
+            d->controller->setCurrentLight(light, d->lightLevelIndex);
+            lightBuffer.worldToTexture[d->lightLevelIndex] = d->controller->lightMatrices();
             d->render();
           }
+
+          // Increment.
+          ++d->lightLevelIndex;
+          renderTime = d->renderTimer.elapsed();
         }
+
         DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers");
 
         glViewport(0, 0, TPGLsizei(d->width), TPGLsizei(d->height));
@@ -2317,8 +2359,6 @@ void Map::paintGLNoMakeCurrent()
       tpWarning() << "Pass: " << size_t(renderPass);
     }
   }
-
-  printOpenGLError("Map::paintGL");
 }
 
 //##################################################################################################

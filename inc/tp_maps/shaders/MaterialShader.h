@@ -46,6 +46,10 @@ public:
   void setLights(const std::vector<tp_math_utils::Light>& lights, const std::vector<FBO>& lightBuffers);
 
   //################################################################################################
+  //! Call this to set the light offsets before drawing the geometry
+  void setLightOffsets(size_t renderedlightLevels);
+
+  //################################################################################################
   //! Call this to set the model, view, and projection matrices before drawing the geometry.
   void setMatrix(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p);
 

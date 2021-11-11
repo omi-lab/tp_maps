@@ -136,6 +136,12 @@ float sampleShadowMapLinear3D(sampler3D shadowMap, vec2 coords, float compareLig
 #endif
 
 //##################################################################################################
+vec2 computeLightOffset(Light light, int offsetIdx)
+{
+  return lightOffsets[offsetIdx].xy * light.offsetScale.xy;
+}
+
+//##################################################################################################
 vec3 lightPosToTexture(vec4 fragPos_light, vec2 offset, mat4 proj)
 {
   vec4 fp = proj * (fragPos_light+vec4(offset,0.0,0.0));
@@ -353,7 +359,7 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, vec3 
   if (attenuation > 1.0)
     attenuation = 1.0;
   // Use an arbitrary value to scale up the light intensity (coming from diffuseScale parameter).
-  vec3  maxRadiance = 5.0 * light.diffuseScale * light.diffuse;
+  vec3  maxRadiance = 3.0 * light.diffuseScale * light.diffuse;
   vec3  radiance    = mix(maxRadiance, maxRadiance * attenuation, material.useAttenuation);
 
   if (light.offsetScale.x > 1.0)

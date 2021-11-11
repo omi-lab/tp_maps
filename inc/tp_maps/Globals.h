@@ -253,7 +253,8 @@ enum class RenderPass : size_t
 //##################################################################################################
 enum class RenderFromStage : size_t
 {
-  Stage0, //!< Start from the first RenderPass::Stage0 pass and don't execute earlier passes.
+  Full, //!< Start from the first RenderPass::Stage0 pass and don't execute earlier passes.
+  RenderMoreLights, //!< Start from the first RenderPass::LightFBOs pass and don't execute earlier passes.
   Stage1, //!< Start from the first RenderPass::Stage1 pass and don't execute earlier passes.
   Stage2, //!< Start from the first RenderPass::Stage2 pass and don't execute earlier passes.
   Stage4, //!< Start from the first RenderPass::Stage4 pass and don't execute earlier passes.
