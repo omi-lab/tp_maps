@@ -375,7 +375,7 @@ void MaterialShader::compileRenderShader(const std::function<void(std::string& v
       const auto& light = lights.at(i);
       auto ii = std::to_string(i);
 
-      size_t levels = (light.type==tp_math_utils::LightType::Spot)?map()->spotLightLevels():1;
+      size_t levels = (light.type==tp_math_utils::LightType::Spot)?map()->maxSpotLightLevels():1;
       auto ll = std::to_string(levels);
 
       LIGHT_VERT_VARS += replaceLight(ii, ll, "uniform mat4 worldToLight%_view;\n");
@@ -405,7 +405,7 @@ void MaterialShader::compileRenderShader(const std::function<void(std::string& v
 
       case tp_math_utils::LightType::Spot:
       {
-        if(map()->spotLightLevels() == 1)
+        if(map()->maxSpotLightLevels() == 1)
         {
           LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform sampler2D light%Texture;\n");
           LIGHT_FRAG_CALC += replaceLight(ii, ll, "    float shadow=0.0;\n");
@@ -574,7 +574,7 @@ void MaterialShader::setLightOffsets(size_t renderedlightLevels)
 {
   auto exec = [&](const UniformLocations_lt& locations)
   {
-    size_t lightLevels = map()->spotLightLevels();
+    size_t lightLevels = map()->maxSpotLightLevels();
 
     std::vector<glm::vec3> lightOffsets;
     lightOffsets.reserve(lightLevels);

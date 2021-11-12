@@ -149,8 +149,7 @@ struct Map::Private
   size_t shadowSamples{0};
   size_t lightLevelIndex{0};
 
-  // @TODO Sarah make this configurable through Scene Builder 3D view config.
-  const int64_t maxLightRenderTime = 30; // 30ms
+  int64_t maxLightRenderTime = 30; // 30ms
   tp_utils::ElapsedTimer renderTimer;
 
   HDR hdr{HDR::No};
@@ -1265,15 +1264,21 @@ size_t Map::maxSpotLightLevels() const
 }
 
 //##################################################################################################
-size_t Map::spotLightLevels() const
-{
-  return d->spotLightLevels;
-}
-
-//##################################################################################################
 size_t Map::renderedLightLevels() const
 {
   return d->lightLevelIndex;
+}
+
+//##################################################################################################
+void Map::setMaxLightRenderTime(size_t maxLightRenderTime)
+{
+  d->maxLightRenderTime = maxLightRenderTime;
+}
+
+//##################################################################################################
+size_t Map::maxLightRenderTime() const
+{
+  return d->maxLightRenderTime;
 }
 
 //##################################################################################################

@@ -183,11 +183,13 @@ public:
   size_t maxSpotLightLevels() const;
 
   //################################################################################################
-  //! The calculated number of spot light levels in a 3D texture. (<=maxSpotLightLevels)
-  size_t spotLightLevels() const;
+  size_t renderedLightLevels() const;
 
   //################################################################################################
-  size_t renderedLightLevels() const;
+  void setMaxLightRenderTime(size_t maxLightRenderTime);
+
+  //################################################################################################
+  size_t maxLightRenderTime() const;
 
   //################################################################################################
   void setShadowSamples(size_t shadowSamples);

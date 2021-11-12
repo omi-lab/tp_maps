@@ -77,13 +77,13 @@ struct PostSSAOShaderPrivate::Private
         const auto& light = lights.at(i);
         auto ii = std::to_string(i);
 
-        size_t levels = (light.type==tp_math_utils::LightType::Spot)?map->spotLightLevels():1;
+        size_t levels = (light.type==tp_math_utils::LightType::Spot)?map->maxSpotLightLevels():1;
         auto ll = std::to_string(levels);
 
         AO_FRAG_VARS += replaceLight(ii, ll, "uniform mat4 viewToLight%;\n");
         AO_FRAG_VARS += replaceLight(ii, ll, "uniform mat4 invViewToLight%;\n");
 
-        if(map->spotLightLevels() == 1)
+        if(map->maxSpotLightLevels() == 1)
         {
           AO_FRAG_VARS += replaceLight(ii, ll, "uniform sampler2D light%Texture;\n");
           AO_FRAG_CALC += replaceLight(ii, ll, "    occlusion = min(testBuffer2D(coord_view, samplePos_view, viewToLight%, invViewToLight%, light%Texture), occlusion);\n");
