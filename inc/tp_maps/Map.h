@@ -453,10 +453,10 @@ protected:
   void invalidateBuffers();
 
   //################################################################################################
-  void skipRenderPasses(size_t& rp);
+  size_t skipRenderPasses();
 
   //################################################################################################
-  void executeRenderPasses(size_t& rp, GLint& originalFrameBuffer);
+  void executeRenderPasses(size_t& rp, GLint& originalFrameBuffer, bool renderMoreLights);
 
 private:
   //################################################################################################

@@ -1002,6 +1002,9 @@ void Map::animate(double timestampMS)
   for(auto l : d->layers)
     l->animate(timestampMS);
 
+  if(d->renderFromStage == RenderFromStage::RenderMoreLights)
+    update(RenderFromStage::RenderMoreLights);
+
   animateCallbacks(timestampMS);
 }
 
@@ -1899,6 +1902,8 @@ void Map::paintGLNoMakeCurrent()
 {
   DEBUG_printOpenGLError("paintGLNoMakeCurrent start");
 
+  d->renderTimer.start();
+
 #ifdef TP_FBO_SUPPORTED
   GLint originalFrameBuffer = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
@@ -1915,29 +1920,32 @@ void Map::paintGLNoMakeCurrent()
   glClearDepthf(1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  size_t rp=0;
-
   // Skip the passes that don't need a full render.
-  skipRenderPasses(rp);
+  size_t rp = skipRenderPasses();
 
+  bool renderMoreLights = (d->renderFromStage==RenderFromStage::RenderMoreLights);
   d->renderFromStage = RenderFromStage::Reset;
 
-  executeRenderPasses(rp, originalFrameBuffer);
+  executeRenderPasses(rp, originalFrameBuffer, renderMoreLights);
 
   printOpenGLError("Map::paintGL");
 }
 
 //################################################################################################
-void Map::skipRenderPasses(size_t& rp)
+size_t Map::skipRenderPasses()
 {
+  size_t rp=0;
   if(d->renderFromStage != RenderFromStage::Full && d->renderFromStage != RenderFromStage::Reset)
   {
     for(; rp<d->renderPasses.size(); rp++)
     {
       auto renderPass = d->renderPasses.at(rp);
 
+      if ((d->renderFromStage == RenderFromStage::RenderMoreLights) && (renderPass >= RenderPass::LightFBOs))
+        break;
+
       size_t stageIndex = size_t(renderPass)-size_t(RenderPass::Stage0);
-      if(stageIndex == size_t(d->renderFromStage))
+      if(stageIndex == size_t(d->renderFromStage) - size_t(RenderFromStage::Stage0))
       {
         rp++;
         break;
@@ -2021,10 +2029,12 @@ void Map::skipRenderPasses(size_t& rp)
 #endif
     }
   }
+
+  return rp;
 }
 
 //################################################################################################
-void Map::executeRenderPasses(size_t& rp, GLint& originalFrameBuffer)
+void Map::executeRenderPasses(size_t& rp, GLint& originalFrameBuffer, bool renderMoreLights)
 {
   for(; rp<d->renderPasses.size(); rp++)
   {
@@ -2060,13 +2070,15 @@ void Map::executeRenderPasses(size_t& rp, GLint& originalFrameBuffer)
         glDepthMask(true);
         DEBUG_printOpenGLError("RenderPass::LightFBOs enable depth");
 
-        d->renderTimer.start();
         size_t levels = 1;
 #ifdef TP_ENABLE_3D_TEXTURE
         levels = d->spotLightLevels;
 #endif
-        d->lightLevelIndex = 0;
         int64_t renderTime = 0;
+        // Reset to re-render all light levels.
+        if (!renderMoreLights)
+          d->lightLevelIndex = 0;
+
         // Only render 1 light level at once.
         // Keep rendering more levels for better soft shadows, until time is up.
         while (renderTime < d->maxLightRenderTime && d->lightLevelIndex < levels)
@@ -2099,6 +2111,10 @@ void Map::executeRenderPasses(size_t& rp, GLint& originalFrameBuffer)
           ++d->lightLevelIndex;
           renderTime = d->renderTimer.elapsed();
         }
+
+        // Carry on rendering levels later.
+        if (d->lightLevelIndex < levels)
+          d->renderFromStage = RenderFromStage::RenderMoreLights;
 
         DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers");
 
