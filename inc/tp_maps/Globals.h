@@ -32,7 +32,10 @@
 #  define TP_GL3
 #  define TP_ENABLE_MULTISAMPLE
 #  define TP_ENABLE_MULTISAMPLE_FBO
-#  define TP_ENABLE_3D_TEXTURE
+
+#  ifndef TP_ENABLE_3D_TEXTURE
+#    define TP_ENABLE_3D_TEXTURE
+#  endif
 
 #elif defined(TP_IOS) //----------------------------------------------------------------------------
 #  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
