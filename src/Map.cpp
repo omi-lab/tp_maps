@@ -875,6 +875,8 @@ void Map::preDelete()
   for(auto& lightBuffer : d->lightBuffers)
     d->deleteBuffer(lightBuffer);
 
+  d->lightLevelIndex = 0;
+
   d->preDeleteCalled = true;
 }
 
@@ -1062,6 +1064,8 @@ void Map::invalidateBuffers()
   for(auto& lightTexture : d->lightBuffers)
     d->invalidateBuffer(lightTexture);
   d->lightBuffers.clear();
+
+  d->lightLevelIndex = 0;
 
   for(auto i : d->layers)
     i->invalidateBuffers();
@@ -2056,12 +2060,16 @@ void Map::executeRenderPasses(size_t& rp, GLint& originalFrameBuffer, bool rende
         d->renderInfo.extendedFBO = ExtendedFBO::No;
 
         while(d->lightBuffers.size() < d->lights.size())
+        {
           d->lightBuffers.emplace_back();
+          d->lightLevelIndex = 0;
+        }
 
         while(d->lightBuffers.size() > d->lights.size())
         {
           auto buffer = tpTakeLast(d->lightBuffers);
           d->deleteBuffer(buffer);
+          d->lightLevelIndex = 0;
         }
         DEBUG_printOpenGLError("RenderPass::LightFBOs delete buffers");
 
@@ -2095,7 +2103,7 @@ void Map::executeRenderPasses(size_t& rp, GLint& originalFrameBuffer, bool rende
             }
             else
             {
-              if (light.type != tp_math_utils::LightType::Spot)
+              if(light.type != tp_math_utils::LightType::Spot)
                 break;
             }
 
