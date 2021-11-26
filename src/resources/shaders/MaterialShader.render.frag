@@ -463,7 +463,7 @@ void main()
   float alpha = rgbaTex.a;
   // Use transparency to display transmission and transmissionRoughness.
   if(transmissionRoughness > 0.1)
-    transmission *= (1.0 - transmissionRoughness);
+	transmission *= 0.5 * (1.0 - transmissionRoughness);
   if(transmission > 0.1)
     alpha = 0.1 + 0.9 * (1.0 - transmission);
 

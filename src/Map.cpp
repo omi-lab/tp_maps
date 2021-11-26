@@ -2287,7 +2287,7 @@ void Map::executeRenderPasses(size_t& rp, GLint& originalFrameBuffer, bool rende
         DEBUG_printOpenGLError("RenderPass::Transparency start");
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
-        glDepthMask(false);
+        glDepthMask(true);
         d->render();
         DEBUG_printOpenGLError("RenderPass::Transparency end");
         break;
