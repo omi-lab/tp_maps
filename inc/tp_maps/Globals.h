@@ -348,10 +348,6 @@ enum class Alpha
 };
 
 //##################################################################################################
-//! Replace key with value in result.
-void replace(std::string& result, const std::string& key, const std::string& value);
-
-//##################################################################################################
 //! Replace light index and levels
 /*!
 \param lightIndex will replace %

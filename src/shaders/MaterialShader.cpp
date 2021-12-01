@@ -449,12 +449,12 @@ void MaterialShader::compileRenderShader(const std::function<void(std::string& v
   std::string vertStr = vertShaderStr().data(openGLProfile(), shaderType);
   std::string fragStr = fragShaderStr().data(openGLProfile(), shaderType);
 
-  replace(vertStr, "/*LIGHT_VERT_VARS*/", LIGHT_VERT_VARS);
-  replace(vertStr, "/*LIGHT_VERT_CALC*/", LIGHT_VERT_CALC);
-  replace(fragStr, "/*LIGHT_FRAG_VARS*/", LIGHT_FRAG_VARS);
-  replace(fragStr, "/*LIGHT_FRAG_CALC*/", LIGHT_FRAG_CALC);
+  tp_utils::replace(vertStr, "/*LIGHT_VERT_VARS*/", LIGHT_VERT_VARS);
+  tp_utils::replace(vertStr, "/*LIGHT_VERT_CALC*/", LIGHT_VERT_CALC);
+  tp_utils::replace(fragStr, "/*LIGHT_FRAG_VARS*/", LIGHT_FRAG_VARS);
+  tp_utils::replace(fragStr, "/*LIGHT_FRAG_CALC*/", LIGHT_FRAG_CALC);
 
-  replace(fragStr, "/*TP_SHADOW_SAMPLES*/", std::to_string(map()->shadowSamples()));
+  tp_utils::replace(fragStr, "/*TP_SHADOW_SAMPLES*/", std::to_string(map()->shadowSamples()));
 
   modifyShaders(vertStr, fragStr);
 

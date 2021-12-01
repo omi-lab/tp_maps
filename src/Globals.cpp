@@ -39,17 +39,6 @@ int staticInit()
 }
 
 //##################################################################################################
-void replace(std::string& result, const std::string& key, const std::string& value)
-{
-  size_t pos = result.find(key);
-  while(pos != std::string::npos)
-  {
-    result.replace(pos, key.size(), value);
-    pos = result.find(key, pos + value.size());
-  }
-}
-
-//##################################################################################################
 std::string replaceLight(const std::string& lightIndex, const std::string& levels, const std::string& pattern)
 {
   std::string result = pattern;
@@ -76,7 +65,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
 
   auto replace = [&](const std::string& key, const std::string& value)
   {
-    tp_maps::replace(result, key, value);
+    tp_utils::replace(result, key, value);
   };
 
   auto replaceRC = [&](const std::string& key, const std::string& file, ShaderType shaderType_)

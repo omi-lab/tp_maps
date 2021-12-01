@@ -96,8 +96,8 @@ struct PostSSAOShaderPrivate::Private
       }
     }
 
-    replace(fragSrc, "/*AO_FRAG_VARS*/", AO_FRAG_VARS);
-    replace(fragSrc, "/*AO_FRAG_CALC*/", AO_FRAG_CALC);
+    tp_utils::replace(fragSrc, "/*AO_FRAG_VARS*/", AO_FRAG_VARS);
+    tp_utils::replace(fragSrc, "/*AO_FRAG_CALC*/", AO_FRAG_CALC);
   }
 };
 
