@@ -1,5 +1,5 @@
-#ifndef tp_maps_GridLayer_h
-#define tp_maps_GridLayer_h
+#ifndef tp_maps_RulerLayer_h
+#define tp_maps_RulerLayer_h
 
 #include "tp_maps/Layer.h"
 
@@ -8,24 +8,14 @@ namespace tp_maps
 class FontRenderer;
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT GridLayer: public Layer
+class TP_MAPS_SHARED_EXPORT RulerLayer: public Layer
 {
 public:
   //################################################################################################
-  GridLayer(float scale = 1.0f, const glm::vec3& gridColor = {0.05f, 0.05f, 0.9f});
+  RulerLayer(float scale=1.0f);
 
   //################################################################################################
-  ~GridLayer() override;
-
-  //################################################################################################
-  //! Set a multiplier for the spacing between each graduation in the grid.
-  /*!
-  \param spacing Smaller is spacing, closer are the graduations to one another.
-  */
-  void setSpacing(float spacing);
-
-  //################################################################################################
-  float getSpacing() const;
+  ~RulerLayer() override;
 
   //################################################################################################
   //! Set the font that will be used to labels

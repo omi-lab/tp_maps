@@ -1,4 +1,4 @@
-#include "tp_maps/layers/GridLayer.h"
+#include "tp_maps/layers/RulerLayer.h"
 #include "tp_maps/shaders/LineShader.h"
 #include "tp_maps/shaders/FontShader.h"
 #include "tp_maps/Map.h"
@@ -25,12 +25,12 @@ struct LinesDetails_lt
 }
 
 //##################################################################################################
-struct GridLayer::Private
+struct RulerLayer::Private
 {
-  TP_REF_COUNT_OBJECTS("tp_maps::GridLayer::Private");
+  TP_REF_COUNT_OBJECTS("tp_maps::RulerLayer::Private");
   TP_NONCOPYABLE(Private);
 
-  GridLayer* q;
+  RulerLayer* q;
 
   FontRenderer* font{nullptr};
 
@@ -39,17 +39,12 @@ struct GridLayer::Private
 
   bool updateVertexBuffer{true};
 
-  float scale; // default: 1 = 1 meter
-  const float halfLength = 1.0f; // Half length of the grid.
-  float spacing = 0.1f; // Distance between graduation marks. Default: every 0.1 meter
-  const glm::vec3 gridColor{0.05f, 0.05f, 0.9f}; // blue
-  const float lineThickness = 3.0f; // Note: doesn't work for all OpenGL versions.
+  float scale;
 
   //################################################################################################
-  Private(GridLayer* q_, float scale_, const glm::vec3& gridColor_):
+  Private(RulerLayer* q_, float scale_):
     q(q_),
-    scale(scale_),
-    gridColor(gridColor_)
+    scale(scale_)
   {
   }
 
@@ -98,52 +93,39 @@ struct GridLayer::Private
       deleteVertexBuffers();
       updateVertexBuffer=false;
 
-      // Number of graduation marks per semi axis.
-      size_t graduationCount = halfLength / spacing;
-
-      auto drawGraduationsOnAxis = [&](int axisIdx, int directionIdx, const glm::vec3& offset)
+      for(size_t a=0; a<3; a++)
       {
-        glm::vec3 axisOffset{0,0,0};
-        axisOffset[int(axisIdx)] = spacing * scale;
+        glm::vec3 maskA{0,0,0};
+        maskA[int(a)]=scale*0.01f;
 
-        glm::vec3 directionOffset{0,0,0};
-        directionOffset[int(directionIdx)] = graduationCount * axisOffset[int(axisIdx)];
+        glm::vec3 maskB{0,0,0};
+        maskB[int((a+1)%3)]=scale*0.1f;
+
+        glm::vec3 maskC{0,0,0};
+        maskC[int((a+2)%3)]=scale*0.1f;
 
         std::vector<glm::vec3> vertices;
-        // Draw graduation lines on the current axis.
-        glm::vec3 gridOrigin = offset;
-        for (int graduationIdx = 0; graduationIdx < graduationCount; ++graduationIdx)
+        for(int i=0; i< 100; i++)
         {
-          auto addLine = [&](float lineIdx)
-          {
-            auto graduationOrigin = gridOrigin + lineIdx * axisOffset;
-            vertices.emplace_back(graduationOrigin - directionOffset);
-            vertices.emplace_back(graduationOrigin + directionOffset);
-          };
-          // Positive side of the axis.
-          addLine(float(graduationIdx));
-          if (graduationIdx == 0)
-            continue;
-          // Negative side of the axis.
-          addLine(-float(graduationIdx));
+          auto aa = float(i)*maskA;
+          vertices.emplace_back(aa);
+          vertices.emplace_back(aa+maskB);
+
+          vertices.emplace_back(aa);
+          vertices.emplace_back(aa+maskC);
         }
 
         LinesDetails_lt details;
         details.vertexBuffer = shader->generateVertexBuffer(q->map(), vertices);
-        details.color = gridColor;
+        details.color = {0.0f, 0.0f, 0.0f};
+        details.color[int(a)] = 1.0f;
         processedGeometry.push_back(details);
-      };
-
-      // Grid on horizontal plane (i.e. xOy). Following Blender coordinate system.
-      // Draw graduation lines on x-axis, parallel to y-axis.
-      drawGraduationsOnAxis(0, 1, glm::vec3(0.0f, 0.0f, 0.01f));
-      // Draw graduation lines on y-axis, parallel to x-axis.
-      drawGraduationsOnAxis(1, 0, glm::vec3(0.0f, 0.0f, 0.01f));
+      }
     }
 
     shader->use();
     shader->setMatrix(matrix);
-    shader->setLineWidth(lineThickness);
+    shader->setLineWidth(1.0f);
 
     q->map()->controller()->enableScissor(q->coordinateSystem());
     for(const LinesDetails_lt& line : processedGeometry)
@@ -166,43 +148,34 @@ struct GridLayer::Private
 
     shader->use();
     shader->setMatrix(matrix);
+
+    //std::u16string text(u"Ruler On");
+    //tp_maps::PreparedStringConfig config;
+    //tp_maps::FontShader::PreparedString textToRender(font, text, config);
+    //shader->drawPreparedString(textToRender);
   }
 };
 
 //##################################################################################################
-GridLayer::GridLayer(float scale, const glm::vec3& gridColor):
-  d(new Private(this, scale, gridColor))
+RulerLayer::RulerLayer(float scale):
+  d(new Private(this, scale))
 {
 }
 
 //##################################################################################################
-GridLayer::~GridLayer()
+RulerLayer::~RulerLayer()
 {
   delete d;
 }
 
 //##################################################################################################
-void GridLayer::setSpacing(float spacing)
-{
-  d->spacing = spacing;
-  d->updateVertexBuffer = true;
-  update();
-}
-
-//##################################################################################################
-float GridLayer::getSpacing() const
-{
-  return d->spacing;
-}
-
-//##################################################################################################
-void GridLayer::setFont(FontRenderer* font)
+void RulerLayer::setFont(FontRenderer* font)
 {
   d->font = font;
 }
 
 //##################################################################################################
-void GridLayer::render(RenderInfo& renderInfo)
+void RulerLayer::render(RenderInfo& renderInfo)
 {
   if(renderInfo.pass != RenderPass::Normal)
     return;
@@ -213,11 +186,11 @@ void GridLayer::render(RenderInfo& renderInfo)
     d->calculateGrid(matrix, lines);
 
   d->renderLines(matrix);
-  //d->renderText(matrix);
+  d->renderText(matrix);
 }
 
 //##################################################################################################
-void GridLayer::invalidateBuffers()
+void RulerLayer::invalidateBuffers()
 {
   d->deleteVertexBuffers();
   d->updateVertexBuffer=true;

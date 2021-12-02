@@ -154,6 +154,9 @@ HEADERS += inc/tp_maps/shaders/PostBlurAndTintShader.h
 SOURCES += src/layers/GridLayer.cpp
 HEADERS += inc/tp_maps/layers/GridLayer.h
 
+SOURCES += src/layers/RulerLayer.cpp
+HEADERS += inc/tp_maps/layers/RulerLayer.h
+
 SOURCES += src/layers/ImageLayer.cpp
 HEADERS += inc/tp_maps/layers/ImageLayer.h
 
