@@ -112,7 +112,7 @@ struct GridLayer::Private
         std::vector<glm::vec3> vertices;
         // Draw graduation lines on the current axis.
         glm::vec3 gridOrigin = offset;
-        for (int graduationIdx = 0; graduationIdx < graduationCount; ++graduationIdx)
+        for (size_t graduationIdx = 0; graduationIdx < graduationCount; ++graduationIdx)
         {
           auto addLine = [&](float lineIdx)
           {
