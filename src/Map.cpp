@@ -8,7 +8,6 @@
 #include "tp_maps/MouseEvent.h"
 #include "tp_maps/KeyEvent.h"
 #include "tp_maps/FontRenderer.h"
-#include "tp_maps/textures/DefaultSpritesTexture.h"
 
 #include "tp_math_utils/Plane.h"
 #include "tp_math_utils/Ray.h"
@@ -22,6 +21,11 @@
 #include "glm/glm.hpp"
 #include "glm/gtx/norm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+
+#ifdef TP_EMSCRIPTEN
+#include "tp_maps/shaders/PostBlitShader.h"
+#define TP_BLIT_WITH_SHADER
+#endif
 
 #ifdef TP_MAPS_DEBUG
 #  define DEBUG_printOpenGLError(A) printOpenGLError(A)
@@ -162,6 +166,10 @@ struct Map::Private
   FBO pickingBuffer;
   FBO renderToImageBuffer;
 
+#ifdef TP_BLIT_WITH_SHADER
+  FullScreenShader::Object* rectangleObject{nullptr};
+#endif
+
   bool initialized{false};
   bool preDeleteCalled{false};
 
@@ -212,6 +220,11 @@ struct Map::Private
       delete i.second;
 
     shaders.clear();
+
+#ifdef TP_BLIT_WITH_SHADER
+    delete rectangleObject;
+    rectangleObject = nullptr;
+#endif
   }
 
   //################################################################################################
@@ -877,6 +890,11 @@ void Map::preDelete()
 
   d->lightLevelIndex = 0;
 
+#ifdef TP_BLIT_WITH_SHADER
+  delete d->rectangleObject;
+  d->rectangleObject = nullptr;
+#endif
+
   d->preDeleteCalled = true;
 }
 
@@ -1072,6 +1090,11 @@ void Map::invalidateBuffers()
 
   for(auto i : d->fontRenderers)
     i->invalidateBuffers();
+
+#ifdef TP_BLIT_WITH_SHADER
+  delete d->rectangleObject;
+  d->rectangleObject = nullptr;
+#endif
 
   invalidateBuffersCallbacks();
 }
@@ -2038,7 +2061,7 @@ size_t Map::skipRenderPasses()
 }
 
 //################################################################################################
-void Map::executeRenderPasses(size_t& rp, GLint& originalFrameBuffer, bool renderMoreLights)
+void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool renderMoreLights)
 {
   for(; rp<d->renderPasses.size(); rp++)
   {
@@ -2228,32 +2251,62 @@ void Map::executeRenderPasses(size_t& rp, GLint& originalFrameBuffer, bool rende
 
         FBO* readFBO = &d->intermediateFBOs[fboIndex];
 
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, readFBO->frameBuffer);
-
-        glReadBuffer(GL_COLOR_ATTACHMENT0);
-        DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " a");
-        d->setDrawBuffers({GL_COLOR_ATTACHMENT0});
-        DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " b");
-        glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-        DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " blit color 0 and depth");
-
-        if(readFBO->extendedFBO == ExtendedFBO::Yes)
+#ifdef TP_BLIT_WITH_SHADER
+        // Kludge to get round a crash in glBlitFramebuffer on Chrome.
         {
-          glReadBuffer(GL_COLOR_ATTACHMENT1);
-          d->setDrawBuffers({GL_COLOR_ATTACHMENT1});
-          glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), GL_COLOR_BUFFER_BIT, GL_NEAREST);
-          DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " blit color 1");
+          glDepthMask(false);
+          glDisable(GL_DEPTH_TEST);
 
-          glReadBuffer(GL_COLOR_ATTACHMENT2);
-          d->setDrawBuffers({GL_COLOR_ATTACHMENT2});
-          glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), GL_COLOR_BUFFER_BIT, GL_NEAREST);
-          DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " blit color 2");
+          auto shader = getShader<PostBlitShader>();
+          if(shader->error())
+            break;
 
-          d->setDrawBuffers({GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2});
+          if(!d->rectangleObject)
+            d->rectangleObject = shader->makeRectangleObject({1.0f,1.0f});
+
+          shader->use(ShaderType::RenderExtendedFBO);
+          shader->setReadFBO(*readFBO);
+
+          glm::mat4 m{1.0f};
+          shader->setFrameMatrix(m);
+          shader->setProjectionMatrix(m);
+
+          shader->draw(*d->rectangleObject);
         }
-        else
+#else
+        {
+          glBindFramebuffer(GL_READ_FRAMEBUFFER, readFBO->frameBuffer);
+
+          glReadBuffer(GL_COLOR_ATTACHMENT0);
+          DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " a");
+
           d->setDrawBuffers({GL_COLOR_ATTACHMENT0});
-        DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " end");
+          DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " b");
+
+          glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+          DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " blit color 0 and depth");
+
+          if(readFBO->extendedFBO == ExtendedFBO::Yes)
+          {
+            glReadBuffer(GL_COLOR_ATTACHMENT1);
+            d->setDrawBuffers({GL_COLOR_ATTACHMENT1});
+            glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+            DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " blit color 1");
+
+            glReadBuffer(GL_COLOR_ATTACHMENT2);
+            d->setDrawBuffers({GL_COLOR_ATTACHMENT2});
+            glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+            DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " blit color 2");
+
+            d->setDrawBuffers({GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2});
+          }
+          else
+            d->setDrawBuffers({GL_COLOR_ATTACHMENT0});
+          DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " end");
+        }
+#endif
+
 #endif
         break;
       }

@@ -456,7 +456,7 @@ protected:
   size_t skipRenderPasses();
 
   //################################################################################################
-  void executeRenderPasses(size_t& rp, GLint& originalFrameBuffer, bool renderMoreLights);
+  void executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool renderMoreLights);
 
 private:
   //################################################################################################
