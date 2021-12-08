@@ -28,6 +28,27 @@ public:
   float getSpacing() const;
 
   //################################################################################################
+  //! Set an offset to move the grid vertically.
+  /*!
+  \param heightOffset Vertical offset to elevate the grid above ground level.
+  */
+  void setHeightOffset(float heightOffset);
+
+  //################################################################################################
+  //! Set a 2D offset to move the grid centre on the horizontal plane.
+  /*!
+  \param horizontalTranslationOffset Offset in xOy plane.
+  */
+  void setHorizontalTranslationOffset(const glm::vec2& horizontalTranslationOffset);
+
+  //################################################################################################
+  //! Set a angle offset to rotate the grid in the horizontal plane.
+  /*!
+  \param horizontalRotationOffset Offset in radian for a 2D horizontal rotation of the grid.
+  */
+  void setHorizontalRotationOffset(float horizontalRotationOffset);
+
+  //################################################################################################
   //! Set the font that will be used to labels
   /*!
   This sets the font that will be used to draw the grid labels.

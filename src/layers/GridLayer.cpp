@@ -42,11 +42,16 @@ struct GridLayer::Private
   float scale; // default: 1 = 1 meter
   const float halfLength = 1.0f; // Half length of the grid.
   float spacing = 0.1f; // Distance between graduation marks. Default: every 0.1 meter
+  float heightOffset = 0.001f; // Offset to elevate the grid.
+  glm::vec2 horizontalTranslationOffset{0.0f}; // Offset the grid centre on the horizontal plane.
+  float horizontalRotationOffset = 0.0f; // Angle (in radian) to rotate the grid on the horizontal plane.
   const glm::vec3 gridColor{0.05f, 0.05f, 0.9f}; // blue
   const float lineThickness = 3.0f; // Note: doesn't work for all OpenGL versions.
 
   //################################################################################################
-  Private(GridLayer* q_, float scale_, const glm::vec3& gridColor_):
+  Private(GridLayer* q_,
+          float scale_,
+          const glm::vec3& gridColor_):
     q(q_),
     scale(scale_),
     gridColor(gridColor_)
@@ -100,6 +105,12 @@ struct GridLayer::Private
 
       // Number of graduation marks per semi axis.
       size_t graduationCount = halfLength / spacing;
+      float cos, sin = 0.0f;
+      if (horizontalRotationOffset != 0.0f)
+      {
+        cos = glm::cos(horizontalRotationOffset);
+        sin = glm::sin(horizontalRotationOffset);
+      }
 
       auto drawGraduationsOnAxis = [&](int axisIdx, int directionIdx, const glm::vec3& offset)
       {
@@ -108,6 +119,13 @@ struct GridLayer::Private
 
         glm::vec3 directionOffset{0,0,0};
         directionOffset[int(directionIdx)] = graduationCount * axisOffset[int(axisIdx)];
+        // Rotate the direction horizontally.
+        if (horizontalRotationOffset != 0.0f)
+        {
+          float prevDirectionOffsetX = directionOffset.x;
+          directionOffset.x = cos * directionOffset.x - sin * directionOffset.y;
+          directionOffset.y = sin * prevDirectionOffsetX + cos * directionOffset.y;
+        }
 
         std::vector<glm::vec3> vertices;
         // Draw graduation lines on the current axis.
@@ -136,9 +154,9 @@ struct GridLayer::Private
 
       // Grid on horizontal plane (i.e. xOy). Following Blender coordinate system.
       // Draw graduation lines on x-axis, parallel to y-axis.
-      drawGraduationsOnAxis(0, 1, glm::vec3(0.0f, 0.0f, 0.01f));
+      drawGraduationsOnAxis(0, 1, glm::vec3(horizontalTranslationOffset, heightOffset));
       // Draw graduation lines on y-axis, parallel to x-axis.
-      drawGraduationsOnAxis(1, 0, glm::vec3(0.0f, 0.0f, 0.01f));
+      drawGraduationsOnAxis(1, 0, glm::vec3(horizontalTranslationOffset, heightOffset));
     }
 
     shader->use();
@@ -193,6 +211,30 @@ void GridLayer::setSpacing(float spacing)
 float GridLayer::getSpacing() const
 {
   return d->spacing;
+}
+
+//##################################################################################################
+void GridLayer::setHeightOffset(float heightOffset)
+{
+  d->heightOffset = heightOffset;
+  d->updateVertexBuffer = true;
+  update();
+}
+
+//##################################################################################################
+void GridLayer::setHorizontalTranslationOffset(const glm::vec2& horizontalTranslationOffset)
+{
+  d->horizontalTranslationOffset = horizontalTranslationOffset;
+  d->updateVertexBuffer = true;
+  update();
+}
+
+//##################################################################################################
+void GridLayer::setHorizontalRotationOffset(float horizontalRotationOffset)
+{
+  d->horizontalRotationOffset = horizontalRotationOffset;
+  d->updateVertexBuffer = true;
+  update();
 }
 
 //##################################################################################################

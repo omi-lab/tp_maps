@@ -464,8 +464,12 @@ void main()
   // Use transparency to display transmission and transmissionRoughness.
   if(transmissionRoughness > 0.1)
 	transmission *= 0.5 * (1.0 - transmissionRoughness);
+  float minAlpha = 0.2;
+  // For non white material, use a higher alpha value = less transparency.
+  if(rgbaTex.xyz != vec3(1.0))
+	minAlpha = 0.5;
   if(transmission > 0.1)
-    alpha = 0.1 + 0.9 * (1.0 - transmission);
+    alpha = minAlpha + (1.0 - minAlpha) * (1.0 - transmission);
 
   float shininess = metalness;
 
