@@ -197,6 +197,7 @@ TP_DECLARE_ID(            postOutlineShaderSID,              "Post outline shade
 TP_DECLARE_ID(        postBlurAndTintShaderSID,        "Post blur and tint shader");
 TP_DECLARE_ID(              postGammaShaderSID,                "Post gamma shader");
 TP_DECLARE_ID(             backgroundShaderSID,                "Background shader");
+TP_DECLARE_ID(                patternShaderSID,                   "Pattern shader");
 
 //##################################################################################################
 int staticInit();
