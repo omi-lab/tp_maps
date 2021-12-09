@@ -105,7 +105,8 @@ struct GridLayer::Private
 
       // Number of graduation marks per semi axis.
       size_t graduationCount = halfLength / spacing;
-      float cos, sin = 0.0f;
+      float cos = 0.0f;
+      float sin = 0.0f;
       if (horizontalRotationOffset != 0.0f)
       {
         cos = glm::cos(horizontalRotationOffset);
