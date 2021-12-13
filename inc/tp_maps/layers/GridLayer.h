@@ -42,11 +42,11 @@ public:
   void setHorizontalTranslationOffset(const glm::vec2& horizontalTranslationOffset);
 
   //################################################################################################
-  //! Set a angle offset to rotate the grid in the horizontal plane.
+  //! Set a forward direction to orientate the grid in the horizontal plane.
   /*!
-  \param horizontalRotationOffset Offset in radian for a 2D horizontal rotation of the grid.
+  \param horizontalOrientation Forward vector to orientate the grid on the horizontal plane.
   */
-  void setHorizontalRotationOffset(float horizontalRotationOffset);
+  void setHorizontalOrientation(const glm::vec2& horizontalOrientation);
 
   //################################################################################################
   //! Set the font that will be used to labels
