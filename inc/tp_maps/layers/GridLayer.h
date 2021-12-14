@@ -25,7 +25,7 @@ public:
   void setSpacing(float spacing);
 
   //################################################################################################
-  float getSpacing() const;
+  float spacing() const;
 
   //################################################################################################
   //! Set an offset to move the grid vertically.
@@ -33,6 +33,9 @@ public:
   \param heightOffset Vertical offset to elevate the grid above ground level.
   */
   void setHeightOffset(float heightOffset);
+
+  //################################################################################################
+  float heightOffset() const;
 
   //################################################################################################
   //! Set a 2D offset to move the grid centre on the horizontal plane.

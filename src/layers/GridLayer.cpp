@@ -42,7 +42,7 @@ struct GridLayer::Private
   float scale; // default: 1 = 1 meter
   const float halfLength = 1.0f; // Half length of the grid.
   float spacing = 0.1f; // Distance between graduation marks. Default: every 0.1 meter
-  float heightOffset = 0.001f; // Offset to elevate the grid.
+  float heightOffset = 0.001f; // Offset to elevate the grid (to make sure it doesn't blend inside the floor).
   glm::vec2 horizontalTranslationOffset{0.0f}; // Offset the grid centre on the horizontal plane.
   glm::vec2 horizontalOrientation{0.0f, 1.0f}; // Direction of the grid on the xOy plane (looking towards y-axis by default).
   const glm::vec3 gridColor{0.05f, 0.05f, 0.9f}; // blue
@@ -112,44 +112,41 @@ struct GridLayer::Private
         glm::vec3 axisOffset = spaceBetweenGraduations * axisToAddGraduations;
         glm::vec3 directionOffset = graduationCount * spaceBetweenGraduations * lineDirection;
 
-        std::vector<glm::vec3> vertices;
-        // Draw graduation lines on the current axis.
+        std::vector<glm::vec3> centralLinesVertices;
+        std::vector<glm::vec3> linesVertices;
         glm::vec3 gridOrigin = offset;
+
+        auto addLine = [&](int lineIdx, std::vector<glm::vec3>& vertices)
+        {
+          auto graduationOrigin = gridOrigin + (float)lineIdx * axisOffset;
+          vertices.emplace_back(graduationOrigin - directionOffset);
+          vertices.emplace_back(graduationOrigin + directionOffset);
+        };
+
+        // Draw graduation lines on the current axis.
         for (size_t graduationIdx = 0; graduationIdx < graduationCount; ++graduationIdx)
         {
-          auto addLine = [&](float lineIdx)
-          {
-            auto graduationOrigin = gridOrigin + lineIdx * axisOffset;
-            vertices.emplace_back(graduationOrigin - directionOffset);
-            vertices.emplace_back(graduationOrigin + directionOffset);
-          };
-          // @DEBUG draw centre line in red
-          /*
           if (graduationIdx == 0)
           {
-            std::vector<glm::vec3> centreVertices;
-            auto graduationOrigin = gridOrigin;
-            centreVertices.emplace_back(graduationOrigin - directionOffset);
-            centreVertices.emplace_back(graduationOrigin + directionOffset);
-
-            LinesDetails_lt details;
-            details.vertexBuffer = shader->generateVertexBuffer(q->map(), centreVertices);
-            details.color = glm::vec3(1.0f, 0.0f, 0.0f);
-            processedGeometry.push_back(details);
-            continue;
+            addLine(graduationIdx, centralLinesVertices);
           }
-          */
-
-          // Positive side of the axis.
-          addLine(float(graduationIdx));
-          if (graduationIdx == 0)
-            continue;
-          // Negative side of the axis.
-          addLine(-float(graduationIdx));
+          else
+          {
+            // Positive side of the axis.
+            addLine(graduationIdx, linesVertices);
+            // Negative side of the axis.
+            addLine(-graduationIdx, linesVertices);
+          }
         }
 
         LinesDetails_lt details;
-        details.vertexBuffer = shader->generateVertexBuffer(q->map(), vertices);
+        // Central lines (in red)
+        details.vertexBuffer = shader->generateVertexBuffer(q->map(), centralLinesVertices);
+        details.color = glm::vec3(1.0f, 0.0f, 0.0f);
+        processedGeometry.push_back(details);
+
+        // Side lines
+        details.vertexBuffer = shader->generateVertexBuffer(q->map(), linesVertices);
         details.color = gridColor;
         processedGeometry.push_back(details);
       };
@@ -218,7 +215,7 @@ void GridLayer::setSpacing(float spacing)
 }
 
 //##################################################################################################
-float GridLayer::getSpacing() const
+float GridLayer::spacing() const
 {
   return d->spacing;
 }
@@ -229,6 +226,12 @@ void GridLayer::setHeightOffset(float heightOffset)
   d->heightOffset = heightOffset;
   d->updateVertexBuffer = true;
   update();
+}
+
+//##################################################################################################
+float GridLayer::heightOffset() const
+{
+  return d->heightOffset;
 }
 
 //##################################################################################################
