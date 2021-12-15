@@ -118,7 +118,7 @@ struct GridLayer::Private
 
         auto addLine = [&](int lineIdx, std::vector<glm::vec3>& vertices)
         {
-          auto graduationOrigin = gridOrigin + (float)lineIdx * axisOffset;
+          auto graduationOrigin = gridOrigin + float(lineIdx) * axisOffset;
           vertices.emplace_back(graduationOrigin - directionOffset);
           vertices.emplace_back(graduationOrigin + directionOffset);
         };
