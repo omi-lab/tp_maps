@@ -26,6 +26,7 @@ TP_DEFINE_ID(                postSSRShaderSID,                  "Post ssr shader
 TP_DEFINE_ID(               postBlitShaderSID,                 "Post blit shader");
 TP_DEFINE_ID(            postOutlineShaderSID,              "Post outline shader");
 TP_DEFINE_ID(        postBlurAndTintShaderSID,        "Post blur and tint shader");
+TP_DEFINE_ID(             postGrid2DShaderSID,              "Post grid 2D shader");
 TP_DEFINE_ID(              postGammaShaderSID,                "Post gamma shader");
 TP_DEFINE_ID(             backgroundShaderSID,                "Background shader");
 TP_DEFINE_ID(                patternShaderSID,                   "Pattern shader");

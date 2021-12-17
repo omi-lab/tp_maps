@@ -195,6 +195,7 @@ TP_DECLARE_ID(                postSSRShaderSID,                  "Post ssr shade
 TP_DECLARE_ID(               postBlitShaderSID,                 "Post blit shader");
 TP_DECLARE_ID(            postOutlineShaderSID,              "Post outline shader");
 TP_DECLARE_ID(        postBlurAndTintShaderSID,        "Post blur and tint shader");
+TP_DECLARE_ID(             postGrid2DShaderSID,              "Post grid 2D shader");
 TP_DECLARE_ID(              postGammaShaderSID,                "Post gamma shader");
 TP_DECLARE_ID(             backgroundShaderSID,                "Background shader");
 TP_DECLARE_ID(                patternShaderSID,                   "Pattern shader");
