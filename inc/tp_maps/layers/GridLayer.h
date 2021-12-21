@@ -27,6 +27,16 @@ public:
   //################################################################################################
   float spacing() const;
 
+  //##################################################################################################
+  //! Toggle between a 2D overlay grid and grid in perspective.
+  /*!
+  \param gridAs2DOverlay True to make the grid a 2D overlay, false to have it on the ground as perspective.
+  */
+  void setGridAs2DOverlay(bool gridAs2DOverlay);
+
+  //##################################################################################################
+  float gridAs2DOverlay() const;
+
   //################################################################################################
   //! Set an offset to move the grid vertically.
   /*!

@@ -47,6 +47,7 @@ struct GridLayer::Private
   glm::vec2 horizontalOrientation{0.0f, 1.0f}; // Direction of the grid on the xOy plane (looking towards y-axis by default).
   const glm::vec3 gridColor{0.05f, 0.05f, 0.9f}; // blue
   const float lineThickness = 3.0f; // Note: doesn't work for all OpenGL versions.
+  bool gridAs2DOverlay = false;
 
   //################################################################################################
   Private(GridLayer* q_,
@@ -74,24 +75,6 @@ struct GridLayer::Private
   }
 
   //################################################################################################
-  void calculateGrid(const glm::mat4& matrix_, LinesDetails_lt& details)
-  {
-    auto matrix = glm::inverse(matrix_);
-
-    float perpendicular{0.0f};
-    {
-      auto n = matrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-      auto f = matrix * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
-      auto v = glm::vec3((n/n.w)-(f/f.w));
-
-      perpendicular = glm::dot(details.gridNormal, glm::normalize(v));
-      perpendicular = tpMax(std::fabs(perpendicular)*2.0f-1.0f, 0.0f);
-    }
-    details.alpha = perpendicular;
-    details.alpha = 1.0f;
-  }
-
-  //################################################################################################
   void renderLines(const glm::mat4& matrix)
   {
     auto shader = q->map()->getShader<LineShader>();
@@ -104,10 +87,12 @@ struct GridLayer::Private
       updateVertexBuffer=false;
 
       // Number of graduation marks per semi axis.
-      size_t graduationCount = halfLength / spacing;
-      float spaceBetweenGraduations = spacing * scale;
+      //size_t graduationCount = halfLength / spacing;
+      //float spaceBetweenGraduations = spacing * scale;
 
-      auto drawGraduationsOnAxis = [&](const glm::vec3& axisToAddGraduations, const glm::vec3& lineDirection, const glm::vec3& offset)
+      //auto drawGraduationsOnAxis = [&](const glm::vec3& axisToAddGraduations, const glm::vec3& lineDirection, const glm::vec3& offset)
+      auto drawGraduationsOnAxis = [&](const glm::vec3& axisToAddGraduations, const glm::vec3& lineDirection,
+          const glm::vec3& offset, float spaceBetweenGraduations, size_t graduationCount)
       {
         glm::vec3 axisOffset = spaceBetweenGraduations * axisToAddGraduations;
         glm::vec3 directionOffset = graduationCount * spaceBetweenGraduations * lineDirection;
@@ -153,17 +138,38 @@ struct GridLayer::Private
 
       glm::vec3 forwardAxis{0.0f, 1.0f, 0.0f}; // y-axix
       glm::vec3 rightAxis{1.0f, 0.0f, 0.0f}; // x-axis
-      if (horizontalOrientation != glm::vec2(0.0f))
-      {
-        forwardAxis = glm::normalize(glm::vec3(horizontalOrientation, 0.0f));
-        rightAxis = glm::normalize(glm::vec3(horizontalOrientation.y, -horizontalOrientation.x, 0.0f));
-      }
 
-      // Grid on horizontal plane (i.e. xOy). Following Blender coordinate system.
-      // Draw graduation lines on x-axis, parallel to y-axis.
-      drawGraduationsOnAxis(rightAxis, forwardAxis, glm::vec3(horizontalTranslationOffset, heightOffset));
-      // Draw graduation lines on y-axis, parallel to x-axis.
-      drawGraduationsOnAxis(forwardAxis, rightAxis, glm::vec3(horizontalTranslationOffset, heightOffset));
+      if (gridAs2DOverlay)
+      {
+        float ratio = 1.0f;
+        if (q->map()->height() != 0)
+          ratio = float(q->map()->width()) / float(q->map()->height());
+        float spacing2D = spacing * 4.0f;
+        float spaceBetweenGraduations = spacing2D;
+        size_t graduationCount = halfLength / spacing2D + 1;
+        // Draw graduation lines on x-axis, parallel to y-axis.
+        drawGraduationsOnAxis(rightAxis, forwardAxis, glm::vec3(0.0f, 0.0f, 0.0f),
+                              spaceBetweenGraduations / ratio, size_t(graduationCount * ratio));
+        // Draw graduation lines on y-axis, parallel to x-axis.
+        drawGraduationsOnAxis(forwardAxis, rightAxis, glm::vec3(0.0f, 0.0f, 0.0f),
+                              spaceBetweenGraduations, graduationCount);
+      }
+      else
+      {
+        if (horizontalOrientation != glm::vec2(0.0f))
+        {
+          forwardAxis = glm::normalize(glm::vec3(horizontalOrientation, 0.0f));
+          rightAxis = glm::normalize(glm::vec3(horizontalOrientation.y, -horizontalOrientation.x, 0.0f));
+        }
+        float spaceBetweenGraduations = spacing * scale;
+        size_t graduationCount = halfLength / spacing + 1;
+
+        // Grid on horizontal plane (i.e. xOy). Following Blender coordinate system.
+        // Draw graduation lines on x-axis, parallel to y-axis.
+        drawGraduationsOnAxis(rightAxis, forwardAxis, glm::vec3(horizontalTranslationOffset, heightOffset), spaceBetweenGraduations, graduationCount);
+        // Draw graduation lines on y-axis, parallel to x-axis.
+        drawGraduationsOnAxis(forwardAxis, rightAxis, glm::vec3(horizontalTranslationOffset, heightOffset), spaceBetweenGraduations, graduationCount);
+      }
     }
 
     shader->use();
@@ -209,9 +215,12 @@ GridLayer::~GridLayer()
 //##################################################################################################
 void GridLayer::setSpacing(float spacing)
 {
-  d->spacing = spacing;
-  d->updateVertexBuffer = true;
-  update();
+  if (spacing != d->spacing)
+  {
+    d->spacing = spacing;
+    d->updateVertexBuffer = true;
+    update();
+  }
 }
 
 //##################################################################################################
@@ -221,11 +230,32 @@ float GridLayer::spacing() const
 }
 
 //##################################################################################################
+void GridLayer::setGridAs2DOverlay(bool gridAs2DOverlay)
+{
+  if (d->gridAs2DOverlay != gridAs2DOverlay)
+  {
+    d->gridAs2DOverlay = gridAs2DOverlay;
+    //sd->spacing = (d->gridAs2DOverlay)?0.2f:0.1f;
+    d->updateVertexBuffer = true;
+    update();
+  }
+}
+
+//##################################################################################################
+float GridLayer::gridAs2DOverlay() const
+{
+  return d->gridAs2DOverlay;
+}
+
+//##################################################################################################
 void GridLayer::setHeightOffset(float heightOffset)
 {
-  d->heightOffset = heightOffset;
-  d->updateVertexBuffer = true;
-  update();
+  if (heightOffset != d->heightOffset)
+  {
+    d->heightOffset = heightOffset;
+    d->updateVertexBuffer = true;
+    update();
+  }
 }
 
 //##################################################################################################
@@ -262,10 +292,9 @@ void GridLayer::render(RenderInfo& renderInfo)
   if(renderInfo.pass != RenderPass::Normal)
     return;
 
-  glm::mat4 matrix = map()->controller()->matrix(coordinateSystem());
-
-  for(auto& lines : d->processedGeometry)
-    d->calculateGrid(matrix, lines);
+  glm::mat4 matrix = glm::mat4(1.0);
+  if (!d->gridAs2DOverlay)
+    matrix = map()->controller()->matrix(coordinateSystem());
 
   d->renderLines(matrix);
   //d->renderText(matrix);
