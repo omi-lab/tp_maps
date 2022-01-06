@@ -12,10 +12,54 @@ class TP_MAPS_SHARED_EXPORT GridLayer: public Layer
 {
 public:
   //################################################################################################
-  GridLayer(float scale=1.0f);
+  GridLayer(float scale = 1.0f, const glm::vec3& gridColor = {0.05f, 0.05f, 0.9f});
 
   //################################################################################################
   ~GridLayer() override;
+
+  //################################################################################################
+  //! Set a multiplier for the spacing between each graduation in the grid.
+  /*!
+  \param spacing Smaller is spacing, closer are the graduations to one another.
+  */
+  void setSpacing(float spacing);
+
+  //################################################################################################
+  float spacing() const;
+
+  //##################################################################################################
+  //! Toggle between a 2D overlay grid and grid in perspective.
+  /*!
+  \param gridAs2DOverlay True to make the grid a 2D overlay, false to have it on the ground as perspective.
+  */
+  void setGridAs2DOverlay(bool gridAs2DOverlay);
+
+  //##################################################################################################
+  float gridAs2DOverlay() const;
+
+  //################################################################################################
+  //! Set an offset to move the grid vertically.
+  /*!
+  \param heightOffset Vertical offset to elevate the grid above ground level.
+  */
+  void setHeightOffset(float heightOffset);
+
+  //################################################################################################
+  float heightOffset() const;
+
+  //################################################################################################
+  //! Set a 2D offset to move the grid centre on the horizontal plane.
+  /*!
+  \param horizontalTranslationOffset Offset in xOy plane.
+  */
+  void setHorizontalTranslationOffset(const glm::vec2& horizontalTranslationOffset);
+
+  //################################################################################################
+  //! Set a forward direction to orientate the grid in the horizontal plane.
+  /*!
+  \param horizontalOrientation Forward vector to orientate the grid on the horizontal plane.
+  */
+  void setHorizontalOrientation(const glm::vec2& horizontalOrientation);
 
   //################################################################################################
   //! Set the font that will be used to labels

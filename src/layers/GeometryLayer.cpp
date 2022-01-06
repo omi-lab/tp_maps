@@ -152,6 +152,7 @@ void GeometryLayer::render(RenderInfo& renderInfo)
     shader->setMatrix(modelToWorldMatrix(), m.v, m.p);
   }
   shader->setLights(map()->lights(), map()->lightBuffers());
+  shader->setLightOffsets(map()->renderedLightLevels());
 
   if(renderInfo.pass==RenderPass::Picking)
   {

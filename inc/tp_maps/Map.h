@@ -37,7 +37,7 @@ class FontRenderer;
 
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT Map
-{  
+{
   friend class Layer;
   friend class Controller;
   friend class FontRenderer;
@@ -48,7 +48,7 @@ public:
   Map(bool enableDepthBuffer = false);
 
   //################################################################################################
-  virtual ~Map();  
+  virtual ~Map();
 
 protected:
   //################################################################################################
@@ -183,8 +183,13 @@ public:
   size_t maxSpotLightLevels() const;
 
   //################################################################################################
-  //! The calculated number of spot light levels in a 3D texture. (<=maxSpotLightLevels)
-  size_t spotLightLevels() const;
+  size_t renderedLightLevels() const;
+
+  //################################################################################################
+  void setMaxLightRenderTime(size_t maxLightRenderTime);
+
+  //################################################################################################
+  size_t maxLightRenderTime() const;
 
   //################################################################################################
   void setShadowSamples(size_t shadowSamples);
@@ -227,6 +232,9 @@ public:
   This is usually trigged as a result of the view changing for example the camera moving.
   */
   tp_utils::CallbackCollection<void()> controllerUpdate;
+
+  //################################################################################################
+  tp_utils::CallbackCollection<void(double)> animateCallbacks;
 
 protected:
   //################################################################################################
@@ -380,7 +388,7 @@ public:
 
   //################################################################################################
   //! Called to queue a refresh
-  virtual void update(RenderFromStage renderFromStage=RenderFromStage::Stage0);
+  virtual void update(RenderFromStage renderFromStage=RenderFromStage::Full);
 
   //################################################################################################
   virtual float pixelScale();
@@ -443,6 +451,12 @@ protected:
 
   //################################################################################################
   void invalidateBuffers();
+
+  //################################################################################################
+  size_t skipRenderPasses();
+
+  //################################################################################################
+  void executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool renderMoreLights);
 
 private:
   //################################################################################################

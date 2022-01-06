@@ -128,6 +128,9 @@ HEADERS += inc/tp_maps/shaders/FullScreenShader.h
 SOURCES += src/shaders/BackgroundShader.cpp
 HEADERS += inc/tp_maps/shaders/BackgroundShader.h
 
+SOURCES += src/shaders/PatternShader.cpp
+HEADERS += inc/tp_maps/shaders/PatternShader.h
+
 SOURCES += src/shaders/PostShader.cpp
 HEADERS += inc/tp_maps/shaders/PostShader.h
 
@@ -149,10 +152,16 @@ HEADERS += inc/tp_maps/shaders/PostOutlineShader.h
 SOURCES += src/shaders/PostBlurAndTintShader.cpp
 HEADERS += inc/tp_maps/shaders/PostBlurAndTintShader.h
 
+SOURCES += src/shaders/PostGrid2DShader.cpp
+HEADERS += inc/tp_maps/shaders/PostGrid2DShader.h
+
 
 #-- Layers -----------------------------------------------------------------------------------------
 SOURCES += src/layers/GridLayer.cpp
 HEADERS += inc/tp_maps/layers/GridLayer.h
+
+SOURCES += src/layers/RulerLayer.cpp
+HEADERS += inc/tp_maps/layers/RulerLayer.h
 
 SOURCES += src/layers/ImageLayer.cpp
 HEADERS += inc/tp_maps/layers/ImageLayer.h
@@ -213,6 +222,9 @@ HEADERS += inc/tp_maps/layers/PostOutlineLayer.h
 
 SOURCES += src/layers/PostBlurAndTintLayer.cpp
 HEADERS += inc/tp_maps/layers/PostBlurAndTintLayer.h
+
+SOURCES += src/layers/PostGrid2DLayer.cpp
+HEADERS += inc/tp_maps/layers/PostGrid2DLayer.h
 
 
 #-- Textures ---------------------------------------------------------------------------------------

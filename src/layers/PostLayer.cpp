@@ -125,6 +125,8 @@ void PostLayer::render(RenderInfo& renderInfo)
   // Blit shader stuff
   {
     auto shader = map()->getShader<PostBlitShader>();
+    if(shader->error())
+      return;
 
     if(!d->rectangleObject)
     {
@@ -132,19 +134,19 @@ void PostLayer::render(RenderInfo& renderInfo)
       d->frameObject = shader->makeFrameObject(d->holeSize, d->size);
     }
 
-    if(shader->error())
-      return;
+    if(d->blitRectangle || d->blitFrame)
+    {
+      shader->use(ShaderType::RenderExtendedFBO);
+      shader->setReadFBO(map()->currentReadFBO());
+      shader->setFrameMatrix(map()->controller()->matrices(d->frameCoordinateSystem).p);
+      shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);
 
-    shader->use(ShaderType::RenderExtendedFBO);
-    shader->setReadFBO(map()->currentReadFBO());
-    shader->setFrameMatrix(map()->controller()->matrices(d->frameCoordinateSystem).p);
-    shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);
+      if(d->blitRectangle)
+        shader->draw(*d->rectangleObject);
 
-    if(d->blitRectangle)
-      shader->draw(*d->rectangleObject);
-
-    if(d->blitFrame)
-      shader->draw(*d->frameObject);
+      if(d->blitFrame)
+        shader->draw(*d->frameObject);
+    }
   }
 
   // Post shader stuff
@@ -169,12 +171,7 @@ void PostLayer::render(RenderInfo& renderInfo)
 //##################################################################################################
 void PostLayer::invalidateBuffers()
 {
-  delete d->rectangleObject;
-  delete d->frameObject;
-
-  d->rectangleObject = nullptr;
-  d->frameObject = nullptr;
-
+  d->freeObject();
   Layer::invalidateBuffers();
 }
 

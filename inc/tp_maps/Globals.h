@@ -32,7 +32,10 @@
 #  define TP_GL3
 #  define TP_ENABLE_MULTISAMPLE
 #  define TP_ENABLE_MULTISAMPLE_FBO
-#  define TP_ENABLE_3D_TEXTURE
+
+#  ifndef TP_ENABLE_3D_TEXTURE
+#    define TP_ENABLE_3D_TEXTURE
+#  endif
 
 #elif defined(TP_IOS) //----------------------------------------------------------------------------
 #  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
@@ -192,8 +195,10 @@ TP_DECLARE_ID(                postSSRShaderSID,                  "Post ssr shade
 TP_DECLARE_ID(               postBlitShaderSID,                 "Post blit shader");
 TP_DECLARE_ID(            postOutlineShaderSID,              "Post outline shader");
 TP_DECLARE_ID(        postBlurAndTintShaderSID,        "Post blur and tint shader");
+TP_DECLARE_ID(             postGrid2DShaderSID,              "Post grid 2D shader");
 TP_DECLARE_ID(              postGammaShaderSID,                "Post gamma shader");
 TP_DECLARE_ID(             backgroundShaderSID,                "Background shader");
+TP_DECLARE_ID(                patternShaderSID,                   "Pattern shader");
 
 //##################################################################################################
 int staticInit();
@@ -253,11 +258,13 @@ enum class RenderPass : size_t
 //##################################################################################################
 enum class RenderFromStage : size_t
 {
+  Full, //!< Start from the first RenderPass pass.
+  RenderMoreLights, //!< Start from the first RenderPass::LightFBOs pass and don't execute earlier passes.
   Stage0, //!< Start from the first RenderPass::Stage0 pass and don't execute earlier passes.
   Stage1, //!< Start from the first RenderPass::Stage1 pass and don't execute earlier passes.
   Stage2, //!< Start from the first RenderPass::Stage2 pass and don't execute earlier passes.
   Stage4, //!< Start from the first RenderPass::Stage4 pass and don't execute earlier passes.
-  Reset   //!< The render stage will be set to this after a render, ready for the next call to update.
+  Reset,  //!< The render stage will be set to this after a render, ready for the next call to update.
 };
 
 //##################################################################################################
@@ -341,10 +348,6 @@ enum class Alpha
   No,
   Yes
 };
-
-//##################################################################################################
-//! Replace key with value in result.
-void replace(std::string& result, const std::string& key, const std::string& value);
 
 //##################################################################################################
 //! Replace light index and levels

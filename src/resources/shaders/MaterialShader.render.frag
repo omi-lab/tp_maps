@@ -136,6 +136,12 @@ float sampleShadowMapLinear3D(sampler3D shadowMap, vec2 coords, float compareLig
 #endif
 
 //##################################################################################################
+vec2 computeLightOffset(Light light, int offsetIdx)
+{
+  return lightOffsets[offsetIdx].xy * light.offsetScale.xy;
+}
+
+//##################################################################################################
 vec3 lightPosToTexture(vec4 fragPos_light, vec2 offset, mat4 proj)
 {
   vec4 fp = proj * (fragPos_light+vec4(offset,0.0,0.0));
@@ -235,8 +241,7 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
   //float distance    = length(light.position - fragPos_world);
   //float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
   // No attenuation for directional lights.
-  float attenuation = 1.0;
-  vec3  radiance    = mix(vec3(1.0), light.diffuseScale * light.diffuse  * attenuation, material.useAttenuation);
+  vec3 radiance = light.diffuseScale * light.diffuse;
 
   // Cook-Torrance BRDF
   float NDF = calcGGXDist(norm, halfV, roughness2);
@@ -249,14 +254,15 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
   kD = mix(vec3(1.0,1.0,1.0), kD, material.useDiffuse);
 
   vec3  numerator   = NDF * G * F;
-  float denominator = 4.0 * max(dot(norm, surfaceToCamera), 0.0) * max(dot(norm, surfaceToLight), 0.0);
+  //float denominator = 4.0 * max(dot(norm, surfaceToCamera), 0.0) * max(dot(norm, surfaceToLight), 0.0);
+  float denominator = 4.0 * max(dot(norm, surfaceToCamera), 0.0);
   vec3  specular    = numerator / max(denominator, 0.001);
 
   // add to outgoing radiance Lo
   float NdotL = mix(1.0, max(dot(norm, surfaceToLight), 0.0), material.useNdotL);
-  r.diffuse = kD * albedo * radiance * NdotL * shadow;
-
-  r.specular = specular * radiance * NdotL * shadow;
+  vec3 localLightAmount = radiance * NdotL * shadow;
+  r.diffuse = kD * albedo * localLightAmount;
+  r.specular = specular * localLightAmount;
 
   return r;
 }
@@ -350,8 +356,14 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, vec3 
   // Use a simplified attenuation function.
   //float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
   float attenuation = 1.0 / (0.1 * distance);
-  //if (attenuation > 1.0) attenuation = 1.0;
-  vec3  radiance    = mix(vec3(1.0), light.diffuseScale * light.diffuse * attenuation, material.useAttenuation);
+  if (attenuation > 1.0)
+    attenuation = 1.0;
+  // Use an arbitrary value to scale up the light intensity (coming from diffuseScale parameter).
+  vec3  maxRadiance = 3.0 * light.diffuseScale * light.diffuse;
+  vec3  radiance    = mix(maxRadiance, maxRadiance * attenuation, material.useAttenuation);
+
+  if (light.offsetScale.x > 1.0)
+    radiance /= 4.18 * pow(light.offsetScale.x, 3.0); // 4/3*pi = 4.18
 
   // Cook-Torrance BRDF
   float NDF = calcGGXDist(norm, halfV, roughness2);
@@ -361,10 +373,11 @@ LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, vec3 
   vec3 kS = F;
   vec3 kD = vec3(1.0) - kS;
   kD *= 1.0 - metalness;
-  kD = mix(vec3(1.0,1.0,1.0), kD, material.useDiffuse);
+  kD = mix(vec3(1.0), kD, material.useDiffuse);
 
   vec3  numerator   = NDF * G * F;
-  float denominator = 4.0 * max(dot(norm, surfaceToCamera), 0.0) * max(dot(norm, surfaceToLight), 0.0);
+  //float denominator = 4.0 * max(dot(norm, surfaceToCamera), 0.0) * max(dot(norm, surfaceToLight), 0.0);
+  float denominator = 4.0 * max(dot(norm, surfaceToCamera), 0.0);
   vec3  specular    = numerator / max(denominator, 0.001);
 
   float NdotL = mix(1.0, max(dot(norm, surfaceToLight), 0.0), material.useNdotL);
@@ -449,10 +462,14 @@ void main()
 
   float alpha = rgbaTex.a;
   // Use transparency to display transmission and transmissionRoughness.
-  if(transmissionRoughness > 0.0)
-    transmission *= (1.0 - transmissionRoughness);
-  if(transmission > 0.0)
-    alpha = 0.5 + 0.5 * (1.0 - transmission);
+  if(transmissionRoughness > 0.1)
+	transmission *= 0.5 * (1.0 - transmissionRoughness);
+  float minAlpha = 0.2;
+  // For non white material, use a higher alpha value = less transparency.
+  if(rgbaTex.xyz != vec3(1.0))
+	minAlpha = 0.5;
+  if(transmission > 0.1)
+    alpha = minAlpha + (1.0 - minAlpha) * (1.0 - transmission);
 
   float shininess = metalness;
 

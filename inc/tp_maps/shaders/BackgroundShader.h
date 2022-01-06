@@ -7,7 +7,7 @@ namespace tp_maps
 {
 
 //##################################################################################################
-//! A shader for Screen Space Ambient Occlusion.
+//! A shader to render sky spheres.
 class TP_MAPS_SHARED_EXPORT BackgroundShader: public FullScreenShader
 {
   friend class Map;

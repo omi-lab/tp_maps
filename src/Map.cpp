@@ -8,7 +8,6 @@
 #include "tp_maps/MouseEvent.h"
 #include "tp_maps/KeyEvent.h"
 #include "tp_maps/FontRenderer.h"
-#include "tp_maps/textures/DefaultSpritesTexture.h"
 
 #include "tp_math_utils/Plane.h"
 #include "tp_math_utils/Ray.h"
@@ -22,6 +21,11 @@
 #include "glm/glm.hpp"
 #include "glm/gtx/norm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+
+#ifdef TP_EMSCRIPTEN
+#include "tp_maps/shaders/PostBlitShader.h"
+#define TP_BLIT_WITH_SHADER
+#endif
 
 #ifdef TP_MAPS_DEBUG
 #  define DEBUG_printOpenGLError(A) printOpenGLError(A)
@@ -119,7 +123,7 @@ struct Map::Private
     RenderPass::GUI
   };
 
-  RenderFromStage renderFromStage{RenderFromStage::Stage0};
+  RenderFromStage renderFromStage{RenderFromStage::Full};
 
   // Callback that get called to prepare and cleanup custom render passes.
   CustomPassCallbacks_lt customCallbacks[int(RenderPass::CustomEnd) - int(RenderPass::Custom1)];
@@ -147,6 +151,10 @@ struct Map::Private
   size_t lightTextureSize{1024};
   size_t spotLightLevels{1};
   size_t shadowSamples{0};
+  size_t lightLevelIndex{0};
+
+  int64_t maxLightRenderTime = 30; // 30ms
+  tp_utils::ElapsedTimer renderTimer;
 
   HDR hdr{HDR::No};
   ExtendedFBO extendedFBO{ExtendedFBO::No};
@@ -157,6 +165,10 @@ struct Map::Private
 
   FBO pickingBuffer;
   FBO renderToImageBuffer;
+
+#ifdef TP_BLIT_WITH_SHADER
+  FullScreenShader::Object* rectangleObject{nullptr};
+#endif
 
   bool initialized{false};
   bool preDeleteCalled{false};
@@ -208,6 +220,11 @@ struct Map::Private
       delete i.second;
 
     shaders.clear();
+
+#ifdef TP_BLIT_WITH_SHADER
+    delete rectangleObject;
+    rectangleObject = nullptr;
+#endif
   }
 
   //################################################################################################
@@ -871,6 +888,13 @@ void Map::preDelete()
   for(auto& lightBuffer : d->lightBuffers)
     d->deleteBuffer(lightBuffer);
 
+  d->lightLevelIndex = 0;
+
+#ifdef TP_BLIT_WITH_SHADER
+  delete d->rectangleObject;
+  d->rectangleObject = nullptr;
+#endif
+
   d->preDeleteCalled = true;
 }
 
@@ -997,6 +1021,11 @@ void Map::animate(double timestampMS)
 
   for(auto l : d->layers)
     l->animate(timestampMS);
+
+  if(d->renderFromStage == RenderFromStage::RenderMoreLights)
+    update(RenderFromStage::RenderMoreLights);
+
+  animateCallbacks(timestampMS);
 }
 
 namespace
@@ -1054,11 +1083,18 @@ void Map::invalidateBuffers()
     d->invalidateBuffer(lightTexture);
   d->lightBuffers.clear();
 
+  d->lightLevelIndex = 0;
+
   for(auto i : d->layers)
     i->invalidateBuffers();
 
   for(auto i : d->fontRenderers)
     i->invalidateBuffers();
+
+#ifdef TP_BLIT_WITH_SHADER
+  delete d->rectangleObject;
+  d->rectangleObject = nullptr;
+#endif
 
   invalidateBuffersCallbacks();
 }
@@ -1258,9 +1294,21 @@ size_t Map::maxSpotLightLevels() const
 }
 
 //##################################################################################################
-size_t Map::spotLightLevels() const
+size_t Map::renderedLightLevels() const
 {
-  return d->spotLightLevels;
+  return d->lightLevelIndex;
+}
+
+//##################################################################################################
+void Map::setMaxLightRenderTime(size_t maxLightRenderTime)
+{
+  d->maxLightRenderTime = maxLightRenderTime;
+}
+
+//##################################################################################################
+size_t Map::maxLightRenderTime() const
+{
+  return d->maxLightRenderTime;
 }
 
 //##################################################################################################
@@ -1881,6 +1929,8 @@ void Map::paintGLNoMakeCurrent()
 {
   DEBUG_printOpenGLError("paintGLNoMakeCurrent start");
 
+  d->renderTimer.start();
+
 #ifdef TP_FBO_SUPPORTED
   GLint originalFrameBuffer = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
@@ -1897,17 +1947,32 @@ void Map::paintGLNoMakeCurrent()
   glClearDepthf(1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  size_t rp=0;
-
   // Skip the passes that don't need a full render.
-  if(d->renderFromStage != RenderFromStage::Stage0 && d->renderFromStage != RenderFromStage::Reset)
+  size_t rp = skipRenderPasses();
+
+  bool renderMoreLights = (d->renderFromStage==RenderFromStage::RenderMoreLights);
+  d->renderFromStage = RenderFromStage::Reset;
+
+  executeRenderPasses(rp, originalFrameBuffer, renderMoreLights);
+
+  printOpenGLError("Map::paintGL");
+}
+
+//################################################################################################
+size_t Map::skipRenderPasses()
+{
+  size_t rp=0;
+  if(d->renderFromStage != RenderFromStage::Full && d->renderFromStage != RenderFromStage::Reset)
   {
     for(; rp<d->renderPasses.size(); rp++)
     {
       auto renderPass = d->renderPasses.at(rp);
 
+      if ((d->renderFromStage == RenderFromStage::RenderMoreLights) && (renderPass >= RenderPass::LightFBOs))
+        break;
+
       size_t stageIndex = size_t(renderPass)-size_t(RenderPass::Stage0);
-      if(stageIndex == size_t(d->renderFromStage))
+      if(stageIndex == size_t(d->renderFromStage) - size_t(RenderFromStage::Stage0))
       {
         rp++;
         break;
@@ -1992,8 +2057,12 @@ void Map::paintGLNoMakeCurrent()
     }
   }
 
-  d->renderFromStage = RenderFromStage::Reset;
+  return rp;
+}
 
+//################################################################################################
+void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool renderMoreLights)
+{
   for(; rp<d->renderPasses.size(); rp++)
   {
     auto renderPass = d->renderPasses.at(rp);
@@ -2009,17 +2078,21 @@ void Map::paintGLNoMakeCurrent()
       {
         TP_FUNCTION_TIME("LightFBOs");
         DEBUG_printOpenGLError("RenderPass::LightFBOs start");
-#ifdef TP_FBO_SUPPORTED      
+#ifdef TP_FBO_SUPPORTED
         d->renderInfo.hdr = HDR::No;
         d->renderInfo.extendedFBO = ExtendedFBO::No;
 
         while(d->lightBuffers.size() < d->lights.size())
+        {
           d->lightBuffers.emplace_back();
+          d->lightLevelIndex = 0;
+        }
 
         while(d->lightBuffers.size() > d->lights.size())
         {
           auto buffer = tpTakeLast(d->lightBuffers);
           d->deleteBuffer(buffer);
+          d->lightLevelIndex = 0;
         }
         DEBUG_printOpenGLError("RenderPass::LightFBOs delete buffers");
 
@@ -2028,29 +2101,52 @@ void Map::paintGLNoMakeCurrent()
         glDepthMask(true);
         DEBUG_printOpenGLError("RenderPass::LightFBOs enable depth");
 
-        for(size_t i=0; i<d->lightBuffers.size(); i++)
-        {
-          const auto& light = d->lights.at(i);
-          auto& lightBuffer = d->lightBuffers.at(i);
-
-          size_t levels=1;
-
+        size_t levels = 1;
 #ifdef TP_ENABLE_3D_TEXTURE
-          if(light.type == tp_math_utils::LightType::Spot)
-            levels=d->spotLightLevels;
+        levels = d->spotLightLevels;
 #endif
+        int64_t renderTime = 0;
+        // Reset to re-render all light levels.
+        if (!renderMoreLights)
+          d->lightLevelIndex = 0;
 
-          lightBuffer.worldToTexture.resize(levels);
-          for(size_t l=0; l<levels; l++)
+        // Only render 1 light level at once.
+        // Keep rendering more levels for better soft shadows, until time is up.
+        while (renderTime < d->maxLightRenderTime && d->lightLevelIndex < levels)
+        {
+          for(size_t i=0; i<d->lightBuffers.size(); i++)
           {
-            if(!d->prepareBuffer(lightBuffer, d->lightTextureSize, d->lightTextureSize, CreateColorBuffer::No, Multisample::No, HDR::No, ExtendedFBO::No, levels, l, true))
+            const auto& light = d->lights.at(i);
+            auto& lightBuffer = d->lightBuffers.at(i);
+
+            // Multi light levels only supported for Spot lights.
+            if (d->lightLevelIndex == 0)
+            {
+              lightBuffer.worldToTexture.resize((light.type == tp_math_utils::LightType::Spot)?levels:1);
+            }
+            else
+            {
+              if(light.type != tp_math_utils::LightType::Spot)
+                break;
+            }
+
+            if(!d->prepareBuffer(lightBuffer, d->lightTextureSize, d->lightTextureSize, CreateColorBuffer::No, Multisample::No, HDR::No, ExtendedFBO::No, levels, d->lightLevelIndex, true))
               return;
 
-            d->controller->setCurrentLight(light, l);
-            lightBuffer.worldToTexture[l] = d->controller->lightMatrices();
+            d->controller->setCurrentLight(light, d->lightLevelIndex);
+            lightBuffer.worldToTexture[d->lightLevelIndex] = d->controller->lightMatrices();
             d->render();
           }
+
+          // Increment.
+          ++d->lightLevelIndex;
+          renderTime = d->renderTimer.elapsed();
         }
+
+        // Carry on rendering levels later.
+        if (d->lightLevelIndex < levels)
+          d->renderFromStage = RenderFromStage::RenderMoreLights;
+
         DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers");
 
         glViewport(0, 0, TPGLsizei(d->width), TPGLsizei(d->height));
@@ -2155,32 +2251,62 @@ void Map::paintGLNoMakeCurrent()
 
         FBO* readFBO = &d->intermediateFBOs[fboIndex];
 
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, readFBO->frameBuffer);
-
-        glReadBuffer(GL_COLOR_ATTACHMENT0);
-        DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " a");
-        d->setDrawBuffers({GL_COLOR_ATTACHMENT0});
-        DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " b");
-        glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-        DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " blit color 0 and depth");
-
-        if(readFBO->extendedFBO == ExtendedFBO::Yes)
+#ifdef TP_BLIT_WITH_SHADER
+        // Kludge to get round a crash in glBlitFramebuffer on Chrome.
         {
-          glReadBuffer(GL_COLOR_ATTACHMENT1);
-          d->setDrawBuffers({GL_COLOR_ATTACHMENT1});
-          glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), GL_COLOR_BUFFER_BIT, GL_NEAREST);
-          DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " blit color 1");
+          glDepthMask(false);
+          glDisable(GL_DEPTH_TEST);
 
-          glReadBuffer(GL_COLOR_ATTACHMENT2);
-          d->setDrawBuffers({GL_COLOR_ATTACHMENT2});
-          glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), GL_COLOR_BUFFER_BIT, GL_NEAREST);
-          DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " blit color 2");
+          auto shader = getShader<PostBlitShader>();
+          if(shader->error())
+            break;
 
-          d->setDrawBuffers({GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2});
+          if(!d->rectangleObject)
+            d->rectangleObject = shader->makeRectangleObject({1.0f,1.0f});
+
+          shader->use(ShaderType::RenderExtendedFBO);
+          shader->setReadFBO(*readFBO);
+
+          glm::mat4 m{1.0f};
+          shader->setFrameMatrix(m);
+          shader->setProjectionMatrix(m);
+
+          shader->draw(*d->rectangleObject);
         }
-        else
+#else
+        {
+          glBindFramebuffer(GL_READ_FRAMEBUFFER, readFBO->frameBuffer);
+
+          glReadBuffer(GL_COLOR_ATTACHMENT0);
+          DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " a");
+
           d->setDrawBuffers({GL_COLOR_ATTACHMENT0});
-        DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " end");
+          DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " b");
+
+          glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+          DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " blit color 0 and depth");
+
+          if(readFBO->extendedFBO == ExtendedFBO::Yes)
+          {
+            glReadBuffer(GL_COLOR_ATTACHMENT1);
+            d->setDrawBuffers({GL_COLOR_ATTACHMENT1});
+            glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+            DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " blit color 1");
+
+            glReadBuffer(GL_COLOR_ATTACHMENT2);
+            d->setDrawBuffers({GL_COLOR_ATTACHMENT2});
+            glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+            DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " blit color 2");
+
+            d->setDrawBuffers({GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2});
+          }
+          else
+            d->setDrawBuffers({GL_COLOR_ATTACHMENT0});
+          DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + std::to_string(fboIndex) + " end");
+        }
+#endif
+
 #endif
         break;
       }
@@ -2214,7 +2340,7 @@ void Map::paintGLNoMakeCurrent()
         DEBUG_printOpenGLError("RenderPass::Transparency start");
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
-        glDepthMask(false);
+        glDepthMask(true);
         d->render();
         DEBUG_printOpenGLError("RenderPass::Transparency end");
         break;
@@ -2315,8 +2441,6 @@ void Map::paintGLNoMakeCurrent()
       tpWarning() << "Pass: " << size_t(renderPass);
     }
   }
-
-  printOpenGLError("Map::paintGL");
 }
 
 //##################################################################################################

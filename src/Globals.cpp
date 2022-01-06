@@ -26,8 +26,10 @@ TP_DEFINE_ID(                postSSRShaderSID,                  "Post ssr shader
 TP_DEFINE_ID(               postBlitShaderSID,                 "Post blit shader");
 TP_DEFINE_ID(            postOutlineShaderSID,              "Post outline shader");
 TP_DEFINE_ID(        postBlurAndTintShaderSID,        "Post blur and tint shader");
+TP_DEFINE_ID(             postGrid2DShaderSID,              "Post grid 2D shader");
 TP_DEFINE_ID(              postGammaShaderSID,                "Post gamma shader");
 TP_DEFINE_ID(             backgroundShaderSID,                "Background shader");
+TP_DEFINE_ID(                patternShaderSID,                   "Pattern shader");
 
 //##################################################################################################
 int tp_rc();
@@ -36,17 +38,6 @@ int staticInit()
   // Hack to make sure that resources are loaded on OSX, this should be part of the default static
   // init as part of the build system.
   return tp_rc();
-}
-
-//##################################################################################################
-void replace(std::string& result, const std::string& key, const std::string& value)
-{
-  size_t pos = result.find(key);
-  while(pos != std::string::npos)
-  {
-    result.replace(pos, key.size(), value);
-    pos = result.find(key, pos + value.size());
-  }
 }
 
 //##################################################################################################
@@ -76,7 +67,7 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
 
   auto replace = [&](const std::string& key, const std::string& value)
   {
-    tp_maps::replace(result, key, value);
+    tp_utils::replace(result, key, value);
   };
 
   auto replaceRC = [&](const std::string& key, const std::string& file, ShaderType shaderType_)

@@ -25,12 +25,14 @@
         <file alias="FullScreenShader.vert">resources/shaders/FullScreenShader.vert</file>
         <file alias="ScreenWindowShader.vert">resources/shaders/ScreenWindowShader.vert</file>
         <file alias="BackgroundShader.frag">resources/shaders/BackgroundShader.frag</file>
+        <file alias="PatternShader.frag">resources/shaders/PatternShader.frag</file>
         <file alias="PostSSAOShader.frag">resources/shaders/PostSSAOShader.frag</file>
         <file alias="PostSSRShader.frag">resources/shaders/PostSSRShader.frag</file>
         <file alias="PostGammaShader.frag">resources/shaders/PostGammaShader.frag</file>
         <file alias="PostBlitShader.frag">resources/shaders/PostBlitShader.frag</file>
         <file alias="PostOutlineShader.frag">resources/shaders/PostOutlineShader.frag</file>
         <file alias="PostBlurAndTintShader.frag">resources/shaders/PostBlurAndTintShader.frag</file>
+        <file alias="PostGrid2DShader.frag">resources/shaders/PostGrid2DShader.frag</file>
         <file alias="WriteFragment.hdr.glsl">resources/shaders/WriteFragment.hdr.glsl</file>
         <file alias="WriteFragment.render.glsl">resources/shaders/WriteFragment.render.glsl</file>
         <file alias="WriteFragment.150.hdr.glsl">resources/shaders/WriteFragment.150.hdr.glsl</file>

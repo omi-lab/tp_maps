@@ -253,8 +253,6 @@ void Layer::animate(double timestampMS)
 {
   for(auto l : d->layers)
     l->animate(timestampMS);
-
-  animateCallbacks(timestampMS);
 }
 
 //##################################################################################################

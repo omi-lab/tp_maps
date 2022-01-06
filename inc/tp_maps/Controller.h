@@ -113,7 +113,7 @@ protected:
   virtual ~Controller();
 
   //################################################################################################
-  void update(RenderFromStage renderFromStage=RenderFromStage::Stage0);
+  void update(RenderFromStage renderFromStage=RenderFromStage::Full);
 
   //################################################################################################
   void setMatrix(const tp_utils::StringID& coordinateSystem, const glm::mat4& matrix);

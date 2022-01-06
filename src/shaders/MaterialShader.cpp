@@ -97,6 +97,7 @@ struct UniformLocations_lt
 
   GLint                     txlSizeLocation{0};
   GLint              discardOpacityLocation{0};
+  GLint                lightOffsetsLocation{0};
 
   GLint      rgbaTextureLocation{0};
   GLint   normalsTextureLocation{0};
@@ -266,6 +267,7 @@ void MaterialShader::compile(const char* vertShaderStr,
 
       locations.txlSizeLocation           = glGetUniformLocation(program, "txlSize");
       locations.discardOpacityLocation    = glGetUniformLocation(program, "discardOpacity");
+      locations.lightOffsetsLocation     = glGetUniformLocation(program, "lightOffsets");
 
       locations.     rgbaTextureLocation = glGetUniformLocation(program, "rgbaTexture"     );
       locations.  normalsTextureLocation = glGetUniformLocation(program, "normalsTexture"  );
@@ -364,6 +366,8 @@ void MaterialShader::compileRenderShader(const std::function<void(std::string& v
         d->maxLights = size_t(textureUnits) - size_t(staticTextures);
     }
 
+    LIGHT_FRAG_VARS += "uniform vec3 lightOffsets["+std::to_string(map()->maxSpotLightLevels())+"];\n";
+
     const auto& lights = map()->lights();
     size_t iMax = tpMin(d->maxLights, lights.size());
     for(size_t i=0; i<iMax; i++)
@@ -371,7 +375,7 @@ void MaterialShader::compileRenderShader(const std::function<void(std::string& v
       const auto& light = lights.at(i);
       auto ii = std::to_string(i);
 
-      size_t levels = (light.type==tp_math_utils::LightType::Spot)?map()->spotLightLevels():1;
+      size_t levels = (light.type==tp_math_utils::LightType::Spot)?map()->maxSpotLightLevels():1;
       auto ll = std::to_string(levels);
 
       LIGHT_VERT_VARS += replaceLight(ii, ll, "uniform mat4 worldToLight%_view;\n");
@@ -401,7 +405,7 @@ void MaterialShader::compileRenderShader(const std::function<void(std::string& v
 
       case tp_math_utils::LightType::Spot:
       {
-        if(map()->spotLightLevels() == 1)
+        if(map()->maxSpotLightLevels() == 1)
         {
           LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform sampler2D light%Texture;\n");
           LIGHT_FRAG_CALC += replaceLight(ii, ll, "    float shadow=0.0;\n");
@@ -412,16 +416,12 @@ void MaterialShader::compileRenderShader(const std::function<void(std::string& v
         {
           LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform sampler3D light%Texture;\n");
           LIGHT_FRAG_CALC += replaceLight(ii, ll, "    float shadow=0.0;\n");
+          LIGHT_FRAG_CALC += "    vec2 offset;";
 
-          for(size_t l=0; l<levels; l++)
+          for (size_t levelIdx=0; levelIdx < levels; ++levelIdx)
           {
-            std::string levelTexCoord = std::to_string(float(l)/float(levels-1));
-
-            auto o = tp_math_utils::Light::lightLevelOffsets()[l];// * glm::vec2(light.offsetScale);
-            std::string offset = "vec2(" + std::to_string(o.x) + "," + std::to_string(o.y) + ") * light%.offsetScale.xy";
-            //std::string offset = "vec2(0,0)";
-
-            LIGHT_FRAG_CALC += replaceLight(ii, std::to_string(l), "    shadow += spotLightSampleShadow3D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View,"+offset+", worldToLight%_proj), " + levelTexCoord + ");\n");
+            LIGHT_FRAG_CALC += replaceLight(ii, std::to_string(levelIdx), "    offset = computeLightOffset(light%, @);\n");
+            LIGHT_FRAG_CALC += replaceLight(ii, std::to_string(levelIdx), "    shadow += spotLightSampleShadow3D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, offset, worldToLight%_proj), lightOffsets[@].z);\n");
           }
 
           LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totalShadowSamples * @.0;\n");
@@ -449,12 +449,12 @@ void MaterialShader::compileRenderShader(const std::function<void(std::string& v
   std::string vertStr = vertShaderStr().data(openGLProfile(), shaderType);
   std::string fragStr = fragShaderStr().data(openGLProfile(), shaderType);
 
-  replace(vertStr, "/*LIGHT_VERT_VARS*/", LIGHT_VERT_VARS);
-  replace(vertStr, "/*LIGHT_VERT_CALC*/", LIGHT_VERT_CALC);
-  replace(fragStr, "/*LIGHT_FRAG_VARS*/", LIGHT_FRAG_VARS);
-  replace(fragStr, "/*LIGHT_FRAG_CALC*/", LIGHT_FRAG_CALC);
+  tp_utils::replace(vertStr, "/*LIGHT_VERT_VARS*/", LIGHT_VERT_VARS);
+  tp_utils::replace(vertStr, "/*LIGHT_VERT_CALC*/", LIGHT_VERT_CALC);
+  tp_utils::replace(fragStr, "/*LIGHT_FRAG_VARS*/", LIGHT_FRAG_VARS);
+  tp_utils::replace(fragStr, "/*LIGHT_FRAG_CALC*/", LIGHT_FRAG_CALC);
 
-  replace(fragStr, "/*TP_SHADOW_SAMPLES*/", std::to_string(map()->shadowSamples()));
+  tp_utils::replace(fragStr, "/*TP_SHADOW_SAMPLES*/", std::to_string(map()->shadowSamples()));
 
   modifyShaders(vertStr, fragStr);
 
@@ -561,6 +561,31 @@ void MaterialShader::setLights(const std::vector<tp_math_utils::Light>& lights, 
         txlSize = glm::vec2(1.0, 1.0) / glm::vec2(lightBuffers[0].width, lightBuffers[0].height);
       glUniform2fv(locations.txlSizeLocation, 1, &txlSize.x);
     }
+  };
+
+  if(d->shaderType == ShaderType::Render)
+    exec(d->renderLocations);
+  else if(d->shaderType == ShaderType::RenderExtendedFBO)
+    exec(d->renderHDRLocations);
+}
+
+//##################################################################################################
+void MaterialShader::setLightOffsets(size_t renderedlightLevels)
+{
+  auto exec = [&](const UniformLocations_lt& locations)
+  {
+    size_t lightLevels = map()->maxSpotLightLevels();
+
+    std::vector<glm::vec3> lightOffsets;
+    lightOffsets.reserve(lightLevels);
+    for (size_t levelIndex = 0; levelIndex < lightLevels; ++levelIndex)
+    {
+      // If the light level hasn't been rendered, re-use an existing light level.
+      size_t availableLevelIdx = levelIndex % renderedlightLevels;
+      float levelTexCoord = float(availableLevelIdx)/float(lightLevels-1);
+      lightOffsets.emplace_back(glm::vec3(tp_math_utils::Light::lightLevelOffsets()[availableLevelIdx], levelTexCoord));
+    }
+    glUniform3fv(locations.lightOffsetsLocation, lightLevels, glm::value_ptr(lightOffsets[0]));
   };
 
   if(d->shaderType == ShaderType::Render)
