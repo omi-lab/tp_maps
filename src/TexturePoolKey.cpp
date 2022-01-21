@@ -63,10 +63,10 @@ std::string TexturePoolKey::debugString() const
 {
   std::string s;
 
-  s += "rName: " + rName.keyString();
-  s += " gName: " + gName.keyString();
-  s += " bName: " + bName.keyString();
-  s += " aName: " + aName.keyString();
+  s += "rName: " + rName.toString();
+  s += " gName: " + gName.toString();
+  s += " bName: " + bName.toString();
+  s += " aName: " + aName.toString();
 
   s += " rIndex: " + std::to_string(rIndex);
   s += " gIndex: " + std::to_string(gIndex);

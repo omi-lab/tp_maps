@@ -207,7 +207,7 @@ void LightsLayer::render(RenderInfo& renderInfo)
       {
         const auto& light = lights.at(l);
         auto& label = d->labels.at(l);
-        label.preparedString.reset(new tp_maps::FontShader::PreparedString(font(), tpFromUTF8(light.name.keyString()), config));
+        label.preparedString.reset(new tp_maps::FontShader::PreparedString(font(), tpFromUTF8(light.name.toString()), config));
         label.position = light.position();
       }
     }
