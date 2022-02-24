@@ -2605,6 +2605,7 @@ void Map::setController(Controller* controller)
 {
   delete d->controller;
   d->controller = controller;
+  controllerUpdate();
 }
 
 //##################################################################################################
