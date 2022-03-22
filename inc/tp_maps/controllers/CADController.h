@@ -5,8 +5,6 @@
 
 #include "tp_utils/CallbackCollection.h"
 
-#include "lib_platform\Globals.h"
-
 #ifdef near
 #undef near
 #endif
