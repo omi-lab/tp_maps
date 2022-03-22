@@ -113,14 +113,14 @@ struct GridLayer::Private
         {
           if (graduationIdx == 0)
           {
-            addLine(graduationIdx, centralLinesVertices);
+            addLine(int(graduationIdx), centralLinesVertices);
           }
           else
           {
             // Positive side of the axis.
-            addLine(graduationIdx, linesVertices);
+            addLine(int(graduationIdx), linesVertices);
             // Negative side of the axis.
-            addLine(-graduationIdx, linesVertices);
+            addLine(-int(graduationIdx), linesVertices);
           }
         }
 
@@ -146,7 +146,7 @@ struct GridLayer::Private
           ratio = float(q->map()->width()) / float(q->map()->height());
         float spacing2D = spacing * 4.0f;
         float spaceBetweenGraduations = spacing2D;
-        size_t graduationCount = halfLength / spacing2D + 1;
+        size_t graduationCount = size_t(halfLength / spacing2D + 1.0f);
         // Draw graduation lines on x-axis, parallel to y-axis.
         drawGraduationsOnAxis(rightAxis, forwardAxis, glm::vec3(0.0f, 0.0f, 0.0f),
                               spaceBetweenGraduations / ratio, size_t(graduationCount * ratio));
@@ -162,7 +162,7 @@ struct GridLayer::Private
           rightAxis = glm::normalize(glm::vec3(horizontalOrientation.y, -horizontalOrientation.x, 0.0f));
         }
         float spaceBetweenGraduations = spacing * scale;
-        size_t graduationCount = halfLength / spacing + 1;
+        size_t graduationCount = size_t(halfLength / spacing + 1.0f);
 
         // Grid on horizontal plane (i.e. xOy). Following Blender coordinate system.
         // Draw graduation lines on x-axis, parallel to y-axis.

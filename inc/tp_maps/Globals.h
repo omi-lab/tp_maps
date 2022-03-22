@@ -1,10 +1,12 @@
 #ifndef tp_maps_Globals_h
 #define tp_maps_Globals_h
 
-#include "tp_utils/StringID.h"
-
 #include "tp_math_utils/Geometry3D.h"
 #include "tp_math_utils/Light.h"
+
+#include "tp_utils/StringID.h"
+
+#include "lib_platform/Globals.h"
 
 #include "glm/glm.hpp"
 

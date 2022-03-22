@@ -5,12 +5,14 @@
 
 #include "tp_utils/CallbackCollection.h"
 
-#ifdef far
-#undef far
-#endif
+#include "lib_platform\Globals.h"
 
 #ifdef near
 #undef near
+#endif
+
+#ifdef far
+#undef far
 #endif
 
 namespace tp_maps

@@ -585,7 +585,7 @@ void MaterialShader::setLightOffsets(size_t renderedlightLevels)
       float levelTexCoord = float(availableLevelIdx)/float(lightLevels-1);
       lightOffsets.emplace_back(glm::vec3(tp_math_utils::Light::lightLevelOffsets()[availableLevelIdx], levelTexCoord));
     }
-    glUniform3fv(locations.lightOffsetsLocation, lightLevels, glm::value_ptr(lightOffsets[0]));
+    glUniform3fv(locations.lightOffsetsLocation, GLsizei(lightLevels), glm::value_ptr(lightOffsets[0]));
   };
 
   if(d->shaderType == ShaderType::Render)
