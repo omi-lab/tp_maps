@@ -15,7 +15,7 @@ void main()
   vec2 f = mod(coord_tex * scaleFactor, 2.0f);
   bool a = (f.x<1.0) ^^ (f.y<1.0);
 
-  vec3 ambient = a?vec3(0.5,0.5,0.5):vec3(1.0,1.0,1.0);
+  vec3 ambient = a?vec3(0.7,0.7,0.7):vec3(0.9,0.9,0.9);
   //vec3 ambient = vec3(coord_tex.x,coord_tex.y,0.0);
 
   //Note: GammaCorrection

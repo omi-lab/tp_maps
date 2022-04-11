@@ -23,7 +23,7 @@ struct BackgroundLayer::Private
   tp_utils::StringID textureName;
   float rotationFactor{0.0f};
 
-  float gridSpacing{10.0f};
+  float gridSpacing{20.0f};
 
   //################################################################################################
   Private(TexturePool* texturePool_):
