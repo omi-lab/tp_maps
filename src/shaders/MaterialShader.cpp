@@ -572,6 +572,9 @@ void MaterialShader::setLights(const std::vector<tp_math_utils::Light>& lights, 
 //##################################################################################################
 void MaterialShader::setLightOffsets(size_t renderedlightLevels)
 {
+  if(renderedlightLevels<1)
+    renderedlightLevels=1;
+
   auto exec = [&](const UniformLocations_lt& locations)
   {
     size_t lightLevels = map()->maxSpotLightLevels();
