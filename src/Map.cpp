@@ -1242,6 +1242,12 @@ const std::vector<Layer*>& Map::layers() const
 }
 
 //##################################################################################################
+void Map::resetController()
+{
+   d->controller = new FlatController(this);
+}
+
+//##################################################################################################
 void Map::setMaxLightTextureSize(size_t lightTextureSize)
 {
   d->lightTextureSize = lightTextureSize;
