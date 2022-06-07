@@ -230,7 +230,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
 
           setMaterialPicking(shader, details);
           for(const std::pair<GLenum, MaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
-            drawPicking(shader, buff.first, buff.second, pickingID);
+            drawPicking(shader, details, buff.first, buff.second, pickingID);
         }
       });
     }
@@ -242,7 +242,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
         {
           setMaterial(shader, details);
           for(const std::pair<GLenum, MaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
-            draw(shader, buff.first, buff.second);
+            draw(shader, details, buff.first, buff.second);
         }
       });
     }
@@ -262,8 +262,10 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     {
 
     },
-    [&](auto shader, auto first, auto second, auto pickingID) //-- drawPicking ---------------------
+    [&](auto shader, const auto& details, auto first, auto second, auto pickingID) //-- drawPicking ---------------------
     {
+      if(details.alternativeMaterial->material.rayVisibilitityShadowCatcher)
+        return;
       shader->drawPicking(first, second, pickingID);
     },
     [&](auto shader, const auto& details) //-- setMaterial -----------------------------------------
@@ -274,8 +276,10 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
                           details.alternativeMaterial->rmttrTextureID);
       shader->setDiscardOpacity((renderInfo.pass == RenderPass::Transparency)?0.01f:0.80f);
     },
-    [&](auto shader, GLenum mode, Geometry3DShader::VertexBuffer* vertexBuffer) //-- draw ----------
+    [&](auto shader, const auto& details, GLenum mode, Geometry3DShader::VertexBuffer* vertexBuffer) //-- draw ----------
     {
+      if(renderInfo.pass == RenderPass::LightFBOs && details.alternativeMaterial->material.rayVisibilitityShadowCatcher)
+        return;
       shader->draw(mode, vertexBuffer);
     },
     renderInfo);
@@ -293,7 +297,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     {
       shader->setTexture(details.rgbaTextureID);
     },
-    [&](auto shader, auto first, auto second, auto pickingID) //-- drawPicking ---------------------
+    [&](auto shader, const auto& details, auto first, auto second, auto pickingID) //-- drawPicking ---------------------
     {
       shader->drawPicking(first, second, pickingID);
     },
@@ -301,7 +305,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     {
       shader->setTexture(details.rgbaTextureID);
     },
-    [&](auto shader, auto first, auto second) //-- draw --------------------------------------------
+    [&](auto shader, const auto& details, auto first, auto second) //-- draw --------------------------------------------
     {
       shader->draw(first, second, {1.0f, 1.0f, 1.0f, 1.0f});
     },

@@ -10,6 +10,8 @@ struct Material
   float useLightMask;
   float useReflection;
 
+  float rayVisibilitityShadowCatcher;
+
   float albedoScale;
 };
 
@@ -458,6 +460,8 @@ void main()
   F0 = mix(vec3(0.04), albedo, metalness);
   surfaceToCamera = normalize(cameraOrigin_tangent-fragPos_tangent);
 
+  float accumulatedShadow = 0.0;
+  float numShadows = 0.0;
   /*LIGHT_FRAG_CALC*/
 
   float alpha = rgbaTex.a;
@@ -476,6 +480,14 @@ void main()
   vec3 normal = TBNv*norm;
 
   /*POST*/
+
+  accumulatedShadow = accumulatedShadow / numShadows;
+
+  if( material.rayVisibilitityShadowCatcher > 0.1 )
+  {
+    ambient = vec3(0.1);
+    alpha = accumulatedShadow;
+  }
 
   writeFragment(ambient, diffuse, specular, normal, alpha, vec3(1,1,1), shininess);
 }
