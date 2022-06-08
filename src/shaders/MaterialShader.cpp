@@ -93,7 +93,7 @@ struct UniformLocations_lt
   GLint        materialUseLightMaskLocation{0};
   GLint       materialUseReflectionLocation{0};
 
-  GLint materialRayVisibilitityShadowCatcher{0};
+  GLint  materialRayVisibilityShadowCatcher{0};
 
   GLint         materialAlbedoScaleLocation{0};
 
@@ -265,7 +265,7 @@ void MaterialShader::compile(const char* vertShaderStr,
       locations.  materialUseLightMaskLocation = glGetUniformLocation(program, "material.useLightMask"  );
       locations. materialUseReflectionLocation = glGetUniformLocation(program, "material.useReflection" );
 
-      locations. materialRayVisibilitityShadowCatcher = glGetUniformLocation(program, "material.rayVisibilitityShadowCatcher" );
+      locations.materialRayVisibilityShadowCatcher = glGetUniformLocation(program, "material.rayVisibilityShadowCatcher" );
 
       locations.  materialAlbedoScaleLocation = glGetUniformLocation(program, "material.albedoScale"  );
 
@@ -441,7 +441,7 @@ void MaterialShader::compileRenderShader(const std::function<void(std::string& v
       LIGHT_FRAG_CALC += "    ambient  += r.ambient;\n";
       LIGHT_FRAG_CALC += "    diffuse  += r.diffuse;\n";
       LIGHT_FRAG_CALC += "    specular += r.specular;\n";
-      LIGHT_FRAG_CALC += "    accumulatedShadow += 1.0 - r.shadow;\n";
+      LIGHT_FRAG_CALC += "    accumulatedShadow += 1.0 - shadow;\n";
       LIGHT_FRAG_CALC += "    numShadows += 1.0;\n";
       LIGHT_FRAG_CALC += "  }\n";
     }
@@ -493,7 +493,7 @@ void MaterialShader::setMaterial(const tp_math_utils::Material& material)
     glUniform1f (locations.  materialUseLightMaskLocation, material.useLightMask  );
     glUniform1f (locations. materialUseReflectionLocation, material.useReflection );
 
-    glUniform1i (locations. materialRayVisibilitityShadowCatcher, material.rayVisibilitityShadowCatcher );
+    glUniform1i (locations. materialRayVisibilityShadowCatcher, material.rayVisibilityShadowCatcher );
 
     glUniform1f(locations.    materialAlbedoScaleLocation, material.albedoScale   );
 

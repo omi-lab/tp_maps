@@ -10,7 +10,7 @@ struct Material
   float useLightMask;
   float useReflection;
 
-  float rayVisibilitityShadowCatcher;
+  float rayVisibilityShadowCatcher;
 
   float albedoScale;
 };
@@ -483,7 +483,7 @@ void main()
 
   accumulatedShadow = accumulatedShadow / numShadows;
 
-  if( material.rayVisibilitityShadowCatcher > 0.1 )
+  if( material.rayVisibilityShadowCatcher > 0.1 )
   {
     ambient = vec3(0.1);
     alpha = accumulatedShadow;

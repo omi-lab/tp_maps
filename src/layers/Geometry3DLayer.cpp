@@ -264,7 +264,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     },
     [&](auto shader, const auto& details, auto first, auto second, auto pickingID) //-- drawPicking ---------------------
     {
-      if(details.alternativeMaterial->material.rayVisibilitityShadowCatcher)
+      if(details.alternativeMaterial->material.rayVisibilityShadowCatcher)
         return;
       shader->drawPicking(first, second, pickingID);
     },
@@ -278,7 +278,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     },
     [&](auto shader, const auto& details, GLenum mode, Geometry3DShader::VertexBuffer* vertexBuffer) //-- draw ----------
     {
-      if(renderInfo.pass == RenderPass::LightFBOs && details.alternativeMaterial->material.rayVisibilitityShadowCatcher)
+      if(renderInfo.pass == RenderPass::LightFBOs && details.alternativeMaterial->material.rayVisibilityShadowCatcher)
         return;
       shader->draw(mode, vertexBuffer);
     },
