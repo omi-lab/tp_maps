@@ -29,6 +29,7 @@ TP_DEFINE_ID(        postBlurAndTintShaderSID,        "Post blur and tint shader
 TP_DEFINE_ID(             postGrid2DShaderSID,              "Post grid 2D shader");
 TP_DEFINE_ID(              postGammaShaderSID,                "Post gamma shader");
 TP_DEFINE_ID(             backgroundShaderSID,                "Background shader");
+TP_DEFINE_ID(        backgroundImageShaderSID,          "Background image shader");
 TP_DEFINE_ID(                patternShaderSID,                   "Pattern shader");
 
 //##################################################################################################

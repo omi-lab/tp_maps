@@ -1,6 +1,7 @@
 #include "tp_maps/layers/BackgroundLayer.h"
 #include "tp_maps/shaders/BackgroundShader.h"
 #include "tp_maps/shaders/PatternShader.h"
+#include "tp_maps/shaders/BackgroundImageShader.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/Controller.h"
 #include "tp_maps/TexturePool.h"
@@ -24,6 +25,8 @@ struct BackgroundLayer::Private
   float rotationFactor{0.0f};
 
   float gridSpacing{20.0f};
+
+  std::function<glm::mat4()> flatMatrixCallback = []{return glm::mat4(1.0f);};
 
   //################################################################################################
   Private(TexturePool* texturePool_):
@@ -98,6 +101,13 @@ void BackgroundLayer::setGridSpacing(float gridSpacing)
 }
 
 //##################################################################################################
+void BackgroundLayer::setFlatMatrixCallback(const std::function<glm::mat4()>& flatMatrixCallback)
+{
+  d->flatMatrixCallback = flatMatrixCallback;
+  update();
+}
+
+//##################################################################################################
 void BackgroundLayer::render(RenderInfo& renderInfo)
 {
   if(renderInfo.pass != defaultRenderPass())
@@ -135,6 +145,22 @@ void BackgroundLayer::render(RenderInfo& renderInfo)
     shader->use(ShaderType::RenderExtendedFBO);
     shader->setFrameMatrix(glm::mat4(1.0f));
     shader->setScreenSizeAndGridSpacing(map()->screenSize(), d->gridSpacing);
+    shader->draw();
+
+    break;
+  }
+
+  case Mode::Flat: //-------------------------------------------------------------------------------
+  {
+    auto shader = map()->getShader<BackgroundImageShader>();
+    if(shader->error())
+      return;
+
+    shader->use(ShaderType::RenderExtendedFBO);
+    shader->setTexture(d->texturePool->textureID(d->textureName));
+    shader->setMatrix(d->flatMatrixCallback());
+    shader->setFrameMatrix(glm::mat4(1.0f));
+    //shader->setFrameMatrix(map()->controller()->matrices("Mask").p);
     shader->draw();
 
     break;

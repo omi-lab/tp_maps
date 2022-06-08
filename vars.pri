@@ -128,6 +128,9 @@ HEADERS += inc/tp_maps/shaders/FullScreenShader.h
 SOURCES += src/shaders/BackgroundShader.cpp
 HEADERS += inc/tp_maps/shaders/BackgroundShader.h
 
+SOURCES += src/shaders/BackgroundImageShader.cpp
+HEADERS += inc/tp_maps/shaders/BackgroundImageShader.h
+
 SOURCES += src/shaders/PatternShader.cpp
 HEADERS += inc/tp_maps/shaders/PatternShader.h
 

@@ -25,6 +25,8 @@
         <file alias="FullScreenShader.vert">resources/shaders/FullScreenShader.vert</file>
         <file alias="ScreenWindowShader.vert">resources/shaders/ScreenWindowShader.vert</file>
         <file alias="BackgroundShader.frag">resources/shaders/BackgroundShader.frag</file>
+        <file alias="BackgroundImageShader.vert">resources/shaders/BackgroundImageShader.vert</file>
+        <file alias="BackgroundImageShader.frag">resources/shaders/BackgroundImageShader.frag</file>
         <file alias="PatternShader.frag">resources/shaders/PatternShader.frag</file>
         <file alias="PostSSAOShader.frag">resources/shaders/PostSSAOShader.frag</file>
         <file alias="PostSSRShader.frag">resources/shaders/PostSSRShader.frag</file>
