@@ -76,34 +76,34 @@ struct LightLocations_lt
 //##################################################################################################
 struct UniformLocations_lt
 {
-  GLint                     mMatrixLocation{0};
-  GLint                    mvMatrixLocation{0};
-  GLint                   mvpMatrixLocation{0};
-  GLint                     vMatrixLocation{0};
-  GLint                  mInvMatrixLocation{0};
-  GLint                    uvMatrixLocation{0};
+  GLint                             mMatrixLocation{0};
+  GLint                            mvMatrixLocation{0};
+  GLint                           mvpMatrixLocation{0};
+  GLint                             vMatrixLocation{0};
+  GLint                          mInvMatrixLocation{0};
+  GLint                            uvMatrixLocation{0};
 
-  GLint                cameraOriginLocation{0};
+  GLint                        cameraOriginLocation{0};
 
-  GLint          materialUseAmbientLocation{0};
-  GLint          materialUseDiffuseLocation{0};
-  GLint            materialUseNdotLLocation{0};
-  GLint      materialUseAttenuationLocation{0};
-  GLint           materialUseShadowLocation{0};
-  GLint        materialUseLightMaskLocation{0};
-  GLint       materialUseReflectionLocation{0};
+  GLint                  materialUseAmbientLocation{0};
+  GLint                  materialUseDiffuseLocation{0};
+  GLint                    materialUseNdotLLocation{0};
+  GLint              materialUseAttenuationLocation{0};
+  GLint                   materialUseShadowLocation{0};
+  GLint                materialUseLightMaskLocation{0};
+  GLint               materialUseReflectionLocation{0};
 
-  GLint  materialRayVisibilityShadowCatcher{0};
+  GLint  materialShadowCatcherLocation{0};
 
-  GLint         materialAlbedoScaleLocation{0};
+  GLint                 materialAlbedoScaleLocation{0};
 
-  GLint                     txlSizeLocation{0};
-  GLint              discardOpacityLocation{0};
-  GLint                lightOffsetsLocation{0};
+  GLint                             txlSizeLocation{0};
+  GLint                      discardOpacityLocation{0};
+  GLint                        lightOffsetsLocation{0};
 
-  GLint      rgbaTextureLocation{0};
-  GLint   normalsTextureLocation{0};
-  GLint     rmttrTextureLocation{0};
+  GLint                         rgbaTextureLocation{0};
+  GLint                      normalsTextureLocation{0};
+  GLint                        rmttrTextureLocation{0};
 
   std::vector<LightLocations_lt> lightLocations;
 };
@@ -248,34 +248,36 @@ void MaterialShader::compile(const char* vertShaderStr,
   {
     auto exec = [&](UniformLocations_lt& locations)
     {
-      locations.mMatrixLocation           = glGetUniformLocation(program, "m");
-      locations.mvMatrixLocation          = glGetUniformLocation(program, "mv");
-      locations.mvpMatrixLocation         = glGetUniformLocation(program, "mvp");
-      locations.vMatrixLocation           = glGetUniformLocation(program, "v");
-      locations.mInvMatrixLocation        = glGetUniformLocation(program, "mInv");
-      locations.uvMatrixLocation          = glGetUniformLocation(program, "uvMatrix");
+      auto loc = [](auto program, const auto* name){return glGetUniformLocation(program, name);};
 
-      locations.cameraOriginLocation      = glGetUniformLocation(program, "cameraOrigin_world");
+      locations.mMatrixLocation                = loc(program, "m");
+      locations.mvMatrixLocation               = loc(program, "mv");
+      locations.mvpMatrixLocation              = loc(program, "mvp");
+      locations.vMatrixLocation                = loc(program, "v");
+      locations.mInvMatrixLocation             = loc(program, "mInv");
+      locations.uvMatrixLocation               = loc(program, "uvMatrix");
 
-      locations.    materialUseAmbientLocation = glGetUniformLocation(program, "material.useAmbient"    );
-      locations.    materialUseDiffuseLocation = glGetUniformLocation(program, "material.useDiffuse"    );
-      locations.      materialUseNdotLLocation = glGetUniformLocation(program, "material.useNdotL"      );
-      locations.materialUseAttenuationLocation = glGetUniformLocation(program, "material.useAttenuation");
-      locations.     materialUseShadowLocation = glGetUniformLocation(program, "material.useShadow"     );
-      locations.  materialUseLightMaskLocation = glGetUniformLocation(program, "material.useLightMask"  );
-      locations. materialUseReflectionLocation = glGetUniformLocation(program, "material.useReflection" );
+      locations.cameraOriginLocation           = loc(program, "cameraOrigin_world");
 
-      locations.materialRayVisibilityShadowCatcher = glGetUniformLocation(program, "material.rayVisibilityShadowCatcher" );
+      locations.    materialUseAmbientLocation = loc(program, "material.useAmbient"    );
+      locations.    materialUseDiffuseLocation = loc(program, "material.useDiffuse"    );
+      locations.      materialUseNdotLLocation = loc(program, "material.useNdotL"      );
+      locations.materialUseAttenuationLocation = loc(program, "material.useAttenuation");
+      locations.     materialUseShadowLocation = loc(program, "material.useShadow"     );
+      locations.  materialUseLightMaskLocation = loc(program, "material.useLightMask"  );
+      locations. materialUseReflectionLocation = loc(program, "material.useReflection" );
 
-      locations.  materialAlbedoScaleLocation = glGetUniformLocation(program, "material.albedoScale"  );
+      locations.materialShadowCatcherLocation  = loc(program, "material.rayVisibilityShadowCatcher");
 
-      locations.txlSizeLocation           = glGetUniformLocation(program, "txlSize");
-      locations.discardOpacityLocation    = glGetUniformLocation(program, "discardOpacity");
-      locations.lightOffsetsLocation     = glGetUniformLocation(program, "lightOffsets");
+      locations.  materialAlbedoScaleLocation  = loc(program, "material.albedoScale"  );
 
-      locations.     rgbaTextureLocation = glGetUniformLocation(program, "rgbaTexture"     );
-      locations.  normalsTextureLocation = glGetUniformLocation(program, "normalsTexture"  );
-      locations.    rmttrTextureLocation = glGetUniformLocation(program, "rmttrTexture"    );
+      locations.txlSizeLocation                = loc(program, "txlSize");
+      locations.discardOpacityLocation         = loc(program, "discardOpacity");
+      locations.lightOffsetsLocation           = loc(program, "lightOffsets");
+
+      locations.     rgbaTextureLocation       = loc(program, "rgbaTexture"     );
+      locations.  normalsTextureLocation       = loc(program, "normalsTexture"  );
+      locations.    rmttrTextureLocation       = loc(program, "rmttrTexture"    );
 
       const auto& lights = map()->lights();
       size_t iMax = tpMin(d->maxLights, lights.size());
@@ -287,26 +289,26 @@ void MaterialShader::compile(const char* vertShaderStr,
 
         auto ii = std::to_string(i);
 
-        lightLocations.worldToLightViewLocation = glGetUniformLocation(program, replaceLight(ii, "", "worldToLight%_view").c_str());
-        lightLocations.worldToLightProjLocation = glGetUniformLocation(program, replaceLight(ii, "", "worldToLight%_proj").c_str());
+        lightLocations.worldToLightViewLocation = loc(program, replaceLight(ii, "", "worldToLight%_view").c_str());
+        lightLocations.worldToLightProjLocation = loc(program, replaceLight(ii, "", "worldToLight%_proj").c_str());
 
-        lightLocations.positionLocation         = glGetUniformLocation(program, replaceLight(ii, "", "light%.position").c_str());
-        lightLocations.directionLocation        = glGetUniformLocation(program, replaceLight(ii, "", "light%Direction_world").c_str());
-        lightLocations.ambientLocation          = glGetUniformLocation(program, replaceLight(ii, "", "light%.ambient").c_str());
-        lightLocations.diffuseLocation          = glGetUniformLocation(program, replaceLight(ii, "", "light%.diffuse").c_str());
-        lightLocations.diffuseScaleLocation     = glGetUniformLocation(program, replaceLight(ii, "", "light%.diffuseScale").c_str());
+        lightLocations.positionLocation         = loc(program, replaceLight(ii, "", "light%.position").c_str());
+        lightLocations.directionLocation        = loc(program, replaceLight(ii, "", "light%Direction_world").c_str());
+        lightLocations.ambientLocation          = loc(program, replaceLight(ii, "", "light%.ambient").c_str());
+        lightLocations.diffuseLocation          = loc(program, replaceLight(ii, "", "light%.diffuse").c_str());
+        lightLocations.diffuseScaleLocation     = loc(program, replaceLight(ii, "", "light%.diffuseScale").c_str());
 
-        lightLocations.constantLocation         = glGetUniformLocation(program, replaceLight(ii, "", "light%.constant").c_str());
-        lightLocations.linearLocation           = glGetUniformLocation(program, replaceLight(ii, "", "light%.linear").c_str());
-        lightLocations.quadraticLocation        = glGetUniformLocation(program, replaceLight(ii, "", "light%.quadratic").c_str());
-        lightLocations.spotLightBlendLocation   = glGetUniformLocation(program, replaceLight(ii, "", "light%.spotLightBlend").c_str());
+        lightLocations.constantLocation         = loc(program, replaceLight(ii, "", "light%.constant").c_str());
+        lightLocations.linearLocation           = loc(program, replaceLight(ii, "", "light%.linear").c_str());
+        lightLocations.quadraticLocation        = loc(program, replaceLight(ii, "", "light%.quadratic").c_str());
+        lightLocations.spotLightBlendLocation   = loc(program, replaceLight(ii, "", "light%.spotLightBlend").c_str());
 
-        lightLocations.nearLocation             = glGetUniformLocation(program, replaceLight(ii, "", "light%.near").c_str());
-        lightLocations.farLocation              = glGetUniformLocation(program, replaceLight(ii, "", "light%.far").c_str());
+        lightLocations.nearLocation             = loc(program, replaceLight(ii, "", "light%.near").c_str());
+        lightLocations.farLocation              = loc(program, replaceLight(ii, "", "light%.far").c_str());
 
-        lightLocations.offsetScaleLocation      = glGetUniformLocation(program, replaceLight(ii, "", "light%.offsetScale").c_str());
+        lightLocations.offsetScaleLocation      = loc(program, replaceLight(ii, "", "light%.offsetScale").c_str());
 
-        lightLocations.lightTextureIDLocation   = glGetUniformLocation(program, replaceLight(ii, "", "light%Texture").c_str());
+        lightLocations.lightTextureIDLocation   = loc(program, replaceLight(ii, "", "light%Texture").c_str());
       }
     };
 
@@ -484,17 +486,17 @@ void MaterialShader::setMaterial(const tp_math_utils::Material& material)
 {
   auto exec = [&](const UniformLocations_lt& locations)
   {
-    glUniform1f (locations.    materialUseAmbientLocation, material.useAmbient    );
-    glUniform1f (locations.    materialUseDiffuseLocation, material.useDiffuse    );
-    glUniform1f (locations.      materialUseNdotLLocation, material.useNdotL      );
-    glUniform1f (locations.materialUseAttenuationLocation, material.useAttenuation);
-    glUniform1f (locations.     materialUseShadowLocation, material.useShadow     );
-    glUniform1f (locations.  materialUseLightMaskLocation, material.useLightMask  );
-    glUniform1f (locations. materialUseReflectionLocation, material.useReflection );
+    glUniform1f (locations.    materialUseAmbientLocation, material.useAmbient                );
+    glUniform1f (locations.    materialUseDiffuseLocation, material.useDiffuse                );
+    glUniform1f (locations.      materialUseNdotLLocation, material.useNdotL                  );
+    glUniform1f (locations.materialUseAttenuationLocation, material.useAttenuation            );
+    glUniform1f (locations.     materialUseShadowLocation, material.useShadow                 );
+    glUniform1f (locations.  materialUseLightMaskLocation, material.useLightMask              );
+    glUniform1f (locations. materialUseReflectionLocation, material.useReflection             );
 
-    glUniform1i (locations. materialRayVisibilityShadowCatcher, material.rayVisibilityShadowCatcher );
+    glUniform1i (locations. materialShadowCatcherLocation, material.rayVisibilityShadowCatcher);
 
-    glUniform1f(locations.    materialAlbedoScaleLocation, material.albedoScale   );
+    glUniform1f(locations.    materialAlbedoScaleLocation, material.albedoScale               );
 
     glUniformMatrix3fv(locations.uvMatrixLocation, 1, GL_FALSE, glm::value_ptr(material.uvMatrix()));
   };
