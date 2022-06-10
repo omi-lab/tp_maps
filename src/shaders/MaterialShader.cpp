@@ -397,6 +397,7 @@ void MaterialShader::compileRenderShader(const std::function<void(std::string& v
       LIGHT_FRAG_CALC += "\n  {\n";
       LIGHT_FRAG_CALC += replaceLight(ii, ll, "    vec3 ldNormalized = normalize(invTBN * light%Direction_world);\n");
 
+      LIGHT_FRAG_CALC += replaceLight(ii, ll, "    float shadow=0.0;\n");
       switch(light.type)
       {
       case tp_math_utils::LightType::Global:[[fallthrough]];
@@ -412,14 +413,12 @@ void MaterialShader::compileRenderShader(const std::function<void(std::string& v
         if(map()->maxSpotLightLevels() == 1)
         {
           LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform sampler2D light%Texture;\n");
-          LIGHT_FRAG_CALC += replaceLight(ii, ll, "    float shadow=0.0;\n");
           LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow += spotLightSampleShadow2D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec2(0,0), worldToLight%_proj));\n");
           LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totalShadowSamples;\n");
         }
         else
         {
           LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform sampler3D light%Texture;\n");
-          LIGHT_FRAG_CALC += replaceLight(ii, ll, "    float shadow=0.0;\n");
           LIGHT_FRAG_CALC += "    vec2 offset;";
 
           for (size_t levelIdx=0; levelIdx < levels; ++levelIdx)

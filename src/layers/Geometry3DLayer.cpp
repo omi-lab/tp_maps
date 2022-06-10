@@ -299,6 +299,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     },
     [&](auto shader, const auto& details, auto first, auto second, auto pickingID) //-- drawPicking ---------------------
     {
+      TP_UNUSED(details);
       shader->drawPicking(first, second, pickingID);
     },
     [&](auto shader, const auto& details) //-- setMaterial -----------------------------------------
@@ -307,6 +308,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     },
     [&](auto shader, const auto& details, auto first, auto second) //-- draw --------------------------------------------
     {
+      TP_UNUSED(details);
       shader->draw(first, second, {1.0f, 1.0f, 1.0f, 1.0f});
     },
     renderInfo);
