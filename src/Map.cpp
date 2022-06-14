@@ -689,6 +689,12 @@ struct Map::Private
     if(clear)
     {
       glClearDepthf(1.0f);
+
+      if(levels!=1)
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+      else
+        glClearColor(backgroundColor.x, backgroundColor.y, backgroundColor.z, 1.0f);
+
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
@@ -1109,13 +1115,6 @@ Controller* Map::controller()
 void Map::setBackgroundColor(const glm::vec3& color)
 {
   d->backgroundColor = color;
-
-  if(d->initialized)
-  {
-    makeCurrent();
-    glClearColor(d->backgroundColor.x, d->backgroundColor.y, d->backgroundColor.z, 1.0f);
-  }
-
   update();
 }
 
@@ -1563,7 +1562,6 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
 
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glClearColor(d->backgroundColor.x, d->backgroundColor.y, d->backgroundColor.z, 1.0f);
 
   //------------------------------------------------------------------------------------------------
   // Execute a picking render pass.
@@ -1915,7 +1913,6 @@ void Map::initializeGL()
   glEnable(GL_MULTISAMPLE);
 #endif
 
-  glClearColor(d->backgroundColor.x, d->backgroundColor.y, d->backgroundColor.z, 1.0f);
   d->initialized = true;
 
   d->controller->mapResized(int(d->width), int(d->height));
@@ -1945,12 +1942,9 @@ void Map::paintGLNoMakeCurrent()
   d->renderInfo.pass = RenderPass::PreRender;
   d->render();
 
-#if 0
-  //Make the background flicker to show when the map is updateing
-  glClearColor(1.0f, 1.0f, float(std::rand()%255)/255.0f, 1.0f);
-#endif
   glDepthMask(true);
   glClearDepthf(1.0f);
+  glClearColor(d->backgroundColor.x, d->backgroundColor.y, d->backgroundColor.z, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // Skip the passes that don't need a full render.

@@ -96,7 +96,7 @@ const float pi = 3.14159265;
 float lineariseDepth(float depth, float near, float far)
 {
   // Scale the depth back into world coords.
-  return 2.0 * near * far / (far + near - (2.0 * depth - 1.0) * (far - near));
+  return near * far / (far + depth * (near - far));
 }
 
 //##################################################################################################
@@ -146,8 +146,8 @@ vec2 computeLightOffset(Light light, int offsetIdx)
 //##################################################################################################
 vec3 lightPosToTexture(vec4 fragPos_light, vec2 offset, mat4 proj)
 {
-  vec4 fp = proj * (fragPos_light+vec4(offset,0.0,0.0));
-  return vec3((vec3(0.5, 0.5, 0.5) * (fp.xyz / fp.w)) + vec3(0.5, 0.5, 0.5));
+  vec4 fp = proj * (fragPos_light + vec4(offset,0.0,0.0));
+  return (vec3(0.5, 0.5, 0.5) * (fp.xyz / fp.w) + vec3(0.5, 0.5, 0.5));
 }
 
 //##################################################################################################
@@ -279,9 +279,6 @@ float maskLight(Light light, vec3 uv, float shadow)
     mask = 1.0-clamp((l-(1.0-light.spotLightBlend))/light.spotLightBlend, 0.0, 1.0);
   }
 
-
-    //mask = /*TP_GLSL_TEXTURE_2D*/(spotLightTexture, (uv.xy*light.spotLightWH) + light.spotLightUV).x;
-
   return mix(1.0, mask, material.useLightMask) * shadow;
 }
 
@@ -309,8 +306,9 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
         }
       }
     }
+    return maskLight(light, uv, shadow);
   }
-  return maskLight(light, uv, shadow);
+  return shadow*(1.0-material.useLightMask);
 }
 
 //##################################################################################################
@@ -338,8 +336,9 @@ float spotLightSampleShadow3D(vec3 norm, Light light, vec3 lightDirection_tangen
         }
       }
     }
+    return maskLight(light, uv, shadow);
   }
-  return maskLight(light, uv, shadow);
+  return shadow*(1.0-material.useLightMask);
 }
 #endif
 
@@ -460,8 +459,9 @@ void main()
   F0 = mix(vec3(0.04), albedo, metalness);
   surfaceToCamera = normalize(cameraOrigin_tangent-fragPos_tangent);
 
-  float accumulatedShadow = 0.0;
+  float accumulatedShadow = 1.0;
   float numShadows = 0.0;
+
   /*LIGHT_FRAG_CALC*/
 
   float alpha = rgbaTex.a;
@@ -481,12 +481,10 @@ void main()
 
   /*POST*/
 
-  accumulatedShadow = accumulatedShadow / numShadows;
-
   if(material.rayVisibilityShadowCatcher)
   {
     ambient = vec3(0.1);
-    alpha = accumulatedShadow;
+    alpha = 1.0 - accumulatedShadow;
   }
 
   writeFragment(ambient, diffuse, specular, normal, alpha, vec3(1,1,1), shininess);

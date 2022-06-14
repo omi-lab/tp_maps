@@ -421,7 +421,7 @@ void MaterialShader::compileRenderShader(const std::function<void(std::string& v
         else
         {
           LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform sampler3D light%Texture;\n");
-          LIGHT_FRAG_CALC += "    vec2 offset;";
+          LIGHT_FRAG_CALC += "    vec2 offset;\n";
 
           for (size_t levelIdx=0; levelIdx < levels; ++levelIdx)
           {
@@ -430,7 +430,6 @@ void MaterialShader::compileRenderShader(const std::function<void(std::string& v
           }
 
           LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totalShadowSamples * @.0;\n");
-          //LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = spotLight3D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec2(0,0), worldToLight%_proj), shadow);\n");
         }
 
         LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow = mix(1.0, shadow, material.useShadow);\n");
@@ -442,7 +441,7 @@ void MaterialShader::compileRenderShader(const std::function<void(std::string& v
       LIGHT_FRAG_CALC += "    ambient  += r.ambient;\n";
       LIGHT_FRAG_CALC += "    diffuse  += r.diffuse;\n";
       LIGHT_FRAG_CALC += "    specular += r.specular;\n";
-      LIGHT_FRAG_CALC += "    accumulatedShadow += 1.0 - shadow;\n";
+      LIGHT_FRAG_CALC += "    accumulatedShadow *= shadow;\n";
       LIGHT_FRAG_CALC += "    numShadows += 1.0;\n";
       LIGHT_FRAG_CALC += "  }\n";
     }
