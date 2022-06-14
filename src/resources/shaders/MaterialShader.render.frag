@@ -483,8 +483,8 @@ void main()
 
   if(material.rayVisibilityShadowCatcher)
   {
-    ambient = vec3(0.1);
-    alpha = 1.0 - accumulatedShadow;
+    ambient = vec3(0.0);
+    alpha = clamp(1.0 - accumulatedShadow, 0.0, 0.8);
   }
 
   writeFragment(ambient, diffuse, specular, normal, alpha, vec3(1,1,1), shininess);
