@@ -217,7 +217,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
 
     if(renderInfo.pass == RenderPass::Picking)
     {
-      d->geometry3DPool->viewProcessedGeometry(d->name, shader, {}, [&](const std::vector<ProcessedGeometry3D>& processedGeometry)
+      d->geometry3DPool->viewProcessedGeometry(d->name, shader, d->alternativeMaterials, [&](const std::vector<ProcessedGeometry3D>& processedGeometry)
       {
         size_t iMax = processedGeometry.size();
         for(size_t i=0; i<iMax; i++)
