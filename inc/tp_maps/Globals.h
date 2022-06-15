@@ -162,6 +162,9 @@ using TPGLenum = GLenum;
 #define      TP_A_KEY           4
 #define      TP_S_KEY          22
 #define      TP_D_KEY           7
+#define      TP_F_KEY           9
+
+#define      TP_COMMA_KEY      -17
 
 #define      TP_SPACE_KEY      44
 
