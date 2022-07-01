@@ -279,7 +279,10 @@ float maskLight(Light light, vec3 uv, float shadow)
     mask = 1.0-clamp((l-(1.0-light.spotLightBlend))/light.spotLightBlend, 0.0, 1.0);
   }
 
-  return mix(1.0, mask, material.useLightMask) * shadow;
+  if(material.rayVisibilityShadowCatcher)
+    return max((1.0-mask)*totalShadowSamples, shadow);
+  else
+    return mix(1.0, mask, material.useLightMask) * shadow;
 }
 
 //##################################################################################################
@@ -308,7 +311,8 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
     }
     return maskLight(light, uv, shadow);
   }
-  return shadow*(1.0-material.useLightMask);
+
+  return shadow*(material.rayVisibilityShadowCatcher?1.0:0.0);
 }
 
 //##################################################################################################
@@ -338,7 +342,8 @@ float spotLightSampleShadow3D(vec3 norm, Light light, vec3 lightDirection_tangen
     }
     return maskLight(light, uv, shadow);
   }
-  return shadow*(1.0-material.useLightMask);
+
+  return shadow*(material.rayVisibilityShadowCatcher?1.0:0.0);
 }
 #endif
 
@@ -467,11 +472,11 @@ void main()
   float alpha = rgbaTex.a;
   // Use transparency to display transmission and transmissionRoughness.
   if(transmissionRoughness > 0.1)
-	transmission *= 0.5 * (1.0 - transmissionRoughness);
+    transmission *= 0.5 * (1.0 - transmissionRoughness);
   float minAlpha = 0.2;
   // For non white material, use a higher alpha value = less transparency.
   if(rgbaTex.xyz != vec3(1.0))
-	minAlpha = 0.5;
+    minAlpha = 0.5;
   if(transmission > 0.1)
     alpha = minAlpha + (1.0 - minAlpha) * (1.0 - transmission);
 
@@ -484,6 +489,8 @@ void main()
   if(material.rayVisibilityShadowCatcher)
   {
     ambient = vec3(0.0);
+    diffuse = vec3(0.0);
+    specular = vec3(0.0);
     alpha = clamp(1.0 - accumulatedShadow, 0.0, 0.8);
   }
 
