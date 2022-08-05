@@ -3,7 +3,9 @@
 
 #include "tp_maps/Shader.h"
 
-#include "glm/glm.hpp"
+#include "tp_utils/RefCount.h"
+
+#include "glm/glm.hpp" // IWYU pragma: keep
 
 namespace tp_maps
 {
