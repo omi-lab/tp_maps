@@ -37,7 +37,7 @@ public:
     ~Object();
 
     //##############################################################################################
-    void bindVBO();
+    void bindVBO() const;
 
     GLsizei size{0};
     GLuint vboID{0};

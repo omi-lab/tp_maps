@@ -54,9 +54,12 @@
 #    include <GLES3/gl3.h>
 #    define TP_GLES3
 #  endif
-
+#elif defined(TP_WIN32) && defined(TP_EGL) //-------------------------------------------------------
+#  include <GLES3/gl3.h>
+#  include <GLES3/gl3ext.h>
+#  define TP_GLES3
 #elif defined(TP_WIN32) //--------------------------------------------------------------------------
-#include <GL/glew.h>
+#  include <GL/glew.h>
 #  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_130
 #  define TP_GL3
 #  define TP_ENABLE_MULTISAMPLE

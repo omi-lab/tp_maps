@@ -251,6 +251,9 @@ struct Map::Private
   //################################################################################################
   GLint colorFormatF(Alpha alpha)
   {
+#ifdef TP_GLES2
+    return (alpha==Alpha::Yes)?GL_RGBA32F_EXT:GL_RGB16F_EXT;
+#else
     switch(openGLProfile)
     {
     case OpenGLProfile::VERSION_100_ES: [[fallthrough]];
@@ -262,11 +265,15 @@ struct Map::Private
     default:
       return (alpha==Alpha::Yes)?GL_RGBA32F:GL_RGB32F;
     }
+#endif
   }
 
   //################################################################################################
   GLint depthFormatF()
   {
+#ifdef TP_GLES2
+    return GL_R32F_EXT;
+#else
     switch(openGLProfile)
     {
     case OpenGLProfile::VERSION_100_ES: [[fallthrough]];
@@ -278,6 +285,7 @@ struct Map::Private
     default:
       return GL_R32F;
     }
+#endif
   }
 
   //################################################################################################
@@ -497,6 +505,7 @@ struct Map::Private
                      size_t level,
                      bool clear)
   {
+    tpDebug() << "prepareBuffer A";
     DEBUG_printOpenGLError("prepareBuffer Start");
 
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
@@ -513,20 +522,27 @@ struct Map::Private
     }
 #endif
 
+    tpDebug() << "prepareBuffer B";
 #ifndef TP_ENABLE_3D_TEXTURE
     levels = 1;
 #endif
 
+    tpDebug() << "prepareBuffer B1";
     multisample = (multisample==Multisample::Yes && (samples>1))?Multisample::Yes:Multisample::No;
 
+    tpDebug() << "prepareBuffer B2";
     if(buffer.width!=width || buffer.height!=height || buffer.levels!=levels || buffer.samples!=samples || buffer.hdr != hdr || buffer.extendedFBO != extendedFBO || buffer.multisample != multisample)
       deleteBuffer(buffer);
 
+    tpDebug() << "prepareBuffer B3";
     buffer.level = level;
 
+    tpDebug() << "prepareBuffer B4";
     if(!buffer.frameBuffer)
     {
+      tpDebug() << "prepareBuffer B5";
       glGenFramebuffers(1, &buffer.frameBuffer);
+      tpDebug() << "prepareBuffer B6";
       buffer.width       = width;
       buffer.height      = height;
       buffer.levels      = levels;
@@ -536,6 +552,7 @@ struct Map::Private
       buffer.multisample = multisample;
     }
 
+    tpDebug() << "prepareBuffer C";
     DEBUG_printOpenGLError("prepareBuffer Init");
 
     glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
@@ -548,6 +565,7 @@ struct Map::Private
         createColorBuffer = CreateColorBuffer::Yes;
     }
 
+    tpDebug() << "prepareBuffer D";
 #ifdef TP_ENABLE_3D_TEXTURE
     if(levels != 1)
       createColorBuffer = CreateColorBuffer::No;
@@ -562,6 +580,7 @@ struct Map::Private
       DEBUG_printOpenGLError("prepareBuffer bind 2D texture to FBO");
     }
 
+    tpDebug() << "prepareBuffer E";
 #ifdef TP_ENABLE_3D_TEXTURE
     if(levels != 1)
     {
@@ -589,6 +608,7 @@ struct Map::Private
         }
       }
 
+      tpDebug() << "prepareBuffer F";
 #ifdef TP_GLES3
       // glFramebufferTexture3D is not supported in GLES.
       glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, buffer.depthID, 0, GLint(level));
@@ -606,11 +626,13 @@ struct Map::Private
       case OpenGLProfile::VERSION_320_ES:
         break;
       }
+      tpDebug() << "prepareBuffer G";
       DEBUG_printOpenGLError("prepareBuffer bind 3D texture to FBO as color but to store depth");
     }
     else
 #endif
     {
+      tpDebug() << "prepareBuffer H";
       if(!buffer.depthID)
         create2DDepthTexture(buffer.depthID, width, height);
 
@@ -618,6 +640,7 @@ struct Map::Private
       DEBUG_printOpenGLError("prepareBuffer bind 2D texture to FBO to store depth");
     }
 
+    tpDebug() << "prepareBuffer I";
     if(extendedFBO == ExtendedFBO::Yes)
     {
       if(!buffer.normalsID)
@@ -635,12 +658,14 @@ struct Map::Private
     else
       setDrawBuffers({GL_COLOR_ATTACHMENT0});
 
+    tpDebug() << "prepareBuffer J";
     if(printFBOError(buffer, "Error Map::Private::prepareBuffer frame buffer not complete!"))
       return false;
 
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
     if(multisample == Multisample::Yes)
     {
+      tpDebug() << "prepareBuffer K";
       glEnable(GL_MULTISAMPLE);
 
       if(!buffer.multisampleFrameBuffer)
@@ -682,12 +707,14 @@ struct Map::Private
     }
 #endif
 
+    tpDebug() << "prepareBuffer L";
     glViewport(0, 0, TPGLsizei(width), TPGLsizei(height));
 
     glDepthMask(true);
 
     if(clear)
     {
+      tpDebug() << "prepareBuffer M";
       glClearDepthf(1.0f);
 
       if(levels!=1)
@@ -700,6 +727,7 @@ struct Map::Private
 
     DEBUG_printOpenGLError("prepareBuffer end");
 
+    tpDebug() << "prepareBuffer N";
     return true;
   }
 
@@ -1647,16 +1675,19 @@ bool Map::renderToImage(size_t width, size_t height, tp_image_utils::ColorMap& i
 //##################################################################################################
 bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY)
 {
+  tpDebug() << "Map::renderToImage a";
   if(width<1 || height<1)
   {
     tpWarning() << "Error Map::renderToImage can't render to image smaller than 1 pixel.";
     return false;
   }
 
+  tpDebug() << "Map::renderToImage b";
   auto originalWidth  = d->width;
   auto originalHeight = d->height;
   resizeGL(int(width), int(height));
 
+  tpDebug() << "Map::renderToImage c";
   makeCurrent();
   setInPaint(true);
   TP_CLEANUP([&]{setInPaint(false);});
@@ -1664,6 +1695,7 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
   GLint originalFrameBuffer = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
 
+  tpDebug() << "Map::renderToImage d";
   DEBUG_printOpenGLError("renderToImage A");
 
   // Configure the frame buffer that the image will be rendered to.
@@ -1675,6 +1707,7 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
 
   DEBUG_printOpenGLError("renderToImage B");
 
+  tpDebug() << "Map::renderToImage e";
   // Execute a render passes.
   paintGLNoMakeCurrent();
   DEBUG_printOpenGLError("renderToImage C1");
@@ -1688,6 +1721,7 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
   glReadPixels(0, 0, int(width), int(height), GL_RGBA, GL_UNSIGNED_BYTE, pixels);
   DEBUG_printOpenGLError("renderToImage C3");
 
+  tpDebug() << "Map::renderToImage f";
   if(swapY)
   {
     std::vector<TPPixel> line{size_t(width)};
@@ -1705,6 +1739,7 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
     }
   }
 
+  tpDebug() << "Map::renderToImage g";
   // Return to the original viewport settings
   d->width = originalWidth;
   d->height = originalHeight;
@@ -1714,6 +1749,7 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
 
   DEBUG_printOpenGLError("renderToImage D");
 
+  tpDebug() << "Map::renderToImage h";
   return true;
 }
 
@@ -1864,6 +1900,7 @@ float Map::pixelScale()
 void Map::initializeGL()
 {
 #ifdef TP_WIN32
+#ifndef TP_EGL
   static bool initGlew=[]
   {
     if(GLenum err = glewInit(); err!=GLEW_OK)
@@ -1871,6 +1908,7 @@ void Map::initializeGL()
     return false;
   }();
   TP_UNUSED(initGlew);
+#endif
 #endif
 
 #if defined(TP_MAPS_DEBUG) && !defined(TP_EMSCRIPTEN) && !defined(TP_OSX)
@@ -1953,7 +1991,9 @@ void Map::paintGLNoMakeCurrent()
   bool renderMoreLights = (d->renderFromStage==RenderFromStage::RenderMoreLights);
   d->renderFromStage = RenderFromStage::Reset;
 
+#ifdef TP_FBO_SUPPORTED
   executeRenderPasses(rp, originalFrameBuffer, renderMoreLights);
+#endif
 
   printOpenGLError("Map::paintGL");
 }

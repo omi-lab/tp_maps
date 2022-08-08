@@ -113,7 +113,7 @@ FullScreenShader::Object::~Object()
 }
 
 //##################################################################################################
-void FullScreenShader::Object::bindVBO()
+void FullScreenShader::Object::bindVBO() const
 {
   glBindBuffer(GL_ARRAY_BUFFER, vboID);
   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), tpVoidLiteral(0));
