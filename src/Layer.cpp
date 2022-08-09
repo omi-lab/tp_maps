@@ -22,6 +22,7 @@ struct Layer::Private
   tp_utils::StringID coordinateSystem{defaultSID()};
   RenderPass defaultRenderPass{RenderPass::Normal};
   bool visible{true};
+  std::shared_ptr<int> alive{std::make_shared<int>()};
 
   //################################################################################################
   Private(Layer* q_):
@@ -267,6 +268,20 @@ void Layer::update(RenderFromStage renderFromStage)
 {
   if(d->map)
     d->map->update(renderFromStage);
+}
+
+//##################################################################################################
+void Layer::callAsync(const std::function<void()>& callback)
+{
+  if(d->map)
+  {
+    std::weak_ptr<int> alive = d->alive;
+    d->map->callAsync([=]
+    {
+      if(alive.lock())
+        callback();
+    });
+  }
 }
 
 //##################################################################################################

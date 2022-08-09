@@ -232,6 +232,9 @@ protected:
   void update(RenderFromStage renderFromStage=RenderFromStage::Full);
 
   //################################################################################################
+  void callAsync(const std::function<void()>& callback);
+
+  //################################################################################################
   virtual void addedToMap();
 
 private:  
