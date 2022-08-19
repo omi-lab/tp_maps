@@ -1078,6 +1078,7 @@ void Map::setInPaint(bool inPaint)
 //##################################################################################################
 void Map::invalidateBuffers()
 {
+  tpDebug() << "invalidateBuffers";
   d->initialized = false;
 
   for(auto& i : d->shaders)
