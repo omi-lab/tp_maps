@@ -26,7 +26,7 @@ public:
   ~PostShader();
 
   //################################################################################################
-  void compile(const char* vertexShader,
+  virtual void compile(const char* vertexShader,
                const char* fragmentShader,
                const std::function<void(GLuint)>& bindLocations,
                const std::function<void(GLuint)>& getLocations,
@@ -34,6 +34,9 @@ public:
 
   //################################################################################################
   void setReadFBO(const FBO& readFBO);
+
+  //################################################################################################
+  void setFBOSourceTexture(const GLuint id);
 
   //################################################################################################
   void setProjectionMatrix(const glm::mat4& projectionMatrix);

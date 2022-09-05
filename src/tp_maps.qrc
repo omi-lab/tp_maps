@@ -41,5 +41,10 @@
         <file alias="WriteFragment.150.render.glsl">resources/shaders/WriteFragment.150.render.glsl</file>
         <file alias="WriteFragment.100.hdr.glsl">resources/shaders/WriteFragment.100.hdr.glsl</file>
         <file alias="WriteFragment.100.render.glsl">resources/shaders/WriteFragment.100.render.glsl</file>
+        <file alias="DepthOfFieldBlurShader.frag">resources/shaders/DepthOfFieldBlurShader.frag</file>
+        <file alias="CalculateFocusShader.frag">resources/shaders/CalculateFocusShader.frag</file>
+        <file alias="MergeDofShader.frag">resources/shaders/MergeDoFShader.frag</file>
+        <file alias="DownsampleShader.frag">resources/shaders/DownsampleShader.frag</file>
+        <file alias="PassThroughShader.frag">resources/shaders/PassThroughShader.frag</file>
     </qresource>
 </RCC>

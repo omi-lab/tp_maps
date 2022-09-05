@@ -155,6 +155,21 @@ HEADERS += inc/tp_maps/shaders/PostOutlineShader.h
 SOURCES += src/shaders/PostBlurAndTintShader.cpp
 HEADERS += inc/tp_maps/shaders/PostBlurAndTintShader.h
 
+SOURCES += src/shaders/DepthOfFieldBlurShader.cpp
+HEADERS += inc/tp_maps/shaders/DepthOfFieldBlurShader.h
+
+SOURCES += src/shaders/CalculateFocusShader.cpp
+HEADERS += inc/tp_maps/shaders/CalculateFocusShader.h
+
+SOURCES += src/shaders/DownsampleShader.cpp
+HEADERS += inc/tp_maps/shaders/DownsampleShader.h
+
+SOURCES += src/shaders/MergeDofShader.cpp
+HEADERS += inc/tp_maps/shaders/MergeDofShader.h
+
+SOURCES += src/shaders/PassThroughShader.cpp
+HEADERS += inc/tp_maps/shaders/PassThroughShader.h
+
 SOURCES += src/shaders/PostGrid2DShader.cpp
 HEADERS += inc/tp_maps/shaders/PostGrid2DShader.h
 
@@ -225,6 +240,9 @@ HEADERS += inc/tp_maps/layers/PostOutlineLayer.h
 
 SOURCES += src/layers/PostBlurAndTintLayer.cpp
 HEADERS += inc/tp_maps/layers/PostBlurAndTintLayer.h
+
+SOURCES += src/layers/DepthOfFieldBlurLayer.cpp
+HEADERS += inc/tp_maps/layers/DepthOfFieldBlurLayer.h
 
 SOURCES += src/layers/PostGrid2DLayer.cpp
 HEADERS += inc/tp_maps/layers/PostGrid2DLayer.h

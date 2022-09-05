@@ -26,6 +26,12 @@ TP_DEFINE_ID(                postSSRShaderSID,                  "Post ssr shader
 TP_DEFINE_ID(               postBlitShaderSID,                 "Post blit shader");
 TP_DEFINE_ID(            postOutlineShaderSID,              "Post outline shader");
 TP_DEFINE_ID(        postBlurAndTintShaderSID,        "Post blur and tint shader");
+TP_DEFINE_ID(       depthOfFieldBlurShaderSID,       "Depth of field blur shader");
+TP_DEFINE_ID(         calculateFocusShaderSID,           "Calculate focus shader");
+TP_DEFINE_ID(             downsampleShaderSID,                "Downsample shader");
+TP_DEFINE_ID(               mergeDofShaderSID,                 "Merge dof shader");
+TP_DEFINE_ID(           gaussianBlurShaderSID,             "Gaussian blur shader");
+TP_DEFINE_ID(            passThroughShaderSID,              "Pass through shader");
 TP_DEFINE_ID(             postGrid2DShaderSID,              "Post grid 2D shader");
 TP_DEFINE_ID(              postGammaShaderSID,                "Post gamma shader");
 TP_DEFINE_ID(             backgroundShaderSID,                "Background shader");

@@ -80,6 +80,24 @@ public:
   bool initialized() const;
 
   //################################################################################################
+  bool prepareBuffer(FBO& buffer,
+                     size_t width,
+                     size_t height,
+                     CreateColorBuffer createColorBuffer,
+                     Multisample multisample,
+                     HDR hdr,
+                     ExtendedFBO extendedFBO,
+                     size_t levels,
+                     size_t level,
+                     bool clear);
+
+  //################################################################################################
+  void invalidateBuffer( FBO& buffer );
+
+  //################################################################################################
+  void deleteBuffer( FBO& buffer );
+
+  //################################################################################################
   //! Print OpenGL errors
   /*!
   \param description - This will be printed with the OpenGL error.

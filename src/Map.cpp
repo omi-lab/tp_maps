@@ -942,6 +942,39 @@ bool Map::initialized() const
   return d->initialized;
 }
 
+bool Map::prepareBuffer(FBO& buffer,
+                        size_t width,
+                        size_t height,
+                        CreateColorBuffer createColorBuffer,
+                        Multisample multisample,
+                        HDR hdr,
+                        ExtendedFBO extendedFBO,
+                        size_t levels,
+                        size_t level,
+                        bool clear)
+{
+  return d->prepareBuffer( buffer,
+                          width,
+                          height,
+                          createColorBuffer,
+                          multisample,
+                          hdr,
+                          extendedFBO,
+                          levels,
+                          level,
+                          clear);
+}
+
+void Map::invalidateBuffer( FBO& fbo )
+{
+  d->invalidateBuffer( fbo );
+}
+
+void Map::deleteBuffer( FBO& fbo )
+{
+  d->deleteBuffer( fbo );
+}
+
 //##################################################################################################
 void Map::printOpenGLError(const std::string& description)
 {
@@ -2056,6 +2089,10 @@ size_t Map::skipRenderPasses()
       case RenderPass::Custom6: //------------------------------------------------------------------
       case RenderPass::Custom7: //------------------------------------------------------------------
       case RenderPass::Custom8: //------------------------------------------------------------------
+      case RenderPass::Custom9: //------------------------------------------------------------------
+      case RenderPass::Custom10: //-----------------------------------------------------------------
+      case RenderPass::Custom11: //-----------------------------------------------------------------
+      case RenderPass::Custom12: //-----------------------------------------------------------------
       case RenderPass::CustomEnd: //----------------------------------------------------------------
       case RenderPass::Stage0: //-------------------------------------------------------------------
       case RenderPass::Stage1: //-------------------------------------------------------------------
@@ -2412,6 +2449,10 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
       case RenderPass::Custom6: //------------------------------------------------------------------
       case RenderPass::Custom7: //------------------------------------------------------------------
       case RenderPass::Custom8: //------------------------------------------------------------------
+      case RenderPass::Custom9: //------------------------------------------------------------------
+      case RenderPass::Custom10: //-----------------------------------------------------------------
+      case RenderPass::Custom11: //-----------------------------------------------------------------
+      case RenderPass::Custom12: //-----------------------------------------------------------------
       {
         int c = int(renderPass) - int(RenderPass::Custom1);
         TP_FUNCTION_TIME("Custom" + std::to_string(c+1));

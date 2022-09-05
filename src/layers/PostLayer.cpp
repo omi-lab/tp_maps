@@ -168,6 +168,114 @@ void PostLayer::render(RenderInfo& renderInfo)
   }
 }
 
+void PostLayer::renderWithShader( RenderInfo& renderInfo, PostShader* shader, std::function<void()> bindAdditionalTextures)
+{
+  // Blit shader stuff
+  {
+    auto shader = map()->getShader<PostBlitShader>();
+    if(shader->error())
+      return;
+
+    if(!d->rectangleObject)
+    {
+      d->rectangleObject = shader->makeRectangleObject(d->size);
+      d->frameObject = shader->makeFrameObject(d->holeSize, d->size);
+    }
+
+    if(d->blitRectangle || d->blitFrame)
+    {
+      shader->use(ShaderType::RenderExtendedFBO);
+      shader->setReadFBO(map()->currentReadFBO());
+      shader->setFrameMatrix(map()->controller()->matrices(d->frameCoordinateSystem).p);
+      shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);
+
+      if(d->blitRectangle)
+        shader->draw(*d->rectangleObject);
+
+      if(d->blitFrame)
+        shader->draw(*d->frameObject);
+    }
+  }
+
+  if(shader->error())
+    return;
+
+  shader->use(ShaderType::RenderExtendedFBO);
+  shader->setReadFBO(map()->currentReadFBO());
+
+  bindAdditionalTextures();
+
+  shader->setFrameMatrix(map()->controller()->matrices(d->frameCoordinateSystem).p);
+  shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);
+
+  if(d->rectangle)
+    shader->draw(*d->rectangleObject);
+  else
+    shader->draw(*d->frameObject);
+}
+
+void PostLayer::renderToFbo( RenderInfo& renderInfo, PostShader* shader, FBO& customFbo, const GLuint sourceTexture )
+{
+  // Blit shader stuff
+  {
+    auto shader = map()->getShader<PostBlitShader>();
+    if(shader->error())
+      return;
+
+    if(!d->rectangleObject)
+    {
+      d->rectangleObject = shader->makeRectangleObject(d->size);
+      d->frameObject = shader->makeFrameObject(d->holeSize, d->size);
+    }
+
+    if(d->blitRectangle || d->blitFrame)
+    {
+      shader->use(ShaderType::RenderExtendedFBO);
+      shader->setReadFBO(map()->currentReadFBO());
+      shader->setFrameMatrix(map()->controller()->matrices(d->frameCoordinateSystem).p);
+      shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);
+
+      if(d->blitRectangle)
+        shader->draw(*d->rectangleObject);
+
+      if(d->blitFrame)
+        shader->draw(*d->frameObject);
+    }
+  }
+
+  if(shader->error())
+    return;
+
+  shader->use(ShaderType::RenderExtendedFBO);
+
+
+  // Change render target
+  glBindFramebuffer(GL_FRAMEBUFFER, customFbo.frameBuffer );
+
+  glDisable(GL_DEPTH_TEST);
+  glClearColor(0.8f,0.8f,0.8f,1.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  // Textures set in here
+  shader->setReadFBO(map()->currentReadFBO());
+
+  if( sourceTexture )
+  {
+    shader->setFBOSourceTexture( sourceTexture );
+  }
+
+  shader->setFrameMatrix(map()->controller()->matrices(d->frameCoordinateSystem).p);
+  shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);
+
+  if(d->rectangle)
+    shader->draw(*d->rectangleObject);
+  else
+    shader->draw(*d->frameObject);
+
+  // Change framebuffer back
+  glBindFramebuffer(GL_FRAMEBUFFER, map()->currentDrawFBO().frameBuffer);
+}
+
 //##################################################################################################
 void PostLayer::invalidateBuffers()
 {

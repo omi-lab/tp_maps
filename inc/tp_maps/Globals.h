@@ -198,6 +198,11 @@ TP_DECLARE_ID(                postSSRShaderSID,                  "Post ssr shade
 TP_DECLARE_ID(               postBlitShaderSID,                 "Post blit shader");
 TP_DECLARE_ID(            postOutlineShaderSID,              "Post outline shader");
 TP_DECLARE_ID(        postBlurAndTintShaderSID,        "Post blur and tint shader");
+TP_DECLARE_ID(       depthOfFieldBlurShaderSID,       "Depth of field blur shader");
+TP_DECLARE_ID(         calculateFocusShaderSID,           "Calculate focus shader");
+TP_DECLARE_ID(             downsampleShaderSID,                "Downsample shader");
+TP_DECLARE_ID(               mergeDofShaderSID,                 "Merge dof shader");
+TP_DECLARE_ID(            passThroughShaderSID,              "Pass through shader");
 TP_DECLARE_ID(             postGrid2DShaderSID,              "Post grid 2D shader");
 TP_DECLARE_ID(              postGammaShaderSID,                "Post gamma shader");
 TP_DECLARE_ID(             backgroundShaderSID,                "Background shader");
@@ -252,6 +257,10 @@ enum class RenderPass : size_t
   Custom6,           //!< See map->setCustomRenderPass() for further details.
   Custom7,           //!< See map->setCustomRenderPass() for further details.
   Custom8,           //!< See map->setCustomRenderPass() for further details.
+  Custom9,           //!< See map->setCustomRenderPass() for further details.
+  Custom10,          //!< See map->setCustomRenderPass() for further details.
+  Custom11,          //!< See map->setCustomRenderPass() for further details.
+  Custom12,          //!< See map->setCustomRenderPass() for further details.
   CustomEnd,         //!< Don't use this.
   Stage0,
   Stage1,

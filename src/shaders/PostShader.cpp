@@ -122,6 +122,16 @@ void PostShader::setReadFBO(const FBO& readFBO)
   }
 }
 
+void PostShader::setFBOSourceTexture( const GLuint sourceTextureID )
+{
+  if( d->textureLocation >= 0 )
+  {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, sourceTextureID);
+    glUniform1i(d->textureLocation, 0);
+  }
+}
+
 //##################################################################################################
 void PostShader::setProjectionMatrix(const glm::mat4& projectionMatrix)
 {
