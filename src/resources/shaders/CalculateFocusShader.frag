@@ -28,7 +28,7 @@ void main()
 {
   vec3 color = vec3(0.0,0.0,0.0);
 
-  float f = 0.0f;
+  float f = 0.0;
 
   float depth = /*TP_GLSL_TEXTURE_2D*/(depthSampler, coord_tex).x;
   depth = LinearizeDepth(depth);
@@ -45,7 +45,7 @@ void main()
   }
 
   // Scale and bias into [0,1] range
-  float result = f * 0.5f + 0.5f;
+  float result = f * 0.5 + 0.5;
 
    /*TP_GLSL_GLFRAGCOLOR*/ = vec4( result, 0.0, 0.0, 1.0 );
 }
