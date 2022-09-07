@@ -20,9 +20,6 @@ uniform sampler2D downsampledFocusTextureSampler;
 
 vec2 poisson[6];
 
-vec2 pixelSizeHigh = pixelSize;
-vec2 pixelSizeLow = pixelSize * 4;
-
 vec2 vMaxCoC = vec2(5.0, 10.0);
 float radiusScale = 0.4;
 
@@ -40,6 +37,9 @@ void main()
   poisson[3] = vec2( -0.866025, -0.500000 );
   poisson[4] = vec2( 0.866025, 0.500000 );
   poisson[5] = vec2( 0.866025, -0.500000 );
+
+  vec2 pixelSizeHigh = pixelSize;
+  vec2 pixelSizeLow = pixelSize * 4.0;
 
   vec4 color;
 

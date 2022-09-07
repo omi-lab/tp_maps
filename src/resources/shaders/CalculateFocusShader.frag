@@ -41,7 +41,7 @@ void main()
   {
     f = (depth - focalDistance) / (farPlane - focalDistance);
     // Clamp to maximum bluriness
-    f = clamp(f, 0, blurinessCutoffConstant);
+    f = clamp(f, 0.0, blurinessCutoffConstant);
   }
 
   // Scale and bias into [0,1] range
