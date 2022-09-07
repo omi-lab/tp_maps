@@ -32,5 +32,5 @@ void main()
   color += /*TP_GLSL_TEXTURE_2D*/(textureSampler, coord_tex + offsets[2] * pixelSize);
   color += /*TP_GLSL_TEXTURE_2D*/(textureSampler, coord_tex + offsets[3] * pixelSize);
 
-   /*TP_GLSL_GLFRAGCOLOR*/ = color / 4;
+   /*TP_GLSL_GLFRAGCOLOR*/ = color / 4.0;
 }
