@@ -140,7 +140,7 @@ float DepthOfFieldBlurLayer::calculateFStopDistance( float fStop ) const
   float maxFStop = 7;
   float fraction = (fStop - minFStop) / (maxFStop - minFStop);
 
-  float minDiffToFocalPlane = 0.5;
+  float minDiffToFocalPlane = 0.05;
   float maxDiffToFocalPlane = 5.0;
   float distance = minDiffToFocalPlane + (maxDiffToFocalPlane - minDiffToFocalPlane) * fraction;
 
