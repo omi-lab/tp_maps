@@ -81,35 +81,36 @@ DepthOfFieldBlurLayer::DepthOfFieldBlurLayer(Map* map,
 {
   setBypass(false);
 
-  map->setCustomRenderPass(customRenderPass2, [this](RenderInfo&)
-  {
-    if( !this->map()->prepareBuffer( d->focusCalcFbo, this->map()->width(), this->map()->height(), CreateColorBuffer::Yes, Multisample::No, HDR::No, ExtendedFBO::No, 1, 0, true ) )
-    {
-      this->map()->printOpenGLError("Focus calc FBO creation failed!");
-      return;
-    }
-  });
+//  map->setCustomRenderPass(customRenderPass2, [this](RenderInfo&)
+//  {
+//    if( !this->map()->prepareBuffer( d->focusCalcFbo, this->map()->width(), this->map()->height(), CreateColorBuffer::Yes, Multisample::No, HDR::No, ExtendedFBO::No, 1, 0, true ) )
+//    {
+//      this->map()->printOpenGLError("Focus calc FBO creation failed!");
+//      return;
+//    }
+//  });
 
-  map->setCustomRenderPass(customRenderPass3, [this](RenderInfo&)
-  {
-    if( !this->map()->prepareBuffer( d->downsampledFocusCalcFbo, this->map()->width() / d->downsampleFactor, this->map()->height() / d->downsampleFactor, CreateColorBuffer::Yes, Multisample::No, HDR::No, ExtendedFBO::No, 1, 0, true ) )
-    {
-      this->map()->printOpenGLError("Downsampled focus calc FBO creation failed!");
-      return;
-    }
-  });
+//  map->setCustomRenderPass(customRenderPass3, [this](RenderInfo&)
+//  {
+//    if( !this->map()->prepareBuffer( d->downsampledFocusCalcFbo, this->map()->width() / d->downsampleFactor, this->map()->height() / d->downsampleFactor, CreateColorBuffer::Yes, Multisample::No, HDR::No, ExtendedFBO::No, 1, 0, true ) )
+//    {
+//      this->map()->printOpenGLError("Downsampled focus calc FBO creation failed!");
+//      return;
+//    }
+//  });
 
 
-  map->setCustomRenderPass(customRenderPass5, [this](RenderInfo&)
-  {
-    if( !this->map()->prepareBuffer( d->downsampleFbo, this->map()->width() / d->downsampleFactor, this->map()->height() / d->downsampleFactor, CreateColorBuffer::Yes, Multisample::No, HDR::No, ExtendedFBO::No, 1, 0, true ) )
-    {
-      this->map()->printOpenGLError("Downsample FBO creation failed!");
-      return;
-    }
-  });
+//  map->setCustomRenderPass(customRenderPass5, [this](RenderInfo&)
+//  {
+//    if( !this->map()->prepareBuffer( d->downsampleFbo, this->map()->width() / d->downsampleFactor, this->map()->height() / d->downsampleFactor, CreateColorBuffer::Yes, Multisample::No, HDR::No, ExtendedFBO::No, 1, 0, true ) )
+//    {
+//      this->map()->printOpenGLError("Downsample FBO creation failed!");
+//      return;
+//    }
+//  });
 }
 
+//##################################################################################################
 DepthOfFieldBlurLayer::~DepthOfFieldBlurLayer()
 {
   if(map())
@@ -193,11 +194,21 @@ void DepthOfFieldBlurLayer::render(tp_maps::RenderInfo& renderInfo)
 
   if( renderInfo.pass == d->customRenderPass2 )
   {
+    if( !this->map()->prepareBuffer( d->focusCalcFbo, this->map()->width(), this->map()->height(), CreateColorBuffer::Yes, Multisample::No, HDR::No, ExtendedFBO::No, 1, 0, true ) )
+    {
+      this->map()->printOpenGLError("Focus calc FBO creation failed!");
+      return;
+    }
     tp_maps::PostLayer::renderToFbo( renderInfo, calculateFocusShader, d->focusCalcFbo ); // New fbo for focus texture ( using R channel )
   }
 
   if( renderInfo.pass == d->customRenderPass3 )
   {
+    if( !this->map()->prepareBuffer( d->downsampledFocusCalcFbo, this->map()->width() / d->downsampleFactor, this->map()->height() / d->downsampleFactor, CreateColorBuffer::Yes, Multisample::No, HDR::No, ExtendedFBO::No, 1, 0, true ) )
+    {
+      this->map()->printOpenGLError("Downsampled focus calc FBO creation failed!");
+      return;
+    }
     tp_maps::PostLayer::renderToFbo( renderInfo, calculateFocusShader, d->downsampledFocusCalcFbo, d->focusCalcFbo.textureID ); // Downsample the focus FBO
   }
 
@@ -208,6 +219,11 @@ void DepthOfFieldBlurLayer::render(tp_maps::RenderInfo& renderInfo)
 
   if( renderInfo.pass == d->customRenderPass5 )
   {
+    if( !this->map()->prepareBuffer( d->downsampleFbo, this->map()->width() / d->downsampleFactor, this->map()->height() / d->downsampleFactor, CreateColorBuffer::Yes, Multisample::No, HDR::No, ExtendedFBO::No, 1, 0, true ) )
+    {
+      this->map()->printOpenGLError("Downsample FBO creation failed!");
+      return;
+    }
     tp_maps::PostLayer::renderToFbo( renderInfo, downsampleShader, d->downsampleFbo ); // Downsample the regular color FBO
   }
 
@@ -224,6 +240,7 @@ void DepthOfFieldBlurLayer::render(tp_maps::RenderInfo& renderInfo)
 
 }
 
+//##################################################################################################
 void DepthOfFieldBlurLayer::invalidateBuffers()
 {
   map()->invalidateBuffer( d->downsampleFbo );

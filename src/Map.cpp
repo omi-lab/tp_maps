@@ -942,6 +942,7 @@ bool Map::initialized() const
   return d->initialized;
 }
 
+//##################################################################################################
 bool Map::prepareBuffer(FBO& buffer,
                         size_t width,
                         size_t height,
@@ -965,11 +966,13 @@ bool Map::prepareBuffer(FBO& buffer,
                           clear);
 }
 
+//##################################################################################################
 void Map::invalidateBuffer( FBO& fbo )
 {
   d->invalidateBuffer( fbo );
 }
 
+//##################################################################################################
 void Map::deleteBuffer( FBO& fbo )
 {
   d->deleteBuffer( fbo );

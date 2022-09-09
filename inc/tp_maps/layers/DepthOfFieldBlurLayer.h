@@ -7,7 +7,7 @@
 
 namespace omi_scene_3d
 {
-  struct DoFParameters;
+struct DoFParameters;
 }
 
 namespace tp_maps
@@ -18,7 +18,8 @@ class TP_MAPS_SHARED_EXPORT DepthOfFieldBlurLayer: public PostLayer
 {
 public:
   //################################################################################################
-  DepthOfFieldBlurLayer(Map* map, tp_maps::RenderPass customRenderPass1,
+  DepthOfFieldBlurLayer(Map* map,
+                        tp_maps::RenderPass customRenderPass1,
                         tp_maps::RenderPass customRenderPass2,
                         tp_maps::RenderPass customRenderPass3,
                         tp_maps::RenderPass customRenderPass4,
