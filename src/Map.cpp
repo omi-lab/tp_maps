@@ -507,6 +507,8 @@ struct Map::Private
   {
     DEBUG_printOpenGLError("prepareBuffer Start");
 
+
+
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
     if(updateSamplesRequired)
     {
@@ -1507,13 +1509,13 @@ bool Map::unProject(const glm::dvec2& screenPoint, glm::dvec3& scenePoint, const
   return tp_math_utils::rayPlaneIntersection(tp_math_utils::Ray(scenePoints[0], scenePoints[1]), plane, scenePoint);
 }
 
-//################################################################################################
+//##################################################################################################
 glm::vec3 Map::unProject(const glm::vec3& screenPoint)
 {
   return unProject(screenPoint, d->controller->matrix(defaultSID()));
 }
 
-//################################################################################################
+//##################################################################################################
 glm::vec3 Map::unProject(const glm::vec3& screenPoint, const glm::mat4& matrix)
 {
   glm::mat4 inverse = glm::inverse(matrix);
