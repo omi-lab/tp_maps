@@ -14,7 +14,7 @@ namespace detail
 class DownsampleShaderPrivate
 {
   friend class tp_maps::DownsampleShader;
-  DownsampleShaderPrivate(Map* map, tp_maps::OpenGLProfile openGLProfile, const DepthOfFieldShaderParameters& parameters);
+  DownsampleShaderPrivate(tp_maps::OpenGLProfile openGLProfile, const DepthOfFieldShaderParameters& parameters);
   struct Private;
   Private* d;
 };

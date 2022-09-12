@@ -1960,6 +1960,7 @@ void Map::initializeGL()
 #endif
 
   d->initialized = true;
+  d->renderFromStage = RenderFromStage::Full;
 
   d->controller->mapResized(int(d->width), int(d->height));
 }

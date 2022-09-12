@@ -19,7 +19,7 @@ struct DepthOfFieldBlurShaderPrivate::Private
   std::string fragSrc;
 
   //################################################################################################
-  Private(Map* map, tp_maps::OpenGLProfile openGLProfile, const DepthOfFieldShaderParameters& parameters_):
+  Private(tp_maps::OpenGLProfile openGLProfile, const DepthOfFieldShaderParameters& parameters_):
     parameters(parameters_)
   {
     fragSrc = fragShaderStr().dataStr(openGLProfile, ShaderType::RenderExtendedFBO);
@@ -52,16 +52,19 @@ struct DepthOfFieldBlurShaderPrivate::Private
 };
 
 //##################################################################################################
-DepthOfFieldBlurShaderPrivate::DepthOfFieldBlurShaderPrivate(Map* map, tp_maps::OpenGLProfile openGLProfile, const DepthOfFieldShaderParameters& parameters):
-  d(new Private(map, openGLProfile, parameters))
+DepthOfFieldBlurShaderPrivate::DepthOfFieldBlurShaderPrivate(tp_maps::OpenGLProfile openGLProfile,
+                                                             const DepthOfFieldShaderParameters& parameters):
+  d(new Private(openGLProfile, parameters))
 {
 
 }
 }
 
 //##################################################################################################
-DepthOfFieldBlurShader::DepthOfFieldBlurShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const DepthOfFieldShaderParameters& parameters):
-  DepthOfFieldBlurShaderPrivate(map, openGLProfile, parameters),
+DepthOfFieldBlurShader::DepthOfFieldBlurShader(Map* map,
+                                               tp_maps::OpenGLProfile openGLProfile,
+                                               const DepthOfFieldShaderParameters& parameters):
+  DepthOfFieldBlurShaderPrivate(openGLProfile, parameters),
   PostShader(map, openGLProfile, nullptr, d->fragSrc.data() )
 {
 
@@ -80,7 +83,11 @@ void DepthOfFieldBlurShader::compile(const char* vertexShader,
                                      const std::function<void(GLuint)>& getLocations,
                                      ShaderType shaderType)
 {
-  FullScreenShader::compile(vertexShader, fragmentShader, d->bindLocations(bindLocations), d->getLocations(getLocations), shaderType);
+  FullScreenShader::compile(vertexShader,
+                            fragmentShader,
+                            d->bindLocations(bindLocations),
+                            d->getLocations(getLocations),
+                            shaderType);
 }
 
 }

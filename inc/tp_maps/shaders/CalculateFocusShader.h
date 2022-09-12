@@ -14,7 +14,7 @@ namespace detail
 class CalculateFocusShaderPrivate
 {
   friend class tp_maps::CalculateFocusShader;
-  CalculateFocusShaderPrivate(Map* map, tp_maps::OpenGLProfile openGLProfile, const DepthOfFieldShaderParameters& parameters);
+  CalculateFocusShaderPrivate(tp_maps::OpenGLProfile openGLProfile, const DepthOfFieldShaderParameters& parameters);
   struct Private;
   Private* d;
 };

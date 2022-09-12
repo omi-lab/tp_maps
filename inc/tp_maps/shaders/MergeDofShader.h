@@ -14,7 +14,8 @@ namespace detail
 class MergeDofShaderPrivate
 {
   friend class tp_maps::MergeDofShader;
-  MergeDofShaderPrivate(Map* map, tp_maps::OpenGLProfile openGLProfile, const DepthOfFieldShaderParameters& parameters);
+  MergeDofShaderPrivate(tp_maps::OpenGLProfile openGLProfile,
+                        const DepthOfFieldShaderParameters& parameters);
   struct Private;
   Private* d;
 };

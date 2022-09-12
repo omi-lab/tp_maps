@@ -346,20 +346,20 @@ public:
   */
   void deleteTexture(GLuint id);
 
-  //################################################################################################
-  //! Use this to allocate your shaders if they have parameters.
-  template<typename T>
-  T* getShader(const std::function<T*(Map*, tp_maps::OpenGLProfile)>& factory)
-  {
-    const tp_utils::StringID& name = T::name();
-    T* shader = static_cast<T*>(getShader(name));
-    if(!shader)
-    {
-      shader = factory(this, openGLProfile());
-      addShader(name, shader);
-    }
-    return shader;
-  }
+//  //################################################################################################
+//  //! Use this to allocate your shaders if they have parameters.
+//  template<typename T>
+//  T* getShader(const std::function<T*(Map*, tp_maps::OpenGLProfile)>& factory)
+//  {
+//    const tp_utils::StringID& name = T::name();
+//    T* shader = static_cast<T*>(getShader(name));
+//    if(!shader)
+//    {
+//      shader = factory(this, openGLProfile());
+//      addShader(name, shader);
+//    }
+//    return shader;
+//  }
 
   //################################################################################################
   //! Use this to allocate your shaders.
@@ -367,10 +367,23 @@ public:
   This will either return an existing shader created in a previous call or create a new shader and
   add it to the shader. This allows shaders to be shared between layers.
   */
-  template<typename T>
-  T* getShader()
+  template<typename T, typename... Args>
+  T* getShader(Args... args)
   {
-    return getShader<T>([](Map* m, tp_maps::OpenGLProfile p){return new T(m, p);});
+    const tp_utils::StringID& name = T::name();
+    T* shader = static_cast<T*>(getShader(name));
+    if(!shader)
+    {
+      shader = new T(this, openGLProfile(), args...);
+      addShader(name, shader);
+    }
+    return shader;
+
+
+
+
+
+//    return getShader<T>([](Map* m, tp_maps::OpenGLProfile p){return new T(m, p, args...);});
   }
 
   //################################################################################################

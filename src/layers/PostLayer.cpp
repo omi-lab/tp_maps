@@ -21,6 +21,9 @@ struct PostLayer::Private
 
   bool bypass{false};
 
+#ifdef TP_LINUX
+#warning Lets have a smart object for invalidateable objects/
+#endif
   FullScreenShader::Object* rectangleObject{nullptr};
   FullScreenShader::Object* frameObject{nullptr};
   tp_utils::StringID frameCoordinateSystem;
@@ -168,7 +171,8 @@ void PostLayer::render(RenderInfo& renderInfo)
   }
 }
 
-void PostLayer::renderWithShader( RenderInfo& renderInfo, PostShader* shader, std::function<void()> bindAdditionalTextures)
+//##################################################################################################
+void PostLayer::renderWithShader(PostShader* shader, std::function<void()> bindAdditionalTextures)
 {
   // Blit shader stuff
   {
@@ -214,7 +218,8 @@ void PostLayer::renderWithShader( RenderInfo& renderInfo, PostShader* shader, st
     shader->draw(*d->frameObject);
 }
 
-void PostLayer::renderToFbo( RenderInfo& renderInfo, PostShader* shader, FBO& customFbo, const GLuint sourceTexture )
+//##################################################################################################
+void PostLayer::renderToFbo(PostShader* shader, FBO& customFbo, const GLuint sourceTexture)
 {
   // Blit shader stuff
   {
@@ -248,7 +253,6 @@ void PostLayer::renderToFbo( RenderInfo& renderInfo, PostShader* shader, FBO& cu
 
   shader->use(ShaderType::RenderExtendedFBO);
 
-
   // Change render target
   glBindFramebuffer(GL_FRAMEBUFFER, customFbo.frameBuffer );
 
@@ -259,10 +263,8 @@ void PostLayer::renderToFbo( RenderInfo& renderInfo, PostShader* shader, FBO& cu
   // Textures set in here
   shader->setReadFBO(map()->currentReadFBO());
 
-  if( sourceTexture )
-  {
-    shader->setFBOSourceTexture( sourceTexture );
-  }
+  if(sourceTexture)
+    shader->setFBOSourceTexture(sourceTexture);
 
   shader->setFrameMatrix(map()->controller()->matrices(d->frameCoordinateSystem).p);
   shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);

@@ -1,7 +1,5 @@
 #include "tp_maps/shaders/MergeDofShader.h"
 
-#include "tp_utils/DebugUtils.h"
-
 namespace tp_maps
 {
 
@@ -24,7 +22,7 @@ struct MergeDofShaderPrivate::Private
   GLint downsampledFocusTextureLocation{0};
 
   //################################################################################################
-  Private(Map* map, tp_maps::OpenGLProfile openGLProfile, const DepthOfFieldShaderParameters& parameters_):
+  Private(tp_maps::OpenGLProfile openGLProfile, const DepthOfFieldShaderParameters& parameters_):
     parameters(parameters_)
   {
     fragSrc = fragShaderStr().dataStr(openGLProfile, ShaderType::RenderExtendedFBO);
@@ -49,26 +47,26 @@ struct MergeDofShaderPrivate::Private
         getLocations(program);
     };
   }
-
 };
 
 //##################################################################################################
-MergeDofShaderPrivate::MergeDofShaderPrivate(Map* map, tp_maps::OpenGLProfile openGLProfile, const DepthOfFieldShaderParameters& parameters):
-  d(new Private(map, openGLProfile, parameters))
+MergeDofShaderPrivate::MergeDofShaderPrivate(tp_maps::OpenGLProfile openGLProfile,
+                                             const DepthOfFieldShaderParameters& parameters):
+  d(new Private(openGLProfile, parameters))
 {
 
 }
 }
 
 //##################################################################################################
-MergeDofShader::MergeDofShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const DepthOfFieldShaderParameters& parameters):
-  MergeDofShaderPrivate(map, openGLProfile, parameters),
+MergeDofShader::MergeDofShader(Map* map,
+                               tp_maps::OpenGLProfile openGLProfile,
+                               const DepthOfFieldShaderParameters& parameters):
+  MergeDofShaderPrivate(openGLProfile, parameters),
   PostShader(map, openGLProfile, nullptr, d->fragSrc.data(), d->bindLocations(), d->getLocations() )
 {
 
 }
-
-
 
 //##################################################################################################
 MergeDofShader::~MergeDofShader()
@@ -76,6 +74,7 @@ MergeDofShader::~MergeDofShader()
   delete d;
 }
 
+//##################################################################################################
 void MergeDofShader::compile(const char* vertexShader,
                                      const char* fragmentShader,
                                      const std::function<void(GLuint)>& bindLocations,
@@ -85,7 +84,8 @@ void MergeDofShader::compile(const char* vertexShader,
   FullScreenShader::compile(vertexShader, fragmentShader, d->bindLocations(bindLocations), d->getLocations(getLocations), shaderType);
 }
 
-void MergeDofShader::setDownsampledTexture( const GLuint downsampledTextureID )
+//##################################################################################################
+void MergeDofShader::setDownsampledTexture(const GLuint downsampledTextureID)
 {
     if(d->downsampledTextureLocation>=0)
     {
@@ -95,7 +95,8 @@ void MergeDofShader::setDownsampledTexture( const GLuint downsampledTextureID )
     }
 }
 
-void MergeDofShader::setFocusTexture( const GLuint focusTextureID )
+//##################################################################################################
+void MergeDofShader::setFocusTexture(const GLuint focusTextureID)
 {
     if(d->focusTextureLocation>=0)
     {
@@ -105,7 +106,8 @@ void MergeDofShader::setFocusTexture( const GLuint focusTextureID )
     }
 }
 
-void MergeDofShader::setDownsampledFocusTexture( const GLuint downsampledFocusTextureID )
+//##################################################################################################
+void MergeDofShader::setDownsampledFocusTexture(const GLuint downsampledFocusTextureID)
 {
     if(d->downsampledFocusTextureLocation>=0)
     {

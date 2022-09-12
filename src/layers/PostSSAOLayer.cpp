@@ -56,10 +56,7 @@ void PostSSAOLayer::setParameters(const PostSSAOParameters& parameters)
 //##################################################################################################
 PostShader* PostSSAOLayer::makeShader()
 {
-  return map()->getShader<PostSSAOShader>([&](Map* m, tp_maps::OpenGLProfile p)
-  {
-    return new PostSSAOShader(m, p, d->parameters);
-  });
+  return map()->getShader<PostSSAOShader>(d->parameters);
 }
 
 }

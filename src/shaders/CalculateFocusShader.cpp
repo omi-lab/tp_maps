@@ -20,7 +20,7 @@ struct CalculateFocusShaderPrivate::Private
   std::string fragSrc;
 
   //################################################################################################
-  Private(Map* map, tp_maps::OpenGLProfile openGLProfile, const DepthOfFieldShaderParameters& parameters_):
+  Private(tp_maps::OpenGLProfile openGLProfile, const DepthOfFieldShaderParameters& parameters_):
     parameters(parameters_)
   {
     fragSrc = fragShaderStr().dataStr(openGLProfile, ShaderType::RenderExtendedFBO);
@@ -64,8 +64,8 @@ struct CalculateFocusShaderPrivate::Private
 };
 
 //##################################################################################################
-CalculateFocusShaderPrivate::CalculateFocusShaderPrivate(Map* map, tp_maps::OpenGLProfile openGLProfile, const DepthOfFieldShaderParameters& parameters):
-  d(new Private(map, openGLProfile, parameters))
+CalculateFocusShaderPrivate::CalculateFocusShaderPrivate(tp_maps::OpenGLProfile openGLProfile, const DepthOfFieldShaderParameters& parameters):
+  d(new Private(openGLProfile, parameters))
 {
 
 }
@@ -73,7 +73,7 @@ CalculateFocusShaderPrivate::CalculateFocusShaderPrivate(Map* map, tp_maps::Open
 
 //##################################################################################################
 CalculateFocusShader::CalculateFocusShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const DepthOfFieldShaderParameters& parameters):
-  CalculateFocusShaderPrivate(map, openGLProfile, parameters),
+  CalculateFocusShaderPrivate(openGLProfile, parameters),
   PostShader(map, openGLProfile, nullptr, d->fragSrc.data(), d->bindLocations(), d->getLocations() )
 {
 

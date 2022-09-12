@@ -57,10 +57,10 @@ protected:
   void render(RenderInfo& renderInfo) override;
 
   //################################################################################################
-  void renderWithShader( RenderInfo& renderInfo, PostShader* shader, std::function<void()> bindAdditionalTextures  = [](){}  );
+  void renderWithShader(PostShader* shader, std::function<void()> bindAdditionalTextures = []{});
 
   //################################################################################################
-  void renderToFbo( RenderInfo& renderInfo, PostShader* shader, FBO& fbo, const GLuint sourceTexture = 0 );
+  void renderToFbo(PostShader* shader, FBO& fbo, const GLuint sourceTexture=0);
 
   //################################################################################################
   void invalidateBuffers() override;

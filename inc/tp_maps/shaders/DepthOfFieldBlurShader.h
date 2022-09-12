@@ -26,7 +26,8 @@ namespace detail
 class DepthOfFieldBlurShaderPrivate
 {
   friend class tp_maps::DepthOfFieldBlurShader;
-  DepthOfFieldBlurShaderPrivate(Map* map, tp_maps::OpenGLProfile openGLProfile, const DepthOfFieldShaderParameters& parameters);
+  DepthOfFieldBlurShaderPrivate(tp_maps::OpenGLProfile openGLProfile,
+                                const DepthOfFieldShaderParameters& parameters);
   struct Private;
   Private* d;
 };
@@ -34,12 +35,16 @@ class DepthOfFieldBlurShaderPrivate
 
 //##################################################################################################
 //! Draw outlines around a mask rendered to the previous FBO.
-class TP_MAPS_SHARED_EXPORT DepthOfFieldBlurShader: detail::DepthOfFieldBlurShaderPrivate, public PostShader
+class TP_MAPS_SHARED_EXPORT DepthOfFieldBlurShader:
+    detail::DepthOfFieldBlurShaderPrivate,
+    public PostShader
 {
   friend class Map;
 public:
   //################################################################################################
-  DepthOfFieldBlurShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const DepthOfFieldShaderParameters& parameters);
+  DepthOfFieldBlurShader(Map* map,
+                         tp_maps::OpenGLProfile openGLProfile,
+                         const DepthOfFieldShaderParameters& parameters);
 
   //################################################################################################
   ~DepthOfFieldBlurShader();
