@@ -112,12 +112,12 @@ void DepthOfFieldBlurLayer::setParameters(const DepthOfFieldShaderParameters& pa
 //##################################################################################################
 float DepthOfFieldBlurLayer::calculateFStopDistance( float fStop ) const
 {
-  float minFStop = 2;
-  float maxFStop = 7;
+  float minFStop = 2.0f;
+  float maxFStop = 7.0f;
   float fraction = (fStop - minFStop) / (maxFStop - minFStop);
 
-  float minDiffToFocalPlane = 0.05;
-  float maxDiffToFocalPlane = 1.5;
+  float minDiffToFocalPlane = 0.05f;
+  float maxDiffToFocalPlane = 1.5f;
   float distance = minDiffToFocalPlane + (maxDiffToFocalPlane - minDiffToFocalPlane) * fraction;
 
   return distance;
