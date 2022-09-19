@@ -2,11 +2,8 @@
 #include "tp_maps/Map.h"
 #include "tp_maps/TexturePool.h"
 #include "tp_maps/TexturePoolKey.h"
-#include "tp_maps/textures/BasicTexture.h"
 
 #include "tp_utils/TimeUtils.h"
-#include "tp_utils/DebugUtils.h"
-#include "tp_utils/StackTrace.h"
 
 namespace tp_maps
 {
@@ -393,8 +390,8 @@ void Geometry3DPool::invalidate(const tp_utils::StringID& name)
 //##################################################################################################
 void Geometry3DPool::viewProcessedGeometry(const tp_utils::StringID& name,
                                            Geometry3DShader* shader,
-                                           const std::unordered_map<tp_utils::StringID, tp_utils::StringID>& alternativeMaterials,
-                                           const std::function<void(const std::vector<ProcessedGeometry3D>&)>& closure)
+                                           const tp_math_utils::AlternativeMaterials& alternativeMaterials,
+                                           const ProcessedGeometryCallback& closure)
 {
   TP_TIME_SCOPE("Geometry3DPool::viewProcessedGeometry");
   CHECK_FOR_DUPLICATE_IDS();
@@ -416,7 +413,7 @@ void Geometry3DPool::viewProcessedGeometry(const tp_utils::StringID& name,
       auto itr = alternativeMaterials.find(mesh.material.name);
       if(itr != alternativeMaterials.end())
       {
-        viewProcessedGeometry(itr->second, shader, {}, [&](const std::vector<ProcessedGeometry3D>& geometry)
+        viewProcessedGeometry(itr->second, shader, {}, [&](const auto& geometry)
         {
           if(!geometry.empty())
             mesh.alternativeMaterial = &geometry.front();
@@ -430,7 +427,7 @@ void Geometry3DPool::viewProcessedGeometry(const tp_utils::StringID& name,
 
 //##################################################################################################
 void Geometry3DPool::viewGeometry(const tp_utils::StringID& name,
-                                  const std::function<void(const std::vector<tp_math_utils::Geometry3D>&)>& closure) const
+                                  const tp_math_utils::GeometryCallback& closure) const
 {
   CHECK_FOR_DUPLICATE_IDS();
   auto i = d->pools.find(name);
@@ -442,8 +439,8 @@ void Geometry3DPool::viewGeometry(const tp_utils::StringID& name,
 
 //##################################################################################################
 void Geometry3DPool::viewGeometry(const tp_utils::StringID& name,
-                                  const std::unordered_map<tp_utils::StringID, tp_utils::StringID>& alternativeMaterials,
-                                  const std::function<void(const std::vector<tp_math_utils::Geometry3D>&, const std::vector<tp_math_utils::Material>&)>& closure) const
+                                  const tp_math_utils::AlternativeMaterials& alternativeMaterials,
+                                  const tp_math_utils::GeometryMaterialCallback& closure) const
 {
   CHECK_FOR_DUPLICATE_IDS();
   auto i = d->pools.find(name);
@@ -470,6 +467,15 @@ void Geometry3DPool::viewGeometry(const tp_utils::StringID& name,
   }
 
   closure(i->second.geometry, materials);
+}
+
+//##################################################################################################
+tp_math_utils::FindGeometry Geometry3DPool::findGeometryFunctor() const
+{
+  return [&](const auto& objectId, const auto& closure)
+  {
+    viewGeometry(objectId, closure);
+  };
 }
 
 }

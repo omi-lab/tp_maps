@@ -26,6 +26,9 @@ struct ProcessedGeometry3D
 };
 
 //##################################################################################################
+typedef std::function<void(const std::vector<ProcessedGeometry3D>&)> ProcessedGeometryCallback;
+
+//##################################################################################################
 class TP_MAPS_SHARED_EXPORT Geometry3DPool
 {
   TP_REF_COUNT_OBJECTS("Geometry3DPool");
@@ -68,17 +71,20 @@ public:
   //################################################################################################
   void viewProcessedGeometry(const tp_utils::StringID& name,
                              Geometry3DShader* shader,
-                             const std::unordered_map<tp_utils::StringID, tp_utils::StringID>& alternativeMaterials,
-                             const std::function<void(const std::vector<ProcessedGeometry3D>&)>& closure);
+                             const tp_math_utils::AlternativeMaterials& alternativeMaterials,
+                             const ProcessedGeometryCallback& closure);
 
   //################################################################################################
   void viewGeometry(const tp_utils::StringID& name,
-                    const std::function<void(const std::vector<tp_math_utils::Geometry3D>&)>& closure) const;
+                    const tp_math_utils::GeometryCallback& closure) const;
 
   //################################################################################################
   void viewGeometry(const tp_utils::StringID& name,
-                    const std::unordered_map<tp_utils::StringID, tp_utils::StringID>& alternativeMaterials,
-                    const std::function<void(const std::vector<tp_math_utils::Geometry3D>&, const std::vector<tp_math_utils::Material>&)>& closure) const;
+                    const tp_math_utils::AlternativeMaterials& alternativeMaterials,
+                    const tp_math_utils::GeometryMaterialCallback& closure) const;
+
+  //################################################################################################
+  tp_math_utils::FindGeometry findGeometryFunctor() const;
 
   //################################################################################################
   tp_utils::CallbackCollection<void()> changed;
