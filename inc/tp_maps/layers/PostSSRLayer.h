@@ -11,7 +11,7 @@ class TP_MAPS_SHARED_EXPORT PostSSRLayer: public PostLayer
 {
 public:
   //################################################################################################
-  PostSSRLayer(Map* map, RenderPass customRenderPass);
+  PostSSRLayer(RenderPass::RenderPassType customRenderPass);
 
 protected:
   //################################################################################################

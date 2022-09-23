@@ -11,11 +11,14 @@ class TP_MAPS_SHARED_EXPORT PostBlurAndTintLayer: public PostLayer
 {
 public:
   //################################################################################################
-  PostBlurAndTintLayer(Map* map, RenderPass customRenderPass);
+  PostBlurAndTintLayer();
 
 protected:
   //################################################################################################
   PostShader* makeShader() override;
+
+  //################################################################################################
+  void addRenderPasses(std::vector<RenderPass>& renderPasses) override;
 };
 
 }

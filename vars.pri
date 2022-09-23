@@ -11,6 +11,12 @@ HEADERS += inc/tp_maps/Globals.h
 SOURCES += src/Map.cpp
 HEADERS += inc/tp_maps/Map.h
 
+SOURCES += src/Buffers.cpp
+HEADERS += inc/tp_maps/Buffers.h
+
+SOURCES += src/Errors.cpp
+HEADERS += inc/tp_maps/Errors.h
+
 SOURCES += src/RenderInfo.cpp
 HEADERS += inc/tp_maps/RenderInfo.h
 
@@ -223,6 +229,9 @@ HEADERS += inc/tp_maps/layers/BackgroundLayer.h
 SOURCES += src/layers/PostLayer.cpp
 HEADERS += inc/tp_maps/layers/PostLayer.h
 
+SOURCES += src/layers/PostSelectionLayer.cpp
+HEADERS += inc/tp_maps/layers/PostSelectionLayer.h
+
 SOURCES += src/layers/PostBlitLayer.cpp
 HEADERS += inc/tp_maps/layers/PostBlitLayer.h
 
@@ -241,8 +250,8 @@ HEADERS += inc/tp_maps/layers/PostOutlineLayer.h
 SOURCES += src/layers/PostBlurAndTintLayer.cpp
 HEADERS += inc/tp_maps/layers/PostBlurAndTintLayer.h
 
-SOURCES += src/layers/DepthOfFieldBlurLayer.cpp
-HEADERS += inc/tp_maps/layers/DepthOfFieldBlurLayer.h
+SOURCES += src/layers/PostDoFLayer.cpp
+HEADERS += inc/tp_maps/layers/PostDoFLayer.h
 
 SOURCES += src/layers/PostGrid2DLayer.cpp
 HEADERS += inc/tp_maps/layers/PostGrid2DLayer.h

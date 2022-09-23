@@ -2,7 +2,8 @@
 #define tp_maps_GeometryLayer_h
 
 #include "tp_maps/Layer.h"
-#include "tp_maps/shaders/MaterialShader.h"
+
+#include "tp_math_utils/Geometry3D.h"
 
 namespace tp_maps
 {

@@ -110,7 +110,7 @@ void BackgroundLayer::setFlatMatrixCallback(const std::function<glm::mat4()>& fl
 //##################################################################################################
 void BackgroundLayer::render(RenderInfo& renderInfo)
 {
-  if(renderInfo.pass != defaultRenderPass())
+  if(renderInfo.pass != defaultRenderPass().type)
     return;
 
   switch(d->mode)

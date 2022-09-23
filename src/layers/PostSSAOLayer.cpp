@@ -27,8 +27,8 @@ struct PostSSAOLayer::Private
 };
 
 //##################################################################################################
-PostSSAOLayer::PostSSAOLayer(Map* map, RenderPass customRenderPass):
-  PostLayer(map, customRenderPass),
+PostSSAOLayer::PostSSAOLayer(RenderPass::RenderPassType customRenderPass):
+  PostLayer(customRenderPass),
   d(new Private(this))
 {
 

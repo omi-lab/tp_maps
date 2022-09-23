@@ -2,9 +2,11 @@
 #define tp_maps_Map_h
 
 #include "tp_maps/Globals.h"
-#include "tp_maps/textures/BasicTexture.h"
 
+#include "tp_image_utils/ColorMap.h"
 #include "tp_image_utils/ColorMapF.h"
+
+#include "tp_math_utils/Light.h"
 
 #include "tp_utils/CallbackCollection.h"
 
@@ -34,6 +36,8 @@ struct TextEditingEvent;
 struct TextInputEvent;
 class PickingResult;
 class FontRenderer;
+class Buffers;
+class PostLayer;
 
 //##################################################################################################
 class TP_MAPS_SHARED_EXPORT Map
@@ -80,33 +84,7 @@ public:
   bool initialized() const;
 
   //################################################################################################
-  bool prepareBuffer(FBO& buffer,
-                     size_t width,
-                     size_t height,
-                     CreateColorBuffer createColorBuffer,
-                     Multisample multisample,
-                     HDR hdr,
-                     ExtendedFBO extendedFBO,
-                     size_t levels,
-                     size_t level,
-                     bool clear);
-
-  //################################################################################################
-  void invalidateBuffer( FBO& buffer );
-
-  //################################################################################################
-  void deleteBuffer( FBO& buffer );
-
-  //################################################################################################
-  //! Print OpenGL errors
-  /*!
-  \param description - This will be printed with the OpenGL error.
-  */
-  static void printOpenGLError(const std::string& description);
-
-  //################################################################################################
-  //! Prints error and returns true if there is an FBO error detected.
-  static bool printFBOError(FBO& buffer, const std::string& description);
+  const Buffers& buffers() const;
 
   //################################################################################################
   //!Sets the background clear color
@@ -118,20 +96,6 @@ public:
 
   //################################################################################################
   void setRenderPasses(const std::vector<RenderPass>& renderPasses);
-
-  //################################################################################################
-  const std::vector<RenderPass>& renderPasses() const;
-
-  //################################################################################################
-  //! Sets the callbacks that are used to configure custom render passes.
-  /*!
-  \param renderPass The pass to set callbacks for, either: Custom1, Custom2, Custom3, Custom4
-  \param start A callback called before performing a render pass used to configure OpenGL.
-  \param end A callback called after performing a render pass.
-  */
-  void setCustomRenderPass(RenderPass renderPass,
-                           const std::function<void(RenderInfo&)>& start,
-                           const std::function<void(RenderInfo&)>& end=std::function<void(RenderInfo&)>());
 
   //################################################################################################
   void setLights(const std::vector<tp_math_utils::Light>& lights);
@@ -346,21 +310,6 @@ public:
   */
   void deleteTexture(GLuint id);
 
-//  //################################################################################################
-//  //! Use this to allocate your shaders if they have parameters.
-//  template<typename T>
-//  T* getShader(const std::function<T*(Map*, tp_maps::OpenGLProfile)>& factory)
-//  {
-//    const tp_utils::StringID& name = T::name();
-//    T* shader = static_cast<T*>(getShader(name));
-//    if(!shader)
-//    {
-//      shader = factory(this, openGLProfile());
-//      addShader(name, shader);
-//    }
-//    return shader;
-//  }
-
   //################################################################################################
   //! Use this to allocate your shaders.
   /*!
@@ -378,12 +327,6 @@ public:
       addShader(name, shader);
     }
     return shader;
-
-
-
-
-
-//    return getShader<T>([](Map* m, tp_maps::OpenGLProfile p){return new T(m, p, args...);});
   }
 
   //################################################################################################

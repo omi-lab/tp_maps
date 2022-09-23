@@ -9,6 +9,7 @@
 #include "tp_utils/CallbackCollection.h"
 
 #include <unordered_map>
+#include <unordered_set>
 
 namespace tp_math_utils
 {
@@ -133,11 +134,11 @@ public:
 
   \return The default render pass for this layer.
   */
-  RenderPass defaultRenderPass() const;
+  const RenderPass& defaultRenderPass() const;
 
   //################################################################################################
   //! Set the render pass that this layer should do most of its rendering in.
-  void setDefaultRenderPass(RenderPass defaultRenderPass);
+  void setDefaultRenderPass(const RenderPass& defaultRenderPass);
 
   //################################################################################################
   //! Called when buffers become invalid.

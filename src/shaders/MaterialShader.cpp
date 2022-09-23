@@ -1,9 +1,9 @@
 ﻿#include "tp_maps/shaders/MaterialShader.h"
+#include "tp_maps/textures/BasicTexture.h"
 #include "tp_maps/Map.h"
 
-#include "tp_math_utils/Globals.h"
+#include "tp_math_utils/Material.h"
 
-#include "tp_utils/DebugUtils.h"
 #include "tp_utils/TimeUtils.h"
 
 #include "glm/gtc/type_ptr.hpp"

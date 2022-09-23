@@ -139,7 +139,7 @@ void ImageLayer::render(RenderInfo& renderInfo)
   if(!d->texture->imageReady())
     return;
 
-  if(renderInfo.pass != defaultRenderPass() &&
+  if(renderInfo.pass != defaultRenderPass().type &&
      renderInfo.pass != RenderPass::Picking)
     return;
 

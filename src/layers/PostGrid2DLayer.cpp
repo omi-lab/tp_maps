@@ -8,8 +8,8 @@ namespace tp_maps
 {
 
 //##################################################################################################
-PostGrid2DLayer::PostGrid2DLayer(Map* map, RenderPass renderPass):
-  PostLayer(map, renderPass)
+PostGrid2DLayer::PostGrid2DLayer(RenderPass::RenderPassType renderPass):
+  PostLayer(renderPass)
 {
 }
 

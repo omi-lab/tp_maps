@@ -1,5 +1,4 @@
 #include "tp_maps/layers/LightsLayer.h"
-#include "tp_maps/layers/Geometry3DLayer.h"
 #include "tp_maps/layers/LinesLayer.h"
 #include "tp_maps/layers/FrustumLayer.h"
 #include "tp_maps/layers/GizmoLayer.h"
@@ -12,10 +11,7 @@
 
 #include "tp_math_utils/Sphere.h"
 
-#include "tp_utils/DebugUtils.h"
-
-#include "glm/gtc/type_ptr.hpp"
-#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/matrix_transform.hpp" // IWYU pragma: keep
 
 #include <vector>
 
@@ -167,7 +163,7 @@ void LightsLayer::render(RenderInfo& renderInfo)
     }
   }
 
-  if(d->updateFrustums && size_t(renderInfo.pass) > size_t(RenderPass::LightFBOs))
+  if(d->updateFrustums && size_t(renderInfo.pass.type) > size_t(RenderPass::LightFBOs))
   {
     d->updateFrustums = false;
 

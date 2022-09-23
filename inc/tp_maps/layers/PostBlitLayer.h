@@ -11,7 +11,7 @@ class TP_MAPS_SHARED_EXPORT PostBlitLayer: public PostLayer
 {
 public:
   //################################################################################################
-  PostBlitLayer(Map* map, RenderPass customRenderPass);
+  PostBlitLayer(RenderPass::RenderPassType customRenderPass);
 
 protected:
   //################################################################################################

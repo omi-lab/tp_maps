@@ -1,16 +1,11 @@
 #ifndef tp_maps_Globals_h
 #define tp_maps_Globals_h
 
-#include "tp_math_utils/Geometry3D.h"
-#include "tp_math_utils/Light.h"
-
 #include "tp_utils/StringID.h"
 
 #include "lib_platform/Globals.h"
 
-#include "glm/glm.hpp"
-
-#include "json.hpp"
+#include "glm/glm.hpp" // IWYU pragma: keep
 
 #include <unordered_map>
 
@@ -208,76 +203,170 @@ TP_DECLARE_ID(              postGammaShaderSID,                "Post gamma shade
 TP_DECLARE_ID(             backgroundShaderSID,                "Background shader");
 TP_DECLARE_ID(        backgroundImageShaderSID,          "Background image shader");
 TP_DECLARE_ID(                patternShaderSID,                   "Pattern shader");
+TP_DECLARE_ID(                selectionPassSID,                   "Selection pass");
 
 //##################################################################################################
 int staticInit();
 
+class PostLayer;
+
 //##################################################################################################
-enum class RenderPass : size_t
+struct RenderFromStage
 {
-  PreRender,         //!< Executed at the start of a render to update models.
-  LightFBOs,         //!< Render depth maps from the point of view of lights to FBOs.
-  PrepareDrawFBO,    //!< Prepare the initial draw FBO ready for drawing to (read FBO is not ready).
-  //SwapDrawFBO,       //!< Swap the draw and read FBO (read FBO now contains previous draw FBO).
-  //SwapDrawFBONoClear,//!< Same as above but does not clear the draw depth or color buffers.
+  //################################################################################################
+  enum RenderFromStageType : size_t
+  {
+    Full, //!< Start from the first RenderPass pass.
+    RenderMoreLights, //!< Start from the first RenderPass::LightFBOs pass and don't execute earlier passes.
+    Stage, //!< Start from the first RenderPass::Stage where the name matches pass and don't execute earlier passes.
+    Reset, //!< The render stage will be set to this after a render, ready for the next call to update.
+  };
 
-  SwapToFBO0,        //!< Swap the draw and read FBO (draw=FBO0, read=previous draw FBO). Multisample.
-  SwapToFBO1,        //!< Swap the draw and read FBO (draw=FBO1, read=previous draw FBO).
-  SwapToFBO2,        //!< Swap the draw and read FBO (draw=FBO2, read=previous draw FBO).
-  SwapToFBO3,        //!< Swap the draw and read FBO (draw=FBO3, read=previous draw FBO).
-  SwapToFBO4,        //!< Swap the draw and read FBO (draw=FBO4, read=previous draw FBO).
-  SwapToFBO5,        //!< Swap the draw and read FBO (draw=FBO5, read=previous draw FBO).
+  RenderFromStageType type;
+  size_t index{0};
 
-  SwapToFBO0NoClear, //!< Same as above but does not clear the draw depth or color buffers. Multisample.
-  SwapToFBO1NoClear, //!< Same as above but does not clear the draw depth or color buffers.
-  SwapToFBO2NoClear, //!< Same as above but does not clear the draw depth or color buffers.
-  SwapToFBO3NoClear, //!< Same as above but does not clear the draw depth or color buffers.
-  SwapToFBO4NoClear, //!< Same as above but does not clear the draw depth or color buffers.
-  SwapToFBO5NoClear, //!< Same as above but does not clear the draw depth or color buffers.
+  //################################################################################################
+  RenderFromStage()
+  {
 
-  BlitFromFBO0,      //!< Blit from FBO0 into the current draw buffer. Multisample.
-  BlitFromFBO1,      //!< Blit from FBO1 into the current draw buffer.
-  BlitFromFBO2,      //!< Blit from FBO2 into the current draw buffer.
-  BlitFromFBO3,      //!< Blit from FBO3 into the current draw buffer.
-  BlitFromFBO4,      //!< Blit from FBO4 into the current draw buffer.
-  BlitFromFBO5,      //!< Blit from FBO5 into the current draw buffer.
+  }
 
-  Background,        //!< Render background without writing to the depth buffer.
-  Normal,            //!< Render normal 3D geometry.
-  Transparency,      //!< Render transparent 3D geometry.
-  FinishDrawFBO,     //!< Swap the draw into the read FBO and bind the default FBO.
-  Text,              //!< Render text on top of scene.
-  GUI,               //!< Render UI on top of scene and text.
-  Picking,           //!< Picking render.
-  Custom1,           //!< See map->setCustomRenderPass() for further details.
-  Custom2,           //!< See map->setCustomRenderPass() for further details.
-  Custom3,           //!< See map->setCustomRenderPass() for further details.
-  Custom4,           //!< See map->setCustomRenderPass() for further details.
-  Custom5,           //!< See map->setCustomRenderPass() for further details.
-  Custom6,           //!< See map->setCustomRenderPass() for further details.
-  Custom7,           //!< See map->setCustomRenderPass() for further details.
-  Custom8,           //!< See map->setCustomRenderPass() for further details.
-  Custom9,           //!< See map->setCustomRenderPass() for further details.
-  Custom10,          //!< See map->setCustomRenderPass() for further details.
-  Custom11,          //!< See map->setCustomRenderPass() for further details.
-  Custom12,          //!< See map->setCustomRenderPass() for further details.
-  CustomEnd,         //!< Don't use this.
-  Stage0,
-  Stage1,
-  Stage2,
-  Stage4
+  //################################################################################################
+  RenderFromStage(RenderFromStageType type_ = RenderFromStage::Full, size_t index_=0):
+    type(type_),
+    index(index_)
+  {
+
+  }
+
+  //################################################################################################
+  bool operator==(RenderFromStageType type_)
+  {
+    return type == type_;
+  }
+
+  //################################################################################################
+  bool operator!=(RenderFromStageType type_)
+  {
+    return type != type_;
+  }
+
+  //################################################################################################
+  bool operator<(RenderFromStage other)
+  {
+    if(type<other.type)
+      return true;
+    return index<other.index;
+  }
 };
 
 //##################################################################################################
-enum class RenderFromStage : size_t
+struct RenderPass
 {
-  Full, //!< Start from the first RenderPass pass.
-  RenderMoreLights, //!< Start from the first RenderPass::LightFBOs pass and don't execute earlier passes.
-  Stage0, //!< Start from the first RenderPass::Stage0 pass and don't execute earlier passes.
-  Stage1, //!< Start from the first RenderPass::Stage1 pass and don't execute earlier passes.
-  Stage2, //!< Start from the first RenderPass::Stage2 pass and don't execute earlier passes.
-  Stage4, //!< Start from the first RenderPass::Stage4 pass and don't execute earlier passes.
-  Reset,  //!< The render stage will be set to this after a render, ready for the next call to update.
+  //################################################################################################
+  enum RenderPassType : size_t
+  {
+    PreRender,         //!< Executed at the start of a render to update models.
+    LightFBOs,         //!< Render depth maps from the point of view of lights to FBOs.
+    PrepareDrawFBO,    //!< Prepare the initial draw FBO ready for drawing to (read FBO is not ready).
+
+    // Only fbo 0 is multisampled.
+    SwapToFBO,         //!< Swap the draw and read FBO (draw=FBO n, read=previous draw FBO).
+    SwapToFBONoClear,  //!< Same as above but does not clear the draw depth or color buffers.
+    BlitFromFBO,       //!< Blit from FBO n into the current draw buffer. Multisample.
+
+    Background,        //!< Render background without writing to the depth buffer.
+    Normal,            //!< Render normal 3D geometry.
+    Transparency,      //!< Render transparent 3D geometry.
+    FinishDrawFBO,     //!< Swap the draw into the read FBO and bind the default FBO.
+    Text,              //!< Render text on top of scene.
+    GUI,               //!< Render UI on top of scene and text.
+    Picking,           //!< Picking render.
+    Custom,            //!< A custom named render pass.
+    Delegate,          //!< Delegate to the postLayer to populate render passes.
+
+    Stage              //!< A custom named stage, used to render from partway through the pipeline.
+  };
+
+  RenderPassType type;
+  tp_utils::WeakStringID name{nullptr};
+  PostLayer* postLayer{nullptr};
+
+  //################################################################################################
+  RenderPass()
+  {
+
+  }
+
+  //################################################################################################
+  RenderPass(RenderPassType type_, tp_utils::WeakStringID name_=nullptr):
+    type(type_),
+    name(name_)
+  {
+
+  }
+
+  //################################################################################################
+  RenderPass(RenderPassType type_, tp_utils::StringID name_):
+    type(type_),
+    name(name_.weak())
+  {
+
+  }
+
+  //################################################################################################
+  RenderPass(PostLayer* postLayer_):
+    type(Delegate),
+    postLayer(postLayer_)
+  {
+
+  }
+
+  //################################################################################################
+  RenderPass(const RenderFromStage& renderFromStage):
+    type(Stage),
+    name(reinterpret_cast<tp_utils::WeakStringID>(renderFromStage.index))
+  {
+
+  }
+
+  //################################################################################################
+  bool operator==(RenderPassType type_) const
+  {
+    return type == type_;
+  }
+
+  //################################################################################################
+  bool operator!=(RenderPassType type_) const
+  {
+    return type != type_;
+  }
+
+  //################################################################################################
+  bool operator==(const RenderPass& other) const
+  {
+    return type == other.type && name == other.name;
+  }
+
+  //################################################################################################
+  bool operator!=(const RenderPass& other) const
+  {
+    return type != other.type || name != other.name;
+  }
+
+  //################################################################################################
+  bool operator>=(RenderPassType type_) const
+  {
+    return type >= type_;
+  }
+
+  //################################################################################################
+  std::string getNameString() const
+  {
+    if(name)
+      return tp_utils::StringID::fromWeak(name).toString();
+    return std::string();
+  }
 };
 
 //##################################################################################################

@@ -4,11 +4,14 @@
 #include "tp_maps/Globals.h"
 #include "tp_maps/MouseEvent.h"
 
+#include "tp_math_utils/Light.h"
+
 #include "tp_utils/CallbackCollection.h"
 
 #include "json.hpp"
 
 #include <functional>
+#include <unordered_set>
 
 namespace tp_maps
 {

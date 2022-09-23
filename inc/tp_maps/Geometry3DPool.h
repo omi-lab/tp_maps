@@ -4,6 +4,8 @@
 #include "tp_maps/Layer.h"
 #include "tp_maps/shaders/MaterialShader.h"
 
+#include "tp_math_utils/Geometry3D.h"
+
 #include "tp_utils/RefCount.h"
 
 namespace tp_maps

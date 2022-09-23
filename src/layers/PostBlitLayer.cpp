@@ -6,8 +6,8 @@ namespace tp_maps
 {
 
 //##################################################################################################
-PostBlitLayer::PostBlitLayer(Map* map, RenderPass customRenderPass):
-  PostLayer(map, customRenderPass)
+PostBlitLayer::PostBlitLayer(RenderPass::RenderPassType customRenderPass):
+  PostLayer(customRenderPass)
 {
 
 }

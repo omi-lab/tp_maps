@@ -6,8 +6,8 @@ namespace tp_maps
 {
 
 //##################################################################################################
-PostGammaLayer::PostGammaLayer(Map* map, RenderPass customRenderPass):
-  PostLayer(map, customRenderPass)
+PostGammaLayer::PostGammaLayer():
+  PostLayer({tp_maps::RenderPass::Custom, postGammaShaderSID()})
 {
 
 }

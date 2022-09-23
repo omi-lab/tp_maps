@@ -11,7 +11,7 @@ class TP_MAPS_SHARED_EXPORT PostGammaLayer: public PostLayer
 {
 public:
   //################################################################################################
-  PostGammaLayer(Map* map, RenderPass customRenderPass);
+  PostGammaLayer();
 
 protected:
   //################################################################################################

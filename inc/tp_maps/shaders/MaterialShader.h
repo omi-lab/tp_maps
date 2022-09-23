@@ -3,7 +3,12 @@
 
 #include "tp_maps/shaders/Geometry3DShader.h"
 
-#include "glm/glm.hpp"
+#include "tp_math_utils/Light.h"
+
+namespace tp_math_utils
+{
+struct Material;
+}
 
 namespace tp_maps
 {

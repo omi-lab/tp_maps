@@ -112,7 +112,7 @@ void PointsLayer::render(RenderInfo& renderInfo)
   if(!d->spriteTexture->texture()->imageReady())
     return;
 
-  if(renderInfo.pass != defaultRenderPass() &&
+  if(renderInfo.pass != defaultRenderPass().type &&
      renderInfo.pass != RenderPass::Picking)
     return;
 

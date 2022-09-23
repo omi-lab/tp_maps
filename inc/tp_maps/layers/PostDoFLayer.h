@@ -1,5 +1,5 @@
-#ifndef tp_maps_DepthOfFieldBlurLayer_h
-#define tp_maps_DepthOfFieldBlurLayer_h
+#ifndef tp_maps_PostDoFLayer_h
+#define tp_maps_PostDoFLayer_h
 
 #include "tp_maps/layers/PostLayer.h"
 
@@ -14,20 +14,14 @@ namespace tp_maps
 {
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT DepthOfFieldBlurLayer: public PostLayer
+class TP_MAPS_SHARED_EXPORT PostDoFLayer: public PostLayer
 {
 public:
   //################################################################################################
-  DepthOfFieldBlurLayer(Map* map,
-                        tp_maps::RenderPass customRenderPass1,
-                        tp_maps::RenderPass customRenderPass2,
-                        tp_maps::RenderPass customRenderPass3,
-                        tp_maps::RenderPass customRenderPass4,
-                        tp_maps::RenderPass customRenderPass5,
-                        tp_maps::RenderPass customRenderPass6);
+  PostDoFLayer();
 
   //################################################################################################
-  ~DepthOfFieldBlurLayer();
+  ~PostDoFLayer();
 
   //################################################################################################
   const DepthOfFieldShaderParameters& parameters() const;
@@ -44,6 +38,9 @@ public:
 protected:
   //################################################################################################
   PostShader* makeShader() override;
+
+  //################################################################################################
+  void addRenderPasses(std::vector<RenderPass>& renderPasses) override;
 
   //################################################################################################
   void render(tp_maps::RenderInfo& renderInfo) override;

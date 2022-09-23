@@ -3,6 +3,8 @@
 
 #include "tp_maps/shaders/PostShader.h"
 
+#include "tp_math_utils/Light.h"
+
 namespace tp_maps
 {
 

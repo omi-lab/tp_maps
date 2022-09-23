@@ -187,7 +187,8 @@ const std::unordered_map<tp_utils::StringID, tp_utils::StringID>& Geometry3DLaye
 void Geometry3DLayer::render(RenderInfo& renderInfo)
 {
   TP_TIME_SCOPE("Geometry3DLayer::render");
-  if(renderInfo.pass != defaultRenderPass() &&
+
+  if(renderInfo.pass != defaultRenderPass().type &&
      renderInfo.pass != RenderPass::Transparency &&
      renderInfo.pass != RenderPass::LightFBOs &&
      renderInfo.pass != RenderPass::Picking)

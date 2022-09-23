@@ -1,37 +1,41 @@
-#ifndef tp_maps_PostSSAOLayer_h
-#define tp_maps_PostSSAOLayer_h
+#ifndef tp_maps_Errors_h
+#define tp_maps_Errors_h
 
-#include "tp_maps/layers/PostLayer.h"
-
-#include "tp_maps/shaders/PostSSAOShader.h"
+#include "tp_maps/Globals.h"
 
 namespace tp_maps
 {
+class Map;
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT PostSSAOLayer: public PostLayer
+class TP_MAPS_SHARED_EXPORT Errors
 {
+  TP_NONCOPYABLE(Errors);
 public:
   //################################################################################################
-  PostSSAOLayer(RenderPass::RenderPassType customRenderPass);
+  Errors(Map* map);
 
   //################################################################################################
-  ~PostSSAOLayer() override;
+  ~Errors();
 
   //################################################################################################
-  const PostSSAOParameters& parameters() const;
+  void initializeGL();
 
   //################################################################################################
-  void setParameters(const PostSSAOParameters& parameters);
+  //! Print OpenGL errors
+  /*!
+  \param description - This will be printed with the OpenGL error.
+  */
+  static void printOpenGLError(const std::string& description);
 
-protected:
   //################################################################################################
-  PostShader* makeShader() override;
+  //! Prints error and returns true if there is an FBO error detected.
+  static bool printFBOError(FBO& buffer, const std::string& description);
 
 private:
   struct Private;
-  friend struct Private;
   Private* d;
+  friend struct Private;
 };
 
 }

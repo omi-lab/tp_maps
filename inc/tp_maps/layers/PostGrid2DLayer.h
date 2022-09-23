@@ -11,7 +11,7 @@ class TP_MAPS_SHARED_EXPORT PostGrid2DLayer: public PostLayer
 {
 public:
   //################################################################################################
-  PostGrid2DLayer(Map* map, RenderPass renderPass);
+  PostGrid2DLayer(RenderPass::RenderPassType renderPass);
 
 protected:
   //################################################################################################

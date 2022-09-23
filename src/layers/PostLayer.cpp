@@ -5,8 +5,6 @@
 #include "tp_maps/Controller.h"
 #include "tp_maps/RenderInfo.h"
 
-#include "tp_utils/DebugUtils.h"
-
 #include <vector>
 
 namespace tp_maps
@@ -21,11 +19,9 @@ struct PostLayer::Private
 
   bool bypass{false};
 
-#ifdef TP_LINUX
-#warning Lets have a smart object for invalidateable objects/
-#endif
   FullScreenShader::Object* rectangleObject{nullptr};
   FullScreenShader::Object* frameObject{nullptr};
+
   tp_utils::StringID frameCoordinateSystem;
 
   bool rectangle{true};
@@ -54,18 +50,12 @@ struct PostLayer::Private
 };
 
 //##################################################################################################
-PostLayer::PostLayer(Map* map, RenderPass customRenderPass):
+PostLayer::PostLayer(const RenderPass& customRenderPass):
   d(new Private(this))
 {
-  setDefaultRenderPass(customRenderPass);
-  map->setCustomRenderPass(customRenderPass, [](RenderInfo&)
-  {
-    glDepthMask(false);
-    glDisable(GL_DEPTH_TEST);
-  },[](RenderInfo&)
-  {
-
-  });
+  auto p = customRenderPass;
+  p.postLayer = this;
+  setDefaultRenderPass(p);
 }
 
 //##################################################################################################
@@ -119,11 +109,48 @@ void PostLayer::setBlit(bool blitRectangle, bool blitFrame)
 }
 
 //##################################################################################################
+void PostLayer::addRenderPasses(std::vector<RenderPass>& renderPasses)
+{
+  renderPasses.push_back(defaultRenderPass());
+}
+
+//##################################################################################################
+tp_utils::WeakStringID PostLayer::findInputFBO(const std::vector<tp_maps::RenderPass>& c)
+{
+  for(size_t i=c.size()-1; i<c.size(); i--)
+    if(const auto& p=c[i]; p.type == RenderPass::SwapToFBO || p.type == RenderPass::PrepareDrawFBO)
+      return p.name;
+  return 0;
+}
+
+//##################################################################################################
+bool PostLayer::containsPass(const std::vector<tp_maps::RenderPass>& renderPasses, tp_maps::RenderPass pass)
+{
+  for(const auto& renderPass : renderPasses)
+    if(renderPass == pass)
+      return true;
+  return false;
+}
+
+//##################################################################################################
+void PostLayer::prepareForRenderPass(const RenderPass& renderPass)
+{
+  TP_UNUSED(renderPass);
+  glDepthMask(false);
+  glDisable(GL_DEPTH_TEST);
+}
+
+//##################################################################################################
+void PostLayer::cleanupAfterRenderPass(const RenderPass& renderPass)
+{
+  TP_UNUSED(renderPass);
+}
+
+//##################################################################################################
 void PostLayer::render(RenderInfo& renderInfo)
 {
   if(renderInfo.pass != defaultRenderPass())
     return;
-
 
   // Blit shader stuff
   {

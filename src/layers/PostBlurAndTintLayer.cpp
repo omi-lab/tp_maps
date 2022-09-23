@@ -2,14 +2,12 @@
 #include "tp_maps/shaders/PostBlurAndTintShader.h"
 #include "tp_maps/Map.h"
 
-#include "tp_utils/DebugUtils.h"
-
 namespace tp_maps
 {
 
 //##################################################################################################
-PostBlurAndTintLayer::PostBlurAndTintLayer(Map* map, RenderPass customRenderPass):
-  PostLayer(map, customRenderPass)
+PostBlurAndTintLayer::PostBlurAndTintLayer():
+  PostLayer({tp_maps::RenderPass::Custom, postBlurAndTintShaderSID()})
 {
   setBypass(true);
 }
@@ -18,6 +16,14 @@ PostBlurAndTintLayer::PostBlurAndTintLayer(Map* map, RenderPass customRenderPass
 PostShader* PostBlurAndTintLayer::makeShader()
 {
   return map()->getShader<PostBlurAndTintShader>();
+}
+
+
+//##################################################################################################
+void PostBlurAndTintLayer::addRenderPasses(std::vector<RenderPass>& renderPasses)
+{
+  renderPasses.emplace_back(RenderPass::SwapToFBO, postBlurAndTintShaderSID());
+  renderPasses.emplace_back(defaultRenderPass());
 }
 
 }

@@ -14,9 +14,10 @@ class PostShader;
 class TP_MAPS_SHARED_EXPORT PostLayer: public Layer
 {
   TP_REF_COUNT_OBJECTS("PostLayer");
+  friend class Map;
 public:
   //################################################################################################
-  PostLayer(Map* map, RenderPass customRenderPass);
+  PostLayer(const RenderPass& customRenderPass);
 
   //################################################################################################
   ~PostLayer() override;
@@ -52,7 +53,31 @@ public:
   void setBlit(bool blitRectangle, bool blitFrame);
 
 
-protected:
+protected:  
+  //################################################################################################
+  //! Called before each frame to allow the post layer to add the render passes it needs.
+  virtual void addRenderPasses(std::vector<RenderPass>& renderPasses);
+
+  //################################################################################################
+  static tp_utils::WeakStringID findInputFBO(const std::vector<tp_maps::RenderPass>& c);
+
+  //################################################################################################
+  static bool containsPass(const std::vector<tp_maps::RenderPass>& renderPasses, tp_maps::RenderPass pass);
+
+  //################################################################################################
+  //! If renderPass.postLayer is set this will be called before the pass starts.
+  /*!
+  Use this to configure OpenGL state before the pass starts.
+  */
+  virtual void prepareForRenderPass(const RenderPass& renderPass);
+
+  //################################################################################################
+  //! If renderPass.postLayer is set this will be called after a pass has completed.
+  /*!
+  Use this to cleanup OpenGL state after the pass completes.
+  */
+  virtual void cleanupAfterRenderPass(const RenderPass& renderPass);
+
   //################################################################################################
   void render(RenderInfo& renderInfo) override;
 

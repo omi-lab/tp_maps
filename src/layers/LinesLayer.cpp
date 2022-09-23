@@ -238,7 +238,7 @@ glm::mat4 LinesLayer::calculateMatrix() const
 //##################################################################################################
 void LinesLayer::render(RenderInfo& renderInfo)
 {
-  if(renderInfo.pass != defaultRenderPass() &&
+  if(renderInfo.pass != defaultRenderPass().type &&
      renderInfo.pass != RenderPass::Picking)
     return;
 

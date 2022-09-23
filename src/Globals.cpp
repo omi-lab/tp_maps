@@ -37,6 +37,7 @@ TP_DEFINE_ID(              postGammaShaderSID,                "Post gamma shader
 TP_DEFINE_ID(             backgroundShaderSID,                "Background shader");
 TP_DEFINE_ID(        backgroundImageShaderSID,          "Background image shader");
 TP_DEFINE_ID(                patternShaderSID,                   "Pattern shader");
+TP_DEFINE_ID(                selectionPassSID,                   "Selection pass");
 
 //##################################################################################################
 int tp_rc();

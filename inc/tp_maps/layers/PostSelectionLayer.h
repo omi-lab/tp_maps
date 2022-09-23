@@ -1,32 +1,31 @@
-#ifndef tp_maps_PostSSAOLayer_h
-#define tp_maps_PostSSAOLayer_h
+#ifndef tp_maps_PostSelectionLayer_h
+#define tp_maps_PostSelectionLayer_h
 
 #include "tp_maps/layers/PostLayer.h"
-
-#include "tp_maps/shaders/PostSSAOShader.h"
 
 namespace tp_maps
 {
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT PostSSAOLayer: public PostLayer
+//! Base class for layers that draw the current selection
+class TP_MAPS_SHARED_EXPORT PostSelectionLayer: public PostLayer
 {
 public:
   //################################################################################################
-  PostSSAOLayer(RenderPass::RenderPassType customRenderPass);
+  PostSelectionLayer(const RenderPass& customRenderPass, size_t stage=1);
 
   //################################################################################################
-  ~PostSSAOLayer() override;
+  ~PostSelectionLayer();
 
   //################################################################################################
-  const PostSSAOParameters& parameters() const;
-
-  //################################################################################################
-  void setParameters(const PostSSAOParameters& parameters);
+  static tp_maps::RenderPass selectionRenderPass();
 
 protected:
   //################################################################################################
-  PostShader* makeShader() override;
+  void addRenderPasses(std::vector<tp_maps::RenderPass>& renderPasses) override;
+
+  //################################################################################################
+  void prepareForRenderPass(const tp_maps::RenderPass& renderPass) override;
 
 private:
   struct Private;

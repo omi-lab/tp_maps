@@ -1,8 +1,6 @@
 #include "tp_maps/Layer.h"
 #include "tp_maps/Map.h"
 
-#include "tp_math_utils/Transformation.h"
-
 #include "tp_utils/DebugUtils.h"
 #include "tp_utils/StackTrace.h"
 
@@ -116,13 +114,13 @@ void Layer::setVisible(bool visible)
 }
 
 //##################################################################################################
-RenderPass Layer::defaultRenderPass() const
+const RenderPass& Layer::defaultRenderPass() const
 {
   return d->defaultRenderPass;
 }
 
 //##################################################################################################
-void Layer::setDefaultRenderPass(RenderPass defaultRenderPass)
+void Layer::setDefaultRenderPass(const RenderPass& defaultRenderPass)
 {
   d->defaultRenderPass = defaultRenderPass;
 }

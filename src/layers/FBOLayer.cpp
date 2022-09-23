@@ -2,14 +2,9 @@
 #include "tp_maps/shaders/ImageShader.h"
 #include "tp_maps/shaders/DepthImageShader.h"
 #include "tp_maps/Map.h"
-#include "tp_maps/Controller.h"
 #include "tp_maps/RenderInfo.h"
 
-#include "tp_math_utils/Transformation.h"
-
-#include "tp_utils/DebugUtils.h"
-
-#include "glm/gtc/type_ptr.hpp"
+#include "glm/gtc/type_ptr.hpp" // IWYU pragma: keep
 
 #include <vector>
 
@@ -88,7 +83,7 @@ void FBOLayer::setSource(FBOLayerSource source, size_t index)
 //##################################################################################################
 void FBOLayer::render(RenderInfo& renderInfo)
 {
-  if(renderInfo.pass != defaultRenderPass())
+  if(renderInfo.pass != defaultRenderPass().type)
     return;
 
   GLuint textureID{0};

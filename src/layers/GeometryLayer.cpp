@@ -1,15 +1,10 @@
 #include "tp_maps/layers/GeometryLayer.h"
-#include "tp_maps/Texture.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/Controller.h"
 #include "tp_maps/shaders/MaterialShader.h"
 #include "tp_maps/picking_results/GeometryPickingResult.h"
 
-#include "tp_utils/DebugUtils.h"
-
 #include "tp_triangulation/Triangulation.h"
-
-#include "glm/glm.hpp"
 
 namespace tp_maps
 {
@@ -90,7 +85,7 @@ void GeometryLayer::setGeometry(const std::vector<tp_math_utils::Geometry>& geom
 //##################################################################################################
 void GeometryLayer::render(RenderInfo& renderInfo)
 {
-  if(renderInfo.pass != defaultRenderPass() &&
+  if(renderInfo.pass != defaultRenderPass().type &&
      renderInfo.pass != RenderPass::Transparency &&
      renderInfo.pass != RenderPass::Picking)
     return;
