@@ -111,6 +111,9 @@ void PostLayer::setBlit(bool blitRectangle, bool blitFrame)
 //##################################################################################################
 void PostLayer::addRenderPasses(std::vector<RenderPass>& renderPasses)
 {
+  if(bypass())
+    return;
+
   renderPasses.push_back(defaultRenderPass());
 }
 

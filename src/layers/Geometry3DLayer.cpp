@@ -1,6 +1,5 @@
 #include "tp_maps/layers/Geometry3DLayer.h"
 #include "tp_maps/Geometry3DPool.h"
-#include "tp_maps/Texture.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/Controller.h"
 #include "tp_maps/shaders/MaterialShader.h"
@@ -10,12 +9,7 @@
 #include "tp_maps/shaders/MaterialShader.h"
 #include "tp_maps/shaders/ImageShader.h"
 
-#include "tp_utils/DebugUtils.h"
 #include "tp_utils/TimeUtils.h"
-
-#include "tp_triangulation/Triangulation.h"
-
-#include "glm/glm.hpp"
 
 namespace tp_maps
 {

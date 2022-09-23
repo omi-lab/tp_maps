@@ -5,8 +5,6 @@
 #include "tp_maps/Texture.h"
 #include "tp_maps/picking_results/PointsPickingResult.h"
 
-#include "tp_utils/DebugUtils.h"
-
 #include <vector>
 
 namespace tp_maps

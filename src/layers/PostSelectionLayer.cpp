@@ -41,6 +41,9 @@ tp_maps::RenderPass PostSelectionLayer::selectionRenderPass()
 //##################################################################################################
 void PostSelectionLayer::addRenderPasses(std::vector<tp_maps::RenderPass>& renderPasses)
 {
+  if(bypass())
+    return;
+
   if(!containsPass(renderPasses, d->selectionRenderPass))
   {
     auto inputFBO = findInputFBO(renderPasses);

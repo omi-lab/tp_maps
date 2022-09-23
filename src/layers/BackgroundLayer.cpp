@@ -6,8 +6,6 @@
 #include "tp_maps/Controller.h"
 #include "tp_maps/TexturePool.h"
 
-#include "tp_utils/DebugUtils.h"
-
 #include <vector>
 
 namespace tp_maps

@@ -4,11 +4,6 @@
 #include "tp_maps/shaders/LineShader.h"
 #include "tp_maps/picking_results/LinesPickingResult.h"
 
-#include "tp_utils/DebugUtils.h"
-#include "tp_utils/TimeUtils.h"
-
-#include "glm/glm.hpp"
-
 namespace tp_maps
 {
 namespace

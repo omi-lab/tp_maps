@@ -6,8 +6,6 @@
 #include "tp_maps/Controller.h"
 #include "tp_maps/PreparedString.h"
 
-#include "tp_utils/DebugUtils.h"
-
 #include <vector>
 
 namespace tp_maps
@@ -148,11 +146,6 @@ struct RulerLayer::Private
 
     shader->use();
     shader->setMatrix(matrix);
-
-    //std::u16string text(u"Ruler On");
-    //tp_maps::PreparedStringConfig config;
-    //tp_maps::FontShader::PreparedString textToRender(font, text, config);
-    //shader->drawPreparedString(textToRender);
   }
 };
 

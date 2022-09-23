@@ -7,10 +7,7 @@
 
 #include "tp_math_utils/Plane.h"
 
-#include "tp_utils/DebugUtils.h"
-
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtx/norm.hpp"
+#include "glm/gtx/norm.hpp" // IWYU pragma: keep
 
 namespace tp_maps
 {

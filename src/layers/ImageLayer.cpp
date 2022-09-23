@@ -6,12 +6,7 @@
 #include "tp_maps/Controller.h"
 #include "tp_maps/RenderInfo.h"
 
-#include "tp_math_utils/Transformation.h"
-
 #include "tp_utils/RefCount.h"
-#include "tp_utils/DebugUtils.h"
-
-#include "glm/gtc/type_ptr.hpp"
 
 #include <vector>
 
