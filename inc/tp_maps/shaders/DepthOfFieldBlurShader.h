@@ -9,6 +9,7 @@ namespace tp_maps
 ////##################################################################################################
 struct DepthOfFieldShaderParameters
 {
+  bool enabled{false};
   float depthOfField{2.0f}; // focal distance
   float fStop{5.0f};
 

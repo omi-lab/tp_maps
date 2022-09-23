@@ -106,6 +106,9 @@ const DepthOfFieldShaderParameters& DepthOfFieldBlurLayer::parameters() const
 void DepthOfFieldBlurLayer::setParameters(const DepthOfFieldShaderParameters& parameters)
 {
   d->parameters = parameters;
+
+  setBypass(!parameters.enabled);
+
   d->recompileShaders();
 }
 
@@ -139,6 +142,21 @@ void DepthOfFieldBlurLayer::render(tp_maps::RenderInfo& renderInfo)
   auto downsampleShader = map()->getShader<DownsampleShader>(d->parameters);
   auto mergeDofShader = map()->getShader<MergeDofShader>(d->parameters);
   auto passThroughShader = map()->getShader<PassThroughShader>();
+
+
+  if( bypass() )
+  {
+    if( renderInfo.pass == d->customRenderPass1 ||
+        renderInfo.pass == d->customRenderPass2 ||
+        renderInfo.pass == d->customRenderPass3 ||
+        renderInfo.pass == d->customRenderPass4 ||
+        renderInfo.pass == d->customRenderPass5 ||
+        renderInfo.pass == d->customRenderPass6 )
+    {
+      tp_maps::PostLayer::renderWithShader(passThroughShader);
+      return;
+    }
+  }
 
 
   if(renderInfo.pass == d->customRenderPass1) //----------------------------------------------------
