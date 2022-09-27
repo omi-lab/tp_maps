@@ -172,7 +172,7 @@ struct GridLayer::Private
 
     shader->use();
     shader->setMatrix(matrix);
-    shader->setLineWidth(lineThickness);
+    //shader->setLineWidth(lineThickness);
 
     q->map()->controller()->enableScissor(q->coordinateSystem());
     for(const LinesDetails_lt& line : processedGeometry)
