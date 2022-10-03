@@ -430,6 +430,7 @@ void Geometry3DPool::viewGeometry(const tp_utils::StringID& name,
                                   const tp_math_utils::GeometryCallback& closure) const
 {
   CHECK_FOR_DUPLICATE_IDS();
+
   auto i = d->pools.find(name);
   if(i==d->pools.end())
     return;
