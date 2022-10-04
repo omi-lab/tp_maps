@@ -188,10 +188,10 @@ struct Geometry3DPool::Private
   void checkForDuplicateIDs()
   {
 #ifdef TP_VERTEX_ARRAYS_SUPPORTED
-    std::unordered_set<GLuint> vaoIDs;
-    std::unordered_set<GLuint> iboIDs;
+    static std::vector<GLuint> vaoIDs; vaoIDs.clear();
+    static std::vector<GLuint> iboIDs; iboIDs.clear();
 #endif
-    std::unordered_set<GLuint> vboIDs;
+    static std::vector<GLuint> vboIDs; vboIDs.clear();
 
     for(auto& pool : pools)
     {
@@ -199,9 +199,9 @@ struct Geometry3DPool::Private
       {
         for(const auto& mesh : processedGeometry.vertexBuffers)
         {
-          assert(!tpContains(vaoIDs, mesh.second->vaoID)); vaoIDs.insert(mesh.second->vaoID);
-          assert(!tpContains(iboIDs, mesh.second->iboID)); iboIDs.insert(mesh.second->iboID);
-          assert(!tpContains(vboIDs, mesh.second->vboID)); vboIDs.insert(mesh.second->vboID);
+          assert(!tpContains(vaoIDs, mesh.second->vaoID)); vaoIDs.push_back(mesh.second->vaoID);
+          assert(!tpContains(iboIDs, mesh.second->iboID)); iboIDs.push_back(mesh.second->iboID);
+          assert(!tpContains(vboIDs, mesh.second->vboID)); vboIDs.push_back(mesh.second->vboID);
         }
       }
     }

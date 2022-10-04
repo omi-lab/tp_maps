@@ -1471,7 +1471,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
       case RenderPass::SwapToFBO: //----------------------------------------------------------------
       {
 #ifdef TP_FBO_SUPPORTED
-        TP_FUNCTION_TIME("SwapToFBO" + std::to_string(fboIndex));
+        TP_FUNCTION_TIME("SwapToFBO" + renderPass.getNameString());
         DEBUG_printOpenGLError("RenderPass::SwapToFBO" + renderPass.getNameString() + " start");
 
         Multisample multisample = renderPass.name==0?Multisample::Yes:Multisample::No;
@@ -1687,7 +1687,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
 
       case RenderPass::Custom: //-------------------------------------------------------------------
       {
-        TP_FUNCTION_TIME("Custom "+renderPass.getNameString());
+        TP_FUNCTION_TIME("RenderPass::Custom "+renderPass.getNameString());
         DEBUG_printOpenGLError("RenderPass::Custom "+renderPass.getNameString()+" start");
 
         d->render();
