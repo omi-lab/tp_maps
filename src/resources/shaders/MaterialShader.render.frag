@@ -13,6 +13,10 @@ struct Material
   bool rayVisibilityShadowCatcher;
 
   float albedoScale;
+
+  float albedoHue;
+  float albedoSaturation;
+  float albedoValue;
 };
 
 struct Light
@@ -91,6 +95,27 @@ const float pi = 3.14159265;
 /*TP_WRITE_FRAGMENT*/
 
 //See MaterialShader.cpp for documentation.
+
+// Fast HSV conversion source: https://stackoverflow.com/a/17897228
+// All components are in the range [0…1], INCLUDING HUE.
+vec3 rgb2hsv(vec3 c)
+{
+    vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+    vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+    vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+
+    float d = q.x - min(q.w, q.y);
+    float e = 1.0e-10;
+    return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
+}
+
+// All components are in the range [0…1], INCLUDING HUE.
+vec3 hsv2rgb(vec3 c)
+{
+    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
 
 //##################################################################################################
 float lineariseDepth(float depth, float near, float far)
@@ -426,6 +451,18 @@ void main()
   vec3 norm = normalize(normalsTex*2.0-1.0);
 
   albedo = rgbaTex.xyz * material.albedoScale;
+
+  vec3 hsvAlbedo = rgb2hsv(albedo); // .r = hue, .g = saturation, .b = value
+
+  if( false )
+  {
+    hsvAlbedo.r = material.albedoHue;
+    hsvAlbedo.g = material.albedoSaturation;
+    hsvAlbedo.b = material.albedoValue;
+  }
+
+  albedo = hsv2rgb(hsvAlbedo);
+
   roughness = max(0.001, rmttrTex.x);
   roughness2 = roughness*roughness;
   metalness = rmttrTex.y;

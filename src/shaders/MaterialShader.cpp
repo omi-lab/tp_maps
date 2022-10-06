@@ -93,9 +93,19 @@ struct UniformLocations_lt
   GLint                materialUseLightMaskLocation{0};
   GLint               materialUseReflectionLocation{0};
 
-  GLint  materialShadowCatcherLocation{0};
+  GLint               materialShadowCatcherLocation{0};
 
   GLint                 materialAlbedoScaleLocation{0};
+
+
+  GLint            materialAlbedoBrightnessLocation{0};
+  GLint              materialAlbedoContrastLocation{0};
+  GLint                 materialAlbedoGammaLocation{0};
+  GLint                   materialAlbedoHueLocation{0};
+  GLint            materialAlbedoSaturationLocation{0};
+  GLint                 materialAlbedoValueLocation{0};
+  GLint                materialAlbedoFactorLocation{0};
+
 
   GLint                             txlSizeLocation{0};
   GLint                      discardOpacityLocation{0};
@@ -270,6 +280,13 @@ void MaterialShader::compile(const char* vertShaderStr,
       locations.materialShadowCatcherLocation  = loc(program, "material.rayVisibilityShadowCatcher");
 
       locations.  materialAlbedoScaleLocation  = loc(program, "material.albedoScale"  );
+      locations.  materialAlbedoBrightnessLocation  = loc(program, "material.albedoBrightness"  );
+      locations.  materialAlbedoContrastLocation    = loc(program, "material.albedoContrast"    );
+      locations.  materialAlbedoGammaLocation       = loc(program, "material.albedoGamma"       );
+      locations.  materialAlbedoHueLocation         = loc(program, "material.albedoHue"         );
+      locations.  materialAlbedoSaturationLocation  = loc(program, "material.albedoSaturation"  );
+      locations.  materialAlbedoValueLocation       = loc(program, "material.albedoValue"       );
+      locations.  materialAlbedoFactorLocation      = loc(program, "material.albedoFactor"      );
 
       locations.txlSizeLocation                = loc(program, "txlSize");
       locations.discardOpacityLocation         = loc(program, "discardOpacity");
@@ -496,6 +513,13 @@ void MaterialShader::setMaterial(const tp_math_utils::Material& material)
     glUniform1i (locations. materialShadowCatcherLocation, material.rayVisibilityShadowCatcher);
 
     glUniform1f(locations.    materialAlbedoScaleLocation, material.albedoScale               );
+    glUniform1f(locations.    materialAlbedoBrightnessLocation, material.albedoBrightness     );
+    glUniform1f(locations.    materialAlbedoContrastLocation  , material.albedoContrast       );
+    glUniform1f(locations.    materialAlbedoGammaLocation     , material.albedoGamma          );
+    glUniform1f(locations.    materialAlbedoHueLocation       , material.albedoHue            );
+    glUniform1f(locations.    materialAlbedoSaturationLocation, material.albedoSaturation     );
+    glUniform1f(locations.    materialAlbedoValueLocation     , material.albedoValue          );
+    glUniform1f(locations.    materialAlbedoFactorLocation    , material.albedoFactor         );
 
     glUniformMatrix3fv(locations.uvMatrixLocation, 1, GL_FALSE, glm::value_ptr(material.uvMatrix()));
   };
