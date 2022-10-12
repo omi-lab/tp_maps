@@ -516,7 +516,7 @@ void MaterialShader::setMaterial(const tp_math_utils::Material& material)
     glUniform1f(locations.    materialAlbedoBrightnessLocation, material.albedoBrightness     );
     glUniform1f(locations.    materialAlbedoContrastLocation  , material.albedoContrast       );
     glUniform1f(locations.    materialAlbedoGammaLocation     , material.albedoGamma          );
-    glUniform1f(locations.    materialAlbedoHueLocation       , material.albedoHue + 0.5      );
+    glUniform1f(locations.    materialAlbedoHueLocation       , material.albedoHue + 0.5f     );
     glUniform1f(locations.    materialAlbedoSaturationLocation, material.albedoSaturation     );
     glUniform1f(locations.    materialAlbedoValueLocation     , material.albedoValue          );
     glUniform1f(locations.    materialAlbedoFactorLocation    , material.albedoFactor         );
