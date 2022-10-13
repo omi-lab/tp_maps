@@ -455,8 +455,8 @@ void main()
   vec3 hsvAlbedo = rgb2hsv(albedo); // .r = hue, .g = saturation, .b = value
 
   hsvAlbedo.r += material.albedoHue;
-  hsvAlbedo.g *= material.albedoSaturation;
-  hsvAlbedo.b *= material.albedoValue;
+  hsvAlbedo.g += material.albedoSaturation;
+  hsvAlbedo.b += material.albedoValue;
 
   albedo = hsv2rgb(hsvAlbedo);
 

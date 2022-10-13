@@ -516,9 +516,9 @@ void MaterialShader::setMaterial(const tp_math_utils::Material& material)
     glUniform1f(locations.    materialAlbedoBrightnessLocation, material.albedoBrightness     );
     glUniform1f(locations.    materialAlbedoContrastLocation  , material.albedoContrast       );
     glUniform1f(locations.    materialAlbedoGammaLocation     , material.albedoGamma          );
-    glUniform1f(locations.    materialAlbedoHueLocation       , material.albedoHue + 0.5f     );
-    glUniform1f(locations.    materialAlbedoSaturationLocation, material.albedoSaturation     );
-    glUniform1f(locations.    materialAlbedoValueLocation     , material.albedoValue          );
+    glUniform1f(locations.    materialAlbedoHueLocation       , material.albedoHue        + 0.5f);
+    glUniform1f(locations.    materialAlbedoSaturationLocation, material.albedoSaturation - 1.0f);
+    glUniform1f(locations.    materialAlbedoValueLocation     , material.albedoValue      - 1.0f);
     glUniform1f(locations.    materialAlbedoFactorLocation    , material.albedoFactor         );
 
     glUniformMatrix3fv(locations.uvMatrixLocation, 1, GL_FALSE, glm::value_ptr(material.uvMatrix()));
