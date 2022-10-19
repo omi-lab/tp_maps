@@ -288,7 +288,7 @@ struct RenderPass
     Stage              //!< A custom named stage, used to render from partway through the pipeline.
   };
 
-  RenderPassType type;
+  RenderPassType type{RenderPassType::PreRender};
   tp_utils::WeakStringID name{nullptr};
   PostLayer* postLayer{nullptr};
 
