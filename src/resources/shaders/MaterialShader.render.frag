@@ -14,9 +14,13 @@ struct Material
 
   float albedoScale;
 
+  float albedoBrightness;
+  float albedoContrast;
+  float albedoGamma;
   float albedoHue;
   float albedoSaturation;
   float albedoValue;
+  float albedoFactor;
 };
 
 struct Light
@@ -452,13 +456,30 @@ void main()
 
   albedo = rgbaTex.xyz * material.albedoScale;
 
+  float contrast = 1.0 + material.albedoContrast;
+  float brightness = material.albedoBrightness - material.albedoContrast * 0.5;
+
+  albedo.r = max(contrast * albedo.r + brightness, 0.0);
+  albedo.g = max(contrast * albedo.g + brightness, 0.0);
+  albedo.b = max(contrast * albedo.b + brightness, 0.0);
+
+  albedo = pow(albedo, vec3(material.albedoGamma));
+
+  vec3 originalAlbedo = albedo;
   vec3 hsvAlbedo = rgb2hsv(albedo); // .r = hue, .g = saturation, .b = value
 
-  hsvAlbedo.r += material.albedoHue;
-  hsvAlbedo.g += material.albedoSaturation;
-  hsvAlbedo.b += material.albedoValue;
+  hsvAlbedo.r = mod(hsvAlbedo.r + material.albedoHue + 0.5, 1.0);
+  hsvAlbedo.g = clamp(hsvAlbedo.g * material.albedoSaturation, 0.0, 1.0);
+  hsvAlbedo.b *= material.albedoValue;
 
   albedo = hsv2rgb(hsvAlbedo);
+
+  // Clamp color to prevent negative values cauzed by oversaturation.
+  albedo.r = max(albedo.r, 0.0);
+  albedo.g = max(albedo.g, 0.0);
+  albedo.b = max(albedo.b, 0.0);
+
+  albedo = mix(originalAlbedo, albedo, material.albedoFactor);
 
   roughness = max(0.001, rmttrTex.x);
   roughness2 = roughness*roughness;
