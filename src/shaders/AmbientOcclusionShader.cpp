@@ -1,10 +1,5 @@
 #include "tp_maps/shaders/AmbientOcclusionShader.h"
 #include "tp_maps/Map.h"
-#include "tp_maps/Controller.h"
-
-#include "tp_utils/DebugUtils.h"
-
-#include "glm/gtc/type_ptr.hpp"
 
 namespace tp_maps
 {
@@ -33,7 +28,7 @@ struct AmbientOcclusionShaderPrivate::Private
 
 
   //################################################################################################
-  Private(Map* map, tp_maps::OpenGLProfile openGLProfile, const AmbientOcclusionParameters& parameters_):
+  Private(tp_maps::OpenGLProfile openGLProfile, const AmbientOcclusionParameters& parameters_):
     parameters(parameters_)
   {
     fragSrc = fragShaderStr().dataStr(openGLProfile, ShaderType::RenderExtendedFBO);
@@ -74,8 +69,8 @@ struct AmbientOcclusionShaderPrivate::Private
 };
 
 //##################################################################################################
-AmbientOcclusionShaderPrivate::AmbientOcclusionShaderPrivate(Map* map, tp_maps::OpenGLProfile openGLProfile, const AmbientOcclusionParameters& parameters):
-  d(new Private(map, openGLProfile, parameters))
+AmbientOcclusionShaderPrivate::AmbientOcclusionShaderPrivate(Map*, tp_maps::OpenGLProfile openGLProfile, const AmbientOcclusionParameters& parameters):
+  d(new Private(openGLProfile, parameters))
 {
 
 }
@@ -91,7 +86,7 @@ AmbientOcclusionShader::AmbientOcclusionShader(Map* map, tp_maps::OpenGLProfile 
     d->ssaoKernelLocation = glGetUniformLocation(s.program, "ssaoKernel");
   }
 
-  std::uniform_real_distribution<float> randomFloats(0.0, 1.0);
+  std::uniform_real_distribution<float> randomFloats(0.0f, 1.0f);
   std::default_random_engine generator;
 
   for(size_t i=0; i<parameters.nSamples; i++)
@@ -121,7 +116,7 @@ AmbientOcclusionShader::AmbientOcclusionShader(Map* map, tp_maps::OpenGLProfile 
   std::vector<glm::vec3> ssaoNoise;
   for (unsigned int i = 0; i < 16; i++)
   {
-      glm::vec3 noise(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, 0.0f); // rotate around z-axis (in tangent space)
+      glm::vec3 noise(randomFloats(generator) * 2.0f - 1.0f, randomFloats(generator) * 2.0f - 1.0f, 0.0f); // rotate around z-axis (in tangent space)
       ssaoNoise.push_back(noise);
   }
 
