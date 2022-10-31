@@ -22,9 +22,12 @@ TP_DEFINE_ID(           depthImage3DShaderSID,            "Depth image 3D shader
 TP_DEFINE_ID(                   fontShaderSID,                      "Font shader");
 TP_DEFINE_ID(                  frameShaderSID,                     "Frame shader");
 TP_DEFINE_ID(               postSSAOShaderSID,                 "Post ssao shader");
+TP_DEFINE_ID(       ambientOcclusionShaderSID,         "Ambient occlusion shader");
+TP_DEFINE_ID(  mergeAmbientOcclusionShaderSID,   "Merge ambient occlusion shader");
 TP_DEFINE_ID(                postSSRShaderSID,                  "Post ssr shader");
 TP_DEFINE_ID(               postBlitShaderSID,                 "Post blit shader");
 TP_DEFINE_ID(            postOutlineShaderSID,              "Post outline shader");
+TP_DEFINE_ID(          postBasicBlurShaderSID,           "Post basic blur shader");
 TP_DEFINE_ID(        postBlurAndTintShaderSID,        "Post blur and tint shader");
 TP_DEFINE_ID(       depthOfFieldBlurShaderSID,       "Depth of field blur shader");
 TP_DEFINE_ID(         calculateFocusShaderSID,           "Calculate focus shader");

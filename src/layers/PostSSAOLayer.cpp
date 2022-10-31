@@ -27,8 +27,8 @@ struct PostSSAOLayer::Private
 };
 
 //##################################################################################################
-PostSSAOLayer::PostSSAOLayer(RenderPass::RenderPassType customRenderPass):
-  PostLayer(customRenderPass),
+PostSSAOLayer::PostSSAOLayer():
+  PostLayer({tp_maps::RenderPass::Custom, postSSAOShaderSID()}),
   d(new Private(this))
 {
 
@@ -57,6 +57,16 @@ void PostSSAOLayer::setParameters(const PostSSAOParameters& parameters)
 PostShader* PostSSAOLayer::makeShader()
 {
   return map()->getShader<PostSSAOShader>(d->parameters);
+}
+
+//##################################################################################################
+void PostSSAOLayer::addRenderPasses(std::vector<RenderPass>& renderPasses)
+{
+  if(bypass())
+    return;
+
+  renderPasses.emplace_back(RenderPass::SwapToFBO, postSSAOShaderSID());
+  renderPasses.emplace_back(defaultRenderPass());
 }
 
 }

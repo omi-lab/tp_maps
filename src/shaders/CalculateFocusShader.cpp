@@ -39,16 +39,6 @@ struct CalculateFocusShaderPrivate::Private
     tp_utils::replace(fragSrc, "/*DOF_FRAG_VARS*/", DOF_FRAG_VARS);
   }
 
-  GLint textureLocation {0};
-  GLint depthLocation   {0};
-  GLint normalsLocation {0};
-  GLint specularLocation{0};
-
-  GLint projectionMatrixLocation   {0};
-  GLint invProjectionMatrixLocation{0};
-
-  GLint pixelSizeLocation{0};
-
   //################################################################################################
   std::function<void(GLuint)> bindLocations(const std::function<void(GLuint)>& bindLocations = std::function<void(GLuint)>())
   {

@@ -1,28 +1,28 @@
-#ifndef tp_maps_PostSSAOLayer_h
-#define tp_maps_PostSSAOLayer_h
+#ifndef tp_maps_AmbientOcclusionLayer_h
+#define tp_maps_AmbientOcclusionLayer_h
 
 #include "tp_maps/layers/PostLayer.h"
 
-#include "tp_maps/shaders/PostSSAOShader.h"
+#include "tp_maps/shaders/AmbientOcclusionParameters.h"
 
 namespace tp_maps
 {
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT PostSSAOLayer: public PostLayer
+class TP_MAPS_SHARED_EXPORT AmbientOcclusionLayer: public PostLayer
 {
 public:
   //################################################################################################
-  PostSSAOLayer();
+  AmbientOcclusionLayer();
 
   //################################################################################################
-  ~PostSSAOLayer() override;
+  ~AmbientOcclusionLayer() override;
 
   //################################################################################################
-  const PostSSAOParameters& parameters() const;
+  const AmbientOcclusionParameters& parameters() const;
 
   //################################################################################################
-  void setParameters(const PostSSAOParameters& parameters);
+  void setParameters(const AmbientOcclusionParameters& parameters);
 
 protected:
   //################################################################################################
@@ -30,6 +30,12 @@ protected:
 
   //################################################################################################
   void addRenderPasses(std::vector<RenderPass>& renderPasses) override;
+
+  //################################################################################################
+  void render(tp_maps::RenderInfo& renderInfo) override;
+
+  //################################################################################################
+  void invalidateBuffers() override;
 
 private:
   struct Private;

@@ -146,6 +146,11 @@ HEADERS += inc/tp_maps/shaders/PostShader.h
 SOURCES += src/shaders/PostSSAOShader.cpp
 HEADERS += inc/tp_maps/shaders/PostSSAOShader.h
 
+SOURCES += src/shaders/AmbientOcclusionShader.cpp
+HEADERS += inc/tp_maps/shaders/AmbientOcclusionShader.h
+
+HEADERS += inc/tp_maps/shaders/AmbientOcclusionParameters.h
+
 SOURCES += src/shaders/PostSSRShader.cpp
 HEADERS += inc/tp_maps/shaders/PostSSRShader.h
 
@@ -157,6 +162,9 @@ HEADERS += inc/tp_maps/shaders/PostBlitShader.h
 
 SOURCES += src/shaders/PostOutlineShader.cpp
 HEADERS += inc/tp_maps/shaders/PostOutlineShader.h
+
+SOURCES += src/shaders/PostBasicBlurShader.cpp
+HEADERS += inc/tp_maps/shaders/PostBasicBlurShader.h
 
 SOURCES += src/shaders/PostBlurAndTintShader.cpp
 HEADERS += inc/tp_maps/shaders/PostBlurAndTintShader.h
@@ -175,6 +183,9 @@ HEADERS += inc/tp_maps/shaders/MergeDofShader.h
 
 SOURCES += src/shaders/PassThroughShader.cpp
 HEADERS += inc/tp_maps/shaders/PassThroughShader.h
+
+SOURCES += src/shaders/MergeAmbientOcclusionShader.cpp
+HEADERS += inc/tp_maps/shaders/MergeAmbientOcclusionShader.h
 
 SOURCES += src/shaders/PostGrid2DShader.cpp
 HEADERS += inc/tp_maps/shaders/PostGrid2DShader.h
@@ -240,6 +251,9 @@ HEADERS += inc/tp_maps/layers/PostGammaLayer.h
 
 SOURCES += src/layers/PostSSAOLayer.cpp
 HEADERS += inc/tp_maps/layers/PostSSAOLayer.h
+
+SOURCES += src/layers/AmbientOcclusionLayer.cpp
+HEADERS += inc/tp_maps/layers/AmbientOcclusionLayer.h
 
 SOURCES += src/layers/PostSSRLayer.cpp
 HEADERS += inc/tp_maps/layers/PostSSRLayer.h

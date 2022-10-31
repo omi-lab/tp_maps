@@ -34,6 +34,7 @@
         <file alias="PostBlitShader.frag">resources/shaders/PostBlitShader.frag</file>
         <file alias="PostOutlineShader.frag">resources/shaders/PostOutlineShader.frag</file>
         <file alias="PostBlurAndTintShader.frag">resources/shaders/PostBlurAndTintShader.frag</file>
+        <file alias="PostBasicBlurShader.frag">resources/shaders/PostBasicBlurShader.frag</file>
         <file alias="PostGrid2DShader.frag">resources/shaders/PostGrid2DShader.frag</file>
         <file alias="WriteFragment.hdr.glsl">resources/shaders/WriteFragment.hdr.glsl</file>
         <file alias="WriteFragment.render.glsl">resources/shaders/WriteFragment.render.glsl</file>
@@ -46,5 +47,7 @@
         <file alias="MergeDofShader.frag">resources/shaders/MergeDoFShader.frag</file>
         <file alias="DownsampleShader.frag">resources/shaders/DownsampleShader.frag</file>
         <file alias="PassThroughShader.frag">resources/shaders/PassThroughShader.frag</file>
+        <file alias="AmbientOcclusionShader.frag">resources/shaders/AmbientOcclusionShader.frag</file>
+        <file alias="MergeAmbientOcclusionShader.frag">resources/shaders/MergeAmbientOcclusionShader.frag</file>
     </qresource>
 </RCC>
