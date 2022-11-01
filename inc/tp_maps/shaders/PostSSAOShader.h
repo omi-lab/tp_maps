@@ -15,7 +15,7 @@ struct PostSSAOParameters
   bool useLightBuffers{false};
   float radius{0.05f};
   size_t nSamples{64};
-  float bias{0.00025};
+  float bias{0.00025f};
 };
 
 //##################################################################################################
