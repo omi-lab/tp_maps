@@ -123,7 +123,8 @@ void Shader::compile(const char* vertexShaderStr,
 
   glAttachShader(s.program, s.vertexShader);
   glAttachShader(s.program, s.fragmentShader);
-  bindLocations(s.program);
+  if(bindLocations)
+    bindLocations(s.program);
   glLinkProgram(s.program);
 
   GLint linked;
@@ -143,7 +144,8 @@ void Shader::compile(const char* vertexShaderStr,
     return;
   }
 
-  getLocations(s.program);
+  if(getLocations)
+    getLocations(s.program);
 }
 
 //##################################################################################################

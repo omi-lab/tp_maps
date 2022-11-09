@@ -62,6 +62,9 @@ HEADERS += inc/tp_maps/PreparedString.h
 SOURCES += src/Geometry3DPool.cpp
 HEADERS += inc/tp_maps/Geometry3DPool.h
 
+SOURCES += src/SwapRowOrder.cpp
+HEADERS += inc/tp_maps/SwapRowOrder.h
+
 
 #-- Picking Results --------------------------------------------------------------------------------
 SOURCES += src/picking_results/ImagePickingResult.cpp

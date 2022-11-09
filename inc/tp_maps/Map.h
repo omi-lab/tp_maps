@@ -304,6 +304,11 @@ public:
   bool renderToImage(size_t width, size_t height, tp_image_utils::ColorMapF& image, bool swapY=true);
 
   //################################################################################################
+  //! Resize the view and render to an image.
+  bool renderToImage(size_t width, size_t height, HDR hdr, const std::function<void()>& renderComplete);
+
+
+  //################################################################################################
   //! Delete the given texture
   /*!
   \param id: The id of the texture to delete
