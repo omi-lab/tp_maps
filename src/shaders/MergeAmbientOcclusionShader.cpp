@@ -29,6 +29,7 @@ struct MergeAmbientOcclusionShaderPrivate::Private
 
     std::string AO_FRAG_VARS;
 
+    AO_FRAG_VARS += "const bool showAOTexture=" + std::string( (parameters.showTexture ? "true" : "false") ) + ";\n";
     AO_FRAG_VARS += "const float radius=" + std::to_string(parameters.radius) + ";\n";
     AO_FRAG_VARS += "#define N_SAMPLES " + std::to_string(parameters.nSamples) + "\n";
     AO_FRAG_VARS += "const float bias=" + std::to_string(parameters.bias) + ";\n";
@@ -73,7 +74,7 @@ MergeAmbientOcclusionShader::MergeAmbientOcclusionShader(Map* map, tp_maps::Open
   MergeAmbientOcclusionShaderPrivate(openGLProfile, parameters_),
   PostShader(map, openGLProfile, nullptr, d->fragSrc.data(), d->bindLocations(), d->getLocations() )
 {
-
+  tpWarning() << "merge ambient occlusion shader constructor";
 }
 
 //##################################################################################################

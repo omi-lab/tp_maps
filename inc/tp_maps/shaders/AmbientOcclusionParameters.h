@@ -12,6 +12,8 @@ namespace tp_maps
 //##################################################################################################
 struct AmbientOcclusionParameters
 {
+  bool enabled{false};
+  bool showTexture{false};
   bool useScreenBuffer{true};
   bool useLightBuffers{false};
   float radius{0.05f};

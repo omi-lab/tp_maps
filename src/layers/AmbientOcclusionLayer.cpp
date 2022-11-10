@@ -31,7 +31,10 @@ struct AmbientOcclusionLayer::Private
   void recompileShaders()
   {
     if(q->map())
+    {
       q->map()->deleteShader(AmbientOcclusionShader::name());
+      q->map()->deleteShader(MergeAmbientOcclusionShader::name());
+    }
   }
 
   //################################################################################################
@@ -56,6 +59,7 @@ AmbientOcclusionLayer::~AmbientOcclusionLayer()
   if(map())
   {
     map()->buffers().deleteBuffer( d->ssaoFbo );
+    map()->buffers().deleteBuffer( d->blurFbo );
   }
   delete d;
 }
@@ -70,6 +74,9 @@ const AmbientOcclusionParameters& AmbientOcclusionLayer::parameters() const
 void AmbientOcclusionLayer::setParameters(const AmbientOcclusionParameters& parameters)
 {
   d->parameters = parameters;
+
+  setBypass(!parameters.enabled);
+
   d->recompileShaders();
 }
 

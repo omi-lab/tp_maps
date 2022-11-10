@@ -42,7 +42,7 @@ struct AmbientOcclusionShaderPrivate::Private
     std::string AO_FRAG_CALC;
 
     AO_FRAG_VARS += "const float radius=" + std::to_string(parameters.radius) + ";\n";
-    AO_FRAG_VARS += "#define N_SAMPLES " + std::to_string(parameters.nSamples) + "\n";
+    AO_FRAG_VARS += "#define N_SAMPLES " + std::to_string(parameters.nSamples > 0 ? parameters.nSamples : 1 ) + "\n";
     AO_FRAG_VARS += "const float bias=" + std::to_string(parameters.bias) + ";\n";
 
     if(parameters.useScreenBuffer)
@@ -104,7 +104,7 @@ AmbientOcclusionShader::AmbientOcclusionShader(Map* map, tp_maps::OpenGLProfile 
     sample  = glm::normalize(sample);
     sample *= randomFloats(generator);
 
-    float scale = float(i) / 64.0f;
+    float scale = float(i) / parameters.nSamples;
 
     auto lerp = [](float a, float b, float f){
       return a + f * (b - a);
@@ -125,11 +125,31 @@ AmbientOcclusionShader::AmbientOcclusionShader(Map* map, tp_maps::OpenGLProfile 
       ssaoNoise.push_back(noise);
   }
 
+  //################################################################################################
+  auto colorFormatF = [map](Alpha alpha)
+  {
+#ifdef TP_GLES2
+    return (alpha==Alpha::Yes)?GL_RGBA32F_EXT:GL_RGB16F_EXT;
+#else
+    switch(map->openGLProfile())
+    {
+    case OpenGLProfile::VERSION_100_ES: [[fallthrough]];
+    case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
+    case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
+    case OpenGLProfile::VERSION_320_ES:
+      return (alpha==Alpha::Yes)?GL_RGBA32F:GL_RGB16F;
+
+    default:
+      return (alpha==Alpha::Yes)?GL_RGBA32F:GL_RGB32F;
+    }
+#endif
+  };
+
   glGenTextures(1, &d->ssaoNoiseTexture);
   glBindTexture(GL_TEXTURE_2D, d->ssaoNoiseTexture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexImage2D(GL_TEXTURE_2D, 0, colorFormatF(Alpha::No), 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }

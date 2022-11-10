@@ -28,6 +28,9 @@
 #define TP_BLIT_WITH_SHADER
 #endif
 
+// #include "tp_maps/shaders/PostBlitShader.h"
+// #define TP_BLIT_WITH_SHADER
+
 #ifdef TP_MAPS_DEBUG
 #  define DEBUG_printOpenGLError(A) Errors::printOpenGLError(A)
 #else
