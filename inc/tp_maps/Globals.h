@@ -368,7 +368,7 @@ struct RenderPass
   {
     if(name)
       return tp_utils::StringID::fromWeak(name).toString();
-    return std::string();
+    return std::to_string(size_t(type));
   }
 };
 

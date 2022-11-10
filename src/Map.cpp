@@ -10,6 +10,7 @@
 #include "tp_maps/MouseEvent.h"
 #include "tp_maps/KeyEvent.h"
 #include "tp_maps/FontRenderer.h"
+#include "tp_maps/SwapRowOrder.h"
 
 #include "tp_math_utils/Plane.h"
 #include "tp_math_utils/Ray.h"
@@ -929,6 +930,37 @@ bool Map::renderToImage(size_t width, size_t height, tp_image_utils::ColorMap& i
 //##################################################################################################
 bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY)
 {
+  return renderToImage(width, height, HDR::No, [&]
+  {
+    // Read the texture that we just generated
+    glReadPixels(0, 0, int(width), int(height), GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    DEBUG_printOpenGLError("renderToImage C3");
+
+    if(swapY)
+      swapRowOrder(width, height, pixels);
+  });
+}
+
+//##################################################################################################
+bool Map::renderToImage(size_t width, size_t height, tp_image_utils::ColorMapF& image, bool swapY)
+{
+  image.setSize(width, height);
+
+  return renderToImage(width, height, HDR::Yes, [&]
+  {
+    // Read the texture that we just generated
+    glm::vec4* pixels = image.data();
+    glReadPixels(0, 0, int(width), int(height), GL_RGBA, GL_FLOAT, pixels);
+    DEBUG_printOpenGLError("renderToImage C3");
+
+    if(swapY)
+      swapRowOrder(width, height, pixels);
+  });
+}
+
+//##################################################################################################
+bool Map::renderToImage(size_t width, size_t height, HDR hdr, const std::function<void()>& renderComplete)
+{
   if(width<1 || height<1)
   {
     tpWarning() << "Error Map::renderToImage can't render to image smaller than 1 pixel.";
@@ -954,7 +986,7 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
                                height,
                                CreateColorBuffer::Yes,
                                Multisample::No,
-                               HDR::No,
+                               hdr,
                                ExtendedFBO::No,
                                1,
                                0,
@@ -976,25 +1008,7 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
 
   // Read the texture that we just generated
   glBindFramebuffer(GL_FRAMEBUFFER, d->renderToImageBuffer.frameBuffer);
-  glReadPixels(0, 0, int(width), int(height), GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-  DEBUG_printOpenGLError("renderToImage C3");
-
-  if(swapY)
-  {
-    std::vector<TPPixel> line{size_t(width)};
-    TPPixel* c = line.data();
-    size_t rowLengthBytes = size_t(width)*sizeof(TPPixel);
-    size_t yMax = size_t(height)/2;
-    for(size_t y=0; y<yMax; y++)
-    {
-      TPPixel* a{pixels + y*size_t(width)};
-      TPPixel* b{pixels + (size_t(height-1)-y)*size_t(width)};
-
-      memcpy(c, a, rowLengthBytes);
-      memcpy(a, b, rowLengthBytes);
-      memcpy(b, c, rowLengthBytes);
-    }
-  }
+  renderComplete();
 
   // Return to the original viewport settings
   d->width = originalWidth;
@@ -1008,84 +1022,6 @@ bool Map::renderToImage(size_t width, size_t height, TPPixel* pixels, bool swapY
   return true;
 }
 
-//##################################################################################################
-bool Map::renderToImage(size_t width, size_t height, tp_image_utils::ColorMapF& image, bool swapY)
-{
-  image.setSize(width, height);
-  glm::vec4* pixels = image.data();
-
-  if(width<1 || height<1)
-  {
-    tpWarning() << "Error Map::renderToImage can't render to image smaller than 1 pixel.";
-    return false;
-  }
-
-  auto originalWidth  = d->width;
-  auto originalHeight = d->height;
-  resizeGL(int(width), int(height));
-
-  makeCurrent();
-  setInPaint(true);
-  TP_CLEANUP([&]{setInPaint(false);});
-
-  GLint originalFrameBuffer = 0;
-  glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
-
-  DEBUG_printOpenGLError("renderToImage A");
-
-  // Configure the frame buffer that the image will be rendered to.
-  if(!d->buffers.prepareBuffer(d->renderToImageBuffer,
-                               width,
-                               height,
-                               CreateColorBuffer::Yes,
-                               Multisample::No,
-                               HDR::Yes,
-                               ExtendedFBO::No,
-                               1,
-                               0,
-                               true))
-    return false;
-
-  DEBUG_printOpenGLError("renderToImage B");
-
-  // Execute a render passes.
-  paintGLNoMakeCurrent();
-  DEBUG_printOpenGLError("renderToImage C1");
-
-  // Swap the multisampled FBO into the non multisampled FBO.
-  d->buffers.swapMultisampledBuffer(d->renderToImageBuffer);
-  DEBUG_printOpenGLError("renderToImage C2");
-
-  // Read the texture that we just generated
-  glReadPixels(0, 0, int(width), int(height), GL_RGBA, GL_FLOAT, pixels);
-  DEBUG_printOpenGLError("renderToImage C3");
-
-  if(swapY)
-  {
-    std::vector<glm::vec4> line{size_t(width)};
-    glm::vec4* c = line.data();
-    size_t rowLengthBytes = size_t(width)*sizeof(glm::vec4);
-    size_t yMax = size_t(height)/2;
-    for(size_t y=0; y<yMax; y++)
-    {
-      glm::vec4* a{pixels + y*size_t(width)};
-      glm::vec4* b{pixels + (size_t(height-1)-y)*size_t(width)};
-
-      memcpy(c, a, rowLengthBytes);
-      memcpy(a, b, rowLengthBytes);
-      memcpy(b, c, rowLengthBytes);
-    }
-  }
-
-  // Return to the original viewport settings
-  resizeGL(int(originalWidth), int(originalHeight));
-  glBindFramebuffer(GL_FRAMEBUFFER, originalFrameBuffer);
-  glViewport(0, 0, TPGLsizei(d->width), TPGLsizei(d->height));
-
-  DEBUG_printOpenGLError("renderToImage D");
-
-  return true;
-}
 
 //##################################################################################################
 void Map::deleteTexture(GLuint id)
