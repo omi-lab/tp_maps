@@ -42,7 +42,7 @@ struct Buffers::Private
     case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
     case OpenGLProfile::VERSION_320_ES:
       return (alpha==Alpha::Yes)?GL_RGBA32F:GL_RGB16F;
-
+#warning alpha should be no here
     default:
       return (alpha==Alpha::Yes)?GL_RGBA32F:GL_RGB32F;
     }
@@ -347,7 +347,8 @@ struct Buffers::Private
     if(createColorBuffer == CreateColorBuffer::Yes)
     {
       if(!buffer.textureID)
-        create2DColorTexture(buffer.textureID, width, height, hdr, Alpha::No);
+        create2DColorTexture(buffer.textureID, width, height, hdr, Alpha::Yes);
+#warning alpha should be no here
 
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer.textureID, 0);
       DEBUG_printOpenGLError("prepareBuffer bind 2D texture to FBO");
