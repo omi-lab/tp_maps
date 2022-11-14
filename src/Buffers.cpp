@@ -42,7 +42,6 @@ struct Buffers::Private
     case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
     case OpenGLProfile::VERSION_320_ES:
       return (alpha==Alpha::Yes)?GL_RGBA32F:GL_RGB16F;
-#warning alpha should be no here
     default:
       return (alpha==Alpha::Yes)?GL_RGBA32F:GL_RGB32F;
     }
@@ -86,6 +85,23 @@ struct Buffers::Private
     }
     else
     {
+      // On ES force alpha as GL_RGB32F is not an option but GL_RGBA32F is.
+      if(alpha == Alpha::No)
+      {
+        switch (map->openGLProfile())
+        {
+        case OpenGLProfile::VERSION_100_ES: [[fallthrough]];
+        case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
+        case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
+        case OpenGLProfile::VERSION_320_ES:
+          alpha = Alpha::Yes;
+          break;
+
+        default:
+          break;
+        }
+      }
+
       if(alpha == Alpha::No)
         glTexImage2D(GL_TEXTURE_2D, 0, colorFormatF(alpha), TPGLsizei(width), TPGLsizei(height), 0, GL_RGB, GL_FLOAT, nullptr);
       else
@@ -347,8 +363,7 @@ struct Buffers::Private
     if(createColorBuffer == CreateColorBuffer::Yes)
     {
       if(!buffer.textureID)
-        create2DColorTexture(buffer.textureID, width, height, hdr, Alpha::Yes);
-#warning alpha should be no here
+        create2DColorTexture(buffer.textureID, width, height, hdr, Alpha::No);
 
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer.textureID, 0);
       DEBUG_printOpenGLError("prepareBuffer bind 2D texture to FBO");

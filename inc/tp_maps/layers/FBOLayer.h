@@ -5,6 +5,8 @@
 
 #include "tp_utils/RefCount.h"
 
+#include "json.hpp"
+
 namespace tp_maps
 {
 enum class FBOLayerSource
@@ -16,6 +18,15 @@ enum class FBOLayerSource
   LightColor,
   LightDepth
 };
+
+//##################################################################################################
+std::string fboLayerSourceToString(FBOLayerSource fboLayerSource);
+
+//##################################################################################################
+FBOLayerSource fboLayerSourceFromString(const std::string& fboLayerSource);
+
+//##################################################################################################
+std::vector<std::string> fboLayerSources();
 
 //##################################################################################################
 //! Display the contens of an FBO on screen.
@@ -41,7 +52,25 @@ public:
   void setImageCoords(const glm::vec2& origin, const glm::vec2& size);
 
   //################################################################################################
+  const glm::vec2& origin() const;
+
+  //################################################################################################
+  const glm::vec2& size() const;
+
+  //################################################################################################
   void setSource(FBOLayerSource source=FBOLayerSource::CurrentReadColor, size_t index=0);
+
+  //################################################################################################
+  FBOLayerSource source() const;
+
+  //################################################################################################
+  size_t index() const;
+
+  //################################################################################################
+  nlohmann::json saveState() const;
+
+  //################################################################################################
+  void loadState(const nlohmann::json& j);
 
 protected:
   //################################################################################################

@@ -4,12 +4,57 @@
 #include "tp_maps/Map.h"
 #include "tp_maps/RenderInfo.h"
 
+#include "tp_math_utils/JSONUtils.h"
+
 #include "glm/gtc/type_ptr.hpp" // IWYU pragma: keep
 
 #include <vector>
 
 namespace tp_maps
 {
+
+//##################################################################################################
+std::string fboLayerSourceToString(FBOLayerSource fboLayerSource)
+{
+  switch(fboLayerSource)
+  {
+  case FBOLayerSource::CurrentReadColor : return "CurrentReadColor";
+  case FBOLayerSource::CurrentReadDepth : return "CurrentReadDepth";
+  case FBOLayerSource::CurrentDrawColor : return "CurrentDrawColor";
+  case FBOLayerSource::CurrentDrawDepth : return "CurrentDrawDepth";
+  case FBOLayerSource::LightColor       : return "LightColor";
+  case FBOLayerSource::LightDepth       : return "LightDepth";
+  }
+
+  return "CurrentReadColor";
+}
+
+//##################################################################################################
+FBOLayerSource fboLayerSourceFromString(const std::string& fboLayerSource)
+{
+  if(fboLayerSource == "CurrentReadColor")return FBOLayerSource::CurrentReadColor;
+  if(fboLayerSource == "CurrentReadDepth")return FBOLayerSource::CurrentReadDepth;
+  if(fboLayerSource == "CurrentDrawColor")return FBOLayerSource::CurrentDrawColor;
+  if(fboLayerSource == "CurrentDrawDepth")return FBOLayerSource::CurrentDrawDepth;
+  if(fboLayerSource == "LightColor"      )return FBOLayerSource::LightColor      ;
+  if(fboLayerSource == "LightDepth"      )return FBOLayerSource::LightDepth      ;
+  return FBOLayerSource::CurrentReadColor;
+}
+
+//##################################################################################################
+std::vector<std::string> fboLayerSources()
+{
+  return
+  {
+    "CurrentReadColor",
+    "CurrentReadDepth",
+    "CurrentDrawColor",
+    "CurrentDrawDepth",
+    "LightColor"      ,
+    "LightDepth"      ,
+  };
+}
+
 //##################################################################################################
 struct FBOLayer::Private
 {
@@ -73,11 +118,59 @@ void FBOLayer::setImageCoords(const glm::vec2& origin, const glm::vec2& size)
 }
 
 //##################################################################################################
+const glm::vec2& FBOLayer::origin() const
+{
+  return d->origin;
+}
+
+//##################################################################################################
+const glm::vec2& FBOLayer::size() const
+{
+  return d->size;
+}
+
+//##################################################################################################
 void FBOLayer::setSource(FBOLayerSource source, size_t index)
 {
   d->source = source;
   d->index = index;
   update();
+}
+
+//##################################################################################################
+FBOLayerSource FBOLayer::source() const
+{
+  return d->source;
+}
+
+//##################################################################################################
+size_t FBOLayer::index() const
+{
+  return d->index;
+}
+
+//##################################################################################################
+nlohmann::json FBOLayer::saveState() const
+{
+  nlohmann::json j;
+
+  j["source"] = fboLayerSourceToString(d->source);
+  j["index"] = d->index;
+
+  j["origin"] = tp_math_utils::vec2ToJSON(d->origin);
+  j["size"  ] = tp_math_utils::vec2ToJSON(d->size  );
+
+  return j;
+}
+
+//##################################################################################################
+void FBOLayer::loadState(const nlohmann::json& j)
+{
+  d->source = fboLayerSourceFromString(TPJSONString(j, "source"));
+  d->index = TPJSONSizeT(j, "index");
+
+  d->origin = TPJSONVec2(j, "origin", d->origin);
+  d->size = TPJSONVec2(j, "size", d->size);
 }
 
 //##################################################################################################
@@ -192,6 +285,8 @@ void FBOLayer::render(RenderInfo& renderInfo)
     shader->setTexture(textureID);
   else
     shader->setTexture3D(textureID, 0);
+
+  glScissor(0, 0, map()->width(), map()->height());
 
   shader->draw(GL_TRIANGLE_FAN, d->vertexBuffer, glm::vec4(1.0f));
 }

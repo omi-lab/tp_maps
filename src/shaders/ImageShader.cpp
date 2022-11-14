@@ -110,8 +110,8 @@ void ImageShader::setTexture3D(GLuint textureID, size_t level)
 
 //##################################################################################################
 void ImageShader::draw(GLenum mode,
-                            VertexBuffer* vertexBuffer,
-                            const glm::vec4& color)
+                       VertexBuffer* vertexBuffer,
+                       const glm::vec4& color)
 {
   glUniform4fv(d->colorLocation, 1, &color.x);
   d->draw(mode, vertexBuffer);
@@ -119,8 +119,8 @@ void ImageShader::draw(GLenum mode,
 
 //##################################################################################################
 void ImageShader::drawPicking(GLenum mode,
-                                   VertexBuffer* vertexBuffer,
-                                   const glm::vec4& pickingID)
+                              VertexBuffer* vertexBuffer,
+                              const glm::vec4& pickingID)
 {
   TP_UNUSED(pickingID);
   glDisable(GL_BLEND);
