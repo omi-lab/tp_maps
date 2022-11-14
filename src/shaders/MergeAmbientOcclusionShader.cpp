@@ -67,6 +67,12 @@ MergeAmbientOcclusionShaderPrivate::MergeAmbientOcclusionShaderPrivate(tp_maps::
 
 }
 
+//##################################################################################################
+MergeAmbientOcclusionShaderPrivate::~MergeAmbientOcclusionShaderPrivate()
+{
+  delete d;
+}
+
 }
 
 //##################################################################################################
@@ -74,18 +80,18 @@ MergeAmbientOcclusionShader::MergeAmbientOcclusionShader(Map* map, tp_maps::Open
   MergeAmbientOcclusionShaderPrivate(openGLProfile, parameters_),
   PostShader(map, openGLProfile, nullptr, d->fragSrc.data(), d->bindLocations(), d->getLocations() )
 {
-  tpWarning() << "merge ambient occlusion shader constructor";
+
 }
 
 //##################################################################################################
 void MergeAmbientOcclusionShader::setSSAOTexture(const GLuint ssaoTextureID)
 {
-    if(d->ssaoTextureLocation>=0)
-    {
-      glActiveTexture(GL_TEXTURE4);
-      glBindTexture(GL_TEXTURE_2D, ssaoTextureID);
-      glUniform1i(d->ssaoTextureLocation, 4);
-    }
+  if(d->ssaoTextureLocation>=0)
+  {
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, ssaoTextureID);
+    glUniform1i(d->ssaoTextureLocation, 4);
+  }
 }
 
 }

@@ -15,6 +15,7 @@ class MergeAmbientOcclusionShaderPrivate
 {
   friend class tp_maps::MergeAmbientOcclusionShader;
   MergeAmbientOcclusionShaderPrivate(tp_maps::OpenGLProfile openGLProfile, const AmbientOcclusionParameters& parameters);
+  ~MergeAmbientOcclusionShaderPrivate();
   struct Private;
   Private* d;
 };
