@@ -9,14 +9,30 @@
 
 namespace tp_maps
 {
+
+//##################################################################################################
 enum class FBOLayerSource
 {
-  CurrentReadColor,
-  CurrentReadDepth,
-  CurrentDrawColor,
-  CurrentDrawDepth,
-  LightColor,
-  LightDepth
+  Color,
+  Depth,
+  Normals,
+  Specular
+};
+
+//##################################################################################################
+struct FBOWindow
+{
+  std::string    fboName;                        //!< The name of the FBO to display.
+  FBOLayerSource source {FBOLayerSource::Color}; //!< The texture to display.
+  size_t         level  {0};                     //!< The level to display for 3D textures.
+  glm::vec2      origin {0.75f, 0.75f};          //!< The origin of the window.
+  glm::vec2      size   {0.20f, 0.20f};          //!< The size of the window.
+
+  //################################################################################################
+  nlohmann::json saveState() const;
+
+  //################################################################################################
+  void loadState(const nlohmann::json& j);
 };
 
 //##################################################################################################
@@ -39,32 +55,16 @@ class TP_MAPS_SHARED_EXPORT FBOLayer: public Layer
   TP_REF_COUNT_OBJECTS("FBOLayer");
 public:
   //################################################################################################
-  FBOLayer(FBOLayerSource source=FBOLayerSource::CurrentReadColor,
-           size_t index=0,
-           const glm::vec2& origin={0.75f, 0.75f},
-           const glm::vec2& size={0.20f, 0.20f});
+  FBOLayer();
 
   //################################################################################################
   ~FBOLayer() override;
 
   //################################################################################################
-  //! Set the geometry of the image, values are as a fraction of the screen so in the range 0 to 1.
-  void setImageCoords(const glm::vec2& origin, const glm::vec2& size);
+  void setWindows(const std::vector<FBOWindow>& windows);
 
   //################################################################################################
-  const glm::vec2& origin() const;
-
-  //################################################################################################
-  const glm::vec2& size() const;
-
-  //################################################################################################
-  void setSource(FBOLayerSource source=FBOLayerSource::CurrentReadColor, size_t index=0);
-
-  //################################################################################################
-  FBOLayerSource source() const;
-
-  //################################################################################################
-  size_t index() const;
+  const std::vector<FBOWindow>& windows() const;
 
   //################################################################################################
   nlohmann::json saveState() const;
