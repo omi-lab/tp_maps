@@ -103,7 +103,8 @@ void AmbientOcclusionLayer::render(tp_maps::RenderInfo& renderInfo)
 {
   if(renderInfo.pass == d->customRenderPass1) //----------------------------------------------------
   {
-    if(!map()->buffers().prepareBuffer(d->ssaoFbo,
+    if(!map()->buffers().prepareBuffer("ssao",
+                                       d->ssaoFbo,
                                        map()->width(),
                                        map()->height(),
                                        CreateColorBuffer::Yes,
@@ -124,23 +125,24 @@ void AmbientOcclusionLayer::render(tp_maps::RenderInfo& renderInfo)
 
   else if(renderInfo.pass == d->customRenderPass2) //-----------------------------------------------
   {
-    if(!map()->buffers().prepareBuffer(d->blurFbo,
-                                       map()->width(),
-                                       map()->height(),
-                                       CreateColorBuffer::Yes,
-                                       Multisample::No,
-                                       HDR::No,
-                                       ExtendedFBO::No,
-                                       1,
-                                       0,
-                                       true))
-    {
-      Errors::printOpenGLError("SSAO Blur FBO creation failed!");
-      return;
-    }
+   if(!map()->buffers().prepareBuffer("ssaoBlurred",
+                                      d->blurFbo,
+                                      map()->width(),
+                                      map()->height(),
+                                      CreateColorBuffer::Yes,
+                                      Multisample::No,
+                                      HDR::No,
+                                      ExtendedFBO::No,
+                                      1,
+                                      0,
+                                      true))
+   {
+     Errors::printOpenGLError("SSAO Blur FBO creation failed!");
+     return;
+   }
 
-    auto postBasicBlurShader = map()->getShader<PostBasicBlurShader>();
-    tp_maps::PostLayer::renderToFbo(postBasicBlurShader, d->blurFbo, d->ssaoFbo.textureID );
+   auto postBasicBlurShader = map()->getShader<PostBasicBlurShader>();
+   tp_maps::PostLayer::renderToFbo(postBasicBlurShader, d->blurFbo, d->ssaoFbo.textureID );
 
   }
 

@@ -831,7 +831,8 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
 
   //------------------------------------------------------------------------------------------------
   // Configure the frame buffer that the picking values will be rendered to.
-  if(!d->buffers.prepareBuffer(d->renderToImageBuffer,
+  if(!d->buffers.prepareBuffer("renderToImage",
+                               d->renderToImageBuffer,
                                d->width,
                                d->height,
                                CreateColorBuffer::Yes,
@@ -981,7 +982,8 @@ bool Map::renderToImage(size_t width, size_t height, HDR hdr, const std::functio
   DEBUG_printOpenGLError("renderToImage A");
 
   // Configure the frame buffer that the image will be rendered to.
-  if(!d->buffers.prepareBuffer(d->renderToImageBuffer,
+  if(!d->buffers.prepareBuffer("renderToImage",
+                               d->renderToImageBuffer,
                                width,
                                height,
                                CreateColorBuffer::Yes,
@@ -1342,7 +1344,8 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
                 break;
             }
 
-            if(!d->buffers.prepareBuffer(lightBuffer,
+            if(!d->buffers.prepareBuffer(std::string( "lightBuffer_" ) + std::to_string(i),
+                                         lightBuffer,
                                          d->lightTextureSize,
                                          d->lightTextureSize,
                                          CreateColorBuffer::No,
@@ -1388,7 +1391,8 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
         d->currentDrawFBO = d->intermediateFBO(0);
         d->currentReadFBO = d->intermediateFBO(0);
 
-        if(!d->buffers.prepareBuffer(*d->currentDrawFBO,
+        if(!d->buffers.prepareBuffer("currentDraw",
+                                     *d->currentDrawFBO,
                                      d->width,
                                      d->height,
                                      CreateColorBuffer::Yes,
@@ -1421,7 +1425,8 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
         d->currentReadFBO = d->currentDrawFBO;
         d->currentDrawFBO = d->intermediateFBO(renderPass.name);
 
-        if(!d->buffers.prepareBuffer(*d->currentDrawFBO,
+        if(!d->buffers.prepareBuffer("currentDraw",
+                                     *d->currentDrawFBO,
                                      d->width,
                                      d->height,
                                      CreateColorBuffer::Yes,
@@ -1454,7 +1459,8 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
         d->currentReadFBO = d->currentDrawFBO;
         d->currentDrawFBO = d->intermediateFBO(renderPass.name);
 
-        if(!d->buffers.prepareBuffer(*d->currentDrawFBO,
+        if(!d->buffers.prepareBuffer("currentDraw",
+                                     *d->currentDrawFBO,
                                      d->width,
                                      d->height,
                                      CreateColorBuffer::Yes,

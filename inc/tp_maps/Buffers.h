@@ -19,7 +19,8 @@ public:
   ~Buffers();
 
   //################################################################################################
-  bool prepareBuffer(FBO& buffer,
+  bool prepareBuffer(const std::string& name,
+                     FBO& buffer,
                      size_t width,
                      size_t height,
                      CreateColorBuffer createColorBuffer,
@@ -50,6 +51,9 @@ public:
 
   //################################################################################################
   void initializeGL();
+
+  //################################################################################################
+  std::unordered_map< std::string, FBO* > storedBuffers() const;
 
 private:
   struct Private;

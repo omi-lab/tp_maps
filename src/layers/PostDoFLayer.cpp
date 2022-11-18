@@ -149,7 +149,8 @@ void PostDoFLayer::render(tp_maps::RenderInfo& renderInfo)
 
   else if(renderInfo.pass == d->customRenderPass2) //-----------------------------------------------
   {
-    if(!map()->buffers().prepareBuffer(d->focusCalcFbo,
+    if(!map()->buffers().prepareBuffer("dofFocus",
+                                       d->focusCalcFbo,
                                        map()->width(),
                                        map()->height(),
                                        CreateColorBuffer::Yes,
@@ -175,7 +176,8 @@ void PostDoFLayer::render(tp_maps::RenderInfo& renderInfo)
     size_t width  = std::max(1, map()->width() / d->downsampleFactor);
     size_t height = std::max(1, map()->height() / d->downsampleFactor);
 
-    if(!map()->buffers().prepareBuffer(d->downsampledFocusCalcFbo,
+    if(!map()->buffers().prepareBuffer("dofFocusDownsampled",
+                                       d->downsampledFocusCalcFbo,
                                        width,
                                        height,
                                        CreateColorBuffer::Yes,
@@ -210,7 +212,8 @@ void PostDoFLayer::render(tp_maps::RenderInfo& renderInfo)
     size_t width  = std::max(1, map()->width() / d->downsampleFactor);
     size_t height = std::max(1, map()->height() / d->downsampleFactor);
 
-    if(!map()->buffers().prepareBuffer(d->downsampleFbo,
+    if(!map()->buffers().prepareBuffer("dofColorDownsampled",
+                                       d->downsampleFbo,
                                        width,
                                        height,
                                        CreateColorBuffer::Yes,

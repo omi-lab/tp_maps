@@ -22,6 +22,8 @@ struct Buffers::Private
   size_t maxSamples{1};
   size_t samples{1};
 
+  std::unordered_map< std::string, FBO* > storedBuffers;
+
   //################################################################################################
   Private(Map* map_):
     map(map_)
@@ -291,7 +293,8 @@ struct Buffers::Private
 
   \return true if we managed to create a functional FBO.
   */
-  bool prepareBuffer(FBO& buffer,
+  bool prepareBuffer(const std::string& name,
+                     FBO& buffer,
                      size_t width,
                      size_t height,
                      CreateColorBuffer createColorBuffer,
@@ -437,7 +440,6 @@ struct Buffers::Private
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, buffer.specularID, 0);
       DEBUG_printOpenGLError("prepareBuffer bind 2D normal and specular textures to FBO");
       setDrawBuffers({GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2});
-      setDrawBuffers({GL_COLOR_ATTACHMENT0});
     }
     else
       setDrawBuffers({GL_COLOR_ATTACHMENT0});
@@ -509,6 +511,9 @@ struct Buffers::Private
     }
 
     DEBUG_printOpenGLError("prepareBuffer end");
+
+
+    storedBuffers[name] = &buffer;
 
     return true;
   }
@@ -681,7 +686,8 @@ Buffers::~Buffers()
 }
 
 //##################################################################################################
-bool Buffers::prepareBuffer(FBO& buffer,
+bool Buffers::prepareBuffer(const std::string& name,
+                            FBO& buffer,
                             size_t width,
                             size_t height,
                             CreateColorBuffer createColorBuffer,
@@ -692,7 +698,8 @@ bool Buffers::prepareBuffer(FBO& buffer,
                             size_t level,
                             bool clear) const
 {
-  return d->prepareBuffer( buffer,
+  return d->prepareBuffer( name,
+                           buffer,
                            width,
                            height,
                            createColorBuffer,
@@ -745,6 +752,12 @@ size_t Buffers::maxSamples() const
 void Buffers::initializeGL()
 {
   d->updateSamplesRequired = true;
+}
+
+//##################################################################################################
+std::unordered_map< std::string, FBO* > Buffers::storedBuffers() const
+{
+  return d->storedBuffers;
 }
 
 }
