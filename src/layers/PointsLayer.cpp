@@ -105,6 +105,12 @@ const std::vector<PointSpriteShader::PointSprite>& PointsLayer::points() const
 }
 
 //##################################################################################################
+glm::mat4 PointsLayer::calculateMatrix() const
+{
+  return map()->controller()->matrix(coordinateSystem()) * modelToWorldMatrix();
+}
+
+//##################################################################################################
 void PointsLayer::render(RenderInfo& renderInfo)
 {
   if(!d->spriteTexture->texture()->imageReady())
@@ -141,7 +147,7 @@ void PointsLayer::render(RenderInfo& renderInfo)
   }
 
   shader->use(renderInfo.shaderType());
-  shader->setMatrix(map()->controller()->matrix(coordinateSystem()));
+  shader->setMatrix(calculateMatrix());
   shader->setScreenSize(map()->screenSize());
   shader->setTexture(d->textureID);
 

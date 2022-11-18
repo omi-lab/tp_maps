@@ -7,8 +7,6 @@
 
 #include "tp_utils/RefCount.h"
 
-#include "glm/glm.hpp"
-
 #include <functional>
 
 namespace tp_maps
@@ -40,6 +38,9 @@ public:
   const std::vector<PointSpriteShader::PointSprite>& points() const;
 
 protected:
+  //################################################################################################
+  virtual glm::mat4 calculateMatrix() const;
+
   //################################################################################################
   void render(RenderInfo& renderInfo) override;
 
