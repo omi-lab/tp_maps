@@ -122,6 +122,12 @@ HEADERS += inc/tp_maps/shaders/YUVImageShader.h
 SOURCES += src/shaders/DepthImageShader.cpp
 HEADERS += inc/tp_maps/shaders/DepthImageShader.h
 
+SOURCES += src/shaders/DepthShader.cpp
+HEADERS += inc/tp_maps/shaders/DepthShader.h
+
+SOURCES += src/shaders/XYZShader.cpp
+HEADERS += inc/tp_maps/shaders/XYZShader.h
+
 SOURCES += src/shaders/MaterialShader.cpp
 HEADERS += inc/tp_maps/shaders/MaterialShader.h
 

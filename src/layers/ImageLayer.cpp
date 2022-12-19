@@ -47,29 +47,29 @@ struct ImageLayer::Private
     q(q_),
     texture(texture_),
     getShader([](Map* map){return map->getShader<ImageShader>();})
-  {
+{
 
+}
+
+//################################################################################################
+~Private()
+{
+  if(textureID)
+  {
+    q->map()->makeCurrent();
+    q->map()->deleteTexture(textureID);
   }
 
-  //################################################################################################
-  ~Private()
-  {
-    if(textureID)
-    {
-      q->map()->makeCurrent();
-      q->map()->deleteTexture(textureID);
-    }
+  delete texture;
+  deleteVertexBuffers();
+}
 
-    delete texture;
-    deleteVertexBuffers();
-  }
-
-  //################################################################################################
-  void deleteVertexBuffers()
-  {
-    delete vertexBuffer;
-    vertexBuffer=nullptr;
-  }
+//################################################################################################
+void deleteVertexBuffers()
+{
+  delete vertexBuffer;
+  vertexBuffer=nullptr;
+}
 };
 
 //##################################################################################################
@@ -193,19 +193,15 @@ void ImageLayer::render(RenderInfo& renderInfo)
   map()->controller()->enableScissor(coordinateSystem());
   if(renderInfo.pass==RenderPass::Picking)
   {
-    auto pickingID = renderInfo.pickingIDMat(PickingDetails(0, [&](const PickingResult& r)
-    {
-      return new ImagePickingResult(r.pickingType, r.details, r.renderInfo, this, 0, 0);
-    }));
-    shader->drawPicking(GL_TRIANGLE_FAN,
-                             d->vertexBuffer,
-                             pickingID);
+    // auto pickingID = renderInfo.pickingIDMat(PickingDetails(0, [&](const PickingResult& r)
+    // {
+    //   return new ImagePickingResult(r.pickingType, r.details, r.renderInfo, this, 0, 0);
+    // }));
+    shader->drawPicking(GL_TRIANGLE_FAN, d->vertexBuffer);
   }
   else
   {
-    shader->draw(GL_TRIANGLE_FAN,
-                      d->vertexBuffer,
-                      d->color);
+    shader->draw(GL_TRIANGLE_FAN, d->vertexBuffer, d->color);
   }
   map()->controller()->disableScissor();
 }

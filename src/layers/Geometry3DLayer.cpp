@@ -2,12 +2,12 @@
 #include "tp_maps/Geometry3DPool.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/Controller.h"
-#include "tp_maps/shaders/MaterialShader.h"
 #include "tp_maps/picking_results/GeometryPickingResult.h"
 #include "tp_maps/TexturePool.h"
-
 #include "tp_maps/shaders/MaterialShader.h"
 #include "tp_maps/shaders/ImageShader.h"
+#include "tp_maps/shaders/XYZShader.h"
+#include "tp_maps/shaders/DepthShader.h"
 
 #include "tp_utils/TimeUtils.h"
 
@@ -188,125 +188,56 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
      renderInfo.pass != RenderPass::Picking)
     return;
 
-  //== Get matrices ================================================================================
   Matrices m;
   if(renderInfo.pass == RenderPass::LightFBOs)
     m = map()->controller()->lightMatrices();
   else
     m = map()->controller()->matrices(coordinateSystem());
 
-  //== Common ======================================================================================
-  auto render = [&](auto s,
-      const auto& use,
-      const auto& setMaterialPicking,
-      const auto& drawPicking,
-      const auto& setMaterial,
-      const auto& draw,
-      RenderInfo& renderInfo)
+  Geometry3DShader* shader{nullptr};
+  switch(d->shaderSelection)
   {
-    auto shader = map()->getShader<typename std::remove_pointer<decltype(s)>::type>();
-    if(shader->error())
-      return;
-
-    use(shader);
-
-    if(renderInfo.pass == RenderPass::Picking)
-    {
-      d->geometry3DPool->viewProcessedGeometry(d->name, shader, d->alternativeMaterials, [&](const std::vector<ProcessedGeometry3D>& processedGeometry)
-      {
-        size_t iMax = processedGeometry.size();
-        for(size_t i=0; i<iMax; i++)
-        {
-          const auto& details = processedGeometry.at(i);
-          auto pickingID = renderInfo.pickingIDMat(PickingDetails(i, [&](const PickingResult& r)
-          {
-            return new GeometryPickingResult(r.pickingType, r.details, r.renderInfo, this);
-          }));
-
-          setMaterialPicking(shader, details);
-          for(const std::pair<GLenum, MaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
-            drawPicking(shader, details, buff.first, buff.second, pickingID);
-        }
-      });
-    }
-    else
-    {
-      d->geometry3DPool->viewProcessedGeometry(d->name, shader, d->alternativeMaterials, [&](const std::vector<ProcessedGeometry3D>& processedGeometry)
-      {
-        for(const auto& details : processedGeometry)
-        {
-          setMaterial(shader, details);
-          for(const std::pair<GLenum, MaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
-            draw(shader, details, buff.first, buff.second);
-        }
-      });
-    }
-  };
-
-  //== MaterialShader ==============================================================================
-  if(d->shaderSelection == ShaderSelection::Material)
-  {
-    render(static_cast<MaterialShader*>(nullptr), [&](auto shader) //-- use ------------------------
-    {
-      shader->use(renderInfo.shaderType());
-      shader->setMatrix(modelToWorldMatrix(), m.v, m.p);
-      shader->setLights(map()->lights(), map()->lightBuffers());
-      shader->setLightOffsets(map()->renderedLightLevels());
-    },
-    [&](auto, const auto&) //-- setMaterialPicking -------------------------------------------------
-    {
-
-    },
-    [&](auto shader, const auto& details, auto first, auto second, auto pickingID) //-- drawPicking ---------------------
-    {
-      if(details.alternativeMaterial->material.rayVisibilityShadowCatcher)
-        return;
-      shader->drawPicking(first, second, pickingID);
-    },
-    [&](auto shader, const auto& details) //-- setMaterial -----------------------------------------
-    {
-      shader->setMaterial(details.alternativeMaterial->material);
-      shader->setTextures(details.alternativeMaterial->rgbaTextureID,
-                          details.alternativeMaterial->normalsTextureID,
-                          details.alternativeMaterial->rmttrTextureID);
-      shader->setDiscardOpacity((renderInfo.pass == RenderPass::Transparency)?0.01f:0.80f);
-    },
-    [&](auto shader, const auto& details, GLenum mode, Geometry3DShader::VertexBuffer* vertexBuffer) //-- draw ----------
-    {
-      if(renderInfo.pass == RenderPass::LightFBOs && details.alternativeMaterial->material.rayVisibilityShadowCatcher)
-        return;
-      shader->draw(mode, vertexBuffer);
-    },
-    renderInfo);
+  case ShaderSelection::Material: shader = map()->getShader<MaterialShader>(); break;
+  case ShaderSelection::Image   : shader = map()->getShader<ImageShader>   (); break;
+  case ShaderSelection::XYZ     : shader = map()->getShader<XYZShader>     (); break;
+  case ShaderSelection::Depth   : shader = map()->getShader<DepthShader>   (); break;
   }
 
-  //== ImageShader =================================================================================
-  else if(d->shaderSelection == ShaderSelection::Image)
+  if(!shader || shader->error())
+    return;
+
+  shader->init(renderInfo, m, modelToWorldMatrix());
+
+  if(renderInfo.pass == RenderPass::Picking)
   {
-    render(static_cast<ImageShader*>(nullptr), [&](auto shader) //-- use ---------------------------
+    d->geometry3DPool->viewProcessedGeometry(d->name, shader, d->alternativeMaterials, [&](const std::vector<ProcessedGeometry3D>& processedGeometry)
     {
-      shader->use();
-      shader->setMatrix(m.vp * modelToWorldMatrix());
-    },
-    [&](auto shader, const auto& details) //-- setMaterialPicking ----------------------------------
+      size_t iMax = processedGeometry.size();
+      for(size_t i=0; i<iMax; i++)
+      {
+        const auto& details = processedGeometry.at(i);
+        auto pickingID = renderInfo.pickingIDMat(PickingDetails(i, [&](const PickingResult& r)
+        {
+          return new GeometryPickingResult(r.pickingType, r.details, r.renderInfo, this);
+        }));
+
+        shader->setMaterialPicking(renderInfo, details);
+        for(const std::pair<GLenum, MaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
+          shader->drawPicking(renderInfo, details, buff.first, buff.second, pickingID);
+      }
+    });
+  }
+  else
+  {
+    d->geometry3DPool->viewProcessedGeometry(d->name, shader, d->alternativeMaterials, [&](const std::vector<ProcessedGeometry3D>& processedGeometry)
     {
-      shader->setTexture(details.rgbaTextureID);
-    },
-    [&](auto shader, const auto& details, auto first, auto second, auto pickingID) //-- drawPicking ---------------------
-    {
-      TP_UNUSED(details);
-      shader->drawPicking(first, second, pickingID);
-    },
-    [&](auto shader, const auto& details) //-- setMaterial -----------------------------------------
-    {
-      shader->setTexture(details.rgbaTextureID);
-    },
-    [&](auto shader, const auto& details, auto first, auto second) //-- draw --------------------------------------------
-    {
-      TP_UNUSED(details);
-      shader->draw(first, second, {1.0f, 1.0f, 1.0f, 1.0f});
-    },
-    renderInfo);
+      for(const auto& details : processedGeometry)
+      {
+        shader->setMaterial(renderInfo, details);
+        for(const std::pair<GLenum, MaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
+          shader->draw(renderInfo, details, buff.first, buff.second);
+      }
+    });
   }
 }
 

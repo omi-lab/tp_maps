@@ -85,7 +85,8 @@ struct Map::Private
 
   size_t width{1};
   size_t height{1};
-  glm::vec3 backgroundColor{0.0f, 0.0f, 0.0f};
+  glm::vec4 backgroundColor{0.0f, 0.0f, 0.0f, 1.0f};
+  GLboolean writeAlpha{GL_FALSE};
 
   OpenGLProfile openGLProfile{TP_DEFAULT_PROFILE};
   bool visible{true};
@@ -392,6 +393,13 @@ Controller* Map::controller()
 //##################################################################################################
 void Map::setBackgroundColor(const glm::vec3& color)
 {
+  d->backgroundColor = {color.x, color.y, color.z, 1.0f};
+  update();
+}
+
+//##################################################################################################
+void Map::setBackgroundColor(const glm::vec4& color)
+{
   d->backgroundColor = color;
   update();
 }
@@ -400,6 +408,18 @@ void Map::setBackgroundColor(const glm::vec3& color)
 glm::vec3 Map::backgroundColor() const
 {
   return d->backgroundColor;
+}
+
+//##################################################################################################
+void Map::setWriteAlpha(GLboolean writeAlpha)
+{
+  d->writeAlpha = writeAlpha;
+}
+
+//##################################################################################################
+GLboolean Map::writeAlpha() const
+{
+  return d->writeAlpha;
 }
 
 //##################################################################################################
@@ -1132,6 +1152,7 @@ void Map::initializeGL()
 #ifdef TP_ENABLE_MULTISAMPLE
   glEnable(GL_MULTISAMPLE);
 #endif
+  tpWarning() << glGetString(GL_VERSION);
 
   d->initialized = true;
   d->renderFromStage = RenderFromStage::Full;
@@ -1175,7 +1196,7 @@ void Map::paintGLNoMakeCurrent()
 
   glDepthMask(true);
   glClearDepthf(1.0f);
-  glClearColor(d->backgroundColor.x, d->backgroundColor.y, d->backgroundColor.z, 1.0f);
+  glClearColor(d->backgroundColor.x, d->backgroundColor.y, d->backgroundColor.z, d->backgroundColor.w);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // Skip the passes that don't need a full render.
@@ -1552,7 +1573,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
         TP_FUNCTION_TIME("Background");
         DEBUG_printOpenGLError("RenderPass::Background start");
         glDisable(GL_DEPTH_TEST);
-        glDepthMask(false);
+        glDepthMask(GL_FALSE);
         d->render();
         DEBUG_printOpenGLError("RenderPass::Background end");
         break;
@@ -1564,7 +1585,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
         DEBUG_printOpenGLError("RenderPass::Normal start");
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
-        glDepthMask(true);
+        glDepthMask(GL_TRUE);
         d->render();
         DEBUG_printOpenGLError("RenderPass::Normal end");
         break;
@@ -1576,7 +1597,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
         DEBUG_printOpenGLError("RenderPass::Transparency start");
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
-        glDepthMask(true);
+        glDepthMask(GL_TRUE);
         d->render();
         DEBUG_printOpenGLError("RenderPass::Transparency end");
         break;

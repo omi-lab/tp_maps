@@ -1,5 +1,6 @@
 #include "tp_maps/shaders/ImageShader.h"
 #include "tp_maps/Map.h"
+#include "tp_maps/Geometry3DPool.h"
 
 #include "tp_utils/DebugUtils.h"
 
@@ -12,7 +13,7 @@ namespace
 {
 ShaderResource& vertShaderStr(){static ShaderResource s{"/tp_maps/ImageShader.vert"}; return s;}
 ShaderResource& fragShaderStr(){static ShaderResource s{"/tp_maps/ImageShader.frag"}; return s;}
-ShaderResource& frag3DShaderStr(){static ShaderResource s{"/tp_maps/DepthImage3DShader.frag"}; return s;}
+ShaderResource& frag3DShaderStr(){static ShaderResource s{"/tp_maps/Image3DShader.frag"}; return s;}
 }
 
 //##################################################################################################
@@ -82,7 +83,7 @@ void ImageShader::use(ShaderType shaderType)
   //https://webglfundamentals.org/webgl/lessons/webgl-and-alpha.html
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, map()->writeAlpha());
 
   Shader::use(shaderType);
 }
@@ -109,23 +110,74 @@ void ImageShader::setTexture3D(GLuint textureID, size_t level)
 }
 
 //##################################################################################################
-void ImageShader::draw(GLenum mode,
-                       VertexBuffer* vertexBuffer,
-                       const glm::vec4& color)
+void ImageShader::draw(GLenum mode, VertexBuffer* vertexBuffer, const glm::vec4& color)
 {
   glUniform4fv(d->colorLocation, 1, &color.x);
   d->draw(mode, vertexBuffer);
 }
 
 //##################################################################################################
-void ImageShader::drawPicking(GLenum mode,
-                              VertexBuffer* vertexBuffer,
-                              const glm::vec4& pickingID)
+void ImageShader::drawPicking(GLenum mode, VertexBuffer* vertexBuffer)
 {
-  TP_UNUSED(pickingID);
   glDisable(GL_BLEND);
   d->draw(mode, vertexBuffer);
 }
+
+//##################################################################################################
+void ImageShader::init(RenderInfo& renderInfo,
+                       const Matrices& m,
+                       const glm::mat4& modelToWorldMatrix)
+{
+  TP_UNUSED(renderInfo);
+
+  use();
+  setMatrix(m.vp * modelToWorldMatrix);
+}
+
+//##################################################################################################
+void ImageShader::setMaterial(RenderInfo& renderInfo,
+                              const ProcessedGeometry3D& processedGeometry3D)
+{
+  TP_UNUSED(renderInfo);
+
+  setTexture(processedGeometry3D.rgbaTextureID);
+}
+
+//##################################################################################################
+void ImageShader::setMaterialPicking(RenderInfo& renderInfo,
+                                     const ProcessedGeometry3D& processedGeometry3D)
+{
+  TP_UNUSED(renderInfo);
+
+  setTexture(processedGeometry3D.rgbaTextureID);
+}
+
+//##################################################################################################
+void ImageShader::draw(RenderInfo& renderInfo,
+                       const ProcessedGeometry3D& processedGeometry3D,
+                       GLenum mode,
+                       VertexBuffer* vertexBuffer)
+{
+  TP_UNUSED(renderInfo);
+  TP_UNUSED(processedGeometry3D);
+
+  draw(mode, vertexBuffer, {1.0f, 1.0f, 1.0f, 1.0f});
+}
+
+//##################################################################################################
+void ImageShader::drawPicking(RenderInfo& renderInfo,
+                              const ProcessedGeometry3D& processedGeometry3D,
+                              GLenum mode,
+                              VertexBuffer* vertexBuffer,
+                              const glm::vec4& pickingID)
+{
+  TP_UNUSED(renderInfo);
+  TP_UNUSED(processedGeometry3D);
+  TP_UNUSED(pickingID);
+
+  drawPicking(mode, vertexBuffer);
+}
+
 //##################################################################################################
 Image3DShader::Image3DShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
   ImageShader(map, openGLProfile, nullptr, frag3DShaderStr().data(openGLProfile, ShaderType::Render))

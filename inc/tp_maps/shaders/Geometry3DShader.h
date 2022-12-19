@@ -9,6 +9,8 @@
 
 namespace tp_maps
 {
+struct ProcessedGeometry3D;
+class RenderInfo;
 
 //##################################################################################################
 //! The base class for shaders drawing normal 3D geometry.
@@ -73,6 +75,32 @@ public:
   VertexBuffer* generateVertexBuffer(Map* map,
                                      const std::vector<GLuint>& indexes,
                                      const std::vector<Vertex>& verts) const;
+
+  //################################################################################################
+  virtual void init(RenderInfo& renderInfo,
+                    const Matrices& m,
+                    const glm::mat4& modelToWorldMatrix)=0;
+
+  //################################################################################################
+  virtual void setMaterial(RenderInfo& renderInfo,
+                           const ProcessedGeometry3D& processedGeometry3D)=0;
+
+  //################################################################################################
+  virtual void setMaterialPicking(RenderInfo& renderInfo,
+                                  const ProcessedGeometry3D& processedGeometry3D)=0;
+
+  //################################################################################################
+  virtual void draw(RenderInfo& renderInfo,
+                    const ProcessedGeometry3D& processedGeometry3D,
+                    GLenum mode,
+                    VertexBuffer* vertexBuffer)=0;
+
+  //################################################################################################
+  virtual void drawPicking(RenderInfo& renderInfo,
+                           const ProcessedGeometry3D& processedGeometry3D,
+                           GLenum mode,
+                           VertexBuffer* vertexBuffer,
+                           const glm::vec4& pickingID)=0;
 };
 
 }

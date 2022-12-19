@@ -1,5 +1,5 @@
-#ifndef tp_maps_ImageShader_h
-#define tp_maps_ImageShader_h
+#ifndef tp_maps_XYZShader_h
+#define tp_maps_XYZShader_h
 
 #include "tp_maps/shaders/Geometry3DShader.h"
 
@@ -8,39 +8,22 @@ namespace tp_maps
 
 //##################################################################################################
 //! A shader for drawing images.
-class TP_MAPS_SHARED_EXPORT ImageShader: public Geometry3DShader
+class TP_MAPS_SHARED_EXPORT XYZShader: public Geometry3DShader
 {
   friend class Map;
 public:
   //################################################################################################
-  ImageShader(Map* map,
-              tp_maps::OpenGLProfile openGLProfile,
-              const char* vertexShader=nullptr,
-              const char* fragmentShader=nullptr);
+  XYZShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
 
   //################################################################################################
-  ~ImageShader() override;
+  ~XYZShader() override;
 
   //################################################################################################
   //! Prepare OpenGL for rendering
   void use(ShaderType shaderType = ShaderType::Render) override;
 
   //################################################################################################
-  //! Call this to set the camera matrix before drawing the image
-  void setMatrix(const glm::mat4& matrix);
-
-  //################################################################################################
-  //! Set the texture that will be drawn, this needs to be done each frame before drawing
-  void setTexture(GLuint textureID);
-
-  //################################################################################################
-  void setTexture3D(GLuint textureID, size_t level);
-
-  //################################################################################################
-  void draw(GLenum mode, VertexBuffer* vertexBuffer, const glm::vec4& color);
-
-  //################################################################################################
-  void drawPicking(GLenum mode, VertexBuffer* vertexBuffer);
+  void setMatrix(const glm::mat4& m, const glm::mat4& mvp);
 
   //################################################################################################
   void init(RenderInfo& renderInfo,
@@ -69,24 +52,12 @@ public:
                    const glm::vec4& pickingID) override;
 
   //################################################################################################
-  static inline const tp_utils::StringID& name(){return imageShaderSID();}
+  static inline const tp_utils::StringID& name(){return xyzShaderSID();}
 
 private:
   struct Private;
   Private* d;
   friend struct Private;
-};
-
-//##################################################################################################
-//! Used to textures with multiple levels (3D textures).
-class TP_MAPS_SHARED_EXPORT Image3DShader: public ImageShader
-{
-public:
-  //################################################################################################
-  Image3DShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
-
-  //################################################################################################
-  static inline const tp_utils::StringID& name(){return image3DShaderSID();}
 };
 
 }

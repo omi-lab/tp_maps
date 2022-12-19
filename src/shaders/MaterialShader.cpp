@@ -1,6 +1,8 @@
 ﻿#include "tp_maps/shaders/MaterialShader.h"
+#include "tp_maps/RenderInfo.h"
 #include "tp_maps/textures/BasicTexture.h"
 #include "tp_maps/Map.h"
+#include "tp_maps/Geometry3DPool.h"
 
 #include "tp_math_utils/Material.h"
 
@@ -67,7 +69,7 @@ struct LightLocations_lt
   GLint        quadraticLocation{0};
   GLint   spotLightBlendLocation{0};
   GLint             nearLocation{0};
-  GLint              farLocation{0};  
+  GLint              farLocation{0};
   GLint      offsetScaleLocation{0};
 
   GLint   lightTextureIDLocation{0};
@@ -492,51 +494,14 @@ void MaterialShader::use(ShaderType shaderType)
   //https://webglfundamentals.org/webgl/lessons/webgl-and-alpha.html
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, map()->writeAlpha());
 
   Shader::use(shaderType);
 }
 
 //##################################################################################################
-void MaterialShader::setMaterial(const tp_math_utils::Material& material)
-{
-  auto exec = [&](const UniformLocations_lt& locations)
-  {
-    glUniform1f (locations.    materialUseAmbientLocation, material.useAmbient                );
-    glUniform1f (locations.    materialUseDiffuseLocation, material.useDiffuse                );
-    glUniform1f (locations.      materialUseNdotLLocation, material.useNdotL                  );
-    glUniform1f (locations.materialUseAttenuationLocation, material.useAttenuation            );
-    glUniform1f (locations.     materialUseShadowLocation, material.useShadow                 );
-    glUniform1f (locations.  materialUseLightMaskLocation, material.useLightMask              );
-    glUniform1f (locations. materialUseReflectionLocation, material.useReflection             );
-
-    glUniform1i (locations. materialShadowCatcherLocation, material.rayVisibilityShadowCatcher);
-
-    glUniform1f(locations.    materialAlbedoScaleLocation, material.albedoScale               );
-    glUniform1f(locations.    materialAlbedoBrightnessLocation, material.albedoBrightness     );
-    glUniform1f(locations.    materialAlbedoContrastLocation  , material.albedoContrast       );
-    glUniform1f(locations.    materialAlbedoGammaLocation     , material.albedoGamma          );
-    glUniform1f(locations.    materialAlbedoHueLocation       , material.albedoHue            );
-    glUniform1f(locations.    materialAlbedoSaturationLocation, material.albedoSaturation     );
-    glUniform1f(locations.    materialAlbedoValueLocation     , material.albedoValue          );
-    glUniform1f(locations.    materialAlbedoFactorLocation    , material.albedoFactor         );
-
-    glUniformMatrix3fv(locations.uvMatrixLocation, 1, GL_FALSE, glm::value_ptr(material.uvMatrix()));
-  };
-
-  if(d->shaderType == ShaderType::Render)
-    exec(d->renderLocations);
-
-  else if(d->shaderType == ShaderType::RenderExtendedFBO)
-    exec(d->renderHDRLocations);
-
-  else if(d->shaderType == ShaderType::Light)
-    glUniformMatrix3fv(d->lightUVMatrixLocation, 1, GL_FALSE, glm::value_ptr(material.uvMatrix()));
-
-}
-
-//##################################################################################################
-void MaterialShader::setLights(const std::vector<tp_math_utils::Light>& lights, const std::vector<FBO>& lightBuffers)
+void MaterialShader::setLights(const std::vector<tp_math_utils::Light>& lights,
+                               const std::vector<FBO>& lightBuffers)
 {
   auto exec = [&](const UniformLocations_lt& locations)
   {
@@ -680,19 +645,40 @@ void MaterialShader::setMatrix(const glm::mat4& m, const glm::mat4& v, const glm
 }
 
 //##################################################################################################
-void MaterialShader::draw(GLenum mode, VertexBuffer* vertexBuffer)
+void MaterialShader::setMaterial(const tp_math_utils::Material& material)
 {
-  d->draw(mode, vertexBuffer);
-}
+  auto exec = [&](const UniformLocations_lt& locations)
+  {
+    glUniform1f (locations.    materialUseAmbientLocation, material.useAmbient                );
+    glUniform1f (locations.    materialUseDiffuseLocation, material.useDiffuse                );
+    glUniform1f (locations.      materialUseNdotLLocation, material.useNdotL                  );
+    glUniform1f (locations.materialUseAttenuationLocation, material.useAttenuation            );
+    glUniform1f (locations.     materialUseShadowLocation, material.useShadow                 );
+    glUniform1f (locations.  materialUseLightMaskLocation, material.useLightMask              );
+    glUniform1f (locations. materialUseReflectionLocation, material.useReflection             );
 
-//##################################################################################################
-void MaterialShader::drawPicking(GLenum mode,
-                                 VertexBuffer* vertexBuffer,
-                                 const glm::vec4& pickingID)
-{
-  glDisable(GL_BLEND);
-  glUniform4fv(d->pickingIDLocation, 1, &pickingID.x);
-  d->draw(mode, vertexBuffer);
+    glUniform1i (locations. materialShadowCatcherLocation, material.rayVisibilityShadowCatcher);
+
+    glUniform1f(locations.    materialAlbedoScaleLocation, material.albedoScale               );
+    glUniform1f(locations.    materialAlbedoBrightnessLocation, material.albedoBrightness     );
+    glUniform1f(locations.    materialAlbedoContrastLocation  , material.albedoContrast       );
+    glUniform1f(locations.    materialAlbedoGammaLocation     , material.albedoGamma          );
+    glUniform1f(locations.    materialAlbedoHueLocation       , material.albedoHue            );
+    glUniform1f(locations.    materialAlbedoSaturationLocation, material.albedoSaturation     );
+    glUniform1f(locations.    materialAlbedoValueLocation     , material.albedoValue          );
+    glUniform1f(locations.    materialAlbedoFactorLocation    , material.albedoFactor         );
+
+    glUniformMatrix3fv(locations.uvMatrixLocation, 1, GL_FALSE, glm::value_ptr(material.uvMatrix()));
+  };
+
+  if(d->shaderType == ShaderType::Render)
+    exec(d->renderLocations);
+
+  else if(d->shaderType == ShaderType::RenderExtendedFBO)
+    exec(d->renderHDRLocations);
+
+  else if(d->shaderType == ShaderType::Light)
+    glUniformMatrix3fv(d->lightUVMatrixLocation, 1, GL_FALSE, glm::value_ptr(material.uvMatrix()));
 }
 
 //##################################################################################################
@@ -762,6 +748,80 @@ void MaterialShader::setDiscardOpacity(float discardOpacity)
     exec(d->renderLocations);
   else if(d->shaderType == ShaderType::RenderExtendedFBO)
     exec(d->renderHDRLocations);
+}
+
+//##################################################################################################
+void MaterialShader::draw(GLenum mode, VertexBuffer* vertexBuffer)
+{
+  d->draw(mode, vertexBuffer);
+}
+
+//##################################################################################################
+void MaterialShader::drawPicking(GLenum mode, VertexBuffer* vertexBuffer, const glm::vec4& pickingID)
+{
+  glDisable(GL_BLEND);
+  glUniform4fv(d->pickingIDLocation, 1, &pickingID.x);
+  d->draw(mode, vertexBuffer);
+}
+
+//##################################################################################################
+void MaterialShader::init(RenderInfo& renderInfo,
+                          const Matrices& m,
+                          const glm::mat4& modelToWorldMatrix)
+{
+  use(renderInfo.shaderType());
+  setMatrix(modelToWorldMatrix, m.v, m.p);
+  setLights(map()->lights(), map()->lightBuffers());
+  setLightOffsets(map()->renderedLightLevels());
+}
+
+//##################################################################################################
+void MaterialShader::setMaterial(RenderInfo& renderInfo,
+                                 const ProcessedGeometry3D& processedGeometry3D)
+{
+  setMaterial(processedGeometry3D.alternativeMaterial->material);
+
+  setTextures(processedGeometry3D.alternativeMaterial->rgbaTextureID,
+              processedGeometry3D.alternativeMaterial->normalsTextureID,
+              processedGeometry3D.alternativeMaterial->rmttrTextureID);
+
+  setDiscardOpacity((renderInfo.pass == RenderPass::Transparency)?0.01f:0.80f);
+}
+
+//##################################################################################################
+void MaterialShader::setMaterialPicking(RenderInfo& renderInfo,
+                                        const ProcessedGeometry3D& processedGeometry3D)
+{
+  TP_UNUSED(renderInfo);
+  TP_UNUSED(processedGeometry3D);
+}
+
+//##################################################################################################
+void MaterialShader::draw(RenderInfo& renderInfo,
+                          const ProcessedGeometry3D& processedGeometry3D,
+                          GLenum mode,
+                          VertexBuffer* vertexBuffer)
+{
+  if(renderInfo.pass == RenderPass::LightFBOs &&
+     processedGeometry3D.alternativeMaterial->material.rayVisibilityShadowCatcher)
+    return;
+
+  d->draw(mode, vertexBuffer);
+}
+
+//##################################################################################################
+void MaterialShader::drawPicking(RenderInfo& renderInfo,
+                                 const ProcessedGeometry3D& processedGeometry3D,
+                                 GLenum mode,
+                                 VertexBuffer* vertexBuffer,
+                                 const glm::vec4& pickingID)
+{
+  TP_UNUSED(renderInfo);
+
+  if(processedGeometry3D.alternativeMaterial->material.rayVisibilityShadowCatcher)
+    return;
+
+  drawPicking(mode, vertexBuffer, pickingID);
 }
 
 }

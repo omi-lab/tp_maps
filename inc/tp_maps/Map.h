@@ -91,8 +91,19 @@ public:
   void setBackgroundColor(const glm::vec3& color);
 
   //################################################################################################
+  //!Sets the background clear color
+  void setBackgroundColor(const glm::vec4& color);
+
+  //################################################################################################
   //! Returns the background clear color
   glm::vec3 backgroundColor() const;
+
+  //################################################################################################
+  void setWriteAlpha(GLboolean writeAlpha);
+
+  //################################################################################################
+  //! Should we write to the alpha channel of the render buffer.
+  GLboolean writeAlpha() const;
 
   //################################################################################################
   void setRenderPasses(const std::vector<RenderPass>& renderPasses);

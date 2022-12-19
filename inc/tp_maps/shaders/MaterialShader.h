@@ -43,12 +43,9 @@ public:
   void use(ShaderType shaderType = ShaderType::Render) override;
 
   //################################################################################################
-  //! Call this to set the material before drawing the geometry
-  void setMaterial(const tp_math_utils::Material& material);
-
-  //################################################################################################
   //! Call this to set the lights before drawing the geometry
-  void setLights(const std::vector<tp_math_utils::Light>& lights, const std::vector<FBO>& lightBuffers);
+  void setLights(const std::vector<tp_math_utils::Light>& lights,
+                 const std::vector<FBO>& lightBuffers);
 
   //################################################################################################
   //! Call this to set the light offsets before drawing the geometry
@@ -57,6 +54,9 @@ public:
   //################################################################################################
   //! Call this to set the model, view, and projection matrices before drawing the geometry.
   void setMatrix(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p);
+
+  //################################################################################################
+  void setMaterial(const tp_math_utils::Material& material);
 
   //################################################################################################
   /*!
@@ -81,20 +81,36 @@ public:
   void setDiscardOpacity(float discardOpacity);
 
   //################################################################################################
-  //! Call this to draw the image
-  /*!
-  \param vertices The points that make up the line.
-  */
-  virtual void draw(GLenum mode, VertexBuffer* vertexBuffer);
+  void draw(GLenum mode, VertexBuffer* vertexBuffer);
 
   //################################################################################################
-  //! Call this to draw the image for picking
-  /*!
-  \param vertices The points that make up the line.
-  */
-  virtual void drawPicking(GLenum mode,
-                           VertexBuffer* vertexBuffer,
-                           const glm::vec4& pickingID);
+  void drawPicking(GLenum mode, VertexBuffer* vertexBuffer, const glm::vec4& pickingID);
+
+  //################################################################################################
+  void init(RenderInfo& renderInfo,
+            const Matrices& m,
+            const glm::mat4& modelToWorldMatrix) override;
+
+  //################################################################################################
+  void setMaterial(RenderInfo& renderInfo,
+                   const ProcessedGeometry3D& processedGeometry3D) override;
+
+  //################################################################################################
+  void setMaterialPicking(RenderInfo& renderInfo,
+                          const ProcessedGeometry3D& processedGeometry3D) override;
+
+  //################################################################################################
+  void draw(RenderInfo& renderInfo,
+            const ProcessedGeometry3D& processedGeometry3D,
+            GLenum mode,
+            VertexBuffer* vertexBuffer) override;
+
+  //################################################################################################
+  void drawPicking(RenderInfo& renderInfo,
+                   const ProcessedGeometry3D& processedGeometry3D,
+                   GLenum mode,
+                   VertexBuffer* vertexBuffer,
+                   const glm::vec4& pickingID) override;
 
   //################################################################################################
   static inline const tp_utils::StringID& name(){return materialShaderSID();}

@@ -6,7 +6,10 @@
         <file alias="FrameShader.vert">resources/shaders/FrameShader.vert</file>
         <file alias="ImageShader.frag">resources/shaders/ImageShader.frag</file>
         <file alias="ImageShader.vert">resources/shaders/ImageShader.vert</file>
+        <file alias="DepthShader.frag">resources/shaders/DepthShader.frag</file>
         <file alias="Image3DShader.frag">resources/shaders/Image3DShader.frag</file>
+        <file alias="XYZShader.vert">resources/shaders/XYZShader.vert</file>
+        <file alias="XYZShader.frag">resources/shaders/XYZShader.frag</file>
         <file alias="LineShader.frag">resources/shaders/LineShader.frag</file>
         <file alias="LineShader.vert">resources/shaders/LineShader.vert</file>
         <file alias="MaterialShader.render.frag">resources/shaders/MaterialShader.render.frag</file>

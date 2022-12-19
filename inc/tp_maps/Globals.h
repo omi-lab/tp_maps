@@ -181,11 +181,13 @@ TP_DECLARE_ID(                   gizmoLayerSID,                      "Gizmo laye
 TP_DECLARE_ID(                   lineShaderSID,                      "Line shader");
 TP_DECLARE_ID(                  imageShaderSID,                     "Image shader");
 TP_DECLARE_ID(                image3DShaderSID,                  "Image 3D shader");
+TP_DECLARE_ID(                    xyzShaderSID,                       "XYZ shader");
 TP_DECLARE_ID(            pointSpriteShaderSID,              "Point sprite shader");
 TP_DECLARE_ID(               materialShaderSID,                  "Material shader");
 TP_DECLARE_ID(               yuvImageShaderSID,                 "YUV image shader");
 TP_DECLARE_ID(             depthImageShaderSID,               "Depth image shader");
 TP_DECLARE_ID(           depthImage3DShaderSID,            "Depth image 3D shader");
+TP_DECLARE_ID(                  depthShaderSID,                     "Depth shader");
 TP_DECLARE_ID(                   fontShaderSID,                      "Font shader");
 TP_DECLARE_ID(                  frameShaderSID,                     "Frame shader");
 TP_DECLARE_ID(               postSSAOShaderSID,                 "Post ssao shader");
