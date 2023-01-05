@@ -1,5 +1,6 @@
 #include "tp_maps/shaders/XYZShader.h"
 #include "tp_maps/Map.h"
+#include "tp_maps/Geometry3DPool.h"
 
 #include "tp_utils/DebugUtils.h"
 
@@ -23,6 +24,9 @@ struct XYZShader::Private
 
   GLint mLocation{0};
   GLint mvpLocation{0};
+  GLint uvMatrixLocation{0};
+
+  GLint rgbaTextureLocation{0};
 
   //################################################################################################
   void draw(GLenum mode, VertexBuffer* vertexBuffer)
@@ -56,17 +60,27 @@ XYZShader::XYZShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
           [](GLuint program)
   {
     glBindAttribLocation(program, 0, "inVertex");
+    glBindAttribLocation(program, 2, "inTexture");
   },
   [this](GLuint program)
   {
+    auto loc = [](auto program, const auto* name){return glGetUniformLocation(program, name);};
 
-    d->mLocation = glGetUniformLocation(program, "m");
+    d->mLocation = loc(program, "m");
     if(d->mLocation<0)
       tpWarning() << "XYZShader d->mLocation: " << d->mLocation;
 
-    d->mvpLocation  = glGetUniformLocation(program, "mvp");
+    d->mvpLocation  = loc(program, "mvp");
     if(d->mvpLocation<0)
       tpWarning() << "XYZShader d->mvpLocation: " << d->mvpLocation;
+
+    d->uvMatrixLocation  = loc(program, "uvMatrix");
+    if(d->uvMatrixLocation<0)
+      tpWarning() << "XYZShader d->uvMatrixLocation: " << d->uvMatrixLocation;
+
+    d->rgbaTextureLocation = loc(program, "rgbaTexture");
+    if(d->rgbaTextureLocation<0)
+      tpWarning() << "XYZShader d->rgbaTextureLocation: " << d->rgbaTextureLocation;
   });
 }
 
@@ -79,6 +93,11 @@ XYZShader::~XYZShader()
 //##################################################################################################
 void XYZShader::use(ShaderType shaderType)
 {
+  //https://webglfundamentals.org/webgl/lessons/webgl-and-alpha.html
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, map()->writeAlpha());
+
   Shader::use(shaderType);
 }
 
@@ -105,7 +124,13 @@ void XYZShader::setMaterial(RenderInfo& renderInfo,
                               const ProcessedGeometry3D& processedGeometry3D)
 {
   TP_UNUSED(renderInfo);
-  TP_UNUSED(processedGeometry3D);
+
+  const auto& material = processedGeometry3D.alternativeMaterial->material;
+  glUniformMatrix3fv(d->uvMatrixLocation, 1, GL_FALSE, glm::value_ptr(material.uvMatrix()));
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, processedGeometry3D.alternativeMaterial->rgbaTextureID);
+  glUniform1i(d->rgbaTextureLocation, 0);
 }
 
 //##################################################################################################
