@@ -8,7 +8,7 @@ namespace tp_maps
 
 //##################################################################################################
 //! A shader that blits the input buffer to the output.
-class TP_MAPS_SHARED_EXPORT PostBlitShader: public PostShader
+class TP_MAPS_EXPORT PostBlitShader: public PostShader
 {
   friend class Map;
 public:

@@ -15,7 +15,7 @@ namespace tp_maps
 
 //##################################################################################################
 //! A shader for drawing textured surfaces.
-class TP_MAPS_SHARED_EXPORT MaterialShader: public Geometry3DShader
+class TP_MAPS_EXPORT MaterialShader: public Geometry3DShader
 {
 public:
   //################################################################################################

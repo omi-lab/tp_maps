@@ -8,7 +8,7 @@ namespace tp_maps
 
 //##################################################################################################
 //! A shader to render sky spheres.
-class TP_MAPS_SHARED_EXPORT BackgroundShader: public FullScreenShader
+class TP_MAPS_EXPORT BackgroundShader: public FullScreenShader
 {
   friend class Map;
 public:

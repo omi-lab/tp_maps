@@ -7,7 +7,7 @@ namespace tp_maps
 {
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT PostSSRLayer: public PostLayer
+class TP_MAPS_EXPORT PostSSRLayer: public PostLayer
 {
 public:
   //################################################################################################

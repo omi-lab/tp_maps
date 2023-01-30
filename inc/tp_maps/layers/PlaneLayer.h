@@ -15,7 +15,7 @@ namespace tp_maps
 {
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT PlaneLayer: public LinesLayer
+class TP_MAPS_EXPORT PlaneLayer: public LinesLayer
 {
 public:
   //################################################################################################

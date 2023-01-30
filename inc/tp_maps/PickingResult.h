@@ -10,7 +10,7 @@ class RenderInfo;
 class Layer;
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT PickingResult
+class TP_MAPS_EXPORT PickingResult
 {
   TP_NONCOPYABLE(PickingResult);
 public:

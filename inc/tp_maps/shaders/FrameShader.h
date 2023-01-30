@@ -12,7 +12,7 @@ namespace tp_maps
 
 //##################################################################################################
 //! A shader for drawing 9 patch style images with stretchable parts.
-class TP_MAPS_SHARED_EXPORT FrameShader: public Shader
+class TP_MAPS_EXPORT FrameShader: public Shader
 {
   friend class Map;
 public:

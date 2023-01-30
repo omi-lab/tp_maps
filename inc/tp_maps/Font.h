@@ -14,7 +14,7 @@ class PreparedString;
 
 //##################################################################################################
 //! Details of a single character as produced by the Font.
-struct TP_MAPS_SHARED_EXPORT Glyph
+struct TP_MAPS_EXPORT Glyph
 {
   int w{0};
   int h{0};
@@ -37,7 +37,7 @@ struct TP_MAPS_SHARED_EXPORT Glyph
 
 //##################################################################################################
 //! Details of a character in a string.
-struct TP_MAPS_SHARED_EXPORT GlyphGeometry
+struct TP_MAPS_EXPORT GlyphGeometry
 {
   // Coordinate sysatem
   // 1
@@ -59,7 +59,7 @@ struct TP_MAPS_SHARED_EXPORT GlyphGeometry
 
 //##################################################################################################
 //! Geometry details of a string of characters.
-struct TP_MAPS_SHARED_EXPORT FontGeometry
+struct TP_MAPS_EXPORT FontGeometry
 {
   // Coordinate sysatem
   // 1
@@ -89,7 +89,7 @@ struct TP_MAPS_SHARED_EXPORT FontGeometry
 Subclasses of Font are responsible for generating glyphs for a font, the FontRenderer subclasses
 take these glyphs a
 */
-class TP_MAPS_SHARED_EXPORT Font
+class TP_MAPS_EXPORT Font
 {
   friend class PreparedString;
   TP_NONCOPYABLE(Font);

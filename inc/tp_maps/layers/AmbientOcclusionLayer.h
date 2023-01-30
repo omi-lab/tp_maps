@@ -9,7 +9,7 @@ namespace tp_maps
 {
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT AmbientOcclusionLayer: public PostLayer
+class TP_MAPS_EXPORT AmbientOcclusionLayer: public PostLayer
 {
 public:
   //################################################################################################

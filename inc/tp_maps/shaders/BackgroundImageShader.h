@@ -8,7 +8,7 @@ namespace tp_maps
 
 //##################################################################################################
 //! A shader to render images in the background.
-class TP_MAPS_SHARED_EXPORT BackgroundImageShader: public FullScreenShader
+class TP_MAPS_EXPORT BackgroundImageShader: public FullScreenShader
 {
   friend class Map;
 public:

@@ -11,7 +11,7 @@ class FontRenderer;
 struct FontGeometry;
 
 //##################################################################################################
-struct TP_MAPS_SHARED_EXPORT PreparedStringConfig
+struct TP_MAPS_EXPORT PreparedStringConfig
 {
   bool topDown{false};
 
@@ -23,7 +23,7 @@ struct TP_MAPS_SHARED_EXPORT PreparedStringConfig
 };
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT PreparedString
+class TP_MAPS_EXPORT PreparedString
 {
 public:
   TP_NONCOPYABLE(PreparedString);

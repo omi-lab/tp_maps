@@ -8,7 +8,7 @@ namespace tp_maps
 
 //##################################################################################################
 //! Draw a grid as 2D overlay.
-class TP_MAPS_SHARED_EXPORT PostGrid2DShader: public PostShader
+class TP_MAPS_EXPORT PostGrid2DShader: public PostShader
 {
   friend class Map;
 public:

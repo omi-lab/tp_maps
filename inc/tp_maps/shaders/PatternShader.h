@@ -8,7 +8,7 @@ namespace tp_maps
 
 //##################################################################################################
 //! A shader for Screen Space Ambient Occlusion.
-class TP_MAPS_SHARED_EXPORT PatternShader: public FullScreenShader
+class TP_MAPS_EXPORT PatternShader: public FullScreenShader
 {
   friend class Map;
 public:

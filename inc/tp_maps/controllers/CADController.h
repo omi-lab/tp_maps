@@ -35,7 +35,7 @@ std::string cadControllerModeToString(CADControllerMode mode);
 CADControllerMode cadControllerModeFromString(const std::string& mode);
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT CADController : public Controller
+class TP_MAPS_EXPORT CADController : public Controller
 {
 public:
   //################################################################################################

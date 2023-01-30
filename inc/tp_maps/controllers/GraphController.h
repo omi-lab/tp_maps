@@ -7,7 +7,7 @@ namespace tp_maps
 {
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT GraphController : public Controller
+class TP_MAPS_EXPORT GraphController : public Controller
 {
 public:
   //################################################################################################

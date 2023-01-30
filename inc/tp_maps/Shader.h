@@ -22,7 +22,7 @@ struct ShaderDetails
 /*!
 This allows the map to cache shaders.
 */
-class TP_MAPS_SHARED_EXPORT Shader
+class TP_MAPS_EXPORT Shader
 {
   TP_NONCOPYABLE(Shader);
   friend class Map;

@@ -8,7 +8,7 @@ namespace tp_maps
 class Map;
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT Errors
+class TP_MAPS_EXPORT Errors
 {
   TP_NONCOPYABLE(Errors);
 public:

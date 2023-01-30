@@ -7,7 +7,7 @@ namespace tp_maps
 {
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT PostGammaLayer: public PostLayer
+class TP_MAPS_EXPORT PostGammaLayer: public PostLayer
 {
 public:
   //################################################################################################

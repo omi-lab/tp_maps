@@ -14,7 +14,7 @@ class RenderInfo;
 
 //##################################################################################################
 //! The base class for shaders drawing normal 3D geometry.
-class TP_MAPS_SHARED_EXPORT Geometry3DShader: public Shader
+class TP_MAPS_EXPORT Geometry3DShader: public Shader
 {
 public:
   //################################################################################################

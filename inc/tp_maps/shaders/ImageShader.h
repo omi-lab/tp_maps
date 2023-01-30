@@ -8,7 +8,7 @@ namespace tp_maps
 
 //##################################################################################################
 //! A shader for drawing images.
-class TP_MAPS_SHARED_EXPORT ImageShader: public Geometry3DShader
+class TP_MAPS_EXPORT ImageShader: public Geometry3DShader
 {
   friend class Map;
 public:
@@ -79,7 +79,7 @@ private:
 
 //##################################################################################################
 //! Used to textures with multiple levels (3D textures).
-class TP_MAPS_SHARED_EXPORT Image3DShader: public ImageShader
+class TP_MAPS_EXPORT Image3DShader: public ImageShader
 {
 public:
   //################################################################################################

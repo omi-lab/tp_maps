@@ -27,7 +27,7 @@ enum class Button : size_t
 };
 
 //##################################################################################################
-struct TP_MAPS_SHARED_EXPORT MouseEvent
+struct TP_MAPS_EXPORT MouseEvent
 {
   //! The type of this mouse event.
   MouseEventType type{MouseEventType::Press};

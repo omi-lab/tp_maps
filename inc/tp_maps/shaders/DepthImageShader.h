@@ -17,7 +17,7 @@ values of a mesh use DepthShader instead.
 This linearizes the depth values to make them easier to visualize. This shader is kind of broke as
 it does not pass the near/far planes in.
 */
-class TP_MAPS_SHARED_EXPORT DepthImageShader: public ImageShader
+class TP_MAPS_EXPORT DepthImageShader: public ImageShader
 {
 public:
   //################################################################################################
@@ -29,7 +29,7 @@ public:
 
 //##################################################################################################
 //! A shader for rendering depth buffers.
-class TP_MAPS_SHARED_EXPORT DepthImage3DShader: public ImageShader
+class TP_MAPS_EXPORT DepthImage3DShader: public ImageShader
 {
 public:
   //################################################################################################

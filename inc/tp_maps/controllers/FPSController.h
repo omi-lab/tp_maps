@@ -7,7 +7,7 @@ namespace tp_maps
 {
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT FPSController : public Controller
+class TP_MAPS_EXPORT FPSController : public Controller
 {
 public:
   //################################################################################################

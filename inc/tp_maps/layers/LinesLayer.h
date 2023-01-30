@@ -13,7 +13,7 @@ class LinesLayer;
 class Texture;
 
 //##################################################################################################
-struct TP_MAPS_SHARED_EXPORT Lines
+struct TP_MAPS_EXPORT Lines
 {
   std::vector<glm::vec3> lines;
   glm::vec4 color{1.0f, 0.0f, 0.0f, 1.0f};
@@ -21,7 +21,7 @@ struct TP_MAPS_SHARED_EXPORT Lines
 };
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT LinesLayer: public Layer
+class TP_MAPS_EXPORT LinesLayer: public Layer
 {
 public:
   //################################################################################################

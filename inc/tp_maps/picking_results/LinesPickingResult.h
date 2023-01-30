@@ -10,7 +10,7 @@ namespace tp_maps
 class LinesLayer;
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT LinesPickingResult: public PickingResult
+class TP_MAPS_EXPORT LinesPickingResult: public PickingResult
 {
 public:
   //################################################################################################

@@ -13,7 +13,7 @@ namespace tp_maps
 
 //##################################################################################################
 //! A shader for drawing point sprites.
-class TP_MAPS_SHARED_EXPORT PointSpriteShader: public Shader
+class TP_MAPS_EXPORT PointSpriteShader: public Shader
 {
 public:
   //################################################################################################

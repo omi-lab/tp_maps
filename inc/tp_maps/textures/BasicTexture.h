@@ -12,7 +12,7 @@ namespace tp_maps
 {
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT BasicTexture : public Texture
+class TP_MAPS_EXPORT BasicTexture : public Texture
 {
   TP_REF_COUNT_OBJECTS("BasicTexture");
 public:

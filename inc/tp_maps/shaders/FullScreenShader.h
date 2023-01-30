@@ -8,7 +8,7 @@ namespace tp_maps
 
 //##################################################################################################
 //! The base class for post processing shaders.
-class TP_MAPS_SHARED_EXPORT FullScreenShader: public Shader
+class TP_MAPS_EXPORT FullScreenShader: public Shader
 {
 public:
   //################################################################################################

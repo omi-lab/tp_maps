@@ -33,7 +33,7 @@ class PostSSAOShaderPrivate
 
 //##################################################################################################
 //! A shader for Screen Space Ambient Occlusion.
-class TP_MAPS_SHARED_EXPORT PostSSAOShader: detail::PostSSAOShaderPrivate, public PostShader
+class TP_MAPS_EXPORT PostSSAOShader: detail::PostSSAOShaderPrivate, public PostShader
 {
   friend class Map;
 public:

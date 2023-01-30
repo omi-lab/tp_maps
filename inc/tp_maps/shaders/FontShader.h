@@ -11,7 +11,7 @@ namespace tp_maps
 
 //##################################################################################################
 //! A shader for rendering fonts.
-class TP_MAPS_SHARED_EXPORT FontShader: public Shader
+class TP_MAPS_EXPORT FontShader: public Shader
 {
 public:
   //################################################################################################

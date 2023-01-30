@@ -40,7 +40,7 @@ class Buffers;
 class PostLayer;
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT Map
+class TP_MAPS_EXPORT Map
 {
   friend class Layer;
   friend class Controller;

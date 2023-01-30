@@ -8,7 +8,7 @@ namespace tp_maps
 
 //##################################################################################################
 //! Applies gamma correction
-class TP_MAPS_SHARED_EXPORT PostGammaShader: public PostShader
+class TP_MAPS_EXPORT PostGammaShader: public PostShader
 {
   friend class Map;
 public:

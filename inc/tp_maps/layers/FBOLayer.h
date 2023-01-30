@@ -50,7 +50,7 @@ std::vector<std::string> fboLayerSources();
 Various FBOs are used internally to generate various effects including reflection and shadows. This
 Layer allows you to present the contents of these FBOs on screen to aid in debugging.
 */
-class TP_MAPS_SHARED_EXPORT FBOLayer: public Layer
+class TP_MAPS_EXPORT FBOLayer: public Layer
 {
   TP_REF_COUNT_OBJECTS("FBOLayer");
 public:

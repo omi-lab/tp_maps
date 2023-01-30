@@ -11,7 +11,7 @@ namespace tp_maps
 /*!
 This is for rendering the depth of a mesh to the color buffer.
 */
-class TP_MAPS_SHARED_EXPORT DepthShader: public ImageShader
+class TP_MAPS_EXPORT DepthShader: public ImageShader
 {
 public:
   //################################################################################################

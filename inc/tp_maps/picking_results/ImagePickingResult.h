@@ -10,7 +10,7 @@ class RenderInfo;
 class ImageLayer;
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT ImagePickingResult: public PickingResult
+class TP_MAPS_EXPORT ImagePickingResult: public PickingResult
 {
 public:
   //################################################################################################

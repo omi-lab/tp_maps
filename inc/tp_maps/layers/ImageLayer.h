@@ -11,7 +11,7 @@ class Texture;
 class ImageShader;
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT ImageLayer: public Layer
+class TP_MAPS_EXPORT ImageLayer: public Layer
 {
   TP_REF_COUNT_OBJECTS("ImageLayer");
 public:

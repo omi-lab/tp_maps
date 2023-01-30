@@ -22,7 +22,7 @@ class DownsampleShaderPrivate
 
 //##################################################################################################
 //! Draw outlines around a mask rendered to the previous FBO.
-class TP_MAPS_SHARED_EXPORT DownsampleShader: detail::DownsampleShaderPrivate, public PostShader
+class TP_MAPS_EXPORT DownsampleShader: detail::DownsampleShaderPrivate, public PostShader
 {
   friend class Map;
 public:

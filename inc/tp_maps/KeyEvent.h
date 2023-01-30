@@ -14,7 +14,7 @@ enum class KeyEventType
 };
 
 //##################################################################################################
-struct TP_MAPS_SHARED_EXPORT KeyEvent
+struct TP_MAPS_EXPORT KeyEvent
 {
   //! The type of this key event.
   KeyEventType type{KeyEventType::Press};
@@ -33,7 +33,7 @@ struct TP_MAPS_SHARED_EXPORT KeyEvent
 
 //##################################################################################################
 //! Used for the current state of editing.
-struct TP_MAPS_SHARED_EXPORT TextEditingEvent
+struct TP_MAPS_EXPORT TextEditingEvent
 {
   std::string text;      //!< The text being edited.
   int cursor{0};         //!< The current cursor position or start of selection.
@@ -42,7 +42,7 @@ struct TP_MAPS_SHARED_EXPORT TextEditingEvent
 
 //##################################################################################################
 //! Used for new text received from the user.
-struct TP_MAPS_SHARED_EXPORT TextInputEvent
+struct TP_MAPS_EXPORT TextInputEvent
 {
   std::string text;
 };

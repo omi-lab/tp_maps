@@ -8,7 +8,7 @@ namespace tp_maps
 
 //##################################################################################################
 //! A shader for drawing images.
-class TP_MAPS_SHARED_EXPORT XYZShader: public Geometry3DShader
+class TP_MAPS_EXPORT XYZShader: public Geometry3DShader
 {
   friend class Map;
 public:

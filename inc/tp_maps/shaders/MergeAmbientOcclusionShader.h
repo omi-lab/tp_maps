@@ -23,7 +23,7 @@ class MergeAmbientOcclusionShaderPrivate
 
 //##################################################################################################
 //! Draw outlines around a mask rendered to the previous FBO.
-class TP_MAPS_SHARED_EXPORT MergeAmbientOcclusionShader: detail::MergeAmbientOcclusionShaderPrivate, public PostShader
+class TP_MAPS_EXPORT MergeAmbientOcclusionShader: detail::MergeAmbientOcclusionShaderPrivate, public PostShader
 {
   friend class Map;
 public:

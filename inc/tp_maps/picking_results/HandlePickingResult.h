@@ -8,7 +8,7 @@ namespace tp_maps
 class HandleDetails;
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT HandlePickingResult: public PickingResult
+class TP_MAPS_EXPORT HandlePickingResult: public PickingResult
 {
 public:
   //################################################################################################

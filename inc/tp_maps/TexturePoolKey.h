@@ -8,7 +8,7 @@
 namespace tp_maps
 {
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT TexturePoolKeyBase
+class TP_MAPS_EXPORT TexturePoolKeyBase
 {
 public:
   tp_utils::StringID rName;
@@ -26,7 +26,7 @@ public:
 };
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT TexturePoolKey : private TexturePoolKeyBase
+class TP_MAPS_EXPORT TexturePoolKey : private TexturePoolKeyBase
 {
   friend bool operator==(const TexturePoolKey& a, const TexturePoolKey& b);
   friend bool operator!=(const TexturePoolKey& a, const TexturePoolKey& b);

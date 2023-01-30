@@ -12,7 +12,7 @@ namespace tp_maps
 
 //##################################################################################################
 //! A shader for drawing lines.
-class TP_MAPS_SHARED_EXPORT LineShader: public Shader
+class TP_MAPS_EXPORT LineShader: public Shader
 {
 public:
   //################################################################################################

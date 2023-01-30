@@ -9,7 +9,7 @@ namespace tp_maps
 {
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT GeometryLayer: public Layer
+class TP_MAPS_EXPORT GeometryLayer: public Layer
 {
 public:
   //################################################################################################

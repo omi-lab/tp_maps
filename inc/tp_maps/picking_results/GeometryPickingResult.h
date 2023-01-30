@@ -9,7 +9,7 @@ struct PickingDetails;
 class RenderInfo;
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT GeometryPickingResult: public PickingResult
+class TP_MAPS_EXPORT GeometryPickingResult: public PickingResult
 {
 public:
   //################################################################################################

@@ -36,7 +36,7 @@ class DepthOfFieldBlurShaderPrivate
 
 //##################################################################################################
 //! Draw outlines around a mask rendered to the previous FBO.
-class TP_MAPS_SHARED_EXPORT DepthOfFieldBlurShader:
+class TP_MAPS_EXPORT DepthOfFieldBlurShader:
     detail::DepthOfFieldBlurShaderPrivate,
     public PostShader
 {

@@ -11,7 +11,7 @@ namespace tp_maps
 class FontRenderer;
 //##################################################################################################
 //! Draws objects at the light positions.
-class TP_MAPS_SHARED_EXPORT LightsLayer: public Layer
+class TP_MAPS_EXPORT LightsLayer: public Layer
 {
   TP_REF_COUNT_OBJECTS("LightsLayer");
 public:

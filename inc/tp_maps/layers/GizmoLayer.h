@@ -16,7 +16,7 @@ enum class RotationRingStyle
 };
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT GizmoLayer: public Layer
+class TP_MAPS_EXPORT GizmoLayer: public Layer
 {
   friend class HandleDetails;
 public:

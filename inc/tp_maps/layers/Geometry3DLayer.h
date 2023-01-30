@@ -18,7 +18,7 @@ class TexturePool;
 class Geometry3DPool;
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT Geometry3DLayer: public Layer
+class TP_MAPS_EXPORT Geometry3DLayer: public Layer
 {
   TP_REF_COUNT_OBJECTS("Geometry3DLayer");
 public:

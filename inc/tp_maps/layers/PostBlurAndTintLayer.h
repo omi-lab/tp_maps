@@ -7,7 +7,7 @@ namespace tp_maps
 {
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT PostBlurAndTintLayer: public PostLayer
+class TP_MAPS_EXPORT PostBlurAndTintLayer: public PostLayer
 {
 public:
   //################################################################################################

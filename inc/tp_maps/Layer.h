@@ -30,7 +30,7 @@ struct TextInputEvent;
 Layers are the main way of interacting with the map. They can be used to draw in it, and receive
 user events.
 */
-class TP_MAPS_SHARED_EXPORT Layer
+class TP_MAPS_EXPORT Layer
 {
   friend class Map;
   TP_NONCOPYABLE(Layer);

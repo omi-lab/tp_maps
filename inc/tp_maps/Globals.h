@@ -10,9 +10,9 @@
 #include <unordered_map>
 
 #if defined(TP_MAPS_LIBRARY)
-#  define TP_MAPS_SHARED_EXPORT TP_EXPORT
+#  define TP_MAPS_EXPORT TP_EXPORT
 #else
-#  define TP_MAPS_SHARED_EXPORT TP_IMPORT
+#  define TP_MAPS_EXPORT TP_IMPORT
 #endif
 
 #ifdef TP_GLES2 //----------------------------------------------------------------------------------
@@ -471,7 +471,7 @@ std::string replaceLight(const std::string& lightIndex, const std::string& level
 std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfile, ShaderType shaderType);
 
 //##################################################################################################
-struct TP_MAPS_SHARED_EXPORT ShaderString
+struct TP_MAPS_EXPORT ShaderString
 {
   TP_NONCOPYABLE(ShaderString);
   ShaderString(const char* text);
@@ -483,7 +483,7 @@ private:
 };
 
 //##################################################################################################
-struct TP_MAPS_SHARED_EXPORT ShaderResource
+struct TP_MAPS_EXPORT ShaderResource
 {
   TP_NONCOPYABLE(ShaderResource);
   ShaderResource(const std::string& resourceName);

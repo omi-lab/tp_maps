@@ -23,7 +23,7 @@ class AmbientOcclusionShaderPrivate
 
 //##################################################################################################
 //! A shader for Screen Space Ambient Occlusion.
-class TP_MAPS_SHARED_EXPORT AmbientOcclusionShader: detail::AmbientOcclusionShaderPrivate, public PostShader
+class TP_MAPS_EXPORT AmbientOcclusionShader: detail::AmbientOcclusionShaderPrivate, public PostShader
 {
   friend class Map;
 public:

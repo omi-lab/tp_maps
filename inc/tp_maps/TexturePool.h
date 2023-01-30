@@ -19,7 +19,7 @@ class Layer;
 class TexturePoolKey;
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT TexturePool
+class TP_MAPS_EXPORT TexturePool
 {
 public:
   //################################################################################################

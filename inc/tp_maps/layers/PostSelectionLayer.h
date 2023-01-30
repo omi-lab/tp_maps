@@ -8,7 +8,7 @@ namespace tp_maps
 
 //##################################################################################################
 //! Base class for layers that draw the current selection
-class TP_MAPS_SHARED_EXPORT PostSelectionLayer: public PostLayer
+class TP_MAPS_EXPORT PostSelectionLayer: public PostLayer
 {
 public:
   //################################################################################################

@@ -8,7 +8,7 @@ namespace tp_maps
 
 //##################################################################################################
 //! A shader for Screen Space Reflection.
-class TP_MAPS_SHARED_EXPORT PostSSRShader: public PostShader
+class TP_MAPS_EXPORT PostSSRShader: public PostShader
 {
   friend class Map;
 public:

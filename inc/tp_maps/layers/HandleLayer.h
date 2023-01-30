@@ -19,7 +19,7 @@ class HandleLayer;
 class Texture;
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT HandleDetails
+class TP_MAPS_EXPORT HandleDetails
 {
   TP_NONCOPYABLE(HandleDetails);
   friend class HandleLayer;
@@ -55,7 +55,7 @@ public:
 This layer allows the user to move handles on the x,y plane. The model matrix can be used to change
 the plane that the handles are moved on.
 */
-class TP_MAPS_SHARED_EXPORT HandleLayer: public Layer
+class TP_MAPS_EXPORT HandleLayer: public Layer
 {
   friend class HandleDetails;
 public:

@@ -16,7 +16,7 @@ Because tp_maps is platform agnostic it needs to delegate the task of loading im
 other part of the application. This class provides an abstract interface that is used bind a
 texture and provide a OpenGL texture ID.
 */
-class TP_MAPS_SHARED_EXPORT Texture
+class TP_MAPS_EXPORT Texture
 {
   TP_NONCOPYABLE(Texture);
   Map* m_map;

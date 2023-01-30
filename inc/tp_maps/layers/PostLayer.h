@@ -11,7 +11,7 @@ namespace tp_maps
 class PostShader;
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT PostLayer: public Layer
+class TP_MAPS_EXPORT PostLayer: public Layer
 {
   TP_REF_COUNT_OBJECTS("PostLayer");
   friend class Map;

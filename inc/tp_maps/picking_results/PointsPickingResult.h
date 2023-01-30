@@ -11,7 +11,7 @@ namespace tp_maps
 class PointsLayer;
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT PointsPickingResult: public PickingResult
+class TP_MAPS_EXPORT PointsPickingResult: public PickingResult
 {
 public:
   //################################################################################################

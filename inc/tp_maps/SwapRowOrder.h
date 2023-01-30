@@ -17,22 +17,22 @@ namespace tp_maps
 {
 
 //##################################################################################################
-void TP_MAPS_SHARED_EXPORT swapRowOrder(size_t width,
+void TP_MAPS_EXPORT swapRowOrder(size_t width,
                                         size_t height,
                                         tp_image_utils::ColorMap& image);
 
 //##################################################################################################
-void TP_MAPS_SHARED_EXPORT swapRowOrder(size_t width,
+void TP_MAPS_EXPORT swapRowOrder(size_t width,
                                         size_t height,
                                         TPPixel* pixels);
 
 //##################################################################################################
-void TP_MAPS_SHARED_EXPORT swapRowOrder(size_t width,
+void TP_MAPS_EXPORT swapRowOrder(size_t width,
                                         size_t height,
                                         tp_image_utils::ColorMapF& image);
 
 //##################################################################################################
-void TP_MAPS_SHARED_EXPORT swapRowOrder(size_t width,
+void TP_MAPS_EXPORT swapRowOrder(size_t width,
                                         size_t height,
                                         glm::vec4* pixels);
 

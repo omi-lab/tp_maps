@@ -8,7 +8,7 @@ namespace tp_maps
 
 //##################################################################################################
 //! Draw outlines around a mask rendered to the previous FBO.
-class TP_MAPS_SHARED_EXPORT PostBasicBlurShader: public PostShader
+class TP_MAPS_EXPORT PostBasicBlurShader: public PostShader
 {
   friend class Map;
 public:

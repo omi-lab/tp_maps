@@ -10,7 +10,7 @@ namespace tp_maps
 class TexturePool;
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT BackgroundLayer: public Layer
+class TP_MAPS_EXPORT BackgroundLayer: public Layer
 {
   TP_REF_COUNT_OBJECTS("BackgroundLayer");
 public:

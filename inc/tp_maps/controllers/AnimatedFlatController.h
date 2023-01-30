@@ -7,7 +7,7 @@ namespace tp_maps
 {
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT AnimatedFlatController : public FlatController
+class TP_MAPS_EXPORT AnimatedFlatController : public FlatController
 {
 public:
   //################################################################################################

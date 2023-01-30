@@ -20,7 +20,7 @@ struct FontGeometry;
 struct Glyph;
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT FontRenderer
+class TP_MAPS_EXPORT FontRenderer
 {
   friend class PreparedString;
   TP_NONCOPYABLE(FontRenderer);

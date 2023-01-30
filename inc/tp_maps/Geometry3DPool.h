@@ -31,7 +31,7 @@ struct ProcessedGeometry3D
 typedef std::function<void(const std::vector<ProcessedGeometry3D>&)> ProcessedGeometryCallback;
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT Geometry3DPool
+class TP_MAPS_EXPORT Geometry3DPool
 {
   TP_REF_COUNT_OBJECTS("Geometry3DPool");
   TP_NONCOPYABLE(Geometry3DPool);

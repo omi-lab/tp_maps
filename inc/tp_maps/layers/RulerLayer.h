@@ -8,7 +8,7 @@ namespace tp_maps
 class FontRenderer;
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT RulerLayer: public Layer
+class TP_MAPS_EXPORT RulerLayer: public Layer
 {
 public:
   //################################################################################################

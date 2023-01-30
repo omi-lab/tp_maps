@@ -14,7 +14,7 @@ namespace tp_maps
 {
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT PostDoFLayer: public PostLayer
+class TP_MAPS_EXPORT PostDoFLayer: public PostLayer
 {
 public:
   //################################################################################################

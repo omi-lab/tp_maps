@@ -27,7 +27,7 @@ event. There are subclasses of PickingResult for different types of layer.
 typedef std::function<PickingResult*(const PickingResult& result)> PickingCallback;
 
 //##################################################################################################
-struct TP_MAPS_SHARED_EXPORT PickingDetails
+struct TP_MAPS_EXPORT PickingDetails
 {
   //! Should be >=0 and <count
   size_t index;
@@ -48,7 +48,7 @@ struct TP_MAPS_SHARED_EXPORT PickingDetails
 };
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT RenderInfo
+class TP_MAPS_EXPORT RenderInfo
 {
 public:
 

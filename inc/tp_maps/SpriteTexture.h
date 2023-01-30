@@ -14,7 +14,7 @@ namespace tp_maps
 class Texture;
 
 //##################################################################################################
-struct TP_MAPS_SHARED_EXPORT SpriteCoords
+struct TP_MAPS_EXPORT SpriteCoords
 {
   std::array<glm::vec2, 4> coords;
 

@@ -7,7 +7,7 @@ namespace tp_maps
 {
 
 //##################################################################################################
-class TP_MAPS_SHARED_EXPORT FrustumLayer: public Layer
+class TP_MAPS_EXPORT FrustumLayer: public Layer
 {
 public:
   //################################################################################################
