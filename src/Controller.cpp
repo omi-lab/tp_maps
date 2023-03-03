@@ -49,6 +49,12 @@ Matrices Controller::matrices(const tp_utils::StringID& coordinateSystem) const
 }
 
 //##################################################################################################
+bool Controller::hasMatrices(const tp_utils::StringID& coordinateSystem) const
+{
+  return tpContainsKey(d->matrices, coordinateSystem);
+}
+
+//##################################################################################################
 void Controller::setCurrentLight(const tp_math_utils::Light& light, size_t level)
 {
   d->currentLight = light;

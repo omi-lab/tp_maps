@@ -56,6 +56,9 @@ public:
   Matrices matrices(const tp_utils::StringID& coordinateSystem) const;
 
   //################################################################################################
+  bool hasMatrices(const tp_utils::StringID& coordinateSystem) const;
+
+  //################################################################################################
   //! Sets the light that is currently being rendered in the LightFBOs pass.
   void setCurrentLight(const tp_math_utils::Light& light, size_t level);
 
