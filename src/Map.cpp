@@ -33,7 +33,7 @@
 // #define TP_BLIT_WITH_SHADER
 
 #ifdef TP_MAPS_DEBUG
-#  define DEBUG_printOpenGLError(A) Errors::printOpenGLError(A)
+#  define DEBUG_printOpenGLError(A) if(auto e=glGetError(); e!=GL_NO_ERROR)Errors::printOpenGLError((A), e)
 #else
 #  define DEBUG_printOpenGLError(A) do{}while(false)
 #endif

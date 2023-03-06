@@ -29,6 +29,9 @@ public:
   static void printOpenGLError(const std::string& description);
 
   //################################################################################################
+  static void printOpenGLError(const std::string& description, GLenum error);
+
+  //################################################################################################
   //! Prints error and returns true if there is an FBO error detected.
   static bool printFBOError(FBO& buffer, const std::string& description);
 

@@ -123,7 +123,6 @@ struct RulerLayer::Private
 
     shader->use();
     shader->setMatrix(matrix);
-    shader->setLineWidth(1.0f);
 
     q->map()->controller()->enableScissor(q->coordinateSystem());
     for(const LinesDetails_lt& line : processedGeometry)

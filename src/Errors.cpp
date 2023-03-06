@@ -125,21 +125,23 @@ void Errors::initializeGL()
 //##################################################################################################
 void Errors::printOpenGLError(const std::string& description)
 {
-  GLenum error = glGetError();
+  if(GLenum error = glGetError(); error != GL_NO_ERROR)
+    printOpenGLError(description, error);
+}
 
-  if(error != GL_NO_ERROR)
+//##################################################################################################
+void Errors::printOpenGLError(const std::string& description, GLenum error)
+{
+  std::string errorString;
+  switch(error)
   {
-    std::string errorString;
-    switch(error)
-    {
-    case GL_INVALID_ENUM      : errorString = "GL_INVALID_ENUM"      ; break;
-    case GL_INVALID_VALUE     : errorString = "GL_INVALID_VALUE"     ; break;
-    case GL_INVALID_OPERATION : errorString = "GL_INVALID_OPERATION" ; break;
-    case GL_OUT_OF_MEMORY     : errorString = "GL_OUT_OF_MEMORY"     ; break;
-    default: break;
-    }
-    tpWarning() << description << " OpenGL Error: " << errorString << "(" << error << ")";
+  case GL_INVALID_ENUM      : errorString = "GL_INVALID_ENUM"      ; break;
+  case GL_INVALID_VALUE     : errorString = "GL_INVALID_VALUE"     ; break;
+  case GL_INVALID_OPERATION : errorString = "GL_INVALID_OPERATION" ; break;
+  case GL_OUT_OF_MEMORY     : errorString = "GL_OUT_OF_MEMORY"     ; break;
+  default: break;
   }
+  tpWarning() << description << " OpenGL Error: " << errorString << "(" << error << ")";
 }
 
 //##################################################################################################

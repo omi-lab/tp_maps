@@ -242,7 +242,6 @@ void FrustumLayer::render(RenderInfo& renderInfo)
 
   shader->use();
   shader->setMatrix(map()->controller()->matrix(coordinateSystem()));
-  shader->setLineWidth(1.0f);
 
   if(renderInfo.pass==RenderPass::Picking)
   {
