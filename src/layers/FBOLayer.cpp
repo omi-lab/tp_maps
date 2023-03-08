@@ -161,8 +161,12 @@ nlohmann::json FBOLayer::saveState() const
 void FBOLayer::loadState(const nlohmann::json& j)
 {
   d->windows.clear();
-  for(const auto& jj : TPJSONArray(j, "windows"))
-    d->windows.emplace_back().loadState(jj);
+  if(const auto i=j.find("windows"); i!=j.end() && i->is_array())
+  {
+    d->windows.reserve(i->size());
+    for(const auto& jj : *i)
+      d->windows.emplace_back().loadState(jj);
+  }
 }
 
 //##################################################################################################

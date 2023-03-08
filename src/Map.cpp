@@ -120,6 +120,10 @@ struct Map::Private
   FullScreenShader::Object* rectangleObject{nullptr};
 #endif
 
+  double previousAnimateTimestamp{0.0};
+  double timeSincePreviousAnimate{0.0};
+
+
   bool initialized{false};
   bool preDeleteCalled{false};
 
@@ -303,6 +307,9 @@ RenderInfo& Map::renderInfo()
 //##################################################################################################
 void Map::animate(double timestampMS)
 {
+  d->timeSincePreviousAnimate = timestampMS - d->previousAnimateTimestamp;
+  d->previousAnimateTimestamp = timestampMS;
+
   d->controller->animate(timestampMS);
 
   for(auto l : d->layers)
@@ -312,6 +319,12 @@ void Map::animate(double timestampMS)
     update(RenderFromStage::RenderMoreLights);
 
   animateCallbacks(timestampMS);
+}
+
+//##################################################################################################
+double Map::timeSincePreviousAnimate() const
+{
+  return d->timeSincePreviousAnimate;
 }
 
 namespace
