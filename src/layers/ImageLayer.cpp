@@ -129,6 +129,12 @@ void ImageLayer::bindTextureInNextRender()
 }
 
 //##################################################################################################
+glm::mat4 ImageLayer::calculateMatrix() const
+{
+  return map()->controller()->matrix(coordinateSystem()) * modelToWorldMatrix();
+}
+
+//##################################################################################################
 void ImageLayer::render(RenderInfo& renderInfo)
 {
   if(!d->texture->imageReady())
@@ -187,7 +193,7 @@ void ImageLayer::render(RenderInfo& renderInfo)
   }
 
   shader->use();
-  shader->setMatrix(map()->controller()->matrix(coordinateSystem()));
+  shader->setMatrix(calculateMatrix());
   shader->setTexture(d->textureID);
 
   map()->controller()->enableScissor(coordinateSystem());
