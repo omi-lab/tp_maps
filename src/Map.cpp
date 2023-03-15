@@ -123,8 +123,6 @@ struct Map::Private
   double previousAnimateTimestamp{0.0};
   double timeSincePreviousAnimate{0.0};
 
-  double previousPendingCheckTimestamp{0.0};
-
   bool initialized{false};
   bool preDeleteCalled{false};
 
@@ -326,18 +324,6 @@ void Map::animate(double timestampMS)
 double Map::timeSincePreviousAnimate() const
 {
   return d->timeSincePreviousAnimate;
-}
-
-//##################################################################################################
-double Map::previousPendingCheckTimestamp() const
-{
-  return d->previousPendingCheckTimestamp;
-}
-
-//##################################################################################################
-void Map::setPreviousPendingCheckTimestamp( double epochTimestampMillis )
-{
-  d->previousPendingCheckTimestamp = epochTimestampMillis;
 }
 
 namespace

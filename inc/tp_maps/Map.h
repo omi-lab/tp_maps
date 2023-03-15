@@ -441,12 +441,6 @@ public:
   //################################################################################################
   double timeSincePreviousAnimate() const;
 
-  //################################################################################################
-  double previousPendingCheckTimestamp() const;
-
-  //################################################################################################
-  void setPreviousPendingCheckTimestamp(double epochMillis);
-
 protected:
   //################################################################################################
   //! Used by make current to detect when we are in a paint event and to detect nested paint events.
