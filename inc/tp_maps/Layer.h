@@ -78,7 +78,7 @@ public:
   const glm::mat4& modelMatrix() const;
 
   //################################################################################################
-  void setModelMatrix(const glm::mat4& modelMatrix);
+  void setModelMatrix(const glm::mat4& modelMatrix, bool requestUpdate=true);
 
   //################################################################################################
   //! Returns a matrix that transforms from this models coordinate system to world coords.
