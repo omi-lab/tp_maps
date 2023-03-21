@@ -123,7 +123,6 @@ struct Map::Private
   double previousAnimateTimestamp{0.0};
   double timeSincePreviousAnimate{0.0};
 
-
   bool initialized{false};
   bool preDeleteCalled{false};
 

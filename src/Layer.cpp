@@ -68,10 +68,12 @@ const glm::mat4& Layer::modelMatrix() const
 }
 
 //##################################################################################################
-void Layer::setModelMatrix(const glm::mat4& modelMatrix)
+void Layer::setModelMatrix(const glm::mat4& modelMatrix, bool requestUpdate)
 {
   d->modelMatrix = modelMatrix;
-  update();
+
+  if(requestUpdate)
+    update();
 }
 
 //##################################################################################################
