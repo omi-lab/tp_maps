@@ -251,7 +251,7 @@ bool LightsLayer::mouseEvent(const tp_maps::MouseEvent& event)
   {
   case tp_maps::MouseEventType::Press: //-----------------------------------------------------------
   {
-    if(event.button != tp_maps::Button::LeftButton)
+    if(event.button != tp_maps::Button::LeftButton || event.modifiers != tp_maps::KeyboardModifier::None)
       return false;
 
     tp_maps::PickingResult* pickingResult = map()->performPicking("LightsLayer", event.pos);
