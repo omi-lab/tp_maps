@@ -126,7 +126,7 @@ void XYZShader::setMaterial(RenderInfo& renderInfo,
   TP_UNUSED(renderInfo);
 
   const auto& material = processedGeometry3D.alternativeMaterial->material;
-  glUniformMatrix3fv(d->uvMatrixLocation, 1, GL_FALSE, glm::value_ptr(material.uvMatrix()));
+  glUniformMatrix3fv(d->uvMatrixLocation, 1, GL_FALSE, glm::value_ptr(material.uvTransformation.uvMatrix()));
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, processedGeometry3D.alternativeMaterial->rgbaTextureID);

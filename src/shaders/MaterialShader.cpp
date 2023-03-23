@@ -668,7 +668,7 @@ void MaterialShader::setMaterial(const tp_math_utils::Material& material)
     glUniform1f(locations.    materialAlbedoValueLocation     , material.albedoValue          );
     glUniform1f(locations.    materialAlbedoFactorLocation    , material.albedoFactor         );
 
-    glUniformMatrix3fv(locations.uvMatrixLocation, 1, GL_FALSE, glm::value_ptr(material.uvMatrix()));
+    glUniformMatrix3fv(locations.uvMatrixLocation, 1, GL_FALSE, glm::value_ptr(material.uvTransformation.uvMatrix()));
   };
 
   if(d->shaderType == ShaderType::Render)
@@ -678,7 +678,7 @@ void MaterialShader::setMaterial(const tp_math_utils::Material& material)
     exec(d->renderHDRLocations);
 
   else if(d->shaderType == ShaderType::Light)
-    glUniformMatrix3fv(d->lightUVMatrixLocation, 1, GL_FALSE, glm::value_ptr(material.uvMatrix()));
+    glUniformMatrix3fv(d->lightUVMatrixLocation, 1, GL_FALSE, glm::value_ptr(material.uvTransformation.uvMatrix()));
 }
 
 //##################################################################################################
