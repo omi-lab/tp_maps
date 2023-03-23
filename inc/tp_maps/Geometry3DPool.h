@@ -19,6 +19,7 @@ struct ProcessedGeometry3D
   TP_REF_COUNT_OBJECTS("ProcessedGeometry3D");
   std::vector<std::pair<GLenum, MaterialShader::VertexBuffer*>> vertexBuffers;
   tp_math_utils::Material material;
+  glm::mat3 uvMatrix{1.0f};
 
   GLuint     rgbaTextureID{0}; //!< Albedo and alpha.
   GLuint  normalsTextureID{0}; //!< Normals.
@@ -74,6 +75,7 @@ public:
   void viewProcessedGeometry(const tp_utils::StringID& name,
                              Geometry3DShader* shader,
                              const tp_math_utils::AlternativeMaterials& alternativeMaterials,
+                             const std::vector<glm::mat3>& uvMatrices,
                              const ProcessedGeometryCallback& closure);
 
   //################################################################################################

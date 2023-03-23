@@ -391,6 +391,7 @@ void Geometry3DPool::invalidate(const tp_utils::StringID& name)
 void Geometry3DPool::viewProcessedGeometry(const tp_utils::StringID& name,
                                            Geometry3DShader* shader,
                                            const tp_math_utils::AlternativeMaterials& alternativeMaterials,
+                                           const std::vector<glm::mat3>& uvMatrices,
                                            const ProcessedGeometryCallback& closure)
 {
   TP_TIME_SCOPE("Geometry3DPool::viewProcessedGeometry");
@@ -407,13 +408,17 @@ void Geometry3DPool::viewProcessedGeometry(const tp_utils::StringID& name,
 
   if(!i->second.isOnlyMaterial)
   {
-    for(auto& mesh : i->second.processedGeometry)
+    for(size_t c=0; c<i->second.processedGeometry.size(); c++)
     {
+      auto& mesh = i->second.processedGeometry.at(c);
+
+      mesh.uvMatrix = (c<uvMatrices.size())?uvMatrices.at(c):glm::mat3(1.0f);
+
       mesh.alternativeMaterial = &mesh;
       auto itr = alternativeMaterials.find(mesh.material.name);
       if(itr != alternativeMaterials.end())
       {
-        viewProcessedGeometry(itr->second, shader, {}, [&](const auto& geometry)
+        viewProcessedGeometry(itr->second, shader, {}, {}, [&](const auto& geometry)
         {
           if(!geometry.empty())
             mesh.alternativeMaterial = &geometry.front();

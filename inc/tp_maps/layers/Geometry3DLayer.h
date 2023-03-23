@@ -73,6 +73,17 @@ public:
   //################################################################################################
   const std::unordered_map<tp_utils::StringID, tp_utils::StringID>& alternativeMaterials() const;
 
+  //################################################################################################
+  //! Aditional UV transformations that will be multiplied with the material UV transformation.
+  /*!
+  If available these will be mapped 1 per a geometry.
+  */
+  void setUVTransformations(const std::vector<tp_math_utils::UVTransformation>& uvTransformations);
+
+  //################################################################################################
+  const std::vector<tp_math_utils::UVTransformation>& uvTransformations() const;
+
+
 protected:
   //################################################################################################
   void render(RenderInfo& renderInfo) override;

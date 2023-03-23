@@ -35,6 +35,9 @@ struct Geometry3DLayer::Private
   ShaderSelection shaderSelection{ShaderSelection::Material};
   std::unordered_map<tp_utils::StringID, tp_utils::StringID> alternativeMaterials;
 
+  std::vector<tp_math_utils::UVTransformation> uvTransformations;
+  std::vector<glm::mat3> uvMatricies;
+
   //################################################################################################
   Private(Geometry3DLayer* q_, Geometry3DPool* geometry3DPool_):
     q(q_),
@@ -178,6 +181,22 @@ const std::unordered_map<tp_utils::StringID, tp_utils::StringID>& Geometry3DLaye
 }
 
 //##################################################################################################
+void Geometry3DLayer::setUVTransformations(const std::vector<tp_math_utils::UVTransformation>& uvTransformations)
+{
+  d->uvTransformations = uvTransformations;
+  d->uvMatricies.resize(d->uvTransformations.size());
+  for(size_t i=0; i<d->uvTransformations.size(); i++)
+    d->uvMatricies[i] = d->uvTransformations.at(i).uvMatrix();
+  update();
+}
+
+//##################################################################################################
+const std::vector<tp_math_utils::UVTransformation>& Geometry3DLayer::uvTransformations() const
+{
+  return d->uvTransformations;
+}
+
+//##################################################################################################
 void Geometry3DLayer::render(RenderInfo& renderInfo)
 {
   TP_TIME_SCOPE("Geometry3DLayer::render");
@@ -210,7 +229,11 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
 
   if(renderInfo.pass == RenderPass::Picking)
   {
-    d->geometry3DPool->viewProcessedGeometry(d->name, shader, d->alternativeMaterials, [&](const std::vector<ProcessedGeometry3D>& processedGeometry)
+    d->geometry3DPool->viewProcessedGeometry(d->name,
+                                             shader,
+                                             d->alternativeMaterials,
+                                             d->uvMatricies,
+                                             [&](const std::vector<ProcessedGeometry3D>& processedGeometry)
     {
       size_t iMax = processedGeometry.size();
       for(size_t i=0; i<iMax; i++)
@@ -229,7 +252,11 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
   }
   else
   {
-    d->geometry3DPool->viewProcessedGeometry(d->name, shader, d->alternativeMaterials, [&](const std::vector<ProcessedGeometry3D>& processedGeometry)
+    d->geometry3DPool->viewProcessedGeometry(d->name,
+                                             shader,
+                                             d->alternativeMaterials,
+                                             d->uvMatricies,
+                                             [&](const std::vector<ProcessedGeometry3D>& processedGeometry)
     {
       for(const auto& details : processedGeometry)
       {

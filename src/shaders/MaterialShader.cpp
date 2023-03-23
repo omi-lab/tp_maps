@@ -647,6 +647,12 @@ void MaterialShader::setMatrix(const glm::mat4& m, const glm::mat4& v, const glm
 //##################################################################################################
 void MaterialShader::setMaterial(const tp_math_utils::Material& material)
 {
+  setMaterial(material, material.uvTransformation.uvMatrix());
+}
+
+//##################################################################################################
+void MaterialShader::setMaterial(const tp_math_utils::Material& material, const glm::mat3& uvMatrix)
+{
   auto exec = [&](const UniformLocations_lt& locations)
   {
     glUniform1f (locations.    materialUseAmbientLocation, material.useAmbient                );
@@ -668,7 +674,7 @@ void MaterialShader::setMaterial(const tp_math_utils::Material& material)
     glUniform1f(locations.    materialAlbedoValueLocation     , material.albedoValue          );
     glUniform1f(locations.    materialAlbedoFactorLocation    , material.albedoFactor         );
 
-    glUniformMatrix3fv(locations.uvMatrixLocation, 1, GL_FALSE, glm::value_ptr(material.uvTransformation.uvMatrix()));
+    glUniformMatrix3fv(locations.uvMatrixLocation, 1, GL_FALSE, glm::value_ptr(uvMatrix));
   };
 
   if(d->shaderType == ShaderType::Render)
@@ -678,7 +684,7 @@ void MaterialShader::setMaterial(const tp_math_utils::Material& material)
     exec(d->renderHDRLocations);
 
   else if(d->shaderType == ShaderType::Light)
-    glUniformMatrix3fv(d->lightUVMatrixLocation, 1, GL_FALSE, glm::value_ptr(material.uvTransformation.uvMatrix()));
+    glUniformMatrix3fv(d->lightUVMatrixLocation, 1, GL_FALSE, glm::value_ptr(uvMatrix));
 }
 
 //##################################################################################################
@@ -779,7 +785,10 @@ void MaterialShader::init(RenderInfo& renderInfo,
 void MaterialShader::setMaterial(RenderInfo& renderInfo,
                                  const ProcessedGeometry3D& processedGeometry3D)
 {
-  setMaterial(processedGeometry3D.alternativeMaterial->material);
+  const auto& material = processedGeometry3D.alternativeMaterial->material;
+  glm::mat3 uvMatrix = processedGeometry3D.uvMatrix * material.uvTransformation.uvMatrix();
+
+  setMaterial(processedGeometry3D.alternativeMaterial->material, uvMatrix);
 
   setTextures(processedGeometry3D.alternativeMaterial->rgbaTextureID,
               processedGeometry3D.alternativeMaterial->normalsTextureID,

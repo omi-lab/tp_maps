@@ -120,13 +120,14 @@ void XYZShader::init(RenderInfo& renderInfo,
 }
 
 //##################################################################################################
-void XYZShader::setMaterial(RenderInfo& renderInfo,
-                              const ProcessedGeometry3D& processedGeometry3D)
+void XYZShader::setMaterial(RenderInfo& renderInfo, const ProcessedGeometry3D& processedGeometry3D)
 {
   TP_UNUSED(renderInfo);
 
   const auto& material = processedGeometry3D.alternativeMaterial->material;
-  glUniformMatrix3fv(d->uvMatrixLocation, 1, GL_FALSE, glm::value_ptr(material.uvTransformation.uvMatrix()));
+  glm::mat3 uvMatrix = processedGeometry3D.uvMatrix * material.uvTransformation.uvMatrix();
+
+  glUniformMatrix3fv(d->uvMatrixLocation, 1, GL_FALSE, glm::value_ptr(uvMatrix));
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, processedGeometry3D.alternativeMaterial->rgbaTextureID);

@@ -59,6 +59,9 @@ public:
   void setMaterial(const tp_math_utils::Material& material);
 
   //################################################################################################
+  void setMaterial(const tp_math_utils::Material& material, const glm::mat3& uvMatrix);
+
+  //################################################################################################
   /*!
   \param rgbaTextureID albedo and alpha texture.
   \param normalsTextureID normals texture.
