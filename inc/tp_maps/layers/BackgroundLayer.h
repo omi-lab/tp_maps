@@ -49,7 +49,8 @@ public:
   //! A rotation value between 0 and 1.
   void setRotationFactor(float rotationFactor);
 
-
+  //################################################################################################
+  void setSkyboxBlurRadius(size_t skyBoxBlurRadius);
 
   //################################################################################################
   float gridSpacing() const;
@@ -65,6 +66,9 @@ public:
 protected:
   //################################################################################################
   void render(RenderInfo& renderInfo) override;
+
+  //################################################################################################
+  void invalidateBuffers() override;
 
 private:
   struct Private;
