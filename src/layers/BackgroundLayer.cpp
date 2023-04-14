@@ -6,9 +6,6 @@
 #include "tp_maps/Controller.h"
 #include "tp_maps/TexturePool.h"
 
-#include "tp_image_utils/ToFloat.h"
-#include "tp_image_utils_functions/BlurColorMap.h"
-
 #include <vector>
 
 namespace tp_maps
@@ -27,10 +24,6 @@ struct BackgroundLayer::Private
 
   float gridSpacing{20.0f};
 
-  std::unordered_map< std::string, tp_utils::StringID > blurTextures;
-  size_t skyBoxBlurRadius;
-  std::string currentBlurTexture;
-
   std::function<glm::mat4()> flatMatrixCallback = []{return glm::mat4(1.0f);};
 
   //################################################################################################
@@ -38,42 +31,6 @@ struct BackgroundLayer::Private
     texturePool(texturePool_)
   {
 
-  }
-
-  void prepareBlurTextures()
-  {
-    if(skyBoxBlurRadius == 1)
-      return;
-
-    std::string blurredTextureName = textureName.toString() + "_blur_" + std::to_string(skyBoxBlurRadius);
-    currentBlurTexture = blurredTextureName;
-
-    if(blurTextures.find(blurredTextureName) == blurTextures.end())
-    {
-      texturePool->viewImage( textureName, [&](const tp_image_utils::ColorMap& colorMap)
-      {
-        tp_image_utils::ColorMapF imageF = tp_image_utils::toFloat(colorMap);
-
-        tp_image_utils_functions::blurColorMap(imageF, skyBoxBlurRadius);
-
-        tp_utils::StringID blurredTextureId = tp_utils::StringID(blurredTextureName);
-        texturePool->subscribe( blurredTextureId, tp_image_utils::fromFloat(imageF), false);
-
-        texturePool->setTextureWrapS(blurredTextureId, GL_REPEAT);
-        texturePool->setTextureWrapT(blurredTextureId, GL_REPEAT);
-
-        blurTextures[blurredTextureName] = blurredTextureId;
-      });
-    }
-  };
-
-  void deleteBlurTextures()
-  {
-    for(auto& blurTex : blurTextures) 
-      if(blurTex.second.isValid())
-        texturePool->unsubscribe(blurTex.second);
-    
-    blurTextures.clear();
   }
 };
 
@@ -111,8 +68,11 @@ const tp_utils::StringID& BackgroundLayer::textureName() const
 //##################################################################################################
 void BackgroundLayer::setTextureName(const tp_utils::StringID& textureName)
 {
-  d->textureName = textureName;
-  update();
+  if(d->textureName != textureName)
+  {
+    d->textureName = textureName;
+    update();
+  }
 }
 
 //##################################################################################################
@@ -146,16 +106,6 @@ void BackgroundLayer::setFlatMatrixCallback(const std::function<glm::mat4()>& fl
 {
   d->flatMatrixCallback = flatMatrixCallback;
   update();
-}
-
-//##################################################################################################
-void BackgroundLayer::setSkyboxBlurRadius( size_t skyBoxBlurRadius )
-{
-  if(d->mode == Mode::Flat)
-  {
-    d->skyBoxBlurRadius = skyBoxBlurRadius;
-    update();
-  }
 }
 
 //##################################################################################################
@@ -208,18 +158,7 @@ void BackgroundLayer::render(RenderInfo& renderInfo)
       return;
 
     shader->use(ShaderType::RenderExtendedFBO);
-
-    auto textureToUse = d->textureName;
-
-    if(d->skyBoxBlurRadius > 1)
-    {
-      d->prepareBlurTextures();
-
-      if(d->blurTextures.find(d->currentBlurTexture) != d->blurTextures.end())
-        textureToUse = d->blurTextures[d->currentBlurTexture];
-    }
-
-    shader->setTexture(d->texturePool->textureID(textureToUse));
+    shader->setTexture(d->texturePool->textureID(d->textureName));
     shader->setMatrix(d->flatMatrixCallback());
     shader->setFrameMatrix(glm::mat4(1.0f));
     //shader->setFrameMatrix(map()->controller()->matrices("Mask").p);
@@ -228,12 +167,6 @@ void BackgroundLayer::render(RenderInfo& renderInfo)
     break;
   }
   }
-}
-
-//##################################################################################################
-void BackgroundLayer::invalidateBuffers()
-{
-  d->deleteBlurTextures();
 }
 
 }
