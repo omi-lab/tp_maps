@@ -34,7 +34,7 @@ void main()
   fragPos_world = (m * vec4(inVertex, 1.0)).xyz;
 
   vec3 uv = uvMatrix * vec3(inTexture, 1.0f);
-  uv_tangent = uv.xy;// / uv.z;
+  uv_tangent = uv.xy;
 
 /*LIGHT_VERT_CALC*/
 
