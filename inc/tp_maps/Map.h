@@ -21,6 +21,7 @@ class Plane;
 namespace tp_utils
 {
 class StringID;
+class Profiler;
 }
 
 namespace tp_maps
@@ -49,7 +50,7 @@ class TP_MAPS_EXPORT Map
 
 public:
   //################################################################################################
-  Map(bool enableDepthBuffer = false);
+  Map(bool enableDepthBuffer = false, tp_utils::Profiler* profiler = nullptr);
 
   //################################################################################################
   virtual ~Map();
