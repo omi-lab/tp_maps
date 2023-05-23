@@ -20,9 +20,14 @@
 #include "tp_utils/DebugUtils.h"
 #include "tp_utils/TimeUtils.h"
 #include "tp_utils/StackTrace.h"
+#include "tp_utils/Profiler.h"
+#include "tp_utils/Progress.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtx/norm.hpp" // IWYU pragma: keep
+
+#include <numeric>
+#include <algorithm>
 
 #ifdef TP_EMSCRIPTEN
 #include "tp_maps/shaders/PostBlitShader.h"
@@ -43,6 +48,7 @@ namespace tp_maps
 
 namespace
 {
+//##################################################################################################
 struct CustomPassCallbacks_lt
 {
   std::function<void(RenderInfo&)> start;
@@ -126,11 +132,14 @@ struct Map::Private
   bool initialized{false};
   bool preDeleteCalled{false};
 
+  tp_utils::Profiler* profiler;
+
   //################################################################################################
-  Private(Map* q_):
+  Private(Map* q_, tp_utils::Profiler* profiler_):
     q(q_),
     errors(q),
-    buffers(q)
+    buffers(q),
+    profiler(profiler_)
   {
     {
       tp_math_utils::Light light;
@@ -159,8 +168,9 @@ struct Map::Private
 
       lights.push_back(light);
     }
-
+    
     renderInfo.map = q;
+    initializeProfiler();
   }
 
   //################################################################################################
@@ -192,6 +202,29 @@ struct Map::Private
   }
 
   //################################################################################################
+  void initializeProfiler()
+  {
+    PRF_ADD_SUMMARY_GENERATOR(profiler, "Average Frame Duration Ms", [=](const auto& progressEvents){
+      std::vector<size_t> frameDurationsMS;
+      for(auto& event : progressEvents)
+      {
+          if(event.name == "Frame")
+          {
+            frameDurationsMS.push_back(event.end - event.start);
+          }
+      }
+
+      if (frameDurationsMS.empty())
+        return 0.00;
+      
+      return static_cast<double>(std::reduce(frameDurationsMS.begin(), frameDurationsMS.end(), 0.0) / frameDurationsMS.size());
+
+    }, [=](double value){
+        return "Average Frame Duration: "+std::to_string(value)+"ms";
+    });
+  }
+
+  //################################################################################################
   void render()
   {
     controller->updateMatrices();
@@ -215,8 +248,8 @@ struct Map::Private
 };
 
 //##################################################################################################
-Map::Map(bool):
-  d(new Private(this))
+Map::Map(bool, tp_utils::Profiler* profiler):
+  d(new Private(this, profiler))
 {
   d->controller = new FlatController(this);
 }
@@ -1175,6 +1208,7 @@ void Map::initializeGL()
 //##################################################################################################
 void Map::paintGL()
 {
+  PRF_SCOPED_RANGE(d->profiler, "Frame", {255,255,255});
   makeCurrent();
   setInPaint(true);
   TP_CLEANUP([&]{setInPaint(false);});
@@ -1307,6 +1341,7 @@ size_t Map::skipRenderPasses()
 //################################################################################################
 void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool renderMoreLights)
 {
+  PRF_SCOPED_RANGE(d->profiler, "Render Pass", {255,255,255});
   for(; rp<d->computedRenderPasses.size(); rp++)
   {
     auto renderPass = d->computedRenderPasses.at(rp);
@@ -1323,6 +1358,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
 
       case RenderPass::LightFBOs: //----------------------------------------------------------------
       {
+        PRF_SCOPED_RANGE(d->profiler, "LightFBOs", {255,0,0});
         TP_FUNCTION_TIME("LightFBOs");
         DEBUG_printOpenGLError("RenderPass::LightFBOs start");
 #ifdef TP_FBO_SUPPORTED
@@ -1415,6 +1451,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
 
       case RenderPass::PrepareDrawFBO: //-----------------------------------------------------------
       {
+        PRF_SCOPED_RANGE(d->profiler, "PrepareDrawFBO", {0,255,0});
         TP_FUNCTION_TIME("PrepareDrawFBO");
         DEBUG_printOpenGLError("RenderPass::PrepareDrawFBO start");
 #ifdef TP_FBO_SUPPORTED
@@ -1446,6 +1483,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
 
       case RenderPass::SwapToFBO: //----------------------------------------------------------------
       {
+        PRF_SCOPED_RANGE(d->profiler, "SwapToFBO", {0,0,255});
 #ifdef TP_FBO_SUPPORTED
         TP_FUNCTION_TIME("SwapToFBO" + renderPass.getNameString());
         DEBUG_printOpenGLError("RenderPass::SwapToFBO" + renderPass.getNameString() + " start");
@@ -1480,6 +1518,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
 
       case RenderPass::SwapToFBONoClear: //---------------------------------------------------------
       {
+        PRF_SCOPED_RANGE(d->profiler, "SwapToFBONoClear", {255,255,0});
 #ifdef TP_FBO_SUPPORTED
         TP_FUNCTION_TIME("SwapToFBO" + renderPass.getNameString() + "NoClear");
         DEBUG_printOpenGLError("RenderPass::SwapToFBO" + renderPass.getNameString() + "NoClear start");
@@ -1514,6 +1553,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
 
       case RenderPass::BlitFromFBO: //--------------------------------------------------------------
       {
+        PRF_SCOPED_RANGE(d->profiler, "BlitFromFBO", {0,255,255});
 #ifdef TP_FBO_SUPPORTED
         TP_FUNCTION_TIME("BlitFromFBO" + renderPass.getNameString());
         DEBUG_printOpenGLError("RenderPass::BlitFromFBO" + renderPass.getNameString() + " start");
@@ -1582,6 +1622,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
 
       case RenderPass::Background: //---------------------------------------------------------------
       {
+        PRF_SCOPED_RANGE(d->profiler, "Background", {255,0,255});
         TP_FUNCTION_TIME("Background");
         DEBUG_printOpenGLError("RenderPass::Background start");
         glDisable(GL_DEPTH_TEST);
@@ -1593,6 +1634,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
 
       case RenderPass::Normal: //-------------------------------------------------------------------
       {
+        PRF_SCOPED_RANGE(d->profiler, "Normal", {125,125,0});
         TP_FUNCTION_TIME("Normal");
         DEBUG_printOpenGLError("RenderPass::Normal start");
         glEnable(GL_DEPTH_TEST);
@@ -1605,6 +1647,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
 
       case RenderPass::Transparency: //-------------------------------------------------------------
       {
+        PRF_SCOPED_RANGE(d->profiler, "Transparency", {125,125,255});
         TP_FUNCTION_TIME("Transparency");
         DEBUG_printOpenGLError("RenderPass::Transparency start");
         glEnable(GL_DEPTH_TEST);
@@ -1617,6 +1660,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
 
       case RenderPass::FinishDrawFBO: //------------------------------------------------------------
       {
+        PRF_SCOPED_RANGE(d->profiler, "FinishDrawFBO", {50,200,255});
         TP_FUNCTION_TIME("FinishDrawFBO");
         DEBUG_printOpenGLError("RenderPass::FinishDrawFBO start");
 #ifdef TP_FBO_SUPPORTED
@@ -1632,6 +1676,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
 
       case RenderPass::Text: //---------------------------------------------------------------------
       {
+        PRF_SCOPED_RANGE(d->profiler, "Text", {200,152,255});
         TP_FUNCTION_TIME("Text");
         DEBUG_printOpenGLError("RenderPass::Text start");
         glDisable(GL_DEPTH_TEST);
@@ -1643,6 +1688,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
 
       case RenderPass::GUI: //----------------------------------------------------------------------
       {
+        PRF_SCOPED_RANGE(d->profiler, "GUI", {200,152,50});
         TP_FUNCTION_TIME("GUI");
         DEBUG_printOpenGLError("RenderPass::GUI start");
         glEnable(GL_SCISSOR_TEST);
@@ -1658,6 +1704,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
 
       case RenderPass::Picking: //------------------------------------------------------------------
       {
+        PRF_SCOPED_RANGE(d->profiler, "Picking", {50,152,50});
         TP_FUNCTION_TIME("Picking");
         tpWarning() << "Error: Performing a picking render pass in paintGL does not make sense.";
         break;
@@ -1665,6 +1712,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
 
       case RenderPass::Custom: //-------------------------------------------------------------------
       {
+        PRF_SCOPED_RANGE(d->profiler, "Custom", {90,200,100});
         TP_FUNCTION_TIME("RenderPass::Custom "+renderPass.getNameString());
         DEBUG_printOpenGLError("RenderPass::Custom "+renderPass.getNameString()+" start");
 
@@ -1681,8 +1729,11 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
         break;
       }
 
-      if(renderPass.postLayer)
-        renderPass.postLayer->cleanupAfterRenderPass(renderPass);
+      {
+        PRF_SCOPED_RANGE(d->profiler, "cleanupAfterRenderPass", {90,0,150});
+        if(renderPass.postLayer)
+          renderPass.postLayer->cleanupAfterRenderPass(renderPass);
+      }
     }
     catch (...)
     {
