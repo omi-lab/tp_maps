@@ -69,12 +69,12 @@ class ScopedDebug_lt
   tp_utils::Profiler* m_profiler;
 #endif
 
-  const char* m_file;
-  const int m_line;
   const std::string m_name;
   const TPPixel m_color;
 
 #ifdef TP_ENABLE_FUNCTION_TIME
+  const char* m_file;
+  const int m_line;
   tp_utils::FunctionTimer m_functionTimer{m_file, m_line, m_name};
 #endif
 
@@ -91,14 +91,20 @@ public:
   #ifdef TP_ENABLE_PROFILING
     m_profiler(profiler),
   #endif
+  #ifdef TP_ENABLE_FUNCTION_TIME
     m_file(file),
     m_line(line),
+  #endif
     m_name(name),
     m_color(color)
   {
+#ifndef TP_ENABLE_FUNCTION_TIME
+    TP_UNUSED(file);
+    TP_UNUSED(line);
+#endif
 #ifdef TP_ENABLE_PROFILING
     if(m_profiler)
-      m_profiler->rangePush(name, m_color);
+      m_profiler->rangePush(m_name, m_color);
 #endif
 
 #ifdef TP_MAPS_DEBUG
@@ -376,6 +382,7 @@ void Map::setProfiler(const std::shared_ptr<tp_utils::Profiler>& profiler)
 
   if(d->profiler)
   {
+    d->profiler->clearSummaryGenerators();
     d->profiler->addSummaryGenerator([](const auto& profiler, auto& summaries)
     {
       int64_t min{0};
@@ -409,6 +416,12 @@ void Map::setProfiler(const std::shared_ptr<tp_utils::Profiler>& profiler)
       summaries.emplace_back("Number of frames", std::to_string(count));
     });
   }
+}
+
+//##################################################################################################
+const std::shared_ptr<tp_utils::Profiler>& Map::profiler() const
+{
+  return d->profiler;
 }
 #endif
 
