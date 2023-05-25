@@ -21,7 +21,9 @@ class Plane;
 namespace tp_utils
 {
 class StringID;
+#ifdef TP_ENABLE_PROFILING
 class Profiler;
+#endif
 }
 
 namespace tp_maps
@@ -50,7 +52,7 @@ class TP_MAPS_EXPORT Map
 
 public:
   //################################################################################################
-  Map(bool enableDepthBuffer = false, tp_utils::Profiler* profiler = nullptr);
+  Map(bool enableDepthBuffer = false);
 
   //################################################################################################
   virtual ~Map();
@@ -66,6 +68,14 @@ protected:
   //################################################################################################
   void setVisible(bool visible);
 public:
+
+#ifdef TP_ENABLE_PROFILING
+  //################################################################################################
+  void setProfiler(const std::shared_ptr<tp_utils::Profiler>& profiler);
+
+  //################################################################################################
+  const std::shared_ptr<tp_utils::Profiler>& profiler() const;
+#endif
 
   //################################################################################################
   OpenGLProfile openGLProfile() const;
