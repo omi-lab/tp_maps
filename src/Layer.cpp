@@ -1,5 +1,6 @@
 #include "tp_maps/Layer.h"
 #include "tp_maps/Map.h"
+#include "tp_maps/DragDropEvent.h"
 
 #include "tp_utils/DebugUtils.h"
 #include "tp_utils/StackTrace.h"
@@ -227,6 +228,15 @@ bool Layer::keyEvent(const KeyEvent& event)
 {
   for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
     if((*(--l))->keyEvent(event))
+      return true;
+  return false;
+}
+
+//################################################################################################
+bool Layer::dragDropEvent(const DragDropEvent& event)
+{
+  for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
+    if((*(--l))->dragDropEvent(event))
       return true;
   return false;
 }

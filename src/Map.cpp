@@ -9,6 +9,7 @@
 #include "tp_maps/PickingResult.h"
 #include "tp_maps/MouseEvent.h"
 #include "tp_maps/KeyEvent.h"
+#include "tp_maps/DragDropEvent.h"
 #include "tp_maps/FontRenderer.h"
 #include "tp_maps/SwapRowOrder.h"
 
@@ -1936,6 +1937,18 @@ bool Map::keyEvent(const KeyEvent& event)
     return true;
   }
 
+  return false;
+}
+
+//################################################################################################
+bool Map::dragDropEvent(const DragDropEvent& event)
+{
+  for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
+  {
+    Layer* layer = (*(--l));
+    if(layer->dragDropEvent(event))
+      return true;
+  }
   return false;
 }
 

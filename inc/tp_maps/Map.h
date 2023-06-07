@@ -34,6 +34,7 @@ class RenderInfo;
 class Shader;
 class Texture;
 struct MouseEvent;
+struct DragDropEvent;
 struct KeyEvent;
 struct TextEditingEvent;
 struct TextInputEvent;
@@ -418,6 +419,9 @@ public:
 
   //################################################################################################
   bool keyEvent(const KeyEvent& event);
+
+  //################################################################################################
+  bool dragDropEvent(const DragDropEvent& event);
 
   //################################################################################################
   bool textEditingEvent(const TextEditingEvent& event);

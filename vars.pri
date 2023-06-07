@@ -26,6 +26,8 @@ HEADERS += inc/tp_maps/SpriteTexture.h
 #SOURCES += src/MouseEvent.cpp
 HEADERS += inc/tp_maps/MouseEvent.h
 
+HEADERS += inc/tp_maps/DragDropEvent.h
+
 #SOURCES += src/KeyEvent.cpp
 HEADERS += inc/tp_maps/KeyEvent.h
 

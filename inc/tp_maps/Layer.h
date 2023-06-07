@@ -21,6 +21,7 @@ namespace tp_maps
 class Map;
 class RenderInfo;
 struct KeyEvent;
+struct DragDropEvent;
 struct TextEditingEvent;
 struct TextInputEvent;
 
@@ -214,6 +215,13 @@ protected:
   \param event - Details of the event that was passed to the map.
   */
   virtual bool keyEvent(const KeyEvent& event);
+
+  //################################################################################################
+  //! Called with DragDrop events.
+  /*!
+  \param event - Details of the event that was passed to the map.
+  */
+  virtual bool dragDropEvent(const DragDropEvent& event);
 
   //################################################################################################
   virtual bool textEditingEvent(const TextEditingEvent& event);
