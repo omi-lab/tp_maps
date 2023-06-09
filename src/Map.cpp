@@ -1941,8 +1941,10 @@ bool Map::keyEvent(const KeyEvent& event)
 }
 
 //################################################################################################
-bool Map::dragDropEvent(const DragDropEvent& event)
+bool Map::dragDropEvent(DragDropEvent event)
 {
+  event.pos.x = static_cast<int>(static_cast<float>(event.pos.x)*pixelScale());
+  event.pos.y = static_cast<int>(static_cast<float>(event.pos.y)*pixelScale());
   for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
   {
     Layer* layer = (*(--l));
