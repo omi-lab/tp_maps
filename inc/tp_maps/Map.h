@@ -421,7 +421,7 @@ public:
   bool keyEvent(const KeyEvent& event);
 
   //################################################################################################
-  bool dragDropEvent(DragDropEvent event);
+  bool dragDropEvent(const DragDropEvent& event);
 
   //################################################################################################
   bool textEditingEvent(const TextEditingEvent& event);
