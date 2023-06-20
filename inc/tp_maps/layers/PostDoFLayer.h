@@ -9,6 +9,7 @@ namespace omi_scene_3d
 {
 struct DoFParameters;
 }
+namespace os3 = omi_scene_3d;
 
 namespace tp_maps
 {
@@ -33,7 +34,7 @@ public:
   float calculateFStopDistance(float fStop) const;
 
   //################################################################################################
-  void setDofFromScene( const omi_scene_3d::DoFParameters& dofParams );
+  void setDofFromScene(const os3::DoFParameters& dofParams);
 
 protected:
   //################################################################################################

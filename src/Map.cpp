@@ -71,13 +71,13 @@ class ScopedDebug_lt
 #endif
 
   const std::string m_name;
-  const TPPixel m_color;
 
 #ifdef TP_ENABLE_FUNCTION_TIME
   const char* m_file;
   const int m_line;
   tp_utils::FunctionTimer m_functionTimer{m_file, m_line, m_name};
 #endif
+  const TPPixel m_color;
 
 public:
   //################################################################################################
@@ -92,11 +92,11 @@ public:
   #ifdef TP_ENABLE_PROFILING
     m_profiler(profiler),
   #endif
+    m_name(name),
   #ifdef TP_ENABLE_FUNCTION_TIME
     m_file(file),
     m_line(line),
   #endif
-    m_name(name),
     m_color(color)
   {
 #ifndef TP_ENABLE_FUNCTION_TIME
