@@ -12,6 +12,7 @@
 #include "tp_maps/DragDropEvent.h"
 #include "tp_maps/FontRenderer.h"
 #include "tp_maps/SwapRowOrder.h"
+#include "tp_maps/EventHandler.h"
 
 #include "tp_math_utils/Plane.h"
 #include "tp_math_utils/Ray.h"
@@ -145,6 +146,17 @@ struct CustomPassCallbacks_lt
   std::function<void(RenderInfo&)> start;
   std::function<void(RenderInfo&)> end;
 };
+
+//##################################################################################################
+struct EventHandler_lt
+{
+  size_t eventHandlerId{0};
+  int priority{0};
+  EventHandlerCallbacks callbacks;
+
+  std::unordered_set<Button> m_hasMouseFocusFor;
+  std::unordered_set<int32_t> m_hasKeyFocusFor;
+};
 }
 
 //##################################################################################################
@@ -161,6 +173,9 @@ struct Map::Private
   std::vector<Layer*> layers;
   std::unordered_map<tp_utils::StringID, Shader*> shaders;
   std::vector<FontRenderer*> fontRenderers;
+
+  size_t nextEventHandlerId{0};
+  std::vector<std::shared_ptr<EventHandler_lt>> eventHandlers;
 
   std::vector<RenderPass> renderPasses =
   {
@@ -1854,9 +1869,20 @@ bool Map::mouseEvent(const MouseEvent& event)
   // If a layer or the controller has focus from a previous press event pass the release to it first.
   if(event.type == MouseEventType::Release)
   {
-    for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
+    for(size_t i=d->eventHandlers.size()-1; i<d->eventHandlers.size(); i--)
     {
-      Layer* layer = (*(--l));
+      std::shared_ptr<EventHandler_lt> eventHandler=d->eventHandlers.at(i);
+      if(auto i = eventHandler->m_hasMouseFocusFor.find(event.button); i!=eventHandler->m_hasMouseFocusFor.end())
+      {
+        eventHandler->m_hasMouseFocusFor.erase(i);
+        if(eventHandler->callbacks.mouseEvent(event))
+          return true;
+      }
+    }
+
+    for(auto i = d->layers.data() + d->layers.size(); i>d->layers.data();)
+    {
+      Layer* layer = (*(--i));
       if(auto i = layer->m_hasMouseFocusFor.find(event.button); i!=layer->m_hasMouseFocusFor.end())
       {
         layer->m_hasMouseFocusFor.erase(i);
@@ -1873,9 +1899,20 @@ bool Map::mouseEvent(const MouseEvent& event)
     }
   }
 
-  for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
+  for(size_t i=d->eventHandlers.size()-1; i<d->eventHandlers.size(); i--)
   {
-    Layer* layer = (*(--l));
+    std::shared_ptr<EventHandler_lt> eventHandler=d->eventHandlers.at(i);
+    if(eventHandler->callbacks.mouseEvent(event))
+    {
+      if(event.type == MouseEventType::Press)
+        eventHandler->m_hasMouseFocusFor.insert(event.button);
+      return true;
+    }
+  }
+
+  for(auto i = d->layers.data() + d->layers.size(); i>d->layers.data();)
+  {
+    Layer* layer = (*(--i));
     if(layer->mouseEvent(event))
     {
       if(event.type == MouseEventType::Press)
@@ -1900,9 +1937,20 @@ bool Map::keyEvent(const KeyEvent& event)
   // If a layer or the controller has focus from a previous press event pass the release to it first.
   if(event.type == KeyEventType::Release)
   {
-    for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
+    for(size_t i=d->eventHandlers.size()-1; i<d->eventHandlers.size(); i--)
     {
-      Layer* layer = (*(--l));
+      std::shared_ptr<EventHandler_lt> eventHandler=d->eventHandlers.at(i);
+      if(auto i = eventHandler->m_hasKeyFocusFor.find(event.scancode); i!=eventHandler->m_hasKeyFocusFor.end())
+      {
+        eventHandler->m_hasKeyFocusFor.erase(i);
+        if(eventHandler->callbacks.keyEvent(event))
+          return true;
+      }
+    }
+
+    for(auto i = d->layers.data() + d->layers.size(); i>d->layers.data();)
+    {
+      Layer* layer = (*(--i));
       if(auto i = layer->m_hasKeyFocusFor.find(event.scancode); i!=layer->m_hasKeyFocusFor.end())
       {
         layer->m_hasKeyFocusFor.erase(i);
@@ -1919,9 +1967,9 @@ bool Map::keyEvent(const KeyEvent& event)
     }
   }
 
-  for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
+  for(auto i = d->layers.data() + d->layers.size(); i>d->layers.data();)
   {
-    Layer* layer = (*(--l));
+    Layer* layer = (*(--i));
     if(layer->keyEvent(event))
     {
       if(event.type == KeyEventType::Press)
@@ -1943,27 +1991,42 @@ bool Map::keyEvent(const KeyEvent& event)
 //################################################################################################
 bool Map::dragDropEvent(const DragDropEvent& event)
 {
-  for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
-    if((*(--l))->dragDropEvent(event))
+  for(size_t i=d->eventHandlers.size()-1; i<d->eventHandlers.size(); i--)
+    if(d->eventHandlers.at(i)->callbacks.dragDropEvent(event))
       return true;
+
+  for(auto i = d->layers.data() + d->layers.size(); i>d->layers.data();)
+    if((*(--i))->dragDropEvent(event))
+      return true;
+
   return false;
 }
 
 //##################################################################################################
 bool Map::textEditingEvent(const TextEditingEvent& event)
 {
-  for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
-    if((*(--l))->textEditingEvent(event))
+  for(size_t i=d->eventHandlers.size()-1; i<d->eventHandlers.size(); i--)
+    if(d->eventHandlers.at(i)->callbacks.textEditingEvent(event))
       return true;
+
+  for(auto i = d->layers.data() + d->layers.size(); i>d->layers.data();)
+    if((*(--i))->textEditingEvent(event))
+      return true;
+
   return false;
 }
 
 //##################################################################################################
 bool Map::textInputEvent(const TextInputEvent& event)
 {
-  for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
-    if((*(--l))->textInputEvent(event))
+  for(size_t i=d->eventHandlers.size()-1; i<d->eventHandlers.size(); i--)
+    if(d->eventHandlers.at(i)->callbacks.textInputEvent(event))
       return true;
+
+  for(auto i = d->layers.data() + d->layers.size(); i>d->layers.data();)
+    if((*(--i))->textInputEvent(event))
+      return true;
+
   return false;
 }
 
@@ -2028,6 +2091,49 @@ void Map::addFontRenderer(FontRenderer* fontRenderer)
 void Map::removeFontRenderer(FontRenderer* fontRenderer)
 {
   tpRemoveOne(d->fontRenderers, fontRenderer);
+}
+
+//##################################################################################################
+size_t Map::addEventHandler(int priority)
+{
+  auto i = d->eventHandlers.begin();
+
+  while(i!=d->eventHandlers.end() && (*i)->priority<=priority)
+    ++i;
+
+  auto& eventHandler = *d->eventHandlers.emplace(i);
+  eventHandler->priority = priority;
+  eventHandler->eventHandlerId = d->nextEventHandlerId;
+  d->nextEventHandlerId++;
+
+  return eventHandler->eventHandlerId;
+}
+
+//##################################################################################################
+void Map::removeEventHandler(size_t eventHandlerId)
+{
+  for(auto i=d->eventHandlers.begin(); i!=d->eventHandlers.end(); ++i)
+  {
+    if((*i)->eventHandlerId == eventHandlerId)
+    {
+      d->eventHandlers.erase(i);
+      break;
+    }
+  }
+}
+
+//##################################################################################################
+void Map::updateEventHandlerCallbacks(size_t eventHandlerId,
+                                   const std::function<void(EventHandlerCallbacks&)>& closure)
+{
+  for(auto i=d->eventHandlers.begin(); i!=d->eventHandlers.end(); ++i)
+  {
+    if((*i)->eventHandlerId == eventHandlerId)
+    {
+      closure((*i)->callbacks);
+      break;
+    }
+  }
 }
 
 }

@@ -33,15 +33,17 @@ class Controller;
 class RenderInfo;
 class Shader;
 class Texture;
+class PickingResult;
+class FontRenderer;
+class Buffers;
+class PostLayer;
+class EventHandler;
 struct MouseEvent;
 struct DragDropEvent;
 struct KeyEvent;
 struct TextEditingEvent;
 struct TextInputEvent;
-class PickingResult;
-class FontRenderer;
-class Buffers;
-class PostLayer;
+struct EventHandlerCallbacks;
 
 //##################################################################################################
 class TP_MAPS_EXPORT Map
@@ -49,6 +51,7 @@ class TP_MAPS_EXPORT Map
   friend class Layer;
   friend class Controller;
   friend class FontRenderer;
+  friend class EventHandler;
   TP_NONCOPYABLE(Map);
 
 public:
@@ -495,6 +498,16 @@ private:
 
   //################################################################################################
   void removeFontRenderer(FontRenderer* fontRenderer);
+
+  //################################################################################################
+  size_t addEventHandler(int priority);
+
+  //################################################################################################
+  void removeEventHandler(size_t eventHandlerId);
+
+  //################################################################################################
+  void updateEventHandlerCallbacks(size_t eventHandlerId,
+                                const std::function<void(EventHandlerCallbacks&)>& closure);
 
   struct Private;
   Private* d;
