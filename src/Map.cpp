@@ -2101,7 +2101,8 @@ size_t Map::addEventHandler(int priority)
   while(i!=d->eventHandlers.end() && (*i)->priority<=priority)
     ++i;
 
-  auto& eventHandler = *d->eventHandlers.emplace(i);
+  auto& eventHandler = *(d->eventHandlers.emplace(i));
+  eventHandler.reset(new EventHandler_lt);
   eventHandler->priority = priority;
   eventHandler->eventHandlerId = d->nextEventHandlerId;
   d->nextEventHandlerId++;
