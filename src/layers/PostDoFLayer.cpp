@@ -135,11 +135,6 @@ void PostDoFLayer::addRenderPasses(std::vector<RenderPass>& renderPasses)
 //##################################################################################################
 void PostDoFLayer::render(tp_maps::RenderInfo& renderInfo)
 {
-//  // Get all required shaders - makeShader will compile them all
-//#warning remove ?
-//  makeShader();
-
-
   if(renderInfo.pass == d->customRenderPass1) //----------------------------------------------------
   {
     auto passThroughShader = map()->getShader<PassThroughShader>();
