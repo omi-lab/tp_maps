@@ -1967,6 +1967,17 @@ bool Map::keyEvent(const KeyEvent& event)
     }
   }
 
+  for(size_t i=d->eventHandlers.size()-1; i<d->eventHandlers.size(); i--)
+  {
+    std::shared_ptr<EventHandler_lt> eventHandler=d->eventHandlers.at(i);
+    if(eventHandler->callbacks.keyEvent(event))
+    {
+      if(event.type == KeyEventType::Press)
+        eventHandler->m_hasKeyFocusFor.insert(event.scancode);
+      return true;
+    }
+  }
+
   for(auto i = d->layers.data() + d->layers.size(); i>d->layers.data();)
   {
     Layer* layer = (*(--i));
