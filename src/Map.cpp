@@ -1873,14 +1873,9 @@ void Map::resizeGL(int w, int h)
 //##################################################################################################
 bool Map::mouseEvent(const MouseEvent& event)
 {
-  if(event.type == MouseEventType::DragStart)tpDebug() << "A";
-
-
   // If a layer or the controller has focus from a previous press event pass the release to it first.
   if(event.type == MouseEventType::Release || event.type == MouseEventType::Move)
   {
-    if(event.type == MouseEventType::DragStart)tpDebug() << "B";
-
     for(size_t i=d->eventHandlers.size()-1; i<d->eventHandlers.size(); i--)
     {
       std::shared_ptr<EventHandler_lt> eventHandler=d->eventHandlers.at(i);
@@ -1894,8 +1889,6 @@ bool Map::mouseEvent(const MouseEvent& event)
       }
     }
 
-    if(event.type == MouseEventType::DragStart)tpDebug() << "C";
-
     for(auto i = d->layers.data() + d->layers.size(); i>d->layers.data();)
     {
       Layer* layer = (*(--i));
@@ -1908,7 +1901,6 @@ bool Map::mouseEvent(const MouseEvent& event)
           return true;
       }
     }
-    if(event.type == MouseEventType::DragStart)tpDebug() << "D";
 
     if(auto i = d->controller->m_hasMouseFocusFor.find(event.button); i!=d->controller->m_hasMouseFocusFor.end())
     {
@@ -1920,7 +1912,6 @@ bool Map::mouseEvent(const MouseEvent& event)
     }
   }
 
-  if(event.type == MouseEventType::DragStart)tpDebug() << "E";
   for(size_t i=d->eventHandlers.size()-1; i<d->eventHandlers.size(); i--)
   {
     std::shared_ptr<EventHandler_lt> eventHandler=d->eventHandlers.at(i);
@@ -1931,7 +1922,6 @@ bool Map::mouseEvent(const MouseEvent& event)
       return true;
     }
   }
-  if(event.type == MouseEventType::DragStart)tpDebug() << "F";
 
   for(auto i = d->layers.data() + d->layers.size(); i>d->layers.data();)
   {
@@ -1944,16 +1934,12 @@ bool Map::mouseEvent(const MouseEvent& event)
     }
   }
 
-  if(event.type == MouseEventType::DragStart)tpDebug() << "G";
-
   if(d->controller->mouseEvent(event))
   {
     if(event.type == MouseEventType::Press || event.type == MouseEventType::DragStart)
       d->controller->m_hasMouseFocusFor.insert(event.button);
     return true;
   }
-
-  if(event.type == MouseEventType::DragStart)tpDebug() << "H";
 
   if(event.type == MouseEventType::Press)
   {
@@ -1968,7 +1954,6 @@ bool Map::mouseEvent(const MouseEvent& event)
     }
   }
 
-  if(event.type == MouseEventType::DragStart)tpDebug() << "I";
   return false;
 }
 

@@ -8,7 +8,7 @@
 
 #include "tp_utils/JSONUtils.h"
 
-#include "glm/gtx/transform.hpp"
+#include "glm/gtx/transform.hpp" // IWYU pragma: keep
 
 namespace tp_maps
 {
@@ -34,7 +34,6 @@ struct GraphController::Private
   glm::ivec2 previousPos{0,0};
   glm::ivec2 previousPos2{0,0};
   Button mouseInteraction{Button::NoButton};
-  bool mouseMoved{false};
 
   //################################################################################################
   Private(GraphController* q_):
@@ -244,10 +243,9 @@ void GraphController::updateMatrices()
 //##################################################################################################
 bool GraphController::mouseEvent(const MouseEvent& event)
 {
-  const int mouseSensitivity=8;
   switch(event.type)
   {
-  case MouseEventType::Press: //--------------------------------------------------------------------
+  case MouseEventType::DragStart: //----------------------------------------------------------------
   {
     translateInteractionStarted();
 
@@ -255,23 +253,13 @@ bool GraphController::mouseEvent(const MouseEvent& event)
     {
       d->mouseInteraction = event.button;
       d->previousPos = event.pos;
-      d->mouseMoved = false;
     }
-    break;
+    return true;
   }
 
   case MouseEventType::Move: //---------------------------------------------------------------------
   {
     glm::ivec2 pos = event.pos;
-
-    if(!d->mouseMoved)
-    {
-      int ox = abs(d->previousPos.x - pos.x);
-      int oy = abs(d->previousPos.y - pos.y);
-      if((ox+oy) <= mouseSensitivity)
-        break;
-      d->mouseMoved = true;
-    }
 
     double dx = double(pos.x - d->previousPos.x);
     double dy = double(pos.y - d->previousPos.y);
@@ -282,11 +270,13 @@ bool GraphController::mouseEvent(const MouseEvent& event)
     if(d->mouseInteraction == Button::RightButton)
     {
       update();
+      return true;
     }
     else if(d->mouseInteraction == Button::LeftButton && d->allowTranslation)
     {
       translate(dx, dy, 1);
       update();
+      return true;
     }
 
     break;
@@ -297,22 +287,10 @@ bool GraphController::mouseEvent(const MouseEvent& event)
     if(event.button == d->mouseInteraction)
     {
       d->mouseInteraction = Button::NoButton;
-
-      if(!d->mouseMoved)
-      {
-        int ox = abs(d->previousPos.x - event.pos.x);
-        int oy = abs(d->previousPos.y - event.pos.y);
-        if((ox+oy) <= mouseSensitivity)
-        {
-          MouseEvent e = event;
-          e.type = MouseEventType::Click;
-          mouseClicked(e);
-        }
-      }
-      else if(event.button == Button::LeftButton)
-      {
+      if(event.button == Button::LeftButton)
         translateInteractionFinished();
-      }
+
+      return true;
     }
     break;
   }
@@ -355,7 +333,7 @@ bool GraphController::mouseEvent(const MouseEvent& event)
     }
 
     update();
-    break;
+    return true;
   }
 
   case MouseEventType::DoubleClick: //--------------------------------------------------------------
@@ -371,7 +349,7 @@ bool GraphController::mouseEvent(const MouseEvent& event)
   }
   }
 
-  return true;
+  return false;
 }
 
 //##################################################################################################

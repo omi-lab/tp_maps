@@ -6,9 +6,8 @@
 #include "tp_math_utils/JSONUtils.h"
 
 #include "tp_utils/JSONUtils.h"
-#include "tp_utils/DebugUtils.h"
 
-#include "glm/gtx/transform.hpp"
+#include "glm/gtx/transform.hpp" // IWYU pragma: keep
 
 namespace tp_maps
 {
@@ -36,8 +35,6 @@ struct FPSController::Private
 
   float near{0.01f};
   float far{100.0f};
-
-  bool mouseMoved{false};
 
   //Behaviour
   bool allowRotation{true};
@@ -249,7 +246,6 @@ void FPSController::updateMatrices()
 //##################################################################################################
 bool FPSController::mouseEvent(const MouseEvent& event)
 {
-  const int mouseSensitivity=8;
   switch(event.type)
   {
   case MouseEventType::Press: //--------------------------------------------------------------------
@@ -258,7 +254,7 @@ bool FPSController::mouseEvent(const MouseEvent& event)
     {
       d->mouseInteraction = event.button;
       d->previousPos = event.pos;
-      d->mouseMoved = false;
+      return true;
     }
     break;
   }
@@ -266,15 +262,6 @@ bool FPSController::mouseEvent(const MouseEvent& event)
   case MouseEventType::Move: //---------------------------------------------------------------------
   {
     glm::ivec2 pos = event.pos;
-
-    if(!d->mouseMoved)
-    {
-      int ox = abs(d->previousPos.x - pos.x);
-      int oy = abs(d->previousPos.y - pos.y);
-      if((ox+oy) <= mouseSensitivity)
-        break;
-      d->mouseMoved = true;
-    }
 
     float dx{0.0f};
     float dy{0.0f};
@@ -316,6 +303,7 @@ bool FPSController::mouseEvent(const MouseEvent& event)
           d->rotationAngle-=360;
       }
       update();
+      return true;
     }
 
     break;
@@ -326,18 +314,7 @@ bool FPSController::mouseEvent(const MouseEvent& event)
     if(event.button == d->mouseInteraction)
     {
       d->mouseInteraction = Button::NoButton;
-
-      if(!d->mouseMoved)
-      {
-        int ox = abs(d->previousPos.x - event.pos.x);
-        int oy = abs(d->previousPos.y - event.pos.y);
-        if((ox+oy) <= mouseSensitivity)
-        {
-          MouseEvent e = event;
-          e.type = MouseEventType::Click;
-          mouseClicked(e);
-        }
-      }
+      return true;
     }
     break;
   }
@@ -355,7 +332,7 @@ bool FPSController::mouseEvent(const MouseEvent& event)
   }
   }
 
-  return true;
+  return false;
 }
 
 //##################################################################################################

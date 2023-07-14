@@ -83,8 +83,6 @@ struct CADController::Private
 
   float fov{63.0f};
 
-  bool mouseMoved{false};
-
   //Behaviour
   bool allowRotation{true};
   bool variableViewAngle{true};
@@ -543,7 +541,6 @@ void CADController::updateMatrices()
 //##################################################################################################
 bool CADController::mouseEvent(const MouseEvent& event)
 {
-  const int mouseSensitivity=8;
   constexpr float metersPerSecond = 5.6f;
   constexpr float translationFactor = metersPerSecond / 1000.0f;
 
@@ -562,7 +559,7 @@ bool CADController::mouseEvent(const MouseEvent& event)
     {
       d->mouseInteraction = event.button;
       d->previousPos = event.pos;
-      d->mouseMoved = false;
+      return true;
     }
     break;
   }
@@ -570,15 +567,6 @@ bool CADController::mouseEvent(const MouseEvent& event)
   case MouseEventType::Move: //---------------------------------------------------------------------
   {
     glm::ivec2 pos = event.pos;
-
-    if(!d->mouseMoved)
-    {
-      int ox = abs(d->previousPos.x - pos.x);
-      int oy = abs(d->previousPos.y - pos.y);
-      if((ox+oy) <= mouseSensitivity)
-        break;
-      d->mouseMoved = true;
-    }
 
     float dx{0.0f};
     float dy{0.0f};
@@ -605,6 +593,7 @@ bool CADController::mouseEvent(const MouseEvent& event)
       else
         d->translate(dx, dy, d->mouseSpeedModifier);
       update();
+      return true;
     }
     else if(d->fullScreen || d->mouseInteraction == Button::RightButton)
     {
@@ -628,6 +617,7 @@ bool CADController::mouseEvent(const MouseEvent& event)
         }
       }
       update();
+      return true;
     }
 
     break;
@@ -675,7 +665,7 @@ bool CADController::mouseEvent(const MouseEvent& event)
     }
 
     update();
-    break;
+    return true;
   }
 
   case MouseEventType::Release: //------------------------------------------------------------------
@@ -683,18 +673,7 @@ bool CADController::mouseEvent(const MouseEvent& event)
     if(event.button == d->mouseInteraction)
     {
       d->mouseInteraction = Button::NoButton;
-
-      if(!d->mouseMoved)
-      {
-        int ox = abs(d->previousPos.x - event.pos.x);
-        int oy = abs(d->previousPos.y - event.pos.y);
-        if((ox+oy) <= mouseSensitivity)
-        {
-          MouseEvent e = event;
-          e.type = MouseEventType::Click;
-          mouseClicked(e);
-        }
-      }
+      return true;
     }
     break;
   }
@@ -712,7 +691,7 @@ bool CADController::mouseEvent(const MouseEvent& event)
   }
   }
 
-  return true;
+  return false;
 }
 
 //##################################################################################################

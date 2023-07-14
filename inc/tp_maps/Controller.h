@@ -105,9 +105,6 @@ public:
   virtual void loadState(const nlohmann::json& j);
 
   //################################################################################################
-  tp_utils::CallbackCollection<void(const tp_maps::MouseEvent& event)> mouseClicked;
-
-  //################################################################################################
   //! Returns the Map that this should control
   /*!
   This will always return a valid Map

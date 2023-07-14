@@ -7,7 +7,7 @@
 
 #include "tp_utils/JSONUtils.h"
 
-#include "glm/gtx/transform.hpp"
+#include "glm/gtx/transform.hpp" // IWYU pragma: keep
 
 namespace tp_maps
 {
@@ -41,8 +41,6 @@ struct FlatController::Private
 
   Button rotateButton{Button::RightButton};
   Button translateButton{Button::LeftButton};
-
-  bool mouseMoved{false};
 
   //################################################################################################
   Private(FlatController* q_):
@@ -294,10 +292,9 @@ void FlatController::updateMatrices()
 //##################################################################################################
 bool FlatController::mouseEvent(const MouseEvent& event)
 {
-  const int mouseSensitivity=8;
   switch(event.type)
   {
-  case MouseEventType::Press: //--------------------------------------------------------------------
+  case MouseEventType::DragStart: //----------------------------------------------------------------
   {
     translateInteractionStarted();
 
@@ -305,23 +302,14 @@ bool FlatController::mouseEvent(const MouseEvent& event)
     {
       d->mouseInteraction = event.button;
       d->previousPos = event.pos;
-      d->mouseMoved = false;
     }
-    break;
+
+    return true;
   }
 
   case MouseEventType::Move: //---------------------------------------------------------------------
   {
     glm::ivec2 pos = event.pos;
-
-    if(!d->mouseMoved)
-    {
-      int ox = abs(d->previousPos.x - pos.x);
-      int oy = abs(d->previousPos.y - pos.y);
-      if((ox+oy) <= mouseSensitivity)
-        break;
-      d->mouseMoved = true;
-    }
 
     float dx = float(pos.x - d->previousPos.x);
     float dy = float(pos.y - d->previousPos.y);
@@ -352,11 +340,13 @@ bool FlatController::mouseEvent(const MouseEvent& event)
           d->rotationAngle-=360;
       }
       update();
+      return true;
     }
     else if(d->mouseInteraction == d->translateButton && d->allowTranslation)
     {
       translate(dx, dy, 1);
       update();
+      return true;
     }
 
     break;
@@ -367,22 +357,10 @@ bool FlatController::mouseEvent(const MouseEvent& event)
     if(event.button == d->mouseInteraction)
     {
       d->mouseInteraction = Button::NoButton;
-
-      if(!d->mouseMoved)
-      {
-        int ox = abs(d->previousPos.x - event.pos.x);
-        int oy = abs(d->previousPos.y - event.pos.y);
-        if((ox+oy) <= mouseSensitivity)
-        {
-          MouseEvent e = event;
-          e.type = MouseEventType::Click;
-          mouseClicked(e);
-        }
-      }
-      else if(event.button == Button::LeftButton)
-      {
+      if(event.button == Button::LeftButton)
         translateInteractionFinished();
-      }
+
+      return true;
     }
     break;
   }
@@ -430,7 +408,7 @@ bool FlatController::mouseEvent(const MouseEvent& event)
   }
   };
 
-  return true;
+  return false;
 }
 
 //##################################################################################################
