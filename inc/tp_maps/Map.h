@@ -507,7 +507,7 @@ private:
 
   //################################################################################################
   void updateEventHandlerCallbacks(size_t eventHandlerId,
-                                const std::function<void(EventHandlerCallbacks&)>& closure);
+                                   const std::function<void(EventHandlerCallbacks&)>& closure);
 
   struct Private;
   Private* d;

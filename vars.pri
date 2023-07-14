@@ -291,3 +291,9 @@ HEADERS += inc/tp_maps/textures/BasicTexture.h
 
 SOURCES += src/textures/DefaultSpritesTexture.cpp
 HEADERS += inc/tp_maps/textures/DefaultSpritesTexture.h
+
+
+#-- Event Handlers ---------------------------------------------------------------------------------
+
+SOURCES += src/event_handlers/MouseEventHandler.cpp
+HEADERS += inc/tp_maps/event_handlers/MouseEventHandler.h

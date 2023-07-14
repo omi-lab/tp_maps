@@ -14,7 +14,10 @@ enum class MouseEventType
   Release,
   Wheel,
   DoubleClick,
-  Click        //!< A single click and release, only used for Controller::setMouseClickCallback.
+
+  // Events composed from other events.
+  Click,    //! The mouse has been pressed and released.
+  DragStart //! The mouse has been pressed and moved.
 };
 
 //##################################################################################################

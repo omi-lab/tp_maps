@@ -17,6 +17,7 @@ struct EventHandler::Private
   int priority;
   size_t id{0};
 
+  //################################################################################################
   Private(Map* map_, int priority_):
     map(map_),
     priority(priority_),
@@ -44,6 +45,12 @@ EventHandler::~EventHandler()
 int EventHandler::priority() const
 {
   return d->priority;
+}
+
+//##################################################################################################
+size_t EventHandler::id() const
+{
+  return d->id;
 }
 
 //##################################################################################################

@@ -12,7 +12,7 @@
 #include "tp_maps/DragDropEvent.h"
 #include "tp_maps/FontRenderer.h"
 #include "tp_maps/SwapRowOrder.h"
-#include "tp_maps/EventHandler.h"
+#include "tp_maps/event_handlers/MouseEventHandler.h"
 
 #include "tp_math_utils/Plane.h"
 #include "tp_math_utils/Ray.h"
@@ -173,6 +173,8 @@ struct Map::Private
   std::vector<Layer*> layers;
   std::unordered_map<tp_utils::StringID, Shader*> shaders;
   std::vector<FontRenderer*> fontRenderers;
+
+  MouseEventHandler* mouseEventHandler{new MouseEventHandler(q)};
 
   size_t nextEventHandlerId{0};
   std::vector<std::shared_ptr<EventHandler_lt>> eventHandlers;
@@ -358,6 +360,9 @@ void Map::preDelete()
 
   while(!d->fontRenderers.empty())
     delete tpTakeFirst(d->fontRenderers);
+
+  delete d->mouseEventHandler;
+  d->mouseEventHandler = nullptr;
 
   for(auto& i : d->intermediateFBOs)
     d->buffers.deleteBuffer(*i.second.get());
@@ -1567,7 +1572,9 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
 
             d->controller->setCurrentLight(light, d->lightLevelIndex);
             lightBuffer.worldToTexture[d->lightLevelIndex] = d->controller->lightMatrices();
-            d->render();
+
+            if(light.castShadows)
+              d->render();
           }
 
           // Increment.
@@ -1866,68 +1873,102 @@ void Map::resizeGL(int w, int h)
 //##################################################################################################
 bool Map::mouseEvent(const MouseEvent& event)
 {
+  if(event.type == MouseEventType::DragStart)tpDebug() << "A";
+
+
   // If a layer or the controller has focus from a previous press event pass the release to it first.
-  if(event.type == MouseEventType::Release)
+  if(event.type == MouseEventType::Release || event.type == MouseEventType::Move)
   {
+    if(event.type == MouseEventType::DragStart)tpDebug() << "B";
+
     for(size_t i=d->eventHandlers.size()-1; i<d->eventHandlers.size(); i--)
     {
       std::shared_ptr<EventHandler_lt> eventHandler=d->eventHandlers.at(i);
       if(auto i = eventHandler->m_hasMouseFocusFor.find(event.button); i!=eventHandler->m_hasMouseFocusFor.end())
       {
-        eventHandler->m_hasMouseFocusFor.erase(i);
+        if(event.type == MouseEventType::Release)
+          eventHandler->m_hasMouseFocusFor.erase(i);
+
         if(eventHandler->callbacks.mouseEvent(event))
           return true;
       }
     }
+
+    if(event.type == MouseEventType::DragStart)tpDebug() << "C";
 
     for(auto i = d->layers.data() + d->layers.size(); i>d->layers.data();)
     {
       Layer* layer = (*(--i));
       if(auto i = layer->m_hasMouseFocusFor.find(event.button); i!=layer->m_hasMouseFocusFor.end())
       {
-        layer->m_hasMouseFocusFor.erase(i);
+        if(event.type == MouseEventType::Release)
+          layer->m_hasMouseFocusFor.erase(i);
+
         if(layer->mouseEvent(event))
           return true;
       }
     }
+    if(event.type == MouseEventType::DragStart)tpDebug() << "D";
 
     if(auto i = d->controller->m_hasMouseFocusFor.find(event.button); i!=d->controller->m_hasMouseFocusFor.end())
     {
-      d->controller->m_hasMouseFocusFor.erase(i);
+      if(event.type == MouseEventType::Release)
+        d->controller->m_hasMouseFocusFor.erase(i);
+
       if(d->controller->mouseEvent(event))
         return true;
     }
   }
 
+  if(event.type == MouseEventType::DragStart)tpDebug() << "E";
   for(size_t i=d->eventHandlers.size()-1; i<d->eventHandlers.size(); i--)
   {
     std::shared_ptr<EventHandler_lt> eventHandler=d->eventHandlers.at(i);
     if(eventHandler->callbacks.mouseEvent(event))
     {
-      if(event.type == MouseEventType::Press)
+      if(event.type == MouseEventType::Press || event.type == MouseEventType::DragStart)
         eventHandler->m_hasMouseFocusFor.insert(event.button);
       return true;
     }
   }
+  if(event.type == MouseEventType::DragStart)tpDebug() << "F";
 
   for(auto i = d->layers.data() + d->layers.size(); i>d->layers.data();)
   {
     Layer* layer = (*(--i));
     if(layer->mouseEvent(event))
     {
-      if(event.type == MouseEventType::Press)
+      if(event.type == MouseEventType::Press || event.type == MouseEventType::DragStart)
         layer->m_hasMouseFocusFor.insert(event.button);
       return true;
     }
   }
 
+  if(event.type == MouseEventType::DragStart)tpDebug() << "G";
+
   if(d->controller->mouseEvent(event))
   {
-    if(event.type == MouseEventType::Press)
+    if(event.type == MouseEventType::Press || event.type == MouseEventType::DragStart)
       d->controller->m_hasMouseFocusFor.insert(event.button);
     return true;
   }
 
+  if(event.type == MouseEventType::DragStart)tpDebug() << "H";
+
+  if(event.type == MouseEventType::Press)
+  {
+    size_t eventHandlerId = d->mouseEventHandler->press(event);
+    for(const auto& h : d->eventHandlers)
+    {
+      if(h->eventHandlerId == eventHandlerId)
+      {
+        h->m_hasMouseFocusFor.insert(event.button);
+        return true;
+      }
+    }
+  }
+
+  if(event.type == MouseEventType::DragStart)tpDebug() << "I";
   return false;
 }
 
@@ -2135,7 +2176,7 @@ void Map::removeEventHandler(size_t eventHandlerId)
 
 //##################################################################################################
 void Map::updateEventHandlerCallbacks(size_t eventHandlerId,
-                                   const std::function<void(EventHandlerCallbacks&)>& closure)
+                                      const std::function<void(EventHandlerCallbacks&)>& closure)
 {
   for(auto i=d->eventHandlers.begin(); i!=d->eventHandlers.end(); ++i)
   {
