@@ -7,29 +7,6 @@ namespace tp_maps
 {
 
 //##################################################################################################
-enum class MouseEventType
-{
-  Press,
-  Move,
-  Release,
-  Wheel,
-  DoubleClick,
-
-  // Events composed from other events.
-  Click,    //! The mouse has been pressed and released.
-  DragStart //! The mouse has been pressed and moved.
-};
-
-//##################################################################################################
-enum class Button : size_t
-{
-  NoButton     = 0,
-  RightButton  = 1,
-  LeftButton   = 2,
-  MiddleButton = 4
-};
-
-//##################################################################################################
 struct TP_MAPS_EXPORT MouseEvent
 {
   //! The type of this mouse event.

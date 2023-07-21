@@ -858,12 +858,13 @@ std::vector<Layer*>& Map::layers()
 void Map::project(const glm::vec3& scenePoint, glm::vec2& screenPoint, const glm::mat4& matrix)
 {
   glm::vec4 v = matrix * glm::vec4(scenePoint, 1.0f);
-  v /= v.w;
 
-  v = (v+1.0f)/2.0f;
-
-  screenPoint.x = v.x * float(d->width);
-  screenPoint.y = float(d->height) - (v.y * float(d->height));
+  screenPoint = v;
+  if(std::fabs(v.w)>0.00001f)
+    screenPoint /= v.w;
+  screenPoint = (screenPoint+1.0f)/2.0f;
+  screenPoint.x = screenPoint.x * float(d->width);
+  screenPoint.y = float(d->height) - (screenPoint.y * float(d->height));
 }
 
 //##################################################################################################
@@ -1943,15 +1944,7 @@ bool Map::mouseEvent(const MouseEvent& event)
 
   if(event.type == MouseEventType::Press)
   {
-    size_t eventHandlerId = d->mouseEventHandler->press(event);
-    for(const auto& h : d->eventHandlers)
-    {
-      if(h->eventHandlerId == eventHandlerId)
-      {
-        h->m_hasMouseFocusFor.insert(event.button);
-        return true;
-      }
-    }
+    d->mouseEventHandler->press(event);
   }
 
   return false;
@@ -2029,11 +2022,14 @@ bool Map::keyEvent(const KeyEvent& event)
 bool Map::dragDropEvent(const DragDropEvent& event)
 {
   for(size_t i=d->eventHandlers.size()-1; i<d->eventHandlers.size(); i--)
-    if(d->eventHandlers.at(i)->callbacks.dragDropEvent(event))
+  {
+    std::shared_ptr<EventHandler_lt> eventHandler=d->eventHandlers.at(i);
+    if(eventHandler->callbacks.dragDropEvent(event))
       return true;
+  }
 
-  for(auto i = d->layers.data() + d->layers.size(); i>d->layers.data();)
-    if((*(--i))->dragDropEvent(event))
+  for(size_t i=d->layers.size()-1; i<d->layers.size(); i--)
+    if(d->layers.at(i)->dragDropEvent(event))
       return true;
 
   return false;
@@ -2131,7 +2127,7 @@ void Map::removeFontRenderer(FontRenderer* fontRenderer)
 }
 
 //##################################################################################################
-size_t Map::addEventHandler(int priority)
+size_t Map::addEventHandler(int priority, Button hasMouseFocusFor)
 {
   auto i = d->eventHandlers.begin();
 
@@ -2141,6 +2137,10 @@ size_t Map::addEventHandler(int priority)
   auto& eventHandler = *d->eventHandlers.emplace(i, new EventHandler_lt);
   eventHandler->priority = priority;
   eventHandler->eventHandlerId = d->nextEventHandlerId;
+
+  if(hasMouseFocusFor != Button::NoButton)
+    eventHandler->m_hasMouseFocusFor.insert(hasMouseFocusFor);
+
   d->nextEventHandlerId++;
 
   return eventHandler->eventHandlerId;

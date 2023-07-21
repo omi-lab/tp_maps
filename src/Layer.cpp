@@ -235,8 +235,8 @@ bool Layer::keyEvent(const KeyEvent& event)
 //################################################################################################
 bool Layer::dragDropEvent(const DragDropEvent& event)
 {
-  for(Layer** l = d->layers.data() + d->layers.size(); l>d->layers.data();)
-    if((*(--l))->dragDropEvent(event))
+  for(size_t i=d->layers.size()-1; i<d->layers.size(); i--)
+    if(d->layers.at(i)->dragDropEvent(event))
       return true;
   return false;
 }

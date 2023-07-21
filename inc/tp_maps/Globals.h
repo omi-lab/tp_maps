@@ -578,6 +578,29 @@ enum class KeyboardModifier : size_t
   Alt     = 0b00000100
 };
 
+//##################################################################################################
+enum class MouseEventType
+{
+  Press,
+  Move,
+  Release,
+  Wheel,
+  DoubleClick,
+
+  // Events composed from other events.
+  Click,    //! The mouse has been pressed and released.
+  DragStart //! The mouse has been pressed and moved.
+};
+
+//##################################################################################################
+enum class Button : size_t
+{
+  NoButton     = 0,
+  RightButton  = 1,
+  LeftButton   = 2,
+  MiddleButton = 4
+};
+
 
 //##################################################################################################
 [[nodiscard]] KeyboardModifier operator|(KeyboardModifier lhs,KeyboardModifier rhs);

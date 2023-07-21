@@ -28,7 +28,7 @@ class EventHandler
   TP_NONCOPYABLE(EventHandler);
 public:
   //################################################################################################
-  EventHandler(Map* map, int priority);
+  EventHandler(Map* map, int priority, Button hasMouseFocusFor=Button::NoButton);
 
   //################################################################################################
   ~EventHandler();

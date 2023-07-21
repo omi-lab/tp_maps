@@ -21,6 +21,9 @@ public:
   //################################################################################################
   size_t press(const MouseEvent& event);
 
+  //################################################################################################
+  std::function<void(const MouseEvent&)> postMouseEvent;
+
 private:
   struct Private;
   friend struct Private;

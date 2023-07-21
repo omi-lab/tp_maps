@@ -14,8 +14,8 @@ struct EventHandler_lt
   EventHandler eventHandler;
   MouseEvent pressEvent;
 
-  EventHandler_lt(Map* map):
-    eventHandler(map, 1)
+  EventHandler_lt(Map* map, Button button):
+    eventHandler(map, 1, button)
   {
 
   }
@@ -25,12 +25,14 @@ struct EventHandler_lt
 //##################################################################################################
 struct MouseEventHandler::Private
 {
+  MouseEventHandler* q;
   Map* map;
 
   std::unordered_map<Button, std::unique_ptr<EventHandler_lt>> eventHandlers;
 
   //################################################################################################
-  Private(Map* map_):
+  Private(MouseEventHandler* q_, Map* map_):
+    q(q_),
     map(map_)
   {
 
@@ -70,7 +72,7 @@ struct MouseEventHandler::Private
           e.pos = eventHandler->pressEvent.pos;
           e.modifiers = eventHandler->pressEvent.modifiers;
           eraseHandler();
-          map->mouseEvent(e);
+          q->postMouseEvent(e);
         }
 
         consumeEvent = true;
@@ -84,7 +86,7 @@ struct MouseEventHandler::Private
         e.pos = eventHandler->pressEvent.pos;
         e.modifiers = eventHandler->pressEvent.modifiers;
         eraseHandler();
-        map->mouseEvent(e);
+        q->postMouseEvent(e);
 
         consumeEvent = true;
         break;
@@ -101,9 +103,12 @@ struct MouseEventHandler::Private
 
 //##################################################################################################
 MouseEventHandler::MouseEventHandler(Map* map):
-  d(new Private(map))
+  d(new Private(this, map))
 {
-
+  postMouseEvent = [&](const MouseEvent& event)
+  {
+    d->map->mouseEvent(event);
+  };
 }
 
 //##################################################################################################
@@ -117,7 +122,7 @@ size_t MouseEventHandler::press(const MouseEvent& event)
 {
   auto& eventHandler = d->eventHandlers[event.button];
 
-  eventHandler.reset(new EventHandler_lt(d->map));
+  eventHandler.reset(new EventHandler_lt(d->map, event.button));
   eventHandler->pressEvent = event;
   eventHandler->eventHandler.updateCallbacks([this](EventHandlerCallbacks& callbacks)
   {

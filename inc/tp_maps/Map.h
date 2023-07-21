@@ -500,7 +500,7 @@ private:
   void removeFontRenderer(FontRenderer* fontRenderer);
 
   //################################################################################################
-  size_t addEventHandler(int priority);
+  size_t addEventHandler(int priority, Button hasMouseFocusFor);
 
   //################################################################################################
   void removeEventHandler(size_t eventHandlerId);

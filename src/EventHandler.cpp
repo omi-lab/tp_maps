@@ -18,18 +18,18 @@ struct EventHandler::Private
   size_t id{0};
 
   //################################################################################################
-  Private(Map* map_, int priority_):
+  Private(Map* map_, int priority_, Button hasMouseFocusFor):
     map(map_),
     priority(priority_),
-    id(map->addEventHandler(priority))
+    id(map->addEventHandler(priority, hasMouseFocusFor))
   {
 
   }
 };
 
 //##################################################################################################
-EventHandler::EventHandler(Map* map, int priority):
-  d(new Private(map, priority))
+EventHandler::EventHandler(Map* map, int priority, Button hasMouseFocusFor):
+  d(new Private(map, priority, hasMouseFocusFor))
 {
 
 }
