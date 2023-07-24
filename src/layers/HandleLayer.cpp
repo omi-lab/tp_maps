@@ -461,6 +461,11 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
     break;
   }
 
+  case MouseEventType::DragStart: //----------------------------------------------------------------
+  {
+    break;
+  }
+
   }
 
   return false;
