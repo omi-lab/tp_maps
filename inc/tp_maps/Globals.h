@@ -222,10 +222,10 @@ struct RenderFromStage
   //################################################################################################
   enum RenderFromStageType : size_t
   {
-    Full, //!< Start from the first RenderPass pass.
-    RenderMoreLights, //!< Start from the first RenderPass::LightFBOs pass and don't execute earlier passes.
-    Stage, //!< Start from the first RenderPass::Stage where the name matches pass and don't execute earlier passes.
-    Reset, //!< The render stage will be set to this after a render, ready for the next call to update.
+    Full = 1, //!< Start from the first RenderPass pass.
+    RenderMoreLights = 2, //!< Start from the first RenderPass::LightFBOs pass and don't execute earlier passes.
+    Stage = 3, //!< Start from the first RenderPass::Stage where the name matches pass and don't execute earlier passes.
+    Reset = 4, //!< The render stage will be set to this after a render, ready for the next call to update.
   };
 
   RenderFromStageType type;

@@ -1401,7 +1401,7 @@ void Map::paintGLNoMakeCurrent()
   Errors::printOpenGLError("Map::paintGL");
 }
 
-//################################################################################################
+//##################################################################################################
 size_t Map::skipRenderPasses()
 {
   size_t rp=0;
@@ -1481,7 +1481,7 @@ size_t Map::skipRenderPasses()
   return rp;
 }
 
-//################################################################################################
+//##################################################################################################
 void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool renderMoreLights)
 {
   PRF_SCOPED_RANGE(d->profiler.get(), "executeRenderPasses", {255,255,255});
