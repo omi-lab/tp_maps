@@ -553,7 +553,7 @@ bool CADController::mouseEvent(const MouseEvent& event)
 
   switch(event.type)
   {
-  case MouseEventType::Press: //--------------------------------------------------------------------
+  case MouseEventType::DragStart: //----------------------------------------------------------------
   {
     if(d->mouseInteraction == Button::NoButton)
     {
