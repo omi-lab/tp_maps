@@ -1301,7 +1301,7 @@ void Map::update(RenderFromStage renderFromStage)
 }
 
 //##################################################################################################
-float Map::pixelScale()
+float Map::pixelScale() const
 {
   return 1.0f;
 }

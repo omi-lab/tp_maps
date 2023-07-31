@@ -403,7 +403,7 @@ public:
   virtual void callAsync(const std::function<void()>& callback)=0;
 
   //################################################################################################
-  virtual float pixelScale();
+  virtual float pixelScale() const;
 
   //################################################################################################
   void initializeGL();
