@@ -2,8 +2,6 @@
 
 /*TP_GLSL_IN_V*/vec3 inVertex;
 /*TP_GLSL_IN_V*/vec3 inNormal;
-/*TP_GLSL_IN_V*/vec3 inTangent;
-/*TP_GLSL_IN_V*/vec3 inBitangent;
 /*TP_GLSL_IN_V*/vec2 inTexture;
 
 uniform mat4 m;
