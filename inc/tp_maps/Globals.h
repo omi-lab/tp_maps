@@ -152,12 +152,32 @@ using TPGLenum = GLenum;
 #define      TP_RIGHT_KEY      79
 #define      TP_DOWN_KEY       81
 
-#define      TP_W_KEY          26
 #define      TP_A_KEY           4
-#define      TP_S_KEY          22
+#define      TP_B_KEY           5
+#define      TP_C_KEY           6
 #define      TP_D_KEY           7
+#define      TP_E_KEY           8
 #define      TP_F_KEY           9
+#define      TP_G_KEY          10
+#define      TP_H_KEY          11
+#define      TP_I_KEY          12
+#define      TP_J_KEY          13
+#define      TP_K_KEY          14
+#define      TP_L_KEY          15
+#define      TP_M_KEY          16
+#define      TP_N_KEY          17
+#define      TP_O_KEY          18
+#define      TP_P_KEY          19
+#define      TP_Q_KEY          20
 #define      TP_R_KEY          21
+#define      TP_S_KEY          22
+#define      TP_T_KEY          23
+#define      TP_U_KEY          24
+#define      TP_V_KEY          25
+#define      TP_W_KEY          26
+#define      TP_X_KEY          27
+#define      TP_Y_KEY          28
+#define      TP_Z_KEY          29
 
 #define      TP_COMMA_KEY      -17
 #define      TP_ESCAPE_KEY    16777155
