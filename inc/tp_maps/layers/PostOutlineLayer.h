@@ -11,7 +11,7 @@ class TP_MAPS_EXPORT PostOutlineLayer: public PostSelectionLayer
 {
 public:
   //################################################################################################
-  PostOutlineLayer(size_t stage=1);
+  PostOutlineLayer(std::string const& stage="1");
 
 protected:
   //################################################################################################

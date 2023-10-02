@@ -249,7 +249,7 @@ struct RenderFromStage
   };
 
   RenderFromStageType type;
-  size_t index{0};
+  std::string index;
 
   //################################################################################################
   RenderFromStage()
@@ -258,7 +258,7 @@ struct RenderFromStage
   }
 
   //################################################################################################
-  RenderFromStage(RenderFromStageType type_ = RenderFromStage::Full, size_t index_=0):
+  RenderFromStage(RenderFromStageType type_ = RenderFromStage::Full, std::string index_=std::string()):
     type(type_),
     index(index_)
   {
@@ -315,7 +315,7 @@ struct RenderPass
   };
 
   RenderPassType type{RenderPassType::PreRender};
-  tp_utils::WeakStringID name{nullptr};
+  tp_utils::StringID name;
   PostLayer* postLayer{nullptr};
 
   //################################################################################################
@@ -325,17 +325,9 @@ struct RenderPass
   }
 
   //################################################################################################
-  RenderPass(RenderPassType type_, tp_utils::WeakStringID name_=nullptr):
+  RenderPass(RenderPassType type_, tp_utils::StringID name_=""):
     type(type_),
     name(name_)
-  {
-
-  }
-
-  //################################################################################################
-  RenderPass(RenderPassType type_, tp_utils::StringID name_):
-    type(type_),
-    name(name_.weak())
   {
 
   }
@@ -351,7 +343,7 @@ struct RenderPass
   //################################################################################################
   RenderPass(const RenderFromStage& renderFromStage):
     type(Stage),
-    name(reinterpret_cast<tp_utils::WeakStringID>(renderFromStage.index))
+    name(renderFromStage.index)
   {
 
   }
@@ -389,8 +381,9 @@ struct RenderPass
   //################################################################################################
   std::string getNameString() const
   {
-    if(name)
-      return tp_utils::StringID::fromWeak(name).toString();
+    if(name.isValid())
+      return name.toString();
+
     return std::to_string(size_t(type));
   }
 };

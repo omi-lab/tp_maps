@@ -209,7 +209,7 @@ struct Map::Private
   // We don't want to multisample multiple times it just makes the result blury. So what we do here
   // is have 3 buffers, the first has the 3D geometry drawn to it and is multisampled after this the
   // render pipeline toggles between the second and third for the remaining post processing steps.
-  std::unordered_map<tp_utils::WeakStringID, std::unique_ptr<FBO>> intermediateFBOs;
+  std::unordered_map<tp_utils::StringID, std::unique_ptr<FBO>> intermediateFBOs;
 
   FBO* currentReadFBO{intermediateFBO(0)};
   FBO* currentDrawFBO{intermediateFBO(0)};
@@ -301,7 +301,7 @@ struct Map::Private
   }
 
   //################################################################################################
-  FBO* intermediateFBO(tp_utils::WeakStringID name)
+  FBO* intermediateFBO(tp_utils::StringID name)
   {
     auto& intermediateFBO = intermediateFBOs[name];
     if(!intermediateFBO)
@@ -1464,7 +1464,7 @@ size_t Map::skipRenderPasses()
       case RenderPass::Stage: //--------------------------------------------------------------------
       {
         if(d->renderFromStage == RenderFromStage::Stage &&
-           size_t(renderPass.name) == d->renderFromStage.index)
+           renderPass.name == d->renderFromStage.index)
         {
           rp++;
           return rp;

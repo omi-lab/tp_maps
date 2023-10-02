@@ -12,7 +12,7 @@ class TP_MAPS_EXPORT PostSelectionLayer: public PostLayer
 {
 public:
   //################################################################################################
-  PostSelectionLayer(const RenderPass& customRenderPass, size_t stage=1);
+  PostSelectionLayer(const RenderPass& customRenderPass, std::string const& stage="1");
 
   //################################################################################################
   ~PostSelectionLayer();

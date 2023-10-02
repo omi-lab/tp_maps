@@ -11,7 +11,7 @@ struct PostSelectionLayer::Private
   tp_maps::RenderFromStage renderFromStage;
 
   //################################################################################################
-  Private(size_t stage):
+  Private(std::string stage):
     renderFromStage(tp_maps::RenderFromStage::Stage, stage)
   {
 
@@ -19,7 +19,7 @@ struct PostSelectionLayer::Private
 };
 
 //##################################################################################################
-PostSelectionLayer::PostSelectionLayer(const RenderPass& customRenderPass, size_t stage):
+PostSelectionLayer::PostSelectionLayer(const RenderPass& customRenderPass, std::string const& stage):
   PostLayer(customRenderPass),
   d(new Private(stage))
 {
