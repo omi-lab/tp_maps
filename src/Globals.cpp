@@ -17,6 +17,7 @@ TP_DEFINE_ID(                image3DShaderSID,                  "Image 3D shader
 TP_DEFINE_ID(                    xyzShaderSID,                       "XYZ shader");
 TP_DEFINE_ID(            pointSpriteShaderSID,              "Point sprite shader");
 TP_DEFINE_ID(               materialShaderSID,                  "Material shader");
+TP_DEFINE_ID(            staticLightShaderSID,              "Static light shader");
 TP_DEFINE_ID(               yuvImageShaderSID,                 "YUV image shader");
 TP_DEFINE_ID(             depthImageShaderSID,               "Depth image shader");
 TP_DEFINE_ID(           depthImage3DShaderSID,            "Depth image 3D shader");

@@ -8,6 +8,7 @@
 #include "tp_maps/shaders/ImageShader.h"
 #include "tp_maps/shaders/XYZShader.h"
 #include "tp_maps/shaders/DepthShader.h"
+#include "tp_maps/shaders/StaticLightShader.h"
 
 #include "tp_utils/TimeUtils.h"
 
@@ -216,10 +217,11 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
   Geometry3DShader* shader{nullptr};
   switch(d->shaderSelection)
   {
-  case ShaderSelection::Material: shader = map()->getShader<MaterialShader>(); break;
-  case ShaderSelection::Image   : shader = map()->getShader<ImageShader>   (); break;
-  case ShaderSelection::XYZ     : shader = map()->getShader<XYZShader>     (); break;
-  case ShaderSelection::Depth   : shader = map()->getShader<DepthShader>   (); break;
+  case ShaderSelection::Material    : shader = map()->getShader<MaterialShader>   (); break;
+  case ShaderSelection::Image       : shader = map()->getShader<ImageShader>      (); break;
+  case ShaderSelection::XYZ         : shader = map()->getShader<XYZShader>        (); break;
+  case ShaderSelection::Depth       : shader = map()->getShader<DepthShader>      (); break;
+  case ShaderSelection::StaticLight : shader = map()->getShader<StaticLightShader>(); break;
   }
 
   if(!shader || shader->error())

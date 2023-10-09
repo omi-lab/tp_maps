@@ -7,8 +7,12 @@
 
 #include "tp_math_utils/Plane.h"
 
-#include "glm/gtx/norm.hpp" // IWYU pragma: keep
+#include "tp_utils/DebugUtils.h"
 
+#include "glm/gtx/norm.hpp" // IWYU pragma: keep
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtx/rotate_normalized_axis.hpp"
+#include "glm/gtx/rotate_vector.hpp"
 namespace tp_maps
 {
 
@@ -146,7 +150,7 @@ struct GizmoLayer::Private
       }
 
       case RotationRingStyle::ArrowsCW:   //--------------------------------------------------------
-        [[fallthrough]];
+      [[fallthrough]];
       case RotationRingStyle::ArrowsCCW: //---------------------------------------------------------
       {
         size_t stemStart=0;
@@ -325,6 +329,7 @@ struct GizmoLayer::Private
     auto& arrow = geometry.emplace_back();
 
     arrow.material.albedo = color;
+    arrow.material.roughness = 0.0f;
 
     arrow.triangleFan   = GL_TRIANGLE_FAN;
     arrow.triangleStrip = GL_TRIANGLE_STRIP;
@@ -439,17 +444,24 @@ struct GizmoLayer::Private
 GizmoLayer::GizmoLayer():
   d(new Private())
 {
-  d->rotateXGeometryLayer = new Geometry3DLayer(); addChildLayer(d->rotateXGeometryLayer);
-  d->rotateYGeometryLayer = new Geometry3DLayer(); addChildLayer(d->rotateYGeometryLayer);
-  d->rotateZGeometryLayer = new Geometry3DLayer(); addChildLayer(d->rotateZGeometryLayer);
+  auto createLayer = [&](auto& l)
+  {
+    l = new Geometry3DLayer();
+    addChildLayer(l);
+    l->setShaderSelection(Geometry3DLayer::ShaderSelection::StaticLight);
+  };
 
-  d->translationXGeometryLayer = new Geometry3DLayer(); addChildLayer(d->translationXGeometryLayer);
-  d->translationYGeometryLayer = new Geometry3DLayer(); addChildLayer(d->translationYGeometryLayer);
-  d->translationZGeometryLayer = new Geometry3DLayer(); addChildLayer(d->translationZGeometryLayer);
+  createLayer(d->rotateXGeometryLayer);
+  createLayer(d->rotateYGeometryLayer);
+  createLayer(d->rotateZGeometryLayer);
 
-  d->scaleXGeometryLayer = new Geometry3DLayer(); addChildLayer(d->scaleXGeometryLayer);
-  d->scaleYGeometryLayer = new Geometry3DLayer(); addChildLayer(d->scaleYGeometryLayer);
-  d->scaleZGeometryLayer = new Geometry3DLayer(); addChildLayer(d->scaleZGeometryLayer);
+  createLayer(d->translationXGeometryLayer);
+  createLayer(d->translationYGeometryLayer);
+  createLayer(d->translationZGeometryLayer);
+
+  createLayer(d->scaleXGeometryLayer);
+  createLayer(d->scaleYGeometryLayer);
+  createLayer(d->scaleZGeometryLayer);
 }
 
 //##################################################################################################
@@ -831,7 +843,7 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
   }
 
   default:
-    break;
+  break;
   }
 
   return Layer::mouseEvent(event);

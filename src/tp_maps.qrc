@@ -18,6 +18,8 @@
         <file alias="MaterialShader.light.vert">resources/shaders/MaterialShader.light.vert</file>
         <file alias="MaterialShader.picking.frag">resources/shaders/MaterialShader.picking.frag</file>
         <file alias="MaterialShader.picking.vert">resources/shaders/MaterialShader.picking.vert</file>
+        <file alias="StaticLightShader.render.frag">resources/shaders/StaticLightShader.render.frag</file>
+        <file alias="StaticLightShader.render.vert">resources/shaders/StaticLightShader.render.vert</file>
         <file alias="PointSpriteShader.frag">resources/shaders/PointSpriteShader.frag</file>
         <file alias="PointSpriteShader.vert">resources/shaders/PointSpriteShader.vert</file>
         <file alias="PointSpriteShader.picking.frag">resources/shaders/PointSpriteShader.picking.frag</file>

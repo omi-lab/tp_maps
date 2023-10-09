@@ -44,7 +44,8 @@ struct LightsLayer::Private
   std::vector<GizmoLayer*> gizmoLayers;
 
   FontRenderer* font{nullptr};
-  std::vector<LabelDetails_lt> labels;
+  std::vector<LabelDetails_lt> labels;  
+  std::string prefix;
 
   size_t clickIndex{0};
   bool clickActive{false};
@@ -87,6 +88,23 @@ void LightsLayer::setFont(FontRenderer* font)
 FontRenderer* LightsLayer::font() const
 {
   return d->font;
+}
+
+//##################################################################################################
+const std::string& LightsLayer::prefix() const
+{
+  return d->prefix;
+}
+
+//##################################################################################################
+void LightsLayer::setPrefix(const std::string& prefix)
+{
+  if(d->prefix != prefix)
+  {
+    d->prefix = prefix;
+    d->regenerateText = true;
+    update();
+  }
 }
 
 //##################################################################################################
@@ -203,7 +221,10 @@ void LightsLayer::render(RenderInfo& renderInfo)
       {
         const auto& light = lights.at(l);
         auto& label = d->labels.at(l);
-        label.preparedString.reset(new tp_maps::FontShader::PreparedString(font(), tpFromUTF8(light.name.toString()), config));
+
+        std::string text = d->prefix + std::to_string(l) + " : " + light.name.toString();
+
+        label.preparedString.reset(new tp_maps::FontShader::PreparedString(font(), tpFromUTF8(text), config));
         label.position = light.position();
       }
     }

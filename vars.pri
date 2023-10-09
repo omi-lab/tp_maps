@@ -136,6 +136,9 @@ HEADERS += inc/tp_maps/shaders/XYZShader.h
 SOURCES += src/shaders/MaterialShader.cpp
 HEADERS += inc/tp_maps/shaders/MaterialShader.h
 
+SOURCES += src/shaders/StaticLightShader.cpp
+HEADERS += inc/tp_maps/shaders/StaticLightShader.h
+
 SOURCES += src/shaders/FontShader.cpp
 HEADERS += inc/tp_maps/shaders/FontShader.h
 
