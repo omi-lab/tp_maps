@@ -77,6 +77,28 @@ LightsLayer::~LightsLayer()
 }
 
 //##################################################################################################
+bool LightsLayer::editLights() const
+{
+  return d->editLights;
+}
+
+//##################################################################################################
+void LightsLayer::setEditLights(bool editLights)
+{
+  d->editLights = editLights;
+
+  if(!d->editLights)
+  {
+    tpDeleteAll(d->gizmoLayers);
+    d->gizmoLayers.clear();
+  }
+
+  d->updateModels = true;
+  d->updateVisibility = true;
+  update();
+}
+
+//##################################################################################################
 void LightsLayer::setFont(FontRenderer* font)
 {
   d->regenerateText = true;
