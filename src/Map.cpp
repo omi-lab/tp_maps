@@ -26,7 +26,7 @@
 #include "tp_utils/Progress.h" // IWYU pragma: keep
 
 
-#include "glm/glm.hpp"
+#include "glm/glm.hpp" // IWYU pragma: keep
 #include "glm/gtx/norm.hpp" // IWYU pragma: keep
 
 #include <numeric>
@@ -76,7 +76,7 @@ class ScopedDebug_lt
 #ifdef TP_ENABLE_FUNCTION_TIME
   const char* m_file;
   const int m_line;
-  tp_utils::FunctionTimer m_functionTimer{m_file, m_line, m_name};
+  tp_utils::FunctionTimer m_functionTimer{m_file, m_line, m_name.c_str()};
 #endif
   const TPPixel m_color;
 
