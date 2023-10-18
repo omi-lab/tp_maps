@@ -63,14 +63,14 @@ struct Geometry3DLayer::Private
   //################################################################################################
   tp_utils::Callback<void()> geometry3DPoolChanged = [&]
   {
-    TP_TIME_SCOPE("Geometry3DLayer::geometry3DPoolChanged");
+    TP_FUNCTION_TIME("Geometry3DLayer::geometry3DPoolChanged");
     q->update();
   };
 
   //################################################################################################
   void checkClearGeometry()
   {
-    TP_TIME_SCOPE("Geometry3DLayer::checkClearGeometry");
+    TP_FUNCTION_TIME("Geometry3DLayer::checkClearGeometry");
     if(geometrySet)
     {
       geometrySet=false;
@@ -114,7 +114,7 @@ TexturePool* Geometry3DLayer::texturePool() const
 //##################################################################################################
 void Geometry3DLayer::setTextures(const std::unordered_map<tp_utils::StringID, tp_image_utils::ColorMap>& textures)
 {
-  TP_TIME_SCOPE("Geometry3DLayer::setTextures");
+  TP_FUNCTION_TIME("Geometry3DLayer::setTextures");
   std::vector<tp_utils::StringID> subscribedTextures;
   subscribedTextures.reserve(textures.size());
   for(const auto& i : textures)
@@ -137,7 +137,7 @@ Geometry3DPool* Geometry3DLayer::geometry3DPool() const
 //##################################################################################################
 void Geometry3DLayer::setGeometry(const std::vector<tp_math_utils::Geometry3D>& geometry)
 {
-  TP_TIME_SCOPE("Geometry3DLayer::setGeometry");
+  TP_FUNCTION_TIME("Geometry3DLayer::setGeometry");
   d->checkClearGeometry();
   d->geometrySet = true;
   d->geometry3DPool->subscribe(d->name, [&]{return geometry;}, true);
@@ -200,7 +200,7 @@ const std::vector<tp_math_utils::UVTransformation>& Geometry3DLayer::uvTransform
 //##################################################################################################
 void Geometry3DLayer::render(RenderInfo& renderInfo)
 {
-  TP_TIME_SCOPE("Geometry3DLayer::render");
+  TP_FUNCTION_TIME("Geometry3DLayer::render");
 
   if(renderInfo.pass != defaultRenderPass().type &&
      renderInfo.pass != RenderPass::Transparency &&

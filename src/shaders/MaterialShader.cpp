@@ -184,7 +184,7 @@ MaterialShader::MaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile, b
   Geometry3DShader(map, openGLProfile),
   d(new Private(this))
 {
-  TP_TIME_SCOPE("MaterialShader::MaterialShader");
+  TP_FUNCTION_TIME("MaterialShader::MaterialShader");
   auto bindTexture = [&](const TPPixel& color)
   {
     tp_image_utils::ColorMap textureData{1, 1, nullptr, color};

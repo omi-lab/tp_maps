@@ -1236,6 +1236,7 @@ bool Map::renderToImage(size_t width, size_t height, HDR hdr, const std::functio
 //##################################################################################################
 void Map::deleteTexture(GLuint id)
 {
+  TP_FUNCTION_TIME("Map::deleteTexture");
   if(id>0)
   {
     makeCurrent();

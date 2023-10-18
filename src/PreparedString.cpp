@@ -3,6 +3,7 @@
 #include "tp_maps/FontRenderer.h"
 
 #include "tp_utils/RefCount.h"
+#include "tp_utils/TimeUtils.h"
 
 namespace tp_maps
 {
@@ -35,6 +36,7 @@ struct PreparedString::Private
 PreparedString::PreparedString(FontRenderer* fontRenderer, const std::u16string& text, const PreparedStringConfig& config):
   d(new Private(fontRenderer, text, config))
 {
+  TP_FUNCTION_TIME("PreparedString::PreparedString");
   d->fontRenderer->addPreparedString(this);
 }
 

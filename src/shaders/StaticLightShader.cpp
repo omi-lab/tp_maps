@@ -223,7 +223,7 @@ StaticLightShader::StaticLightShader(Map* map, tp_maps::OpenGLProfile openGLProf
   Geometry3DShader(map, openGLProfile),
   d(new Private(this))
 {
-  TP_TIME_SCOPE("StaticLightShader::StaticLightShader");
+  TP_FUNCTION_TIME("StaticLightShader::StaticLightShader");
   auto bindTexture = [&](const TPPixel& color)
   {
     tp_image_utils::ColorMap textureData{1, 1, nullptr, color};

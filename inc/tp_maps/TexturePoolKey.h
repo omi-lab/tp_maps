@@ -70,7 +70,7 @@ namespace std
 template <>
 struct hash<tp_maps::TexturePoolKey>
 {
-  std::size_t operator()(const tp_maps::TexturePoolKey& key) const
+  size_t operator()(const tp_maps::TexturePoolKey& key) const
   {
     return key.h;
   }

@@ -4,6 +4,7 @@
 
 #include "tp_utils/DebugUtils.h"
 #include "tp_utils/StackTrace.h"
+#include "tp_utils/TimeUtils.h"
 
 namespace tp_maps
 {
@@ -178,6 +179,8 @@ std::vector<Layer*>& Layer::childLayers()
 //##################################################################################################
 void Layer::render(RenderInfo& renderInfo)
 {
+  TP_FUNCTION_TIME("Layer::render");
+
   for(auto l : d->layers)
     if(l->visible())
       l->render(renderInfo);

@@ -78,6 +78,8 @@ struct FontShader::PreparedString::Private
   //################################################################################################
   void bindVBO()
   {
+    TP_FUNCTION_TIME("FontShader::PreparedString::Private::bindVBO");
+
     glBindBuffer(GL_ARRAY_BUFFER, vboID);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex_lt), tpVoidLiteral( 0));
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex_lt), tpVoidLiteral(12));
@@ -152,6 +154,8 @@ FontShader::~FontShader()
 //##################################################################################################
 void FontShader::use(ShaderType shaderType)
 {
+  TP_FUNCTION_TIME("FontShader::use");
+
   //https://webglfundamentals.org/webgl/lessons/webgl-and-alpha.html
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -163,18 +167,21 @@ void FontShader::use(ShaderType shaderType)
 //##################################################################################################
 void FontShader::setMatrix(const glm::mat4& matrix)
 {
+  TP_FUNCTION_TIME("FontShader::setMatrix");
   glUniformMatrix4fv(d->matrixLocation, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
 //##################################################################################################
 void FontShader::setColor(const glm::vec4& color)
 {
+  TP_FUNCTION_TIME("FontShader::setColor");
   glUniform4fv(d->colorLocation, 1, &color.x);
 }
 
 //##################################################################################################
 void FontShader::setTexture(GLuint textureID)
 {
+  TP_FUNCTION_TIME("FontShader::setTexture");
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, textureID);
 }
@@ -182,6 +189,8 @@ void FontShader::setTexture(GLuint textureID)
 //##################################################################################################
 void FontShader::drawPreparedString(PreparedString& preparedString)
 {
+  TP_FUNCTION_TIME("FontShader::drawPreparedString");
+
   setTexture(preparedString.textureID());
 
   if(preparedString.d->regenerateBuffers)
@@ -194,73 +203,82 @@ void FontShader::drawPreparedString(PreparedString& preparedString)
     std::vector<GLushort> indexes;
     std::vector<Vertex_lt> verts;
 
-    indexes.reserve(fontGeometry.glyphs.size()*6);
-    verts.reserve(fontGeometry.glyphs.size()*4);
-
-    for(const auto& glyph : fontGeometry.glyphs)
     {
-      auto i = verts.size();
+      TP_FUNCTION_TIME("FontShader::drawPreparedString generate indexes");
 
-      indexes.push_back(GLushort(i+0));
-      indexes.push_back(GLushort(i+1));
-      indexes.push_back(GLushort(i+2));
+      indexes.reserve(fontGeometry.glyphs.size()*6);
+      verts.reserve(fontGeometry.glyphs.size()*4);
 
-      indexes.push_back(GLushort(i+0));
-      indexes.push_back(GLushort(i+2));
-      indexes.push_back(GLushort(i+3));
-
-      for(size_t i=0; i<4; i++)
+      for(const auto& glyph : fontGeometry.glyphs)
       {
-        Vertex_lt& vert = verts.emplace_back();
-        vert.position = {glyph.vertices.at(i), 0.0f};
-        if(preparedString.config().topDown)
-          vert.position.y = -vert.position.y;
-        vert.texture = glyph.textureCoords.at(i);
-        vert.normal = {0.0f, 0.0f, 1.0f};
+        auto i = verts.size();
+
+        indexes.push_back(GLushort(i+0));
+        indexes.push_back(GLushort(i+1));
+        indexes.push_back(GLushort(i+2));
+
+        indexes.push_back(GLushort(i+0));
+        indexes.push_back(GLushort(i+2));
+        indexes.push_back(GLushort(i+3));
+
+        for(size_t i=0; i<4; i++)
+        {
+          Vertex_lt& vert = verts.emplace_back();
+          vert.position = {glyph.vertices.at(i), 0.0f};
+          if(preparedString.config().topDown)
+            vert.position.y = -vert.position.y;
+          vert.texture = glyph.textureCoords.at(i);
+          vert.normal = {0.0f, 0.0f, 1.0f};
+        }
       }
+
+      if(indexes.empty() || verts.empty())
+        return;
+
+      preparedString.d->indexCount  = GLuint(indexes.size());
     }
 
-    if(indexes.empty() || verts.empty())
-      return;
-
-    preparedString.d->indexCount  = GLuint(indexes.size());
+    {
+      TP_FUNCTION_TIME("FontShader::drawPreparedString create arrays");
 
 #ifdef TP_VERTEX_ARRAYS_SUPPORTED
-    preparedString.d->vertexCount = GLuint(verts.size());
+      preparedString.d->vertexCount = GLuint(verts.size());
 
-    glGenBuffers(1, &preparedString.d->iboID);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, preparedString.d->iboID);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexes.size()*sizeof(GLushort)), indexes.data(), GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+      glGenBuffers(1, &preparedString.d->iboID);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, preparedString.d->iboID);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLsizeiptr(indexes.size()*sizeof(GLushort)), indexes.data(), GL_STATIC_DRAW);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    glGenBuffers(1, &preparedString.d->vboID);
-    glBindBuffer(GL_ARRAY_BUFFER, preparedString.d->vboID);
-    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(verts.size()*sizeof(Vertex_lt)), verts.data(), GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+      glGenBuffers(1, &preparedString.d->vboID);
+      glBindBuffer(GL_ARRAY_BUFFER, preparedString.d->vboID);
+      glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(verts.size()*sizeof(Vertex_lt)), verts.data(), GL_STATIC_DRAW);
+      glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    tpGenVertexArrays(1, &preparedString.d->vaoID);
-    tpBindVertexArray(preparedString.d->vaoID);
-    preparedString.d->bindVBO();
-    tpBindVertexArray(0);
+      tpGenVertexArrays(1, &preparedString.d->vaoID);
+      tpBindVertexArray(preparedString.d->vaoID);
+      preparedString.d->bindVBO();
+      tpBindVertexArray(0);
 #else
-    preparedString.d->vertexCount = GLuint(indexes.size());
+      preparedString.d->vertexCount = GLuint(indexes.size());
 
-    std::vector<Vertex_lt> indexedVerts;
-    indexedVerts.reserve(indexes.size());
-    for(auto index : indexes)
-      indexedVerts.push_back(verts.at(size_t(index)));
+      std::vector<Vertex_lt> indexedVerts;
+      indexedVerts.reserve(indexes.size());
+      for(auto index : indexes)
+        indexedVerts.push_back(verts.at(size_t(index)));
 
-    glGenBuffers(1, &preparedString.d->vboID);
-    glBindBuffer(GL_ARRAY_BUFFER, preparedString.d->vboID);
-    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(indexedVerts.size()*sizeof(Vertex_lt)), indexedVerts.data(), GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+      glGenBuffers(1, &preparedString.d->vboID);
+      glBindBuffer(GL_ARRAY_BUFFER, preparedString.d->vboID);
+      glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(indexedVerts.size()*sizeof(Vertex_lt)), indexedVerts.data(), GL_STATIC_DRAW);
+      glBindBuffer(GL_ARRAY_BUFFER, 0);
 #endif
+    }
 
     preparedString.d->valid = true;
   }
 
   if(preparedString.d->valid)
   {
+    TP_FUNCTION_TIME("FontShader::drawPreparedString draw");
 #ifdef TP_VERTEX_ARRAYS_SUPPORTED
     tpBindVertexArray(preparedString.d->vaoID);
     tpDrawElements(GL_TRIANGLES,
@@ -294,6 +312,8 @@ FontShader::PreparedString::~PreparedString()
 //##################################################################################################
 void FontShader::PreparedString::invalidateBuffers()
 {
+  TP_FUNCTION_TIME("FontShader::invalidateBuffers");
+
   //Something bad has happened to the OpenGL context so we should just forget all buffers and start
   //from scratch.
 

@@ -39,7 +39,7 @@ struct PoolDetails_lt
   //################################################################################################
   void deleteVertexBuffers()
   {
-    TP_TIME_SCOPE("Geometry3DPool::PoolDetails_lt::deleteVertexBuffers");
+    TP_FUNCTION_TIME("Geometry3DPool::PoolDetails_lt::deleteVertexBuffers");
 
     for(const auto& details : processedGeometry)
       for(const auto& buffer : details.vertexBuffers)
@@ -51,7 +51,7 @@ struct PoolDetails_lt
   //################################################################################################
   void checkUpdateVertexBuffer(Geometry3DShader* shader, Map* map)
   {
-    TP_TIME_SCOPE("Geometry3DPool::PoolDetails_lt::checkUpdateVertexBuffer");
+    TP_FUNCTION_TIME("Geometry3DPool::PoolDetails_lt::checkUpdateVertexBuffer");
 
     if(updateVertexBuffer)
     {
@@ -100,7 +100,7 @@ struct PoolDetails_lt
   //################################################################################################
   void checkUpdateVertexBufferTextures(TexturePool* texturePool)
   {
-    TP_TIME_SCOPE("Geometry3DPool::PoolDetails_lt::checkUpdateVertexBufferTextures");
+    TP_FUNCTION_TIME("Geometry3DPool::PoolDetails_lt::checkUpdateVertexBufferTextures");
 
     if(updateVertexBufferTextures)
     {
@@ -214,9 +214,8 @@ struct Geometry3DPool::Private
   //################################################################################################
   tp_utils::Callback<void()> texturePoolChanged = [&]
   {
+    TP_FUNCTION_TIME("Geometry3DPool::Private::texturePoolChanged");
     CHECK_FOR_DUPLICATE_IDS();
-
-    TP_TIME_SCOPE("Geometry3DPool::Private::texturePoolChanged");
 
     for(auto& i : pools)
       i.second.updateVertexBufferTextures=true;
@@ -227,7 +226,7 @@ struct Geometry3DPool::Private
   //################################################################################################
   tp_utils::Callback<void()> invalidateBuffersCallback = [&]
   {
-    TP_TIME_SCOPE("Geometry3DPool::Private::invalidateBuffersCallback");
+    TP_FUNCTION_TIME("Geometry3DPool::Private::invalidateBuffersCallback");
     CHECK_FOR_DUPLICATE_IDS();
 
     for(auto& i : pools)
@@ -242,7 +241,7 @@ struct Geometry3DPool::Private
   //################################################################################################
   void unsubscribeTextures(std::unordered_set<TexturePoolKey>& textureSubscriptions)
   {
-    TP_TIME_SCOPE("Geometry3DPool::Private::unsubscribeTextures");
+    TP_FUNCTION_TIME("Geometry3DPool::Private::unsubscribeTextures");
     CHECK_FOR_DUPLICATE_IDS();
 
     if(texturePool)
@@ -287,7 +286,7 @@ TexturePool* Geometry3DPool::texturePool() const
 //##################################################################################################
 void Geometry3DPool::incrementKeepHot(bool keepHot)
 {
-  TP_TIME_SCOPE("Geometry3DPool::incrementKeepHot");
+  TP_FUNCTION_TIME("Geometry3DPool::incrementKeepHot");
   CHECK_FOR_DUPLICATE_IDS();
 
   d->texturePool->incrementKeepHot(keepHot);
@@ -315,7 +314,7 @@ void Geometry3DPool::subscribe(const tp_utils::StringID& name,
                                bool overwrite,
                                bool isOnlyMaterial)
 {
-  TP_TIME_SCOPE("Geometry3DPool::subscribe");
+  TP_FUNCTION_TIME("Geometry3DPool::subscribe");
   CHECK_FOR_DUPLICATE_IDS();
 
   auto& details = d->pools[name];
@@ -366,7 +365,7 @@ void Geometry3DPool::subscribe(const tp_utils::StringID& name,
 //##################################################################################################
 void Geometry3DPool::unsubscribe(const tp_utils::StringID& name)
 {
-  TP_TIME_SCOPE("Geometry3DPool::unsubscribe");
+  TP_FUNCTION_TIME("Geometry3DPool::unsubscribe");
   CHECK_FOR_DUPLICATE_IDS();
 
   auto i = d->pools.find(name);
@@ -394,7 +393,7 @@ void Geometry3DPool::viewProcessedGeometry(const tp_utils::StringID& name,
                                            const std::vector<glm::mat3>& uvMatrices,
                                            const ProcessedGeometryCallback& closure)
 {
-  TP_TIME_SCOPE("Geometry3DPool::viewProcessedGeometry");
+  TP_FUNCTION_TIME("Geometry3DPool::viewProcessedGeometry");
   CHECK_FOR_DUPLICATE_IDS();
 
   d->map()->makeCurrent();

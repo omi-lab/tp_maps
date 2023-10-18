@@ -1,8 +1,11 @@
 #include "tp_maps/textures/BasicTexture.h"
 #include "tp_maps/Map.h"
 
+#include "tp_image_utils/SaveImages.h"
+
 #include "tp_utils/DebugUtils.h"
 #include "tp_utils/StackTrace.h"
+#include "tp_utils/TimeUtils.h"
 
 #include <cstring>
 
@@ -82,6 +85,22 @@ GLuint BasicTexture::bindTexture(const tp_image_utils::ColorMap& img,
                                  GLint textureWrapS,
                                  GLint textureWrapT)
 {
+  TP_FUNCTION_TIME("BasicTexture::bindTexture");
+
+#if 0
+  tp_utils::ElapsedTimer t;
+  t.start();
+  TP_CLEANUP([&]
+  {
+    if(t.elapsed()>5)
+    {
+      static size_t fileIndex{0};
+      tp_image_utils::saveImage("C:/Users/PC/Desktop/basic_texture/" + tp_utils::fixedWidthKeepRight(std::to_string(fileIndex), 8, '0') + ".png", img);
+      fileIndex++;
+    }
+  });
+#endif
+
   if(!map()->initialized())
   {
     tpWarning() << "Error! Trying to generate a texture on a map that is not initialized.";

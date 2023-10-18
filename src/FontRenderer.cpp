@@ -102,6 +102,8 @@ std::shared_ptr<Font> FontRenderer::font() const
 //##################################################################################################
 void FontRenderer::squeeze()
 {
+  TP_FUNCTION_TIME("FontRenderer::squeeze");
+
   d->requiredCharacters.clear();
   d->freeAndInvalidate();
 }
@@ -109,6 +111,8 @@ void FontRenderer::squeeze()
 //##################################################################################################
 void FontRenderer::invalidateBuffers()
 {
+  TP_FUNCTION_TIME("FontRenderer::invalidateBuffers");
+
   d->textureID = 0;
   d->bindTexture = true;
 
@@ -119,6 +123,8 @@ void FontRenderer::invalidateBuffers()
 //##################################################################################################
 GLuint FontRenderer::textureID()
 {
+  TP_FUNCTION_TIME("FontRenderer::textureID");
+
   d->generate();
 
   if(d->bindTexture)
@@ -134,6 +140,8 @@ GLuint FontRenderer::textureID()
 //##################################################################################################
 void FontRenderer::prepareFontGeometry(const PreparedString& preparedString, FontGeometry& fontGeometry)
 {
+  TP_FUNCTION_TIME("FontRenderer::prepareFontGeometry");
+
   d->generate();
 
   float lineSpacing=d->font->lineHeight();
@@ -231,6 +239,8 @@ void FontRenderer::prepareFontGeometry(const PreparedString& preparedString, Fon
 //##################################################################################################
 void FontRenderer::generate()
 {
+  TP_FUNCTION_TIME("FontRenderer::generate");
+
   size_t padding1 = 1;
   size_t padding2 = padding1*2;
 
@@ -447,6 +457,8 @@ const std::unordered_set<char16_t>& FontRenderer::requiredCharacters() const
 //##################################################################################################
 void FontRenderer::addPreparedString(PreparedString* preparedString)
 {
+  TP_FUNCTION_TIME("FontRenderer::addPreparedString");
+
   size_t size = d->requiredCharacters.size();
 
   d->preparedStrings.push_back(preparedString);

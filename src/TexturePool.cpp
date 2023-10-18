@@ -134,7 +134,7 @@ TexturePool::~TexturePool()
 //##################################################################################################
 void TexturePool::incrementKeepHot(bool keepHot)
 {
-  TP_TIME_SCOPE("TexturePool::incrementKeepHot");
+  TP_FUNCTION_TIME("TexturePool::incrementKeepHot");
 
   d->keepHot += keepHot?1:-1;
   if(d->keepHot==0)
@@ -176,7 +176,7 @@ void TexturePool::subscribe(const tp_utils::StringID& name,
                             const tp_image_utils::ColorMap& image,
                             bool makeSquare)
 {
-  TP_TIME_SCOPE("TexturePool::subscribe(name)");
+  TP_FUNCTION_TIME("TexturePool::subscribe(name)");
 
   auto& details = d->images[name];
   details.count++;
@@ -228,7 +228,7 @@ void TexturePool::subscribe(const tp_utils::StringID& name,
 //##################################################################################################
 void TexturePool::unsubscribe(const tp_utils::StringID& name)
 {
-  TP_TIME_SCOPE("TexturePool::unsubscribe(name)");
+  TP_FUNCTION_TIME("TexturePool::unsubscribe(name)");
 
   auto i = d->images.find(name);
   if(i == d->images.end())
@@ -252,7 +252,7 @@ void TexturePool::unsubscribe(const tp_utils::StringID& name)
 void TexturePool::subscribe(const TexturePoolKey& key,
                             bool makeSquare)
 {
-  TP_TIME_SCOPE("TexturePool::unsubscribe(key)");
+  TP_FUNCTION_TIME("TexturePool::unsubscribe(key)");
 
   auto& details = d->combinedImages[key];
   details.count++;
@@ -280,7 +280,7 @@ void TexturePool::subscribe(const TexturePoolKey& key,
 //##################################################################################################
 void TexturePool::unsubscribe(const TexturePoolKey& key)
 {
-  TP_TIME_SCOPE("TexturePool::unsubscribe(key)");
+  TP_FUNCTION_TIME("TexturePool::unsubscribe(key)");
 
   auto i = d->combinedImages.find(key);
   if(i == d->combinedImages.end())
