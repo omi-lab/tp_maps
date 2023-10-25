@@ -218,8 +218,10 @@ const char* G3DStaticLightShader::vertexShaderStr(ShaderType shaderType)
   {
   case ShaderType::Render: [[fallthrough]];
   case ShaderType::RenderExtendedFBO:
-  static ShaderResource s{"/tp_maps/G3DStaticLightShader.render.vert"};
-  return s.data(openGLProfile(), shaderType);
+  {
+    static ShaderResource s{"/tp_maps/G3DStaticLightShader.render.vert"};
+    return s.data(openGLProfile(), shaderType);
+  }
 
   case ShaderType::Picking:
   return G3DMaterialShader::vertexShaderStr(shaderType);
@@ -238,8 +240,10 @@ const char* G3DStaticLightShader::fragmentShaderStr(ShaderType shaderType)
   {
   case ShaderType::Render: [[fallthrough]];
   case ShaderType::RenderExtendedFBO:
-  static ShaderResource s{"/tp_maps/G3DStaticLightShader.render.frag"};
-  return s.data(openGLProfile(), shaderType);
+  {
+    static ShaderResource s{"/tp_maps/G3DStaticLightShader.render.frag"};
+    return s.data(openGLProfile(), shaderType);
+  }
 
   case ShaderType::Picking:
   return G3DMaterialShader::fragmentShaderStr(shaderType);

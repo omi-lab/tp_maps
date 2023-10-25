@@ -254,7 +254,7 @@ void Shader::invalidate()
 void Shader::getLocation(GLuint program, GLint& location, const char* name)
 {
   location = glGetUniformLocation(program, name);
-#if 1
+#if 0
   if(location<0)
   {
     tpWarning() << "=====================================================================";
