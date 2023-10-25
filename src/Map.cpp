@@ -1715,7 +1715,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
           if(!d->rectangleObject)
             d->rectangleObject = shader->makeRectangleObject({1.0f,1.0f});
 
-          shader->use(renderInfo.shaderType());
+          shader->use(d->renderInfo.shaderType());
           shader->setReadFBO(*readFBO);
 
           glm::mat4 m{1.0f};
