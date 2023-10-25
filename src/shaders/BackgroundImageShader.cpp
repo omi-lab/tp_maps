@@ -58,7 +58,7 @@ const char* BackgroundImageShader::fragmentShaderStr(ShaderType shaderType)
 //##################################################################################################
 void BackgroundImageShader::getLocations(GLuint program, ShaderType shaderType)
 {
-  TP_UNUSED(shaderType);
+  FullScreenShader::getLocations(program, shaderType);
   d->textureLocation = glGetUniformLocation(program, "textureSampler");
   d->matrixLocation  = glGetUniformLocation(program, "matrix");
 }
