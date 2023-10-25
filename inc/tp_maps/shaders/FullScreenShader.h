@@ -18,13 +18,6 @@ public:
   ~FullScreenShader() override;
 
   //################################################################################################
-  void compile(const char* vertexShader,
-               const char* fragmentShader,
-               const std::function<void(GLuint)>& bindLocations,
-               const std::function<void(GLuint)>& getLocations,
-               ShaderType shaderType = ShaderType::Render);
-
-  //################################################################################################
   void setFrameMatrix(const glm::mat4& frameMatrix);
 
   //################################################################################################
@@ -63,6 +56,16 @@ public:
 
   //################################################################################################
   Object* makeFrameObject(const glm::vec2& holeSize, const glm::vec2& size);
+
+protected:
+  //################################################################################################
+  const char* vertexShaderStr(ShaderType shaderType) override;
+
+  //################################################################################################
+  void getLocations(GLuint program, ShaderType shaderType) override;
+
+  //################################################################################################
+  void init() override;
 
 private:
   struct Private;

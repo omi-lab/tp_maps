@@ -2,7 +2,7 @@
 #define tp_maps_Geometry3DPool_h
 
 #include "tp_maps/Layer.h"
-#include "tp_maps/shaders/MaterialShader.h"
+#include "tp_maps/shaders/G3DMaterialShader.h"
 
 #include "tp_math_utils/Geometry3D.h"
 
@@ -17,7 +17,7 @@ class TexturePool;
 struct ProcessedGeometry3D
 {
   TP_REF_COUNT_OBJECTS("ProcessedGeometry3D");
-  std::vector<std::pair<GLenum, MaterialShader::VertexBuffer*>> vertexBuffers;
+  std::vector<std::pair<GLenum, G3DMaterialShader::VertexBuffer*>> vertexBuffers;
   tp_math_utils::Material material;
   glm::mat3 uvMatrix{1.0f};
 

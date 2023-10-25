@@ -169,7 +169,7 @@ void PostLayer::render(RenderInfo& renderInfo)
 
     if(d->blitRectangle || d->blitFrame)
     {
-      shader->use(ShaderType::RenderExtendedFBO);
+      shader->use(renderInfo.shaderType());
       shader->setReadFBO(map()->currentReadFBO());
       shader->setFrameMatrix(map()->controller()->matrices(d->frameCoordinateSystem).p);
       shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);
@@ -189,7 +189,7 @@ void PostLayer::render(RenderInfo& renderInfo)
     if(shader->error())
       return;
 
-    shader->use(ShaderType::RenderExtendedFBO);
+    shader->use(renderInfo.shaderType());
     shader->setReadFBO(map()->currentReadFBO());
     shader->setFrameMatrix(map()->controller()->matrices(d->frameCoordinateSystem).p);
     shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);
@@ -218,7 +218,7 @@ void PostLayer::renderWithShader(PostShader* shader, std::function<void()> bindA
 
     if(d->blitRectangle || d->blitFrame)
     {
-      shader->use(ShaderType::RenderExtendedFBO);
+      shader->use(map()->renderInfo().shaderType());
       shader->setReadFBO(map()->currentReadFBO());
       shader->setFrameMatrix(map()->controller()->matrices(d->frameCoordinateSystem).p);
       shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);
@@ -234,7 +234,7 @@ void PostLayer::renderWithShader(PostShader* shader, std::function<void()> bindA
   if(shader->error())
     return;
 
-  shader->use(ShaderType::RenderExtendedFBO);
+  shader->use(map()->renderInfo().shaderType());
   shader->setReadFBO(map()->currentReadFBO());
 
   bindAdditionalTextures();
@@ -265,7 +265,7 @@ void PostLayer::renderToFbo(PostShader* shader, FBO& customFbo, const GLuint sou
 
     if(d->blitRectangle || d->blitFrame)
     {
-      shader->use(ShaderType::RenderExtendedFBO);
+      shader->use(map()->renderInfo().shaderType());
       shader->setReadFBO(map()->currentReadFBO());
       shader->setFrameMatrix(map()->controller()->matrices(d->frameCoordinateSystem).p);
       shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);
@@ -281,7 +281,7 @@ void PostLayer::renderToFbo(PostShader* shader, FBO& customFbo, const GLuint sou
   if(shader->error())
     return;
 
-  shader->use(ShaderType::RenderExtendedFBO);
+  shader->use(map()->renderInfo().shaderType());
 
   // Change render target
   glBindFramebuffer(GL_FRAMEBUFFER, customFbo.frameBuffer );

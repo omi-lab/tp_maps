@@ -19,43 +19,34 @@ struct PostSSAOParameters
 };
 
 //##################################################################################################
-class PostSSAOShader;
-namespace detail
-{
-class PostSSAOShaderPrivate
-{
-  friend class tp_maps::PostSSAOShader;
-  PostSSAOShaderPrivate(Map* map, tp_maps::OpenGLProfile openGLProfile, const PostSSAOParameters& parameters);
-  struct Private;
-  Private* d;
-};
-}
-
-//##################################################################################################
 //! A shader for Screen Space Ambient Occlusion.
-class TP_MAPS_EXPORT PostSSAOShader: detail::PostSSAOShaderPrivate, public PostShader
+class TP_MAPS_EXPORT PostSSAOShader: public PostShader
 {
-  friend class Map;
+  TP_DQ;
 public:
   //################################################################################################
-  PostSSAOShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const PostSSAOParameters& parameters);
+  static inline const tp_utils::StringID& name(){return postSSAOShaderSID();}
+
+  //################################################################################################
+  PostSSAOShader(Map* map,
+                 tp_maps::OpenGLProfile openGLProfile,
+                 const PostSSAOParameters& parameters);
 
   //################################################################################################
   ~PostSSAOShader();
 
   //################################################################################################
-  void use(ShaderType shaderType = ShaderType::Render) override;
-
-  //################################################################################################
-  static inline const tp_utils::StringID& name(){return postSSAOShaderSID();}
-
-private:
-
-  //################################################################################################
-  //! Called by use()
   void setLights(const std::vector<tp_math_utils::Light>& lights, const std::vector<FBO>& lightBuffers);
 
-  using detail::PostSSAOShaderPrivate::d;
+  //################################################################################################
+  void use(ShaderType shaderType) override;
+
+protected:
+  //################################################################################################
+  const char* fragmentShaderStr(ShaderType shaderType) override;
+
+  //################################################################################################
+  void getLocations(GLuint program, ShaderType shaderType) override;
 };
 
 }

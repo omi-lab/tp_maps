@@ -229,7 +229,7 @@ TP_DECLARE_ID(             postGrid2DShaderSID,              "Post grid 2D shade
 TP_DECLARE_ID(              postGammaShaderSID,                "Post gamma shader");
 TP_DECLARE_ID(             backgroundShaderSID,                "Background shader");
 TP_DECLARE_ID(        backgroundImageShaderSID,          "Background image shader");
-TP_DECLARE_ID(                patternShaderSID,                   "Pattern shader");
+TP_DECLARE_ID(      backgroundPatternShaderSID,        "Background pattern shader");
 TP_DECLARE_ID(                selectionPassSID,                   "Selection pass");
 
 //##################################################################################################
@@ -406,6 +406,9 @@ enum class ShaderType
 };
 
 //##################################################################################################
+std::string shaderTypeToString(ShaderType shaderType);
+
+//##################################################################################################
 /*
 GLSL Version 	OpenGL Version 	Date               Shader Preprocessor
 1.10.59[1]    2.0             30 April     2004  #version 110
@@ -500,7 +503,7 @@ struct TP_MAPS_EXPORT ShaderString
   const char* data(OpenGLProfile openGLProfile, ShaderType shaderType);
 
 private:
-  const std::string m_str;
+  std::string m_str;
   std::unordered_map<OpenGLProfile, std::unordered_map<ShaderType, std::string>> m_parsed;
 };
 
@@ -531,8 +534,7 @@ struct Matrices
 
   glm::dmat4 dvp{1.0}; //!< Projection * View matrix. (double)
 
-  glm::vec3 cameraOriginNear{0.0f, 0.0f, 0.0f};
-  glm::vec3 cameraOriginFar {0.0f, 0.0f, 1.0f};
+  glm::vec2 nearAndFar() const;
 };
 
 

@@ -8,6 +8,9 @@
 namespace tp_maps
 {
 
+std::string Shader::vertSrcScratch;
+std::string Shader::fragSrcScratch;
+
 //##################################################################################################
 struct Shader::Private
 {
@@ -83,78 +86,6 @@ tp_maps::OpenGLProfile Shader::openGLProfile() const
 {
   return d->openGLProfile;
 }
-
-//##################################################################################################
-void Shader::compile(const char* vertexShaderStr,
-                     const char* fragmentShaderStr,
-                     const std::function<void(GLuint)>& bindLocations,
-                     const std::function<void(GLuint)>& getLocations,
-                     ShaderType shaderType)
-{
-  auto& s = d->shaders[shaderType];
-
-  s.vertexShader   = loadShader(vertexShaderStr,   GL_VERTEX_SHADER  );
-  s.fragmentShader = loadShader(fragmentShaderStr, GL_FRAGMENT_SHADER);
-  s.program = glCreateProgram();
-
-  if(s.vertexShader==0 || s.fragmentShader==0 || s.program==0)
-  {
-    auto version = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
-    tpWarning() << "Error Shader::compile"
-                   " d->vertexShader:" << s.vertexShader <<
-                   " d->fragmentShader:" << s.fragmentShader <<
-                   " d->program:" << s.program <<
-                   " GL_SHADING_LANGUAGE_VERSION:" << (version?version:"");
-    d->error=true;
-    return;
-  }
-
-#if 0
-  tp_utils::ElapsedTimer printSlowShaderCompileTimer;
-  printSlowShaderCompileTimer.start();
-  TP_CLEANUP([&]
-  {
-    if(printSlowShaderCompileTimer.elapsed()>100)
-      tpWarning() << "Slow shader compile:\n" <<
-                     "================== vert ==================\n" << vertexShaderStr <<
-                     "\n================== frag ==================\n" << fragmentShaderStr;
-  });
-#endif
-
-  glAttachShader(s.program, s.vertexShader);
-  glAttachShader(s.program, s.fragmentShader);
-  if(bindLocations)
-    bindLocations(s.program);
-  glLinkProgram(s.program);
-
-  GLint linked;
-  glGetProgramiv(s.program, GL_LINK_STATUS, &linked);
-  if(!linked)
-  {
-    GLchar infoLog[4096];
-    glGetProgramInfoLog(s.program, 4096, nullptr, static_cast<GLchar*>(infoLog));
-    tpWarning() << "Failed to link program: " << static_cast<const GLchar*>(infoLog);
-
-    d->printSrc(vertexShaderStr);
-    d->printSrc(fragmentShaderStr);
-
-    glDeleteProgram(s.program);
-    s.program = 0;
-    d->error = true;
-    return;
-  }
-
-  if(getLocations)
-    getLocations(s.program);
-}
-
-//##################################################################################################
-void Shader::use(ShaderType shaderType)
-{
-  d->currentShaderType = shaderType;
-  glUseProgram(d->shaders[shaderType].program);
-}
-
 //##################################################################################################
 ShaderType Shader::currentShaderType() const
 {
@@ -164,6 +95,12 @@ ShaderType Shader::currentShaderType() const
 //##################################################################################################
 GLuint Shader::loadShader(const char* shaderSrc, GLenum type)
 {
+  if(!shaderSrc)
+  {
+    tpWarning() << "Null shader string.";
+    return 0;
+  }
+
   GLuint shader = glCreateShader(type);
   if(shader == 0)
   {
@@ -204,10 +141,133 @@ ShaderDetails Shader::shaderDetails(ShaderType shaderType) const
 }
 
 //##################################################################################################
+void Shader::use(ShaderType shaderType)
+{
+  d->currentShaderType = shaderType;
+  glUseProgram(d->shaders[shaderType].program);
+}
+
+//##################################################################################################
+void Shader::compile(ShaderType shaderType)
+{
+  d->currentShaderType = shaderType;
+  auto& s = d->shaders[shaderType];
+
+  auto vertexShaderStr   = this->vertexShaderStr(shaderType);
+  auto fragmentShaderStr = this->fragmentShaderStr(shaderType);
+
+  s.vertexShader   = loadShader(vertexShaderStr,   GL_VERTEX_SHADER  );
+  s.fragmentShader = loadShader(fragmentShaderStr, GL_FRAGMENT_SHADER);
+  s.program = glCreateProgram();
+
+  if(s.vertexShader==0 || s.fragmentShader==0 || s.program==0)
+  {
+    auto version = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
+    tpWarning() << "Error Shader::compile"
+                   " d->vertexShader:" << s.vertexShader <<
+                   " d->fragmentShader:" << s.fragmentShader <<
+                   " d->program:" << s.program <<
+                   " GL_SHADING_LANGUAGE_VERSION:" << (version?version:"");
+    d->error=true;
+    return;
+  }
+
+#if 0
+  tp_utils::ElapsedTimer printSlowShaderCompileTimer;
+  printSlowShaderCompileTimer.start();
+  TP_CLEANUP([&]
+  {
+    if(printSlowShaderCompileTimer.elapsed()>100)
+      tpWarning() << "Slow shader compile:\n" <<
+                     "================== vert ==================\n" << vertexShaderStr <<
+                     "\n================== frag ==================\n" << fragmentShaderStr;
+  });
+#endif
+
+  glAttachShader(s.program, s.vertexShader);
+  glAttachShader(s.program, s.fragmentShader);
+  bindLocations(s.program, shaderType);
+  glLinkProgram(s.program);
+
+  GLint linked;
+  glGetProgramiv(s.program, GL_LINK_STATUS, &linked);
+  if(!linked)
+  {
+    GLchar infoLog[4096];
+    glGetProgramInfoLog(s.program, 4096, nullptr, static_cast<GLchar*>(infoLog));
+    tpWarning() << "Failed to link program: " << static_cast<const GLchar*>(infoLog);
+
+    d->printSrc(vertexShaderStr);
+    d->printSrc(fragmentShaderStr);
+
+    glDeleteProgram(s.program);
+    s.program = 0;
+    d->error = true;
+    return;
+  }
+
+  getLocations(s.program, shaderType);
+}
+
+
+//##################################################################################################
+const char* Shader::vertexShaderStr(ShaderType shaderType)
+{
+  TP_UNUSED(shaderType);
+  return "";
+}
+
+//##################################################################################################
+const char* Shader::fragmentShaderStr(ShaderType shaderType)
+{
+  TP_UNUSED(shaderType);
+  return "";
+}
+
+//##################################################################################################
+void Shader::bindLocations(GLuint program, ShaderType shaderType)
+{
+  TP_UNUSED(program);
+  TP_UNUSED(shaderType);
+}
+
+//##################################################################################################
+void Shader::getLocations(GLuint program, ShaderType shaderType)
+{
+  TP_UNUSED(program);
+  TP_UNUSED(shaderType);
+}
+
+//##################################################################################################
+void Shader::init()
+{
+
+}
+
+//##################################################################################################
 void Shader::invalidate()
 {
   d->shaders.clear();
 }
+
+//##################################################################################################
+void Shader::getLocation(GLuint program, GLint& location, const char* name)
+{
+  location = glGetUniformLocation(program, name);
+#if 1
+  if(location<0)
+  {
+    tpWarning() << "=====================================================================";
+    tpWarning() << "Failed to get uniform: " << name;
+    tpWarning() << "Shader type: " << shaderTypeToString(d->currentShaderType);
+    tpWarning() << "Vert:";
+    d->printSrc(vertexShaderStr(d->currentShaderType));
+    tpWarning() << "Frag:";
+    d->printSrc(fragmentShaderStr(d->currentShaderType));
+    tpWarning() << "=====================================================================";
+  }
+#endif
+};
 
 //##################################################################################################
 ShaderPointer::ShaderPointer(const Shader* shader):

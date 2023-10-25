@@ -1,6 +1,6 @@
 #include "tp_maps/layers/FBOLayer.h"
-#include "tp_maps/shaders/ImageShader.h"
-#include "tp_maps/shaders/DepthImageShader.h"
+#include "tp_maps/shaders/G3DImageShader.h"
+#include "tp_maps/shaders/G3DDepthImageShader.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/RenderInfo.h"
 #include "tp_maps/Buffers.h"
@@ -84,7 +84,7 @@ struct FBOLayer::Private
 
   std::vector<FBOWindow> windows;
 
-  std::vector<ImageShader::VertexBuffer*> vertexBuffers;
+  std::vector<G3DImageShader::VertexBuffer*> vertexBuffers;
   bool updateVertexBuffer{true};
 
   //################################################################################################
@@ -102,16 +102,16 @@ struct FBOLayer::Private
   }
 
   //################################################################################################
-  ImageShader* findShader(const FBOWindow& window)
+  G3DImageShader* findShader(const FBOWindow& window)
   {
     switch(window.source)
     {
-    case FBOLayerSource::Color   : return q->map()->getShader<ImageShader>();
-    case FBOLayerSource::Depth   : return q->map()->getShader<DepthImageShader>();
-    case FBOLayerSource::Normals : return q->map()->getShader<ImageShader>();
-    case FBOLayerSource::Specular: return q->map()->getShader<ImageShader>();
+    case FBOLayerSource::Color   : return q->map()->getShader<G3DImageShader>();
+    case FBOLayerSource::Depth   : return q->map()->getShader<G3DDepthImageShader>();
+    case FBOLayerSource::Normals : return q->map()->getShader<G3DImageShader>();
+    case FBOLayerSource::Specular: return q->map()->getShader<G3DImageShader>();
     }
-    return q->map()->getShader<ImageShader>();
+    return q->map()->getShader<G3DImageShader>();
   }
 };
 
@@ -191,13 +191,13 @@ void FBOLayer::render(RenderInfo& renderInfo)
       auto topLeft     = glm::vec3(window.origin + glm::vec2(0, 0), 0.0f);
 
       std::vector<GLuint> indexes{3,2,1,0};
-      std::vector<ImageShader::Vertex> verts;
+      std::vector<G3DImageShader::Vertex> verts;
 
       verts.clear();
-      verts.push_back(ImageShader::Vertex(topRight   , {0,0,1}, {1.0f, 1.0f}));
-      verts.push_back(ImageShader::Vertex(bottomRight, {0,0,1}, {1.0f, 0.0f}));
-      verts.push_back(ImageShader::Vertex(bottomLeft , {0,0,1}, {0.0f, 0.0f}));
-      verts.push_back(ImageShader::Vertex(topLeft    , {0,0,1}, {0.0f, 1.0f}));
+      verts.push_back(G3DImageShader::Vertex(topRight   , {0,0,1}, {1.0f, 1.0f}));
+      verts.push_back(G3DImageShader::Vertex(bottomRight, {0,0,1}, {1.0f, 0.0f}));
+      verts.push_back(G3DImageShader::Vertex(bottomLeft , {0,0,1}, {0.0f, 0.0f}));
+      verts.push_back(G3DImageShader::Vertex(topLeft    , {0,0,1}, {0.0f, 1.0f}));
 
       auto shader = d->findShader(window);
 
@@ -250,7 +250,7 @@ void FBOLayer::render(RenderInfo& renderInfo)
     }
     }
 
-    ImageShader* shader = d->findShader(window);
+    G3DImageShader* shader = d->findShader(window);
 
     if(!shader || shader->error())
       return;
@@ -262,7 +262,7 @@ void FBOLayer::render(RenderInfo& renderInfo)
     matrix = glm::translate(matrix, {-1.0f, 1.0f, 0.0f});
     matrix = glm::scale(matrix, {2.0f, -2.0f, 1.0f});
 
-    shader->use();
+    shader->use(renderInfo.shaderType());
     shader->setMatrix(matrix);
     if(fbo->levels == 1)
       shader->setTexture(textureID);

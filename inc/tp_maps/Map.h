@@ -1,7 +1,7 @@
 #ifndef tp_maps_Map_h
 #define tp_maps_Map_h
 
-#include "tp_maps/Globals.h"
+#include "tp_maps/Shader.h"
 
 #include "tp_image_utils/ColorMap.h"
 #include "tp_image_utils/ColorMapF.h"
@@ -355,6 +355,7 @@ public:
     if(!shader)
     {
       shader = new T(this, openGLProfile(), args...);
+      static_cast<Shader*>(shader)->init();
       addShader(name, shader);
     }
     return shader;

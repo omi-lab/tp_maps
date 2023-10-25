@@ -1,18 +1,10 @@
 #include "tp_maps/shaders/LineShader.h"
 #include "tp_maps/Map.h"
 
-#include "tp_utils/DebugUtils.h"
-
 #include "glm/gtc/type_ptr.hpp"
 
 namespace tp_maps
 {
-
-namespace
-{
-ShaderResource& vertShaderStr(){static ShaderResource s{"/tp_maps/LineShader.vert"}; return s;}
-ShaderResource& fragShaderStr(){static ShaderResource s{"/tp_maps/LineShader.frag"}; return s;}
-}
 
 //##################################################################################################
 struct LineShader::Private
@@ -22,7 +14,6 @@ struct LineShader::Private
   Private() = default;
 
   GLint matrixLocation{0};
-  //  GLint positionLocation{0};
   GLint colorLocation{0};
 
   //################################################################################################
@@ -47,23 +38,51 @@ LineShader::LineShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
   Shader(map, openGLProfile),
   d(new Private())
 {
-  compile(vertShaderStr().data(openGLProfile, ShaderType::Render),
-          fragShaderStr().data(openGLProfile, ShaderType::Render),
-          [](GLuint program)
-  {
-    glBindAttribLocation(program, 0, "position");
-  },
-  [this](GLuint program)
-  {
-    d->matrixLocation   = glGetUniformLocation(program, "matrix");
-    d->colorLocation    = glGetUniformLocation(program, "color");
-  });
+
 }
 
 //##################################################################################################
 LineShader::~LineShader()
 {
   delete d;
+}
+
+//##################################################################################################
+const char* LineShader::vertexShaderStr(ShaderType shaderType)
+{
+  static ShaderResource s{"/tp_maps/LineShader.vert"};
+  return s.data(openGLProfile(), shaderType);
+}
+
+//##################################################################################################
+const char* LineShader::fragmentShaderStr(ShaderType shaderType)
+{
+  static ShaderResource s{"/tp_maps/LineShader.frag"};
+  return s.data(openGLProfile(), shaderType);
+}
+
+//##################################################################################################
+void LineShader::bindLocations(GLuint program, ShaderType shaderType)
+{
+  TP_UNUSED(shaderType);
+  glBindAttribLocation(program, 0, "position");
+}
+
+//##################################################################################################
+void LineShader::getLocations(GLuint program, ShaderType shaderType)
+{
+  TP_UNUSED(shaderType);
+  d->matrixLocation   = glGetUniformLocation(program, "matrix");
+  d->colorLocation    = glGetUniformLocation(program, "color");
+}
+
+//##################################################################################################
+void LineShader::init()
+{
+  if(map()->extendedFBO() == ExtendedFBO::Yes)
+    compile(ShaderType::RenderExtendedFBO);
+  else
+    compile(ShaderType::Render);
 }
 
 //##################################################################################################

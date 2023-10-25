@@ -8,12 +8,6 @@
 namespace tp_maps
 {
 
-namespace
-{
-ShaderResource& vertShaderStr(){static ShaderResource s{"/tp_maps/FrameShader.vert"}; return s;}
-ShaderResource& fragShaderStr(){static ShaderResource s{"/tp_maps/FrameShader.frag"}; return s;}
-}
-
 //##################################################################################################
 struct FrameShader::Private
 {
@@ -40,52 +34,17 @@ struct FrameShader::Private
 };
 
 //##################################################################################################
-FrameShader::FrameShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const char* vertexShader, const char* fragmentShader):
+FrameShader::FrameShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
   Shader(map, openGLProfile),
   d(new Private())
 {
-  if(!vertexShader)
-    vertexShader = vertShaderStr().data(openGLProfile, ShaderType::Render);
 
-  if(!fragmentShader)
-    fragmentShader = fragShaderStr().data(openGLProfile, ShaderType::Render);
-
-  compile(vertexShader,
-          fragmentShader,
-          [](GLuint program)
-  {
-    glBindAttribLocation(program, 0, "inVertexP");
-    glBindAttribLocation(program, 1, "inVertexR");
-    glBindAttribLocation(program, 2, "inNormal");
-    glBindAttribLocation(program, 3, "inTexture");
-  },
-  [this](GLuint program)
-  {
-    d->matrixLocation = glGetUniformLocation(program, "matrix");
-    d->scaleLocation  = glGetUniformLocation(program, "scale");
-    d->colorLocation  = glGetUniformLocation(program, "color");
-    const char* shaderName = "FrameShader";
-    if(d->matrixLocation<0)tpWarning() << shaderName << " d->matrixLocation: " << d->matrixLocation;
-    if(d->scaleLocation<0)tpWarning()  << shaderName << " d->scaleLocation: "  << d->scaleLocation;
-    if(d->colorLocation<0)tpWarning()  << shaderName << " d->colorLocation: "  << d->colorLocation;
-  });
 }
 
 //##################################################################################################
 FrameShader::~FrameShader()
 {
   delete d;
-}
-
-//##################################################################################################
-void FrameShader::use(ShaderType shaderType)
-{
-  //https://webglfundamentals.org/webgl/lessons/webgl-and-alpha.html
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
-
-  Shader::use(shaderType);
 }
 
 //##################################################################################################
@@ -212,6 +171,70 @@ void FrameShader::drawPicking(GLenum mode,
   TP_UNUSED(pickingID);
   glDisable(GL_BLEND);
   d->draw(mode, vertexBuffer);
+}
+
+//##################################################################################################
+void FrameShader::use(ShaderType shaderType)
+{
+  //https://webglfundamentals.org/webgl/lessons/webgl-and-alpha.html
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
+
+  Shader::use(shaderType);
+}
+
+//##################################################################################################
+const char* FrameShader::vertexShaderStr(ShaderType shaderType)
+{
+  static ShaderResource s{"/tp_maps/FrameShader.vert"};
+  return s.data(openGLProfile(), shaderType);
+}
+
+//##################################################################################################
+const char* FrameShader::fragmentShaderStr(ShaderType shaderType)
+{
+  static ShaderResource s{"/tp_maps/FrameShader.frag"};
+  return s.data(openGLProfile(), shaderType);
+}
+
+//##################################################################################################
+void FrameShader::bindLocations(GLuint program, ShaderType shaderType)
+{
+  TP_UNUSED(shaderType);
+
+  glBindAttribLocation(program, 0, "inVertexP");
+  glBindAttribLocation(program, 1, "inVertexR");
+  glBindAttribLocation(program, 2, "inNormal");
+  glBindAttribLocation(program, 3, "inTexture");
+}
+
+//##################################################################################################
+void FrameShader::getLocations(GLuint program, ShaderType shaderType)
+{
+  TP_UNUSED(shaderType);
+
+  d->matrixLocation = glGetUniformLocation(program, "matrix");
+  d->scaleLocation  = glGetUniformLocation(program, "scale");
+  d->colorLocation  = glGetUniformLocation(program, "color");
+
+  if(d->matrixLocation<0)
+    tpWarning() << "FrameShader d->matrixLocation: " << d->matrixLocation;
+
+  if(d->scaleLocation<0)
+    tpWarning()  << "FrameShader d->scaleLocation: "  << d->scaleLocation;
+
+  if(d->colorLocation<0)
+    tpWarning()  << "FrameShader d->colorLocation: "  << d->colorLocation;
+}
+
+//##################################################################################################
+void FrameShader::init()
+{
+  if(map()->extendedFBO() == ExtendedFBO::Yes)
+    compile(ShaderType::RenderExtendedFBO);
+  else
+    compile(ShaderType::Render);
 }
 
 }

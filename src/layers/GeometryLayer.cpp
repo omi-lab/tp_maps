@@ -1,7 +1,7 @@
 #include "tp_maps/layers/GeometryLayer.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/Controller.h"
-#include "tp_maps/shaders/MaterialShader.h"
+#include "tp_maps/shaders/G3DMaterialShader.h"
 #include "tp_maps/picking_results/GeometryPickingResult.h"
 
 #include "tp_triangulation/Triangulation.h"
@@ -13,7 +13,7 @@ namespace
 {
 struct GeometryDetails_lt
 {
-  std::vector<std::pair<GLenum, MaterialShader::VertexBuffer*>> vertexBuffers;
+  std::vector<std::pair<GLenum, G3DMaterialShader::VertexBuffer*>> vertexBuffers;
   tp_math_utils::Material material;
 };
 }
@@ -90,7 +90,7 @@ void GeometryLayer::render(RenderInfo& renderInfo)
      renderInfo.pass != RenderPass::Picking)
     return;
 
-  auto shader = map()->getShader<MaterialShader>();
+  auto shader = map()->getShader<G3DMaterialShader>();
   if(shader->error())
     return;
 
@@ -119,7 +119,7 @@ void GeometryLayer::render(RenderInfo& renderInfo)
         for(const tp_triangulation::Contour& c : i.second)
         {
           std::vector<GLuint> indexes;
-          std::vector<MaterialShader::Vertex> verts;
+          std::vector<G3DMaterialShader::Vertex> verts;
           verts.reserve(c.vertices.size());
           for(size_t n=0; n<c.vertices.size(); n++)
           {
@@ -129,7 +129,7 @@ void GeometryLayer::render(RenderInfo& renderInfo)
             verts.push_back(Geometry3DShader::Vertex(glm::vec3(vv) / vv.w, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}));
           }
 
-          std::pair<GLenum, MaterialShader::VertexBuffer*> p;
+          std::pair<GLenum, G3DMaterialShader::VertexBuffer*> p;
           p.first = GLenum(i.first);
           p.second = shader->generateVertexBuffer(map(), indexes, verts);
           details.vertexBuffers.push_back(p);
@@ -159,7 +159,7 @@ void GeometryLayer::render(RenderInfo& renderInfo)
       {
         return new GeometryPickingResult(r.pickingType, r.details, r.renderInfo, this);
       }));
-      for(const std::pair<GLenum, MaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
+      for(const std::pair<GLenum, G3DMaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
         shader->drawPicking(buff.first, buff.second, pickingID);
     }
   }
@@ -170,7 +170,7 @@ void GeometryLayer::render(RenderInfo& renderInfo)
       shader->setMaterial(details.material);
       shader->setBlankTextures();
       shader->setDiscardOpacity((renderInfo.pass == RenderPass::Transparency)?0.01f:0.80f);
-      for(const std::pair<GLenum, MaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
+      for(const std::pair<GLenum, G3DMaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
         shader->draw(buff.first, buff.second);
     }
   }

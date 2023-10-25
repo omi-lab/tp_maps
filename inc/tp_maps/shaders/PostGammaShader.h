@@ -10,13 +10,16 @@ namespace tp_maps
 //! Applies gamma correction
 class TP_MAPS_EXPORT PostGammaShader: public PostShader
 {
-  friend class Map;
 public:
   //################################################################################################
-  PostGammaShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+  static inline const tp_utils::StringID& name(){return postGammaShaderSID();}
 
   //################################################################################################
-  static inline const tp_utils::StringID& name(){return postGammaShaderSID();}
+  using PostShader::PostShader;
+
+protected:
+  //################################################################################################
+  const char* fragmentShaderStr(ShaderType shaderType) override;
 };
 
 }

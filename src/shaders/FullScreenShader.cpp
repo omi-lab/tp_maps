@@ -1,36 +1,28 @@
 #include "tp_maps/shaders/FullScreenShader.h"
 #include "tp_maps/Map.h"
 
-#include "tp_utils/DebugUtils.h"
-
 #include "glm/gtc/type_ptr.hpp"
 
 namespace tp_maps
 {
-
-namespace
-{
-ShaderResource& vertShaderStr(){static ShaderResource s{"/tp_maps/FullScreenShader.vert"}; return s;}
-}
 
 //##################################################################################################
 struct FullScreenShader::Private
 {
   TP_REF_COUNT_OBJECTS("tp_maps::FullScreenShader::Private");
   TP_NONCOPYABLE(Private);
+  Private()=default;
 
-  GLint  frameMatrixLocation{0};
+  GLint  frameMatrixLocation{-1};
 
   std::unique_ptr<Object> object;
-
-  Private()=default;
 };
 
 //##################################################################################################
 FullScreenShader::FullScreenShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
   Shader(map, openGLProfile),
   d(new Private)
-{  
+{
   d->object.reset(makeRectangleObject({1.0f, 1.0f}));
 }
 
@@ -41,35 +33,10 @@ FullScreenShader::~FullScreenShader()
 }
 
 //##################################################################################################
-void FullScreenShader::compile(const char* vertexShader,
-                               const char* fragmentShader,
-                               const std::function<void(GLuint)>& bindLocations,
-                               const std::function<void(GLuint)>& getLocations,
-                               ShaderType shaderType)
-{
-  if(!vertexShader)
-    vertexShader = vertShaderStr().data(openGLProfile(), shaderType);
-
-  Shader::compile(vertexShader, fragmentShader, [&](GLuint program)
-  {
-    glBindAttribLocation(program, 0, "inVertex");
-
-    if(bindLocations)
-      bindLocations(program);
-  }, [&](GLuint program)
-  {
-    d->frameMatrixLocation = glGetUniformLocation(program, "frameMatrix");
-
-    if(getLocations)
-      getLocations(program);
-
-  }, shaderType);
-}
-
-//##################################################################################################
 void FullScreenShader::setFrameMatrix(const glm::mat4& frameMatrix)
 {
-  glUniformMatrix4fv(d->frameMatrixLocation, 1, GL_FALSE, glm::value_ptr(frameMatrix));
+  if(d->frameMatrixLocation>=0)
+    glUniformMatrix4fv(d->frameMatrixLocation, 1, GL_FALSE, glm::value_ptr(frameMatrix));
 }
 
 //##################################################################################################
@@ -177,6 +144,29 @@ FullScreenShader::Object* FullScreenShader::makeFrameObject(const glm::vec2& hol
                                {iz.x, iz.y}};
 
   return makeObject(verts);
+}
+
+//##################################################################################################
+const char* FullScreenShader::vertexShaderStr(ShaderType shaderType)
+{
+  static ShaderResource s{"/tp_maps/FullScreenShader.vert"};
+  return s.data(openGLProfile(), shaderType);
+}
+
+//##################################################################################################
+void FullScreenShader::getLocations(GLuint program, ShaderType shaderType)
+{
+  TP_UNUSED(shaderType);
+  d->frameMatrixLocation = glGetUniformLocation(program, "frameMatrix");
+}
+
+//##################################################################################################
+void FullScreenShader::init()
+{
+  if(map()->extendedFBO() == ExtendedFBO::Yes)
+    compile(ShaderType::RenderExtendedFBO);
+  else
+    compile(ShaderType::Render);
 }
 
 }

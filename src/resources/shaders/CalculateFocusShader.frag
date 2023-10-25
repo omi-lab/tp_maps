@@ -11,8 +11,8 @@ uniform mat4 invProjectionMatrix;
 
 uniform vec2 pixelSize;
 
-float near = 0.01;
-float far  = 100.0;
+uniform float near;
+uniform float far;
 
 /*DOF_FRAG_VARS*/
 

@@ -115,30 +115,6 @@ HEADERS += inc/tp_maps/shaders/LineShader.h
 SOURCES += src/shaders/PointSpriteShader.cpp
 HEADERS += inc/tp_maps/shaders/PointSpriteShader.h
 
-SOURCES += src/shaders/Geometry3DShader.cpp
-HEADERS += inc/tp_maps/shaders/Geometry3DShader.h
-
-SOURCES += src/shaders/ImageShader.cpp
-HEADERS += inc/tp_maps/shaders/ImageShader.h
-
-SOURCES += src/shaders/YUVImageShader.cpp
-HEADERS += inc/tp_maps/shaders/YUVImageShader.h
-
-SOURCES += src/shaders/DepthImageShader.cpp
-HEADERS += inc/tp_maps/shaders/DepthImageShader.h
-
-SOURCES += src/shaders/DepthShader.cpp
-HEADERS += inc/tp_maps/shaders/DepthShader.h
-
-SOURCES += src/shaders/XYZShader.cpp
-HEADERS += inc/tp_maps/shaders/XYZShader.h
-
-SOURCES += src/shaders/MaterialShader.cpp
-HEADERS += inc/tp_maps/shaders/MaterialShader.h
-
-SOURCES += src/shaders/StaticLightShader.cpp
-HEADERS += inc/tp_maps/shaders/StaticLightShader.h
-
 SOURCES += src/shaders/FontShader.cpp
 HEADERS += inc/tp_maps/shaders/FontShader.h
 
@@ -148,25 +124,48 @@ HEADERS += inc/tp_maps/shaders/FrameShader.h
 SOURCES += src/shaders/FullScreenShader.cpp
 HEADERS += inc/tp_maps/shaders/FullScreenShader.h
 
-SOURCES += src/shaders/BackgroundShader.cpp
-HEADERS += inc/tp_maps/shaders/BackgroundShader.h
+SOURCES += src/shaders/BackgroundSkyBoxShader.cpp
+HEADERS += inc/tp_maps/shaders/BackgroundSkyBoxShader.h
 
 SOURCES += src/shaders/BackgroundImageShader.cpp
 HEADERS += inc/tp_maps/shaders/BackgroundImageShader.h
 
-SOURCES += src/shaders/PatternShader.cpp
-HEADERS += inc/tp_maps/shaders/PatternShader.h
+SOURCES += src/shaders/BackgroundPatternShader.cpp
+HEADERS += inc/tp_maps/shaders/BackgroundPatternShader.h
 
+
+# G3D Shaders
+SOURCES += src/shaders/Geometry3DShader.cpp
+HEADERS += inc/tp_maps/shaders/Geometry3DShader.h
+
+SOURCES += src/shaders/G3DImageShader.cpp
+HEADERS += inc/tp_maps/shaders/G3DImageShader.h
+
+SOURCES += src/shaders/G3DYUVImageShader.cpp
+HEADERS += inc/tp_maps/shaders/G3DYUVImageShader.h
+
+SOURCES += src/shaders/G3DDepthImageShader.cpp
+HEADERS += inc/tp_maps/shaders/G3DDepthImageShader.h
+
+SOURCES += src/shaders/G3DDepthShader.cpp
+HEADERS += inc/tp_maps/shaders/G3DDepthShader.h
+
+SOURCES += src/shaders/G3DXYZShader.cpp
+HEADERS += inc/tp_maps/shaders/G3DXYZShader.h
+
+SOURCES += src/shaders/G3DMaterialShader.cpp
+HEADERS += inc/tp_maps/shaders/G3DMaterialShader.h
+
+SOURCES += src/shaders/G3DStaticLightShader.cpp
+HEADERS += inc/tp_maps/shaders/G3DStaticLightShader.h
+
+
+# Post Shaders
 SOURCES += src/shaders/PostShader.cpp
 HEADERS += inc/tp_maps/shaders/PostShader.h
 
 SOURCES += src/shaders/PostSSAOShader.cpp
 HEADERS += inc/tp_maps/shaders/PostSSAOShader.h
-
-SOURCES += src/shaders/AmbientOcclusionShader.cpp
-HEADERS += inc/tp_maps/shaders/AmbientOcclusionShader.h
-
-HEADERS += inc/tp_maps/shaders/AmbientOcclusionParameters.h
 
 SOURCES += src/shaders/PostSSRShader.cpp
 HEADERS += inc/tp_maps/shaders/PostSSRShader.h
@@ -186,26 +185,40 @@ HEADERS += inc/tp_maps/shaders/PostBasicBlurShader.h
 SOURCES += src/shaders/PostBlurAndTintShader.cpp
 HEADERS += inc/tp_maps/shaders/PostBlurAndTintShader.h
 
-SOURCES += src/shaders/DepthOfFieldBlurShader.cpp
-HEADERS += inc/tp_maps/shaders/DepthOfFieldBlurShader.h
-
-SOURCES += src/shaders/CalculateFocusShader.cpp
-HEADERS += inc/tp_maps/shaders/CalculateFocusShader.h
-
-SOURCES += src/shaders/DownsampleShader.cpp
-HEADERS += inc/tp_maps/shaders/DownsampleShader.h
-
-SOURCES += src/shaders/MergeDofShader.cpp
-HEADERS += inc/tp_maps/shaders/MergeDofShader.h
-
 SOURCES += src/shaders/PassThroughShader.cpp
 HEADERS += inc/tp_maps/shaders/PassThroughShader.h
 
-SOURCES += src/shaders/MergeAmbientOcclusionShader.cpp
-HEADERS += inc/tp_maps/shaders/MergeAmbientOcclusionShader.h
-
 SOURCES += src/shaders/PostGrid2DShader.cpp
 HEADERS += inc/tp_maps/shaders/PostGrid2DShader.h
+
+
+# AO Shader
+SOURCES += src/shaders/PostAOBaseShader.cpp
+HEADERS += inc/tp_maps/shaders/PostAOBaseShader.h
+
+SOURCES += src/shaders/PostAOShader.cpp
+HEADERS += inc/tp_maps/shaders/PostAOShader.h
+
+SOURCES += src/shaders/PostAOMergeShader.cpp
+HEADERS += inc/tp_maps/shaders/PostAOMergeShader.h
+
+
+# DoF Shader
+SOURCES += src/shaders/PostDoFBaseShader.cpp
+HEADERS += inc/tp_maps/shaders/PostDoFBaseShader.h
+
+SOURCES += src/shaders/PostDoFBlurShader.cpp
+HEADERS += inc/tp_maps/shaders/PostDoFBlurShader.h
+
+SOURCES += src/shaders/PostDoFCalculateFocusShader.cpp
+HEADERS += inc/tp_maps/shaders/PostDoFCalculateFocusShader.h
+
+SOURCES += src/shaders/PostDoFMergeShader.cpp
+HEADERS += inc/tp_maps/shaders/PostDoFMergeShader.h
+
+SOURCES += src/shaders/PostDoFDownsampleShader.cpp
+HEADERS += inc/tp_maps/shaders/PostDoFDownsampleShader.h
+
 
 
 #-- Layers -----------------------------------------------------------------------------------------
@@ -269,8 +282,8 @@ HEADERS += inc/tp_maps/layers/PostGammaLayer.h
 SOURCES += src/layers/PostSSAOLayer.cpp
 HEADERS += inc/tp_maps/layers/PostSSAOLayer.h
 
-SOURCES += src/layers/AmbientOcclusionLayer.cpp
-HEADERS += inc/tp_maps/layers/AmbientOcclusionLayer.h
+SOURCES += src/layers/PostAOLayer.cpp
+HEADERS += inc/tp_maps/layers/PostAOLayer.h
 
 SOURCES += src/layers/PostSSRLayer.cpp
 HEADERS += inc/tp_maps/layers/PostSSRLayer.h

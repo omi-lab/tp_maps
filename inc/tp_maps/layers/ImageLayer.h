@@ -8,7 +8,7 @@
 namespace tp_maps
 {
 class Texture;
-class ImageShader;
+class G3DImageShader;
 
 //##################################################################################################
 class TP_MAPS_EXPORT ImageLayer: public Layer
@@ -38,7 +38,7 @@ public:
                       const glm::vec3& topLeft);
 
   //################################################################################################
-  void setShader(const std::function<ImageShader*(Map*)>& getShader);
+  void setShader(const std::function<G3DImageShader*(Map*)>& getShader);
 
   //################################################################################################
   //! Bind the texture in the next render pass without triggering an update.

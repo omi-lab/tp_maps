@@ -10,14 +10,6 @@ namespace tp_maps
 
 namespace
 {
-ShaderResource& vertShaderStr(){static ShaderResource s{"/tp_maps/PointSpriteShader.vert"}; return s;}
-ShaderResource& fragShaderStr(){static ShaderResource s{"/tp_maps/PointSpriteShader.frag"}; return s;}
-
-#ifdef TP_GLSL_PICKING_SUPPORTED
-ShaderResource& vertShaderStrPicking(){static ShaderResource s{"/tp_maps/PointSpriteShader.picking.vert"}; return s;}
-ShaderResource& fragShaderStrPicking(){static ShaderResource s{"/tp_maps/PointSpriteShader.picking.frag"}; return s;}
-#endif
-
 //There will be 4 of these generated for each PointSprite.
 struct PointSprite_lt
 {
@@ -71,51 +63,106 @@ PointSpriteShader::PointSpriteShader(Map* map, tp_maps::OpenGLProfile openGLProf
   Shader(map, openGLProfile),
   d(new Private())
 {
-  //We compile 2 shaders one for picking and the other for normal rendering
-  auto compileShader = [this](
-      const char* vert,
-      const char* frag,
-      const char* shaderName,
-      ShaderType shaderType,
-      GLint& matrixL,
-      GLint& scaleFactorL,
-      GLint* pickingIDL)
-  {
-    compile(vert,
-            frag,
-            [](GLuint program)
-    {
-      glBindAttribLocation(program, 0, "inColor");
-      glBindAttribLocation(program, 1, "inPosition");
-      glBindAttribLocation(program, 2, "inOffset");
-      glBindAttribLocation(program, 3, "inTexture");
-    },
-    [shaderName, &matrixL, &scaleFactorL, pickingIDL](GLuint program)
-    {
-      matrixL      = glGetUniformLocation(program, "matrix"    );
-      scaleFactorL = glGetUniformLocation(program, "scaleFactor");
 
-      if(pickingIDL)
-        (*pickingIDL) = glGetUniformLocation(program, "pickingID");
-
-      if(matrixL     <0)tpWarning() << shaderName << " matrixL: "      << matrixL;
-      if(scaleFactorL<0)tpWarning() << shaderName << " scaleFactorL: " << scaleFactorL;
-    },
-    shaderType);
-  };
-
-  compileShader(vertShaderStr().data(openGLProfile, ShaderType::Render), fragShaderStr().data(openGLProfile, ShaderType::Render), "PointSpriteShader_render", ShaderType:: Render, d-> renderMatrixLoc, d-> renderScaleFactorLoc, nullptr);
-#ifdef TP_GLSL_PICKING_SUPPORTED
-  compileShader(vertShaderStrPicking().data(openGLProfile, ShaderType::Render), fragShaderStrPicking().data(openGLProfile, ShaderType::Render), "PointSpriteShader_picking", ShaderType::Picking, d->pickingMatrixLoc, d->pickingScaleFactorLoc, &d->pickingIDLoc);
-#else
-  //Point sprite picking is not implemented on this platform.
-#endif
 }
 
 //##################################################################################################
 PointSpriteShader::~PointSpriteShader()
 {
   delete d;
+}
+
+//##################################################################################################
+const char* PointSpriteShader::vertexShaderStr(ShaderType shaderType)
+{
+#ifdef TP_GLSL_PICKING_SUPPORTED
+  if(shaderType == ShaderType::Picking)
+  {
+    static ShaderResource s{"/tp_maps/PointSpriteShader.picking.vert"};
+    return s.data(openGLProfile(), shaderType);
+  }
+#endif
+
+  static ShaderResource s{"/tp_maps/PointSpriteShader.vert"};
+  return s.data(openGLProfile(), shaderType);
+}
+
+//##################################################################################################
+const char* PointSpriteShader::fragmentShaderStr(ShaderType shaderType)
+{
+#ifdef TP_GLSL_PICKING_SUPPORTED
+  if(shaderType == ShaderType::Picking)
+  {
+    static ShaderResource s{"/tp_maps/PointSpriteShader.picking.frag"};
+    return s.data(openGLProfile(), shaderType);
+  }
+#endif
+
+  static ShaderResource s{"/tp_maps/PointSpriteShader.frag"};
+  return s.data(openGLProfile(), shaderType);
+}
+
+//##################################################################################################
+void PointSpriteShader::bindLocations(GLuint program, ShaderType shaderType)
+{
+  TP_UNUSED(shaderType);
+
+  glBindAttribLocation(program, 0, "inColor");
+  glBindAttribLocation(program, 1, "inPosition");
+  glBindAttribLocation(program, 2, "inOffset");
+  glBindAttribLocation(program, 3, "inTexture");
+}
+
+//##################################################################################################
+void PointSpriteShader::getLocations(GLuint program, ShaderType shaderType)
+{
+  switch(shaderType)
+  {
+#ifdef TP_GLSL_PICKING_SUPPORTED
+  case ShaderType::Picking:
+  {
+    d->pickingMatrixLoc      = glGetUniformLocation(program, "matrix");
+    d->pickingScaleFactorLoc = glGetUniformLocation(program, "scaleFactor");
+    d->pickingIDLoc          = glGetUniformLocation(program, "pickingID");
+
+    if(d->pickingMatrixLoc<0)
+      tpWarning() << "PointSpriteShader Picking pickingMatrixLoc: " << d->pickingMatrixLoc;
+
+    if(d->pickingScaleFactorLoc<0)
+      tpWarning() << "PointSpriteShader Picking pickingScaleFactorLoc: " << d->pickingScaleFactorLoc;
+
+    if(d->pickingIDLoc<0)
+      tpWarning() << "PointSpriteShader Picking pickingIDLoc: " << d->pickingIDLoc;
+    break;
+  }
+#endif
+
+  default:
+  {
+    d->renderMatrixLoc      = glGetUniformLocation(program, "matrix");
+    d->renderScaleFactorLoc = glGetUniformLocation(program, "scaleFactor");
+
+    if(d->renderMatrixLoc<0)
+      tpWarning() << "PointSpriteShader Picking renderMatrixLoc: " << d->renderMatrixLoc;
+
+    if(d->renderScaleFactorLoc<0)
+      tpWarning() << "PointSpriteShader Picking renderScaleFactorLoc: " << d->renderScaleFactorLoc;
+    break;
+  }
+  }
+}
+
+//##################################################################################################
+void PointSpriteShader::init()
+{
+  if(map()->extendedFBO() == ExtendedFBO::Yes)
+    compile(ShaderType::RenderExtendedFBO);
+  else
+    compile(ShaderType::Render);
+
+#ifdef TP_GLSL_PICKING_SUPPORTED
+  compile(ShaderType::Picking);
+#endif
 }
 
 //##################################################################################################
@@ -128,18 +175,18 @@ void PointSpriteShader::use(ShaderType shaderType)
   case ShaderType::Light: [[fallthrough]];
   case ShaderType::Render: [[fallthrough]];
   case ShaderType::RenderExtendedFBO:
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
-    d->matrixLoc = d->renderMatrixLoc;
-    d->scaleFactorLoc = d->renderScaleFactorLoc;
-    break;
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
+  d->matrixLoc = d->renderMatrixLoc;
+  d->scaleFactorLoc = d->renderScaleFactorLoc;
+  break;
 
   case ShaderType::Picking:
-    glDisable(GL_BLEND);
-    d->matrixLoc = d->pickingMatrixLoc;
-    d->scaleFactorLoc = d->pickingScaleFactorLoc;
-    break;
+  glDisable(GL_BLEND);
+  d->matrixLoc = d->pickingMatrixLoc;
+  d->scaleFactorLoc = d->pickingScaleFactorLoc;
+  break;
   }
 
   Shader::use(shaderType);
@@ -172,6 +219,7 @@ PointSpriteShader::VertexBuffer::VertexBuffer(Map* map_, const Shader *shader_):
 {
 
 }
+
 //##################################################################################################
 PointSpriteShader::VertexBuffer::~VertexBuffer()
 {  

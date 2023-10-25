@@ -260,7 +260,7 @@ void LightsLayer::render(RenderInfo& renderInfo)
 
     auto m = map()->controller()->matrix(tp_maps::defaultSID());
 
-    shader->use();
+    shader->use(renderInfo.shaderType());
     shader->setColor({0.0f, 0.0f, 0.0f, 1.0f});
     for(size_t i=0; i<d->labels.size(); i++)
     {

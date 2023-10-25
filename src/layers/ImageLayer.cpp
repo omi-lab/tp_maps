@@ -1,5 +1,5 @@
 #include "tp_maps/layers/ImageLayer.h"
-#include "tp_maps/shaders/ImageShader.h"
+#include "tp_maps/shaders/G3DImageShader.h"
 #include "tp_maps/picking_results/ImagePickingResult.h"
 #include "tp_maps/Texture.h"
 #include "tp_maps/Map.h"
@@ -24,7 +24,7 @@ struct ImageLayer::Private
 
   //The raw data passed to this class
   std::vector<GLuint> indexes{0,1,2,3};
-  std::vector<ImageShader::Vertex> verts;
+  std::vector<G3DImageShader::Vertex> verts;
   glm::vec4 color{1.0f, 1.0f, 1.0f, 1.0f};
 
   glm::vec3 topRight{};
@@ -32,7 +32,7 @@ struct ImageLayer::Private
   glm::vec3 bottomLeft{};
   glm::vec3 topLeft{};
 
-  ImageShader::VertexBuffer* vertexBuffer{nullptr};
+  G3DImageShader::VertexBuffer* vertexBuffer{nullptr};
 
   GLuint textureID{0};
 
@@ -40,13 +40,13 @@ struct ImageLayer::Private
   bool externalCoords{false};
   bool updateVertexBuffer{true};
 
-  std::function<ImageShader*(Map*)> getShader;
+  std::function<G3DImageShader*(Map*)> getShader;
 
   //################################################################################################
   Private(ImageLayer* q_, Texture* texture_):
     q(q_),
     texture(texture_),
-    getShader([](Map* map){return map->getShader<ImageShader>();})
+    getShader([](Map* map){return map->getShader<G3DImageShader>();})
 {
 
 }
@@ -117,7 +117,7 @@ void ImageLayer::setImageCoords(const glm::vec3& topRight,
 }
 
 //##################################################################################################
-void ImageLayer::setShader(const std::function<ImageShader*(Map*)>& getShader)
+void ImageLayer::setShader(const std::function<G3DImageShader*(Map*)>& getShader)
 {
   d->getShader = getShader;
 }
@@ -167,10 +167,10 @@ void ImageLayer::render(RenderInfo& renderInfo)
 
     if(d->externalCoords)
     {
-      d->verts.push_back(ImageShader::Vertex(d->topRight   , {0,0,1}, { t.x,  t.y}));
-      d->verts.push_back(ImageShader::Vertex(d->bottomRight, {0,0,1}, { t.x, 0.0f}));
-      d->verts.push_back(ImageShader::Vertex(d->bottomLeft , {0,0,1}, {0.0f, 0.0f}));
-      d->verts.push_back(ImageShader::Vertex(d->topLeft    , {0,0,1}, {0.0f,  t.y}));
+      d->verts.push_back(G3DImageShader::Vertex(d->topRight   , {0,0,1}, { t.x,  t.y}));
+      d->verts.push_back(G3DImageShader::Vertex(d->bottomRight, {0,0,1}, { t.x, 0.0f}));
+      d->verts.push_back(G3DImageShader::Vertex(d->bottomLeft , {0,0,1}, {0.0f, 0.0f}));
+      d->verts.push_back(G3DImageShader::Vertex(d->topLeft    , {0,0,1}, {0.0f,  t.y}));
     }
     else
     {
@@ -181,10 +181,10 @@ void ImageLayer::render(RenderInfo& renderInfo)
       float x = 0.0f;
       float y = 0.0f;
 
-      d->verts.push_back(ImageShader::Vertex({w,y,0}, {0,0,1}, { t.x,  t.y}));
-      d->verts.push_back(ImageShader::Vertex({w,h,0}, {0,0,1}, { t.x, 0.0f}));
-      d->verts.push_back(ImageShader::Vertex({x,h,0}, {0,0,1}, {0.0f, 0.0f}));
-      d->verts.push_back(ImageShader::Vertex({x,y,0}, {0,0,1}, {0.0f,  t.y}));
+      d->verts.push_back(G3DImageShader::Vertex({w,y,0}, {0,0,1}, { t.x,  t.y}));
+      d->verts.push_back(G3DImageShader::Vertex({w,h,0}, {0,0,1}, { t.x, 0.0f}));
+      d->verts.push_back(G3DImageShader::Vertex({x,h,0}, {0,0,1}, {0.0f, 0.0f}));
+      d->verts.push_back(G3DImageShader::Vertex({x,y,0}, {0,0,1}, {0.0f,  t.y}));
     }
 
     delete d->vertexBuffer;
@@ -192,7 +192,7 @@ void ImageLayer::render(RenderInfo& renderInfo)
     d->updateVertexBuffer=false;
   }
 
-  shader->use();
+  shader->use(renderInfo.shaderType());
   shader->setMatrix(calculateMatrix());
   shader->setTexture(d->textureID);
 

@@ -24,8 +24,11 @@ This allows the map to cache shaders.
 */
 class TP_MAPS_EXPORT Shader
 {
+  TP_DQ;
   TP_NONCOPYABLE(Shader);
   friend class Map;
+  friend class ShaderPointer;
+  mutable std::vector<ShaderPointer*> m_pointers;
 public:
   //################################################################################################
   Shader(Map* map, tp_maps::OpenGLProfile openGLProfile);
@@ -40,16 +43,6 @@ public:
   tp_maps::OpenGLProfile openGLProfile() const;
 
   //################################################################################################
-  void compile(const char* vertexShaderStr,
-               const char* fragmentShaderStr,
-               const std::function<void(GLuint)>& bindLocations,
-               const std::function<void(GLuint)>& getLocations,
-               ShaderType shaderType = ShaderType::Render);
-
-  //################################################################################################
-  virtual void use(ShaderType shaderType = ShaderType::Render);
-
-  //################################################################################################
   ShaderType currentShaderType() const;
 
   //################################################################################################
@@ -61,16 +54,37 @@ public:
   //################################################################################################
   ShaderDetails shaderDetails(ShaderType shaderType) const;
 
-protected:
+  //################################################################################################
+  virtual void use(ShaderType shaderType);
+
+protected:  
+  //################################################################################################
+  virtual void compile(ShaderType shaderType);
+
+  //################################################################################################
+  virtual const char* vertexShaderStr(ShaderType shaderType);
+
+  //################################################################################################
+  virtual const char* fragmentShaderStr(ShaderType shaderType);
+
+  //################################################################################################
+  virtual void bindLocations(GLuint program, ShaderType shaderType);
+
+  //################################################################################################
+  virtual void getLocations(GLuint program, ShaderType shaderType);
+
+  //################################################################################################
+  virtual void init();
+
   //################################################################################################
   virtual void invalidate();
 
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
-  friend class ShaderPointer;
-  mutable std::vector<ShaderPointer*> m_pointers;
+  //################################################################################################
+  void getLocation(GLuint program, GLint& location, const char* name);
+
+  // Scratch space for composing shader program strings.
+  static std::string vertSrcScratch;
+  static std::string fragSrcScratch;
 };
 
 //##################################################################################################

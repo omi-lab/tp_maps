@@ -15,7 +15,11 @@ namespace tp_maps
 //! A shader for drawing point sprites.
 class TP_MAPS_EXPORT PointSpriteShader: public Shader
 {
+  TP_DQ;
 public:
+  //################################################################################################
+  static inline const tp_utils::StringID& name(){return pointSpriteShaderSID();}
+
   //################################################################################################
   PointSpriteShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
 
@@ -23,8 +27,23 @@ public:
   ~PointSpriteShader() override;
 
   //################################################################################################
+  const char* vertexShaderStr(ShaderType shaderType) override;
+
+  //################################################################################################
+  const char* fragmentShaderStr(ShaderType shaderType) override;
+
+  //################################################################################################
+  void bindLocations(GLuint program, ShaderType shaderType) override;
+
+  //################################################################################################
+  void getLocations(GLuint program, ShaderType shaderType) override;
+
+  //################################################################################################
+  void init() override;
+
+  //################################################################################################
   //! Prepare OpenGL for rendering
-  void use(ShaderType shaderType = ShaderType::Render) override;
+  void use(ShaderType shaderType) override;
 
   //################################################################################################
   //! Call this to set the camera matrix before drawing the lines
@@ -113,14 +132,6 @@ public:
   \param vertices The points that make up the line.
   */
   void drawPointSpritesPicking(VertexBuffer* vertexBuffer, uint32_t pickingID);
-
-  //################################################################################################
-  static inline const tp_utils::StringID& name(){return pointSpriteShaderSID();}
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

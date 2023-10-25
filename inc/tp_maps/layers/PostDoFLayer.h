@@ -3,7 +3,7 @@
 
 #include "tp_maps/layers/PostLayer.h"
 
-#include "tp_maps/shaders/DepthOfFieldBlurShader.h"
+#include "tp_maps/shaders/PostDoFBaseShader.h"
 
 namespace omi_scene_3d
 {
@@ -25,10 +25,10 @@ public:
   ~PostDoFLayer();
 
   //################################################################################################
-  const DepthOfFieldShaderParameters& parameters() const;
+  const PostDoFParameters& parameters() const;
 
   //################################################################################################
-  void setParameters(const DepthOfFieldShaderParameters& parameters);
+  void setParameters(const PostDoFParameters& parameters);
 
   //################################################################################################
   float calculateFStopDistance(float fStop) const;

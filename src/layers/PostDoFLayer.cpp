@@ -1,11 +1,12 @@
 #include "tp_maps/layers/PostDoFLayer.h"
+#include "tp_maps/Controller.h"
 #include "tp_maps/Buffers.h"
 #include "tp_maps/Errors.h"
 
-#include "tp_maps/shaders/DepthOfFieldBlurShader.h"
-#include "tp_maps/shaders/CalculateFocusShader.h"
-#include "tp_maps/shaders/DownsampleShader.h"
-#include "tp_maps/shaders/MergeDofShader.h"
+#include "tp_maps/shaders/PostDoFBlurShader.h"
+#include "tp_maps/shaders/PostDoFCalculateFocusShader.h"
+#include "tp_maps/shaders/PostDoFDownsampleShader.h"
+#include "tp_maps/shaders/PostDoFMergeShader.h"
 #include "tp_maps/shaders/PassThroughShader.h"
 #include "tp_maps/Map.h"
 
@@ -16,7 +17,7 @@ namespace tp_maps
 struct PostDoFLayer::Private
 {
   PostDoFLayer* q;
-  DepthOfFieldShaderParameters parameters;
+  PostDoFParameters parameters;
 
   tp_utils::StringID dofPass1{"DoF 1"};
   tp_utils::StringID dofPass2{"DoF 2"};
@@ -50,10 +51,10 @@ struct PostDoFLayer::Private
   {
     if(q->map())
     {
-      q->map()->deleteShader(CalculateFocusShader::name());
-      q->map()->deleteShader(MergeDofShader::name());
-      q->map()->deleteShader(DownsampleShader::name());
-      q->map()->deleteShader(DepthOfFieldBlurShader::name());
+      q->map()->deleteShader(PostDoFCalculateFocusShader::name());
+      q->map()->deleteShader(PostDoFMergeShader::name());
+      q->map()->deleteShader(PostDoFDownsampleShader::name());
+      q->map()->deleteShader(PostDoFBlurShader::name());
     }
   }
 };
@@ -71,32 +72,30 @@ PostDoFLayer::~PostDoFLayer()
 {
   if(map())
   {
-    map()->buffers().deleteBuffer( d->downsampleFbo );
-    map()->buffers().deleteBuffer( d->focusCalcFbo );
-    map()->buffers().deleteBuffer( d->downsampledFocusCalcFbo );
+    map()->buffers().deleteBuffer(d->downsampleFbo);
+    map()->buffers().deleteBuffer(d->focusCalcFbo);
+    map()->buffers().deleteBuffer(d->downsampledFocusCalcFbo);
   }
 
   delete d;
 }
 
 //##################################################################################################
-const DepthOfFieldShaderParameters& PostDoFLayer::parameters() const
+const PostDoFParameters& PostDoFLayer::parameters() const
 {
   return d->parameters;
 }
 
 //##################################################################################################
-void PostDoFLayer::setParameters(const DepthOfFieldShaderParameters& parameters)
+void PostDoFLayer::setParameters(const PostDoFParameters& parameters)
 {
   d->parameters = parameters;
-
   setBypass(!parameters.enabled);
-
   d->recompileShaders();
 }
 
 //##################################################################################################
-float PostDoFLayer::calculateFStopDistance( float fStop ) const
+float PostDoFLayer::calculateFStopDistance(float fStop) const
 {
   float minFStop = 2.0f;
   float maxFStop = 7.0f;
@@ -112,7 +111,7 @@ float PostDoFLayer::calculateFStopDistance( float fStop ) const
 //##################################################################################################
 PostShader* PostDoFLayer::makeShader()
 {
-  return map()->getShader<DepthOfFieldBlurShader>(d->parameters);
+  return map()->getShader<PostDoFBlurShader>(d->parameters);
 }
 
 //##################################################################################################
@@ -135,6 +134,12 @@ void PostDoFLayer::addRenderPasses(std::vector<RenderPass>& renderPasses)
 //##################################################################################################
 void PostDoFLayer::render(tp_maps::RenderInfo& renderInfo)
 {
+  auto setNearAndFar=[&](auto shader)
+  {
+    auto nearAndFar = map()->controller()->matrices(tp_maps::defaultSID()).nearAndFar();
+    shader->setProjectionNearAndFar(nearAndFar.x, nearAndFar.y);
+  };
+
   if(renderInfo.pass == d->customRenderPass1) //----------------------------------------------------
   {
     auto passThroughShader = map()->getShader<PassThroughShader>();
@@ -161,8 +166,9 @@ void PostDoFLayer::render(tp_maps::RenderInfo& renderInfo)
     }
 
     // New fbo for focus texture ( using R channel )
-    auto calculateFocusShader = map()->getShader<CalculateFocusShader>(d->parameters);
-    tp_maps::PostLayer::renderToFbo(calculateFocusShader, d->focusCalcFbo );
+    auto calculateFocusShader = map()->getShader<PostDoFCalculateFocusShader>(d->parameters);
+    setNearAndFar(calculateFocusShader);
+    tp_maps::PostLayer::renderToFbo(calculateFocusShader, d->focusCalcFbo);
   }
 
 
@@ -188,7 +194,8 @@ void PostDoFLayer::render(tp_maps::RenderInfo& renderInfo)
     }
 
     // Downsample the focus FBO
-    auto calculateFocusShader = map()->getShader<CalculateFocusShader>(d->parameters);
+    auto calculateFocusShader = map()->getShader<PostDoFCalculateFocusShader>(d->parameters);
+    setNearAndFar(calculateFocusShader);
     tp_maps::PostLayer::renderToFbo(calculateFocusShader,
                                     d->downsampledFocusCalcFbo,
                                     d->focusCalcFbo.textureID );
@@ -224,14 +231,16 @@ void PostDoFLayer::render(tp_maps::RenderInfo& renderInfo)
     }
 
     // Downsample the regular color FBO
-    auto downsampleShader = map()->getShader<DownsampleShader>(d->parameters);
+    auto downsampleShader = map()->getShader<PostDoFDownsampleShader>(d->parameters);
+    setNearAndFar(downsampleShader);
     tp_maps::PostLayer::renderToFbo(downsampleShader, d->downsampleFbo );
   }
 
 
   else if(renderInfo.pass == d->customRenderPass6) //-----------------------------------------------
   {
-    auto mergeDofShader = map()->getShader<MergeDofShader>(d->parameters);
+    auto mergeDofShader = map()->getShader<PostDoFMergeShader>(d->parameters);
+    setNearAndFar(mergeDofShader);
 
     auto bindAdditionalTextures = [&]()
     {
@@ -247,9 +256,9 @@ void PostDoFLayer::render(tp_maps::RenderInfo& renderInfo)
 //##################################################################################################
 void PostDoFLayer::invalidateBuffers()
 {
-  map()->buffers().invalidateBuffer( d->downsampleFbo );
-  map()->buffers().invalidateBuffer( d->focusCalcFbo );
-  map()->buffers().invalidateBuffer( d->downsampledFocusCalcFbo );
+  map()->buffers().invalidateBuffer(d->downsampleFbo);
+  map()->buffers().invalidateBuffer(d->focusCalcFbo);
+  map()->buffers().invalidateBuffer(d->downsampledFocusCalcFbo);
 
   PostLayer::invalidateBuffers();
 }

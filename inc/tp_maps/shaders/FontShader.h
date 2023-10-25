@@ -4,8 +4,6 @@
 #include "tp_maps/Shader.h"
 #include "tp_maps/PreparedString.h"
 
-#include "glm/glm.hpp"
-
 namespace tp_maps
 {
 
@@ -13,16 +11,16 @@ namespace tp_maps
 //! A shader for rendering fonts.
 class TP_MAPS_EXPORT FontShader: public Shader
 {
+  TP_DQ;
 public:
   //################################################################################################
-  FontShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const char* vertexShader=nullptr, const char* fragmentShader=nullptr);
+  static inline const tp_utils::StringID& name(){return fontShaderSID();}
+
+  //################################################################################################
+  FontShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
 
   //################################################################################################
   ~FontShader() override;
-
-  //################################################################################################
-  //! Prepare OpenGL for rendering
-  void use(ShaderType shaderType = ShaderType::Render) override;
 
   //################################################################################################
   //! Call this to set the camera matrix before drawing the image
@@ -38,6 +36,8 @@ public:
   //################################################################################################
   class PreparedString : public tp_maps::PreparedString
   {
+    TP_DQ;
+    friend class FontShader;
   public:
     //##############################################################################################
     PreparedString(FontRenderer* fontRenderer,
@@ -52,12 +52,6 @@ public:
 
     //################################################################################################
     void regenerateBuffers() override;
-
-  private:
-    struct Private;
-    Private* d;
-    friend struct Private;
-    friend class FontShader;
   };
 
   //################################################################################################
@@ -68,12 +62,24 @@ public:
   void drawPreparedString(PreparedString& preparedString);
 
   //################################################################################################
-  static inline const tp_utils::StringID& name(){return fontShaderSID();}
+  //! Prepare OpenGL for rendering
+  void use(ShaderType shaderType) override;
 
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
+protected:
+  //################################################################################################
+  const char* vertexShaderStr(ShaderType shaderType) override;
+
+  //################################################################################################
+  const char* fragmentShaderStr(ShaderType shaderType) override;
+
+  //################################################################################################
+  void bindLocations(GLuint program, ShaderType shaderType) override;
+
+  //################################################################################################
+  void getLocations(GLuint program, ShaderType shaderType) override;
+
+  //################################################################################################
+  void init() override;
 };
 
 }

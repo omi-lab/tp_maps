@@ -10,13 +10,16 @@ namespace tp_maps
 //! Draw outlines around a mask rendered to the previous FBO.
 class TP_MAPS_EXPORT PassThroughShader: public PostShader
 {
-  friend class Map;
 public:
   //################################################################################################
-  PassThroughShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+  static inline const tp_utils::StringID& name(){return passThroughShaderSID();}
 
   //################################################################################################
-  static inline const tp_utils::StringID& name(){return passThroughShaderSID();}
+  using PostShader::PostShader;
+
+protected:
+  //################################################################################################
+  const char* fragmentShaderStr(ShaderType shaderType) override;
 };
 
 }

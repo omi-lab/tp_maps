@@ -10,13 +10,16 @@ namespace tp_maps
 //! Draw a grid as 2D overlay.
 class TP_MAPS_EXPORT PostGrid2DShader: public PostShader
 {
-  friend class Map;
 public:
   //################################################################################################
-  PostGrid2DShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+  static inline const tp_utils::StringID& name(){return postGrid2DShaderSID();}
 
   //################################################################################################
-  static inline const tp_utils::StringID& name(){return postGrid2DShaderSID();}
+  using PostShader::PostShader;
+
+protected:
+  //################################################################################################
+  const char* fragmentShaderStr(ShaderType shaderType) override;
 };
 
 }

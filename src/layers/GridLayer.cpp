@@ -73,7 +73,7 @@ struct GridLayer::Private
   }
 
   //################################################################################################
-  void renderLines(const glm::mat4& matrix)
+  void renderLines(RenderInfo& renderInfo, const glm::mat4& matrix)
   {
     auto shader = q->map()->getShader<LineShader>();
     if(shader->error())
@@ -170,7 +170,7 @@ struct GridLayer::Private
       }
     }
 
-    shader->use();
+    shader->use(renderInfo.shaderType());
     shader->setMatrix(matrix);
 
     q->map()->controller()->enableScissor(q->coordinateSystem());
@@ -183,7 +183,7 @@ struct GridLayer::Private
   }
 
   //################################################################################################
-  void renderText(const glm::mat4& matrix)
+  void renderText(RenderInfo& renderInfo, const glm::mat4& matrix)
   {
     if(!font)
       return;
@@ -192,7 +192,7 @@ struct GridLayer::Private
     if(shader->error())
       return;
 
-    shader->use();
+    shader->use(renderInfo.shaderType());
     shader->setMatrix(matrix);
   }
 };
@@ -293,8 +293,8 @@ void GridLayer::render(RenderInfo& renderInfo)
   if (!d->gridAs2DOverlay)
     matrix = map()->controller()->matrix(coordinateSystem());
 
-  d->renderLines(matrix);
-  //d->renderText(matrix);
+  d->renderLines(renderInfo, matrix);
+  //d->renderText(renderInfo, matrix);
 }
 
 //##################################################################################################

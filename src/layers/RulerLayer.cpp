@@ -80,7 +80,7 @@ struct RulerLayer::Private
   }
 
   //################################################################################################
-  void renderLines(const glm::mat4& matrix)
+  void renderLines(RenderInfo& renderInfo, const glm::mat4& matrix)
   {
     auto shader = q->map()->getShader<LineShader>();
     if(shader->error())
@@ -121,7 +121,7 @@ struct RulerLayer::Private
       }
     }
 
-    shader->use();
+    shader->use(renderInfo.shaderType());
     shader->setMatrix(matrix);
 
     q->map()->controller()->enableScissor(q->coordinateSystem());
@@ -134,7 +134,7 @@ struct RulerLayer::Private
   }
 
   //################################################################################################
-  void renderText(const glm::mat4& matrix)
+  void renderText(RenderInfo& renderInfo, const glm::mat4& matrix)
   {
     if(!font)
       return;
@@ -143,7 +143,7 @@ struct RulerLayer::Private
     if(shader->error())
       return;
 
-    shader->use();
+    shader->use(renderInfo.shaderType());
     shader->setMatrix(matrix);
   }
 };
@@ -177,8 +177,8 @@ void RulerLayer::render(RenderInfo& renderInfo)
   for(auto& lines : d->processedGeometry)
     d->calculateGrid(matrix, lines);
 
-  d->renderLines(matrix);
-  d->renderText(matrix);
+  d->renderLines(renderInfo, matrix);
+  d->renderText(renderInfo, matrix);
 }
 
 //##################################################################################################

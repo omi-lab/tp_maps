@@ -69,7 +69,7 @@ struct PoolDetails_lt
           if(!isOnlyMaterial)
           {
             std::vector<GLuint> indexes;
-            std::vector<MaterialShader::Vertex> verts;
+            std::vector<G3DMaterialShader::Vertex> verts;
 
             indexes.reserve(part.indexes.size());
             verts.reserve(part.indexes.size());
@@ -81,11 +81,11 @@ struct PoolDetails_lt
               {
                 const auto& v = shape.verts.at(size_t(idx));
                 indexes.push_back(GLuint(n));
-                verts.emplace_back(MaterialShader::Vertex(v.vert, v.normal, v.texture));
+                verts.emplace_back(G3DMaterialShader::Vertex(v.vert, v.normal, v.texture));
               }
             }
 
-            std::pair<GLenum, MaterialShader::VertexBuffer*> p;
+            std::pair<GLenum, G3DMaterialShader::VertexBuffer*> p;
             p.first = GLenum(part.type);
             p.second = shader->generateVertexBuffer(map, indexes, verts);
             details.vertexBuffers.push_back(p);

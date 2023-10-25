@@ -10,13 +10,16 @@ namespace tp_maps
 //! A shader for Screen Space Reflection.
 class TP_MAPS_EXPORT PostSSRShader: public PostShader
 {
-  friend class Map;
 public:
   //################################################################################################
-  PostSSRShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+  static inline const tp_utils::StringID& name(){return postSSRShaderSID();}
 
   //################################################################################################
-  static inline const tp_utils::StringID& name(){return postSSRShaderSID();}
+  using PostShader::PostShader;
+
+protected:
+  //################################################################################################
+  const char* fragmentShaderStr(ShaderType shaderType) override;
 };
 
 }

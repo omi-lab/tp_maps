@@ -5,13 +5,6 @@ namespace tp_maps
 {
 
 //##################################################################################################
-Geometry3DShader::Geometry3DShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
-  Shader(map, openGLProfile)
-{
-
-}
-
-//##################################################################################################
 Geometry3DShader::VertexBuffer* Geometry3DShader::generateVertexBuffer(Map* map,
                                                                        const std::vector<GLuint>& indexes,
                                                                        const std::vector<Geometry3DShader::Vertex>& verts) const
@@ -51,6 +44,21 @@ Geometry3DShader::VertexBuffer* Geometry3DShader::generateVertexBuffer(Map* map,
 #endif
 
   return vertexBuffer;
+}
+
+//##################################################################################################
+void Geometry3DShader::init()
+{
+  if(map()->extendedFBO() == ExtendedFBO::Yes)
+    compile(ShaderType::RenderExtendedFBO);
+  else
+    compile(ShaderType::Render);
+
+#ifdef TP_GLSL_PICKING_SUPPORTED
+  compile(ShaderType::Picking);
+#endif
+
+  compile(ShaderType::Light);
 }
 
 //##################################################################################################

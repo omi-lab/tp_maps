@@ -10,8 +10,11 @@ namespace tp_maps
 //! A shader to render images in the background.
 class TP_MAPS_EXPORT BackgroundImageShader: public FullScreenShader
 {
-  friend class Map;
+  TP_DQ;
 public:
+  //################################################################################################
+  static inline const tp_utils::StringID& name(){return backgroundImageShaderSID();}
+
   //################################################################################################
   BackgroundImageShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
 
@@ -25,12 +28,15 @@ public:
   //################################################################################################
   void setMatrix(const glm::mat4& matrix);
 
+protected:
   //################################################################################################
-  static inline const tp_utils::StringID& name(){return backgroundImageShaderSID();}
+  const char* vertexShaderStr(ShaderType shaderType) override;
 
-private:
-  struct Private;
-  Private* d;
+  //################################################################################################
+  const char* fragmentShaderStr(ShaderType shaderType) override;
+
+  //################################################################################################
+  void getLocations(GLuint program, ShaderType shaderType) override;
 };
 
 }

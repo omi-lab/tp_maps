@@ -3,8 +3,6 @@
 #include "tp_maps/Font.h"
 #include "tp_maps/Map.h"
 
-#include "tp_math_utils/Globals.h"
-
 #include "tp_utils/DebugUtils.h"
 #include "tp_utils/TimeUtils.h"
 
@@ -15,10 +13,6 @@ namespace tp_maps
 
 namespace
 {
-
-ShaderResource& vertShaderStr(){static ShaderResource s{"/tp_maps/FontShader.vert"}; return s;}
-ShaderResource& fragShaderStr(){static ShaderResource s{"/tp_maps/FontShader.frag"}; return s;}
-
 //##################################################################################################
 struct Vertex_lt
 {
@@ -116,52 +110,17 @@ struct FontShader::PreparedString::Private
 };
 
 //##################################################################################################
-FontShader::FontShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const char* vertexShader, const char* fragmentShader):
+FontShader::FontShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
   Shader(map, openGLProfile),
   d(new Private())
 {
-  if(!vertexShader)
-    vertexShader = vertShaderStr().data(openGLProfile, ShaderType::Render);
 
-  if(!fragmentShader)
-    fragmentShader = fragShaderStr().data(openGLProfile, ShaderType::Render);
-
-  compile(vertexShader,
-          fragmentShader,
-          [](GLuint program)
-  {
-    glBindAttribLocation(program, 0, "inVertex");
-    glBindAttribLocation(program, 1, "inNormal");
-    glBindAttribLocation(program, 2, "inTexture");
-  },
-  [this](GLuint program)
-  {
-    d->matrixLocation = glGetUniformLocation(program, "matrix");
-    d->colorLocation  = glGetUniformLocation(program, "color");
-
-    const char* shaderName = "FontShader";
-    if(d->matrixLocation<0)tpWarning() << shaderName << " d->matrixLocation: " << d->matrixLocation;
-    if(d->colorLocation<0)tpWarning() << shaderName << " d->colorLocation: " << d->colorLocation;
-  });
 }
 
 //##################################################################################################
 FontShader::~FontShader()
 {
   delete d;
-}
-
-//##################################################################################################
-void FontShader::use(ShaderType shaderType)
-{
-  TP_FUNCTION_TIME("FontShader::use");
-
-  //https://webglfundamentals.org/webgl/lessons/webgl-and-alpha.html
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
-
-  Shader::use(shaderType);
 }
 
 //##################################################################################################
@@ -291,6 +250,67 @@ void FontShader::drawPreparedString(PreparedString& preparedString)
     glDrawArrays(GL_TRIANGLES, 0, preparedString.d->indexCount);
 #endif
   }
+}
+
+//##################################################################################################
+void FontShader::use(ShaderType shaderType)
+{
+  TP_FUNCTION_TIME("FontShader::use");
+
+  //https://webglfundamentals.org/webgl/lessons/webgl-and-alpha.html
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
+
+  Shader::use(shaderType);
+}
+
+//##################################################################################################
+const char* FontShader::vertexShaderStr(ShaderType shaderType)
+{
+  static ShaderResource s{"/tp_maps/FontShader.vert"};
+  return s.data(openGLProfile(), shaderType);
+}
+
+//##################################################################################################
+const char* FontShader::fragmentShaderStr(ShaderType shaderType)
+{
+  static ShaderResource s{"/tp_maps/FontShader.frag"};
+  return s.data(openGLProfile(), shaderType);
+}
+
+//##################################################################################################
+void FontShader::bindLocations(GLuint program, ShaderType shaderType)
+{
+  TP_UNUSED(shaderType);
+
+  glBindAttribLocation(program, 0, "inVertex");
+  glBindAttribLocation(program, 1, "inNormal");
+  glBindAttribLocation(program, 2, "inTexture");
+}
+
+//##################################################################################################
+void FontShader::getLocations(GLuint program, ShaderType shaderType)
+{
+  TP_UNUSED(shaderType);
+
+  d->matrixLocation = glGetUniformLocation(program, "matrix");
+  d->colorLocation  = glGetUniformLocation(program, "color");
+
+  if(d->matrixLocation<0)
+    tpWarning() << "FontShader d->matrixLocation: " << d->matrixLocation;
+
+  if(d->colorLocation<0)
+    tpWarning() << "FontShader d->colorLocation: " << d->colorLocation;
+}
+
+//##################################################################################################
+void FontShader::init()
+{
+  if(map()->extendedFBO() == ExtendedFBO::Yes)
+    compile(ShaderType::RenderExtendedFBO);
+  else
+    compile(ShaderType::Render);
 }
 
 //##################################################################################################

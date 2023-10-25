@@ -7,16 +7,19 @@ namespace tp_maps
 {
 
 //##################################################################################################
-//! Draw outlines around a mask rendered to the previous FBO.
+//! Add a blur in post processing.
 class TP_MAPS_EXPORT PostBasicBlurShader: public PostShader
 {
-  friend class Map;
 public:
   //################################################################################################
-  PostBasicBlurShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+  static inline const tp_utils::StringID& name(){return postBasicBlurShaderSID();}
 
   //################################################################################################
-  static inline const tp_utils::StringID& name(){return postBasicBlurShaderSID();}
+  using PostShader::PostShader;
+
+protected:
+  //################################################################################################
+  const char* fragmentShaderStr(ShaderType shaderType) override;
 };
 
 }

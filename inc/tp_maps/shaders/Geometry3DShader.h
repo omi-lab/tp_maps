@@ -18,7 +18,7 @@ class TP_MAPS_EXPORT Geometry3DShader: public Shader
 {
 public:
   //################################################################################################
-  Geometry3DShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+  using Shader::Shader;
 
   //################################################################################################
   struct Vertex
@@ -77,9 +77,9 @@ public:
                                      const std::vector<Vertex>& verts) const;
 
   //################################################################################################
-  virtual void init(RenderInfo& renderInfo,
-                    const Matrices& m,
-                    const glm::mat4& modelToWorldMatrix)=0;
+  virtual void initPass(RenderInfo& renderInfo,
+                        const Matrices& m,
+                        const glm::mat4& modelToWorldMatrix)=0;
 
   //################################################################################################
   virtual void setMaterial(RenderInfo& renderInfo,
@@ -101,6 +101,10 @@ public:
                            GLenum mode,
                            VertexBuffer* vertexBuffer,
                            const glm::vec4& pickingID)=0;
+
+protected:
+  //################################################################################################
+  void init() override;
 };
 
 }

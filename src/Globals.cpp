@@ -1,9 +1,9 @@
 #include "tp_maps/Globals.h"
 
-#include "tp_math_utils/JSONUtils.h"
+#include "tp_math_utils/Globals.h"
 
 #include "tp_utils/Resources.h"
-#include "tp_utils/JSONUtils.h"
+#include "tp_utils/DebugUtils.h"
 
 //##################################################################################################
 namespace tp_maps
@@ -42,7 +42,7 @@ TP_DEFINE_ID(             postGrid2DShaderSID,              "Post grid 2D shader
 TP_DEFINE_ID(              postGammaShaderSID,                "Post gamma shader");
 TP_DEFINE_ID(             backgroundShaderSID,                "Background shader");
 TP_DEFINE_ID(        backgroundImageShaderSID,          "Background image shader");
-TP_DEFINE_ID(                patternShaderSID,                   "Pattern shader");
+TP_DEFINE_ID(      backgroundPatternShaderSID,        "Background pattern shader");
 TP_DEFINE_ID(                selectionPassSID,                   "Selection pass");
 
 //##################################################################################################
@@ -52,6 +52,21 @@ int staticInit()
   // Hack to make sure that resources are loaded on OSX, this should be part of the default static
   // init as part of the build system.
   return tp_rc();
+}
+
+
+
+//##################################################################################################
+std::string shaderTypeToString(ShaderType shaderType)
+{
+  switch(shaderType)
+  {
+  case ShaderType::Render           : return "Render";
+  case ShaderType::RenderExtendedFBO: return "RenderExtendedFBO";
+  case ShaderType::Picking          : return "Picking";
+  case ShaderType::Light            : return "Light";
+  }
+  return {};
 }
 
 //##################################################################################################
@@ -403,10 +418,15 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
 }
 
 //##################################################################################################
-ShaderString::ShaderString(const char* text):
-  m_str(text)
+ShaderString::ShaderString(const char* text)
 {
+  if(!text)
+  {
+    tpWarning() << "ShaderString initialized from null.";
+    return;
+  }
 
+  m_str = text;
 }
 
 //##################################################################################################
@@ -439,9 +459,21 @@ const std::string& ShaderResource::dataStr(OpenGLProfile openGLProfile, ShaderTy
   std::string& parsed = m_parsed[openGLProfile][shaderType];
 
   if(parsed.empty())
-    parsed = parseShaderString(tp_utils::resource(m_resourceName).data, openGLProfile, shaderType);
+  {
+    if(auto data = tp_utils::resource(m_resourceName).data; data)
+      parsed = parseShaderString(data, openGLProfile, shaderType);
+    else
+      tpWarning() << "ShaderResource is null, resourceName=" << m_resourceName;
+  }
 
   return parsed;
+}
+
+//##################################################################################################
+glm::vec2 Matrices::nearAndFar() const
+{
+  glm::mat4 m = glm::inverse(p);
+  return {std::fabs(tpProj(m, {0.0f, 0.0f, -1.0f}).z), std::fabs(tpProj(m, {0.0f, 0.0f, 1.0f}).z)};
 }
 
 //##################################################################################################

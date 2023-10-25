@@ -4,11 +4,11 @@
 #include "tp_maps/Controller.h"
 #include "tp_maps/picking_results/GeometryPickingResult.h"
 #include "tp_maps/TexturePool.h"
-#include "tp_maps/shaders/MaterialShader.h"
-#include "tp_maps/shaders/ImageShader.h"
-#include "tp_maps/shaders/XYZShader.h"
-#include "tp_maps/shaders/DepthShader.h"
-#include "tp_maps/shaders/StaticLightShader.h"
+#include "tp_maps/shaders/G3DMaterialShader.h"
+#include "tp_maps/shaders/G3DImageShader.h"
+#include "tp_maps/shaders/G3DXYZShader.h"
+#include "tp_maps/shaders/G3DDepthShader.h"
+#include "tp_maps/shaders/G3DStaticLightShader.h"
 
 #include "tp_utils/TimeUtils.h"
 
@@ -217,17 +217,17 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
   Geometry3DShader* shader{nullptr};
   switch(d->shaderSelection)
   {
-  case ShaderSelection::Material    : shader = map()->getShader<MaterialShader>   (); break;
-  case ShaderSelection::Image       : shader = map()->getShader<ImageShader>      (); break;
-  case ShaderSelection::XYZ         : shader = map()->getShader<XYZShader>        (); break;
-  case ShaderSelection::Depth       : shader = map()->getShader<DepthShader>      (); break;
-  case ShaderSelection::StaticLight : shader = map()->getShader<StaticLightShader>(); break;
+  case ShaderSelection::Material    : shader = map()->getShader<G3DMaterialShader>   (); break;
+  case ShaderSelection::Image       : shader = map()->getShader<G3DImageShader>      (); break;
+  case ShaderSelection::XYZ         : shader = map()->getShader<G3DXYZShader>        (); break;
+  case ShaderSelection::Depth       : shader = map()->getShader<G3DDepthShader>      (); break;
+  case ShaderSelection::StaticLight : shader = map()->getShader<G3DStaticLightShader>(); break;
   }
 
   if(!shader || shader->error())
     return;
 
-  shader->init(renderInfo, m, modelToWorldMatrix());
+  shader->initPass(renderInfo, m, modelToWorldMatrix());
 
   if(renderInfo.pass == RenderPass::Picking)
   {
@@ -247,7 +247,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
         }));
 
         shader->setMaterialPicking(renderInfo, details);
-        for(const std::pair<GLenum, MaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
+        for(const std::pair<GLenum, G3DMaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
           shader->drawPicking(renderInfo, details, buff.first, buff.second, pickingID);
       }
     });
@@ -263,7 +263,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
       for(const auto& details : processedGeometry)
       {
         shader->setMaterial(renderInfo, details);
-        for(const std::pair<GLenum, MaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
+        for(const std::pair<GLenum, G3DMaterialShader::VertexBuffer*>& buff : details.vertexBuffers)
           shader->draw(renderInfo, details, buff.first, buff.second);
       }
     });

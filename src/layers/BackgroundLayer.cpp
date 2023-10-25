@@ -1,6 +1,6 @@
 #include "tp_maps/layers/BackgroundLayer.h"
-#include "tp_maps/shaders/BackgroundShader.h"
-#include "tp_maps/shaders/PatternShader.h"
+#include "tp_maps/shaders/BackgroundSkyBoxShader.h"
+#include "tp_maps/shaders/BackgroundPatternShader.h"
 #include "tp_maps/shaders/BackgroundImageShader.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/Controller.h"
@@ -121,13 +121,13 @@ void BackgroundLayer::render(RenderInfo& renderInfo)
     if(!d->textureName.isValid())
       return;
 
-    auto shader = map()->getShader<BackgroundShader>();
+    auto shader = map()->getShader<BackgroundSkyBoxShader>();
     if(shader->error())
       return;
 
     auto matricies = map()->controller()->matrices(defaultSID());
 
-    shader->use(ShaderType::RenderExtendedFBO);
+    shader->use(renderInfo.shaderType());
     shader->setTexture(d->texturePool->textureID(d->textureName));
     shader->setMatrix(matricies.v, matricies.p);
     shader->setFrameMatrix(glm::mat4(1.0f));
@@ -139,11 +139,11 @@ void BackgroundLayer::render(RenderInfo& renderInfo)
 
   case Mode::TransparentPattern: //-----------------------------------------------------------------
   {
-    auto shader = map()->getShader<PatternShader>();
+    auto shader = map()->getShader<BackgroundPatternShader>();
     if(shader->error())
       return;
 
-    shader->use(ShaderType::RenderExtendedFBO);
+    shader->use(renderInfo.shaderType());
     shader->setFrameMatrix(glm::mat4(1.0f));
     shader->setScreenSizeAndGridSpacing(map()->screenSize(), d->gridSpacing);
     shader->draw();
@@ -157,7 +157,7 @@ void BackgroundLayer::render(RenderInfo& renderInfo)
     if(shader->error())
       return;
 
-    shader->use(ShaderType::RenderExtendedFBO);
+    shader->use(renderInfo.shaderType());
     shader->setTexture(d->texturePool->textureID(d->textureName));
     shader->setMatrix(d->flatMatrixCallback());
     shader->setFrameMatrix(glm::mat4(1.0f));
