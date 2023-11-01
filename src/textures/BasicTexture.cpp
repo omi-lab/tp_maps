@@ -127,7 +127,67 @@ GLuint BasicTexture::bindTexture(const tp_image_utils::ColorMap& img,
   glGenTextures(1, &txId);
   glBindTexture(target, txId);
 
-  glTexImage2D(target, 0, format, int(img.width()), int(img.height()), 0, GL_RGBA, GL_UNSIGNED_BYTE, img.constData());
+  switch(map()->openGLProfile())
+  {
+  case OpenGLProfile::VERSION_110: [[fallthrough]];
+  case OpenGLProfile::VERSION_120: [[fallthrough]];
+  case OpenGLProfile::VERSION_130: [[fallthrough]];
+  case OpenGLProfile::VERSION_140: [[fallthrough]];
+  case OpenGLProfile::VERSION_150: [[fallthrough]];
+  case OpenGLProfile::VERSION_330: [[fallthrough]];
+  case OpenGLProfile::VERSION_400: [[fallthrough]];
+  case OpenGLProfile::VERSION_410: [[fallthrough]];
+  case OpenGLProfile::VERSION_420: [[fallthrough]];
+  case OpenGLProfile::VERSION_430: [[fallthrough]];
+  case OpenGLProfile::VERSION_440: [[fallthrough]];
+  case OpenGLProfile::VERSION_450: [[fallthrough]];
+  case OpenGLProfile::VERSION_460:
+  {
+    glTexImage2D(target, 0, format, int(img.width()), int(img.height()), 0, GL_RGBA, GL_UNSIGNED_BYTE, img.constData());
+    break;
+  }
+
+  case OpenGLProfile::VERSION_100_ES: [[fallthrough]];
+  case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
+  case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
+  case OpenGLProfile::VERSION_320_ES:
+  {
+    //glTexImage2D(target, 0, GL_RGBA, int(img.width()), int(img.height()), 0, GL_RGBA, GL_UNSIGNED_BYTE, img.constData());
+    if(format == GL_RGB)
+    {
+      // For GL ES we seem to need the internalFormat and format to be the same, so here we take the
+      // RGBA data and pack it as RGB.
+      struct RGB
+      {
+        uint8_t r;
+        uint8_t g;
+        uint8_t b;
+      };
+      std::vector<RGB> packed;
+      packed.resize(img.size());
+
+      auto dst=packed.begin();
+      for(auto src=img.constDataVector().begin(); src!=img.constDataVector().end(); ++src, ++dst)
+      {
+        dst->r = src->r;
+        dst->g = src->g;
+        dst->b = src->b;
+      }
+
+      // Each pixel is 3 bytes so row alignment may not be 4 bytes so set it to 1
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+      glTexImage2D(target, 0, GL_RGB, int(img.width()), int(img.height()), 0, GL_RGB, GL_UNSIGNED_BYTE, packed.data());
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    }
+    else if(format == GL_RGBA)
+    {
+      glTexImage2D(target, 0, GL_RGBA, int(img.width()), int(img.height()), 0, GL_RGBA, GL_UNSIGNED_BYTE, img.constData());
+    }
+
+    break;
+  }
+  }
 
   if((minFilterOption == GL_NEAREST_MIPMAP_NEAREST) || (minFilterOption == GL_LINEAR_MIPMAP_LINEAR))
     glGenerateMipmap(target);
