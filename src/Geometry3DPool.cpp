@@ -183,7 +183,7 @@ struct Geometry3DPool::Private
     return m_layer?m_layer->map():m_map;
   }
 
-  //################################################################################################  
+  //################################################################################################
 #ifdef TP_MAPS_DEBUG
   void checkForDuplicateIDs()
   {
@@ -332,21 +332,32 @@ void Geometry3DPool::subscribe(const tp_utils::StringID& name,
 
     std::unordered_set<TexturePoolKey> textureSubscriptions;
     details.textureKeys.resize(details.geometry.size());
-    for(size_t m=0; m<details.geometry.size(); m++)
+    for(size_t i=0; i<details.geometry.size(); i++)
     {
-      const auto& material = details.geometry.at(m).material;
-      auto& textureKeys = details.textureKeys.at(m);
+      const auto& material = details.geometry.at(i).material;
+      auto& textureKeys = details.textureKeys.at(i);
 
       tileTextures = material.tileTextures;
 
-      textureKeys.rgba     = TexturePoolKey(material.   albedoTexture, material.   albedoTexture, material.  albedoTexture, material.alphaTexture, 0, 1, 2, 0, TPPixel(uint8_t(material.  albedo.x*255.0f), uint8_t(material.  albedo.y*255.0f), uint8_t(material.  albedo.z*255.0f), uint8_t(material.alpha*255.0f)));
-      textureKeys.normals  = TexturePoolKey(material.  normalsTexture, material.  normalsTexture, material. normalsTexture,  tp_utils::StringID(), 0, 1, 2, 0, TPPixel(128                                , 128                                , 255                                , 255                           ));
-      textureKeys.rmttr    = TexturePoolKey(material.roughnessTexture, material.metalnessTexture, material.transmissionTexture, material.transmissionRoughnessTexture,
-                                            0, 1, 2, 3, TPPixel(uint8_t(material. roughness*255.0f), uint8_t(material. metalness*255.0f), uint8_t(material. transmission*255.0f), uint8_t(material. transmissionRoughness*255.0f)));
+      const auto& rgba    = material.                 rgbaTexture;
+      const auto& rgb     = material.               albedoTexture;
+      const auto& a       = material.                alphaTexture;
+      const auto& normals = material.              normalsTexture;
+      const auto& rmttr   = material.                rmttrTexture;
+      const auto& r       = material.            roughnessTexture;
+      const auto& m       = material.            metalnessTexture;
+      const auto& t       = material.         transmissionTexture;
+      const auto& tr      = material.transmissionRoughnessTexture;
 
-      textureSubscriptions.insert(textureKeys.rgba    );
-      textureSubscriptions.insert(textureKeys.normals );
-      textureSubscriptions.insert(textureKeys.rmttr   );
+      if(rgba.isValid()) textureKeys.rgba   = TexturePoolKey(rgba   , rgba   , rgba   ,  rgba, 0, 1, 2, 3, TPPixel(uint8_t(material. albedo.x*255.0f), uint8_t(material. albedo.y*255.0f), uint8_t(material.albedo.z*255.0f)    , uint8_t(material.alpha*255.0f)                ));
+      else               textureKeys.rgba   = TexturePoolKey(rgb    , rgb    , rgb    ,     a, 0, 1, 2, 0, TPPixel(uint8_t(material. albedo.x*255.0f), uint8_t(material. albedo.y*255.0f), uint8_t(material.albedo.z*255.0f)    , uint8_t(material.alpha*255.0f)                ));
+      textureKeys.normals                   = TexturePoolKey(normals, normals, normals,    {}, 0, 1, 2, 0, TPPixel(128                               , 128                               , 255                                  , 255                                           ));
+      if(rmttr.isValid())textureKeys.rmttr  = TexturePoolKey(rmttr  , rmttr  , rmttr  , rmttr, 0, 1, 2, 3, TPPixel(uint8_t(material.roughness*255.0f), uint8_t(material.metalness*255.0f), uint8_t(material.transmission*255.0f), uint8_t(material.transmissionRoughness*255.0f)));
+      else               textureKeys.rmttr  = TexturePoolKey(r      ,  m     ,   t    ,    tr, 0, 0, 0, 0, TPPixel(uint8_t(material.roughness*255.0f), uint8_t(material.metalness*255.0f), uint8_t(material.transmission*255.0f), uint8_t(material.transmissionRoughness*255.0f)));
+
+      textureSubscriptions.insert(textureKeys.rgba   );
+      textureSubscriptions.insert(textureKeys.normals);
+      textureSubscriptions.insert(textureKeys.rmttr  );
     }
 
     details.textureSubscriptions.swap(textureSubscriptions);

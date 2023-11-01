@@ -37,6 +37,7 @@ public:
   //################################################################################################
   void subscribe(const tp_utils::StringID& name,
                  const tp_image_utils::ColorMap& image,
+                 NChannels nChannels,
                  bool makeSquare=true);
 
   //################################################################################################

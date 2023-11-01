@@ -17,13 +17,18 @@ class TP_MAPS_EXPORT BasicTexture : public Texture
   TP_REF_COUNT_OBJECTS("BasicTexture");
 public:
   //################################################################################################
-  BasicTexture(Map* map, const tp_image_utils::ColorMap& image=tp_image_utils::ColorMap(), bool makeSquare=true);
+  BasicTexture(Map* map,
+               const tp_image_utils::ColorMap& image=tp_image_utils::ColorMap(),
+               NChannels nChannels=NChannels::RGBA,
+               bool makeSquare=true);
 
   //################################################################################################
   ~BasicTexture() override;
 
   //################################################################################################
-  void setImage(const tp_image_utils::ColorMap& image, bool quiet=false);
+  void setImage(const tp_image_utils::ColorMap& image,
+                NChannels nChannels,
+                bool quiet=false);
 
   //################################################################################################
   bool imageReady() override;

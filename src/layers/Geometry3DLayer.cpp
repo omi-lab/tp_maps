@@ -119,7 +119,8 @@ void Geometry3DLayer::setTextures(const std::unordered_map<tp_utils::StringID, t
   subscribedTextures.reserve(textures.size());
   for(const auto& i : textures)
   {
-    d->geometry3DPool->texturePool()->subscribe(i.first, i.second);
+#warning this could be more efficient
+    d->geometry3DPool->texturePool()->subscribe(i.first, i.second, NChannels::RGBA);
     subscribedTextures.push_back(i.first);
   }
 

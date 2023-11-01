@@ -20,7 +20,11 @@ struct Details_lt
 {
   TP_REF_COUNT_OBJECTS("TexturePool::Details_lt");
   int count{0};
+
+  NChannels nChannels{NChannels::RGBA};
+
   tp_image_utils::ColorMap image;
+
   bool makeSquare{true};
   BasicTexture* texture{nullptr};
   bool changed{true};
@@ -37,13 +41,16 @@ struct CombinedDetails_lt
   TP_REF_COUNT_OBJECTS("TexturePool::CombinedDetails_lt");
   int count{0};
 
+  NChannels nChannels{NChannels::RGBA};
+
   tp_image_utils::ColorMap rImage;
   tp_image_utils::ColorMap gImage;
   tp_image_utils::ColorMap bImage;
   tp_image_utils::ColorMap aImage;
 
-  tp_image_utils::ColorMap rgbaImage;
+  tp_image_utils::ColorMap rgbaImage;  
   bool composeImage{true};  
+
   bool makeSquare{true};
 
   BasicTexture* texture{nullptr};
@@ -174,6 +181,7 @@ void TexturePool::incrementKeepHot(bool keepHot)
 //##################################################################################################
 void TexturePool::subscribe(const tp_utils::StringID& name,
                             const tp_image_utils::ColorMap& image,
+                            NChannels nChannels,
                             bool makeSquare)
 {
   TP_FUNCTION_TIME("TexturePool::subscribe(name)");
@@ -184,6 +192,7 @@ void TexturePool::subscribe(const tp_utils::StringID& name,
   if(details.overwrite)
   {
     details.overwrite = false;
+    details.nChannels = nChannels;
 
     if(details.textureID && d->map())
       d->map()->deleteTexture(details.textureID);
@@ -318,7 +327,11 @@ GLuint TexturePool::textureID(const tp_utils::StringID& name)
 
   if(!i->second.texture)
   {
-    i->second.texture = new BasicTexture(d->map(), i->second.image, i->second.makeSquare);
+    i->second.texture = new BasicTexture(d->map(),
+                                         i->second.image,
+                                         i->second.nChannels,
+                                         i->second.makeSquare);
+
     i->second.texture->setTextureWrapS(i->second.textureWrapS);
     i->second.texture->setTextureWrapT(i->second.textureWrapT);
   }
@@ -370,6 +383,8 @@ GLuint TexturePool::textureID(const TexturePoolKey& key)
          w==bImage.width() && h==bImage.height() &&
          w==aImage.width() && h==aImage.height())
       {
+        i->second.nChannels = NChannels::RGBA;
+
         const TPPixel* r = rImage.constData();
         const TPPixel* g = gImage.constData();
         const TPPixel* b = bImage.constData();
@@ -389,6 +404,8 @@ GLuint TexturePool::textureID(const TexturePoolKey& key)
               w==gImage.width() && h==gImage.height() &&
               w==bImage.width() && h==bImage.height())
       {
+        i->second.nChannels = NChannels::RGB;
+
         const TPPixel* r = rImage.constData();
         const TPPixel* g = gImage.constData();
         const TPPixel* b = bImage.constData();
@@ -430,7 +447,11 @@ GLuint TexturePool::textureID(const TexturePoolKey& key)
       }
     }
 
-    i->second.texture = new BasicTexture(d->map(), i->second.rgbaImage, i->second.makeSquare);
+    i->second.texture = new BasicTexture(d->map(),
+                                         i->second.rgbaImage,
+                                         i->second.nChannels,
+                                         i->second.makeSquare);
+
     i->second.texture->setTextureWrapS(i->second.textureWrapS);
     i->second.texture->setTextureWrapT(i->second.textureWrapT);
   }

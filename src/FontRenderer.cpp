@@ -5,7 +5,6 @@
 #include "tp_maps/textures/BasicTexture.h"
 
 #include "tp_utils/TimeUtils.h"
-#include "tp_utils/DebugUtils.h"
 
 #include <unordered_map>
 #include <cstring>
@@ -433,7 +432,7 @@ void FontRenderer::modifyGlyph(const Glyph& glyph, const std::function<void(cons
 //##################################################################################################
 void FontRenderer::setTexture(const tp_image_utils::ColorMap& texture)
 {
-  d->texture.setImage(texture);
+  d->texture.setImage(texture, NChannels::RGBA);
   d->freeTexture();
 
   for(auto preparedString : preparedStrings())

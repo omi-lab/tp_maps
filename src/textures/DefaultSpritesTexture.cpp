@@ -28,7 +28,7 @@ DefaultSpritesTexture::DefaultSpritesTexture(Map* map):
     }
   }
 
-  setImage(texture);
+  setImage(texture, NChannels::RGBA);
 }
 
 }

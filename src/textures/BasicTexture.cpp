@@ -20,17 +20,21 @@ struct BasicTexture::Private
   Private() = default;
 
   tp_image_utils::ColorMap image;
+  NChannels nChannels{NChannels::RGBA};
   bool imageReady{false};
   bool makeSquare{true};
 };
 
 //##################################################################################################
-BasicTexture::BasicTexture(Map* map, const tp_image_utils::ColorMap& image, bool makeSquare):
+BasicTexture::BasicTexture(Map* map,
+                           const tp_image_utils::ColorMap& image,
+                           NChannels nChannels,
+                           bool makeSquare):
   Texture(map),
   d(new Private())
 {
   d->makeSquare = makeSquare;
-  setImage(image);
+  setImage(image, nChannels);
 }
 
 //##################################################################################################
@@ -40,12 +44,16 @@ BasicTexture::~BasicTexture()
 }
 
 //##################################################################################################
-void BasicTexture::setImage(const tp_image_utils::ColorMap& image, bool quiet)
+void BasicTexture::setImage(const tp_image_utils::ColorMap& image,
+                            NChannels nChannels,
+                            bool quiet)
 {
   if(d->makeSquare)
     image.clone2IntoOther(d->image);
   else
     d->image = image;
+
+  d->nChannels = nChannels;
 
   d->imageReady = (d->image.constData() && d->image.width()>0 && d->image.height()>0);
 
@@ -67,7 +75,7 @@ GLuint BasicTexture::bindTexture()
 
   GLuint texture = bindTexture(d->image,
                                GL_TEXTURE_2D,
-                               GL_RGBA,
+                               d->nChannels==NChannels::RGB?GL_RGB:GL_RGBA,
                                magFilterOption(),
                                minFilterOption(),
                                textureWrapS(),
@@ -119,7 +127,7 @@ GLuint BasicTexture::bindTexture(const tp_image_utils::ColorMap& img,
   glGenTextures(1, &txId);
   glBindTexture(target, txId);
 
-  glTexImage2D(target, 0, format, int(img.width()), int(img.height()), 0, format, GL_UNSIGNED_BYTE, img.constData());
+  glTexImage2D(target, 0, format, int(img.width()), int(img.height()), 0, GL_RGBA, GL_UNSIGNED_BYTE, img.constData());
 
   if((minFilterOption == GL_NEAREST_MIPMAP_NEAREST) || (minFilterOption == GL_LINEAR_MIPMAP_LINEAR))
     glGenerateMipmap(target);
