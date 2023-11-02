@@ -152,7 +152,6 @@ GLuint BasicTexture::bindTexture(const tp_image_utils::ColorMap& img,
   case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
   case OpenGLProfile::VERSION_320_ES:
   {
-    //glTexImage2D(target, 0, GL_RGBA, int(img.width()), int(img.height()), 0, GL_RGBA, GL_UNSIGNED_BYTE, img.constData());
     if(format == GL_RGB)
     {
       // For GL ES we seem to need the internalFormat and format to be the same, so here we take the
@@ -176,7 +175,6 @@ GLuint BasicTexture::bindTexture(const tp_image_utils::ColorMap& img,
 
       // Each pixel is 3 bytes so row alignment may not be 4 bytes so set it to 1
       glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
       glTexImage2D(target, 0, GL_RGB, int(img.width()), int(img.height()), 0, GL_RGB, GL_UNSIGNED_BYTE, packed.data());
       glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
     }
