@@ -23,7 +23,8 @@ TexturePoolKey::TexturePoolKey(const tp_utils::StringID& rName_,
                                size_t gIndex_,
                                size_t bIndex_,
                                size_t aIndex_,
-                               TPPixel defaultColor_)
+                               TPPixel defaultColor_,
+                               NChannels nChannels_)
 {
   rName = rName_;
   gName = gName_;
@@ -36,6 +37,8 @@ TexturePoolKey::TexturePoolKey(const tp_utils::StringID& rName_,
   aIndex = aIndex_;
 
   defaultColor = defaultColor_;
+
+  nChannels = nChannels_;
 
   h = makeHash();
 }
@@ -54,6 +57,8 @@ size_t TexturePoolKey::makeHash()
   h ^= std::hash<size_t>()(aIndex) + 0x9e3779b9 + (h<<6) + (h>>2);
 
   h ^= std::hash<size_t>()(defaultColor.i) + 0x9e3779b9 + (h<<6) + (h>>2);
+
+  h ^= std::hash<size_t>()(size_t(nChannels)) + 0x9e3779b9 + (h<<6) + (h>>2);
 
   return h;
 }
@@ -74,6 +79,7 @@ std::string TexturePoolKey::debugString() const
   s += " aIndex: " + std::to_string(aIndex);
 
   s += " defaultColor: " + defaultColor.toString();
+  s += " nChannels: " + std::to_string(size_t(nChannels));
   s += " h: " + std::to_string(h);
 
   return s;

@@ -23,6 +23,8 @@ public:
   size_t h;
 
   TPPixel defaultColor;
+
+  NChannels nChannels;
 };
 
 //##################################################################################################
@@ -44,7 +46,8 @@ public:
                  size_t gIndex_,
                  size_t bIndex_,
                  size_t aIndex_,
-                 TPPixel defaultColor_);
+                 TPPixel defaultColor_,
+                 NChannels nChannels_);
 
   //################################################################################################
   size_t makeHash();
