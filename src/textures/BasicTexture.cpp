@@ -165,8 +165,10 @@ GLuint BasicTexture::bindTexture(const tp_image_utils::ColorMap& img,
       std::vector<RGB> packed;
       packed.resize(img.size());
 
-      auto dst=packed.begin();
-      for(auto src=img.constDataVector().begin(); src!=img.constDataVector().end(); ++src, ++dst)
+      auto dst = packed.begin();
+      auto src = img.constData();
+      auto src_sz = img.size();
+      for(int counter = 0; counter < src_sz; ++counter, ++src, ++dst)
       {
         dst->r = src->r;
         dst->g = src->g;
