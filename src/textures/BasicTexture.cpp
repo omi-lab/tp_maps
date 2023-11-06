@@ -167,8 +167,7 @@ GLuint BasicTexture::bindTexture(const tp_image_utils::ColorMap& img,
 
       auto dst = packed.begin();
       auto src = img.constData();
-      auto src_sz = img.size();
-      for(int counter = 0; counter < src_sz; ++counter, ++src, ++dst)
+      for(; dst!=packed.end(); src++, ++dst)
       {
         dst->r = src->r;
         dst->g = src->g;
