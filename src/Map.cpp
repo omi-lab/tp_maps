@@ -1564,6 +1564,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
                 break;
             }
 
+            DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers (A)");
             if(!d->buffers.prepareBuffer(std::string( "lightBuffer_" ) + std::to_string(i),
                                          lightBuffer,
                                          d->lightTextureSize,
@@ -1577,11 +1578,16 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
                                          true))
               return;
 
+            DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers (B)");
             d->controller->setCurrentLight(light, d->lightLevelIndex);
+            DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers (C)");
             lightBuffer.worldToTexture[d->lightLevelIndex] = d->controller->lightMatrices();
+            DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers (D)");
 
             if(light.castShadows)
               d->render();
+
+            DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers (E)");
           }
 
           // Increment.

@@ -6,6 +6,8 @@
 
 #include "tp_math_utils/Material.h"
 
+#include "tp_utils/DebugUtils.h"
+
 #include "glm/gtc/type_ptr.hpp"
 
 namespace tp_maps
@@ -69,6 +71,8 @@ struct LightLocations_lt
   GLint             nearLocation{0};
   GLint              farLocation{0};
   GLint      offsetScaleLocation{0};
+  GLint      orthoRadiusLocation{0};
+  GLint              fovLocation{0};
 
   GLint   lightTextureIDLocation{0};
 };
@@ -229,7 +233,7 @@ struct G3DMaterialShader::Private
         case tp_math_utils::LightType::Global:[[fallthrough]];
         case tp_math_utils::LightType::Directional:
         {
-          LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform sampler2D light%Texture;\n");
+          LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform highp sampler2D light%Texture;\n");
           LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = directionalLight(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec2(0,0), worldToLight%_proj));\n");
           break;
         }
@@ -238,7 +242,8 @@ struct G3DMaterialShader::Private
         {
           if(q->map()->maxSpotLightLevels() == 1)
           {
-            LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform sampler2D light%Texture;\n");
+            tpDebug() << "Spot light prepareBuffer()";
+            LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform highp sampler2D light%Texture;\n");
             LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow += spotLightSampleShadow2D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec2(0,0), worldToLight%_proj));\n");
             LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totalShadowSamples;\n");
           }
@@ -360,6 +365,8 @@ void G3DMaterialShader::setLights(const std::vector<tp_math_utils::Light>& light
         glUniform1f(lightLocations.spotLightBlendLocation, light.spotLightBlend);
         glUniform1f(lightLocations.          nearLocation, light.near          );
         glUniform1f(lightLocations.           farLocation, light.far           );
+        glUniform1f(lightLocations.   orthoRadiusLocation, light.orthoRadius   );
+        glUniform1f(lightLocations.           fovLocation, glm::radians(light.fov));
       }
     }
 
@@ -657,6 +664,9 @@ void G3DMaterialShader::getLocations(GLuint program, ShaderType shaderType)
 
       lightLocations.offsetScaleLocation      = loc(program, replaceLight(ii, "", "light%.offsetScale").c_str());
 
+      lightLocations.orthoRadiusLocation      = loc(program, replaceLight(ii, "", "light%.orthoRadius").c_str());
+      lightLocations.fovLocation              = loc(program, replaceLight(ii, "", "light%.fov").c_str());
+      
       lightLocations.lightTextureIDLocation   = loc(program, replaceLight(ii, "", "light%Texture").c_str());
     }
   };
