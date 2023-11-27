@@ -71,7 +71,6 @@ struct LightLocations_lt
   GLint             nearLocation{0};
   GLint              farLocation{0};
   GLint      offsetScaleLocation{0};
-  GLint      orthoRadiusLocation{0};
   GLint              fovLocation{0};
 
   GLint   lightTextureIDLocation{0};
@@ -365,7 +364,6 @@ void G3DMaterialShader::setLights(const std::vector<tp_math_utils::Light>& light
         glUniform1f(lightLocations.spotLightBlendLocation, light.spotLightBlend);
         glUniform1f(lightLocations.          nearLocation, light.near          );
         glUniform1f(lightLocations.           farLocation, light.far           );
-        glUniform1f(lightLocations.   orthoRadiusLocation, light.orthoRadius   );
         glUniform1f(lightLocations.           fovLocation, glm::radians(light.fov));
       }
     }
@@ -664,7 +662,6 @@ void G3DMaterialShader::getLocations(GLuint program, ShaderType shaderType)
 
       lightLocations.offsetScaleLocation      = loc(program, replaceLight(ii, "", "light%.offsetScale").c_str());
 
-      lightLocations.orthoRadiusLocation      = loc(program, replaceLight(ii, "", "light%.orthoRadius").c_str());
       lightLocations.fovLocation              = loc(program, replaceLight(ii, "", "light%.fov").c_str());
       
       lightLocations.lightTextureIDLocation   = loc(program, replaceLight(ii, "", "light%Texture").c_str());

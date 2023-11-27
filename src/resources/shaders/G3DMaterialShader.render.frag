@@ -41,7 +41,6 @@ struct Light
 
   vec3 offsetScale;
 
-  float orthoRadius;
   float fov;
 };
 
@@ -416,7 +415,7 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
       else
         return min(0.9, 0.5 + (biasedDepth-depth)*100.f)*totalShadowSamples;
     }
-#endif   
+#endif
 
     // use nominal low blocker depth value to estimate sample scale to include shadows.
     // We generally have objects close to the area being shadowed, so choose a nominal depth "close"
