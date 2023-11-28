@@ -120,7 +120,10 @@ public:
   {
 #ifdef TP_ENABLE_PROFILING
     if(m_profiler)
+    {
+      glFinish();
       m_profiler->rangePop();
+    }
 #endif
 
 #ifdef TP_MAPS_DEBUG
@@ -243,6 +246,8 @@ struct Map::Private
 #ifdef TP_ENABLE_PROFILING
   std::shared_ptr<tp_utils::Profiler> profiler{nullptr};
 #endif
+
+  bool fastRender{false};
 
   //################################################################################################
   Private(Map* q_):
@@ -467,6 +472,12 @@ bool Map::visible() const
 bool Map::initialized() const
 {
   return d->initialized;
+}
+
+//################################################################################################
+bool Map::fastRender() const
+{
+  return d->fastRender;
 }
 
 //##################################################################################################
@@ -1886,6 +1897,12 @@ void Map::resizeGL(int w, int h)
 //##################################################################################################
 bool Map::mouseEvent(const MouseEvent& event)
 {
+  // this controls how the rendering will be applied
+  if(event.type == MouseEventType::Move)
+    d->fastRender = true;
+  else
+    d->fastRender = false;
+
   // If a layer or the controller has focus from a previous press event pass the release to it first.
   if(event.type == MouseEventType::Release || event.type == MouseEventType::Move)
   {

@@ -92,8 +92,12 @@ vec3 surfaceToCamera;
 
 /*POST_VARS*/
 
-const int shadowSamples=/*TP_SHADOW_SAMPLES*/;
-const float totalShadowSamples=float(((shadowSamples*2)+1) * ((shadowSamples*2)+1));
+uniform int shadowSamples;
+
+float totShadowSamples()
+{
+  return float(((shadowSamples*2)+1) * ((shadowSamples*2)+1));
+}
 
 const float pi = 3.14159265;
 
@@ -277,7 +281,7 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
   LightResult r;
 
   // Shadow
-  float shadow = totalShadowSamples;
+  float shadow = totShadowSamples();
   float nDotL = dot(norm, -lightDirection_tangent);
 
   if(nDotL>0.0 && uv.z>0.0 && uv.z<1.0)
@@ -300,7 +304,7 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
     }
   }
 
-  shadow /= totalShadowSamples;
+  shadow /= totShadowSamples();
 
   r.ambient = material.useAmbient * light.ambient * albedo;
   vec3 surfaceToLight  = -lightDirection_tangent;
@@ -347,7 +351,7 @@ float maskLight(Light light, vec3 uv, float shadow)
   }
 
   if(material.rayVisibilityShadowCatcher)
-    return max((1.0-mask)*totalShadowSamples, shadow);
+    return max((1.0-mask)*totShadowSamples(), shadow);
   else
     return mix(1.0, mask, material.useLightMask) * shadow;
 }
@@ -372,6 +376,7 @@ float spotLightSampleScale(float d_receiver, float d_blocker, Light light)
 //##################################################################################################
 float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangent, highp sampler2D lightTexture, vec3 uv)
 {
+  float totalShadowSamples = totShadowSamples();
   float lightLevel = totalShadowSamples;
   float nDotL = dot(norm, -lightDirection_tangent);
 
@@ -488,7 +493,7 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
 #ifndef NO_TEXTURE3D
 float spotLightSampleShadow3D(vec3 norm, Light light, vec3 lightDirection_tangent, sampler3D lightTexture, vec3 uv, float level)
 {
-  float shadow = totalShadowSamples;
+  float shadow = totShadowSamples();
   float nDotL = dot(norm, -lightDirection_tangent);
 
   if(nDotL>0.0 && uv.z>0.0 && uv.z<1.0)

@@ -61,6 +61,14 @@ public:
   void setBlankTextures();
 
   //################################################################################################
+  //! Set number of shadow samples
+  /*!
+  Value 0 indicates a hard shadow edge. Larger values give softer shadow edges but make the shader
+  run slower.
+  */
+  virtual void setShadowSamples(int shadowSamples);
+
+  //################################################################################################
   //! Discard alpha values less than this
   /*!
   This can be used to discard alpha values on the normal render but draw them on the transparency

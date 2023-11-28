@@ -111,6 +111,7 @@ struct UniformLocations_lt
 
 
   GLint                             txlSizeLocation{0};
+  GLint                       shadowSamplesLocation{0};
   GLint                      discardOpacityLocation{0};
   GLint                        lightOffsetsLocation{0};
 
@@ -244,7 +245,7 @@ struct G3DMaterialShader::Private
             tpDebug() << "Spot light prepareBuffer()";
             LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform highp sampler2D light%Texture;\n");
             LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow += spotLightSampleShadow2D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec2(0,0), worldToLight%_proj));\n");
-            LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totalShadowSamples;\n");
+            LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totShadowSamples();\n");
           }
           else
           {
@@ -257,7 +258,7 @@ struct G3DMaterialShader::Private
               LIGHT_FRAG_CALC += replaceLight(ii, std::to_string(levelIdx), "    shadow += spotLightSampleShadow3D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, offset, worldToLight%_proj), lightOffsets[@].z);\n");
             }
 
-            LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totalShadowSamples * @.0;\n");
+            LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totShadowSamples() * @.0;\n");
           }
 
           LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow = mix(1.0, shadow, material.useShadow);\n");
@@ -287,8 +288,6 @@ struct G3DMaterialShader::Private
     tp_utils::replace(vertSrcScratch, "/*LIGHT_VERT_CALC*/", LIGHT_VERT_CALC);
     tp_utils::replace(fragSrcScratch, "/*LIGHT_FRAG_VARS*/", LIGHT_FRAG_VARS);
     tp_utils::replace(fragSrcScratch, "/*LIGHT_FRAG_CALC*/", LIGHT_FRAG_CALC);
-
-    tp_utils::replace(fragSrcScratch, "/*TP_SHADOW_SAMPLES*/", std::to_string(q->map()->shadowSamples()));
   }
 
   //################################################################################################
@@ -395,6 +394,8 @@ void G3DMaterialShader::setLights(const std::vector<tp_math_utils::Light>& light
         txlSize = glm::vec2(1.0, 1.0) / glm::vec2(lightBuffers[0].width, lightBuffers[0].height);
       glUniform2fv(locations.txlSizeLocation, 1, &txlSize.x);
     }
+
+    setShadowSamples(map()->fastRender() ? 0 : map()->shadowSamples());
   };
 
   if(currentShaderType() == ShaderType::Render)
@@ -626,6 +627,7 @@ void G3DMaterialShader::getLocations(GLuint program, ShaderType shaderType)
     locations.  materialAlbedoFactorLocation     = loc(program, "material.albedoFactor"      );
 
     locations.txlSizeLocation                = loc(program, "txlSize");
+    locations.shadowSamplesLocation          = loc(program, "shadowSamples");
     locations.discardOpacityLocation         = loc(program, "discardOpacity");
     locations.lightOffsetsLocation           = loc(program, "lightOffsets");
 
@@ -754,6 +756,21 @@ void G3DMaterialShader::setBlankTextures()
   setTextures(d->emptyTextureID,
               d->emptyNormalTextureID,
               d->emptyTextureID);
+}
+
+//##################################################################################################
+void G3DMaterialShader::setShadowSamples(int shadowSamples)
+{
+  auto exec = [&](const UniformLocations_lt& locations)
+  {
+    glUniform1i(locations.shadowSamplesLocation, shadowSamples);
+  };
+
+  if(currentShaderType() == ShaderType::Render)
+    exec(d->renderLocations);
+
+  else if(currentShaderType() == ShaderType::RenderExtendedFBO)
+    exec(d->renderHDRLocations);
 }
 
 //##################################################################################################
