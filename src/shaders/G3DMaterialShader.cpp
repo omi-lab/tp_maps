@@ -395,7 +395,7 @@ void G3DMaterialShader::setLights(const std::vector<tp_math_utils::Light>& light
       glUniform2fv(locations.txlSizeLocation, 1, &txlSize.x);
     }
 
-    setShadowSamples(map()->fastRender() ? 0 : map()->shadowSamples());
+    setShadowSamples(map()->fastRender() ? map()->shadowSamplesFastRender()  : map()->shadowSamples());
   };
 
   if(currentShaderType() == ShaderType::Render)

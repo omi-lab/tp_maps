@@ -219,6 +219,13 @@ public:
   size_t shadowSamples() const;
 
   //################################################################################################
+  void setShadowSamplesFastRender(size_t shadowSamples);
+
+  //################################################################################################
+  //! The number of adjacent samples to take from a shadow texture for fast rendering
+  size_t shadowSamplesFastRender() const;
+
+  //################################################################################################
   //! Enable high dynamic range rendering buffers.
   void setHDR(HDR hdr);
 

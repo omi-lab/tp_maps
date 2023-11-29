@@ -222,6 +222,7 @@ struct Map::Private
   size_t lightTextureSize{1024};
   size_t spotLightLevels{1};
   size_t shadowSamples{0};
+  size_t shadowSamplesFastRender{0};
   size_t lightLevelIndex{0};
 
   int64_t maxLightRenderTime = 30; // 30ms
@@ -818,9 +819,10 @@ void Map::setShadowSamples(size_t shadowSamples)
   {
     d->shadowSamples = shadowSamples;
     d->deleteShaders();
-
+#if 0
     for(auto l : d->layers)
       l->lightsChanged(LightingModelChanged::No);
+#endif
   }
 }
 
@@ -828,6 +830,26 @@ void Map::setShadowSamples(size_t shadowSamples)
 size_t Map::shadowSamples() const
 {
   return d->shadowSamples;
+}
+
+//##################################################################################################
+void Map::setShadowSamplesFastRender(size_t shadowSamples)
+{
+  if(d->shadowSamplesFastRender != shadowSamples)
+  {
+    d->shadowSamplesFastRender = shadowSamples;
+    d->deleteShaders();
+#if 0
+    for(auto l : d->layers)
+      l->lightsChanged(LightingModelChanged::No);
+#endif
+  }
+}
+
+//##################################################################################################
+size_t Map::shadowSamplesFastRender() const
+{
+  return d->shadowSamplesFastRender;
 }
 
 //##################################################################################################
@@ -1876,6 +1898,32 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
                      " rp: " << rp;
     }
   }
+
+  if(d->fastRender)
+  {
+    // adjust the shadow samples up or down depending on the render time
+    glFinish();
+    auto totalRenderTime = d->renderTimer.elapsed();
+    int64_t maxTotalRenderTime = 20;
+    tpDebug() << "Total render time: " << totalRenderTime << " max: " << maxTotalRenderTime;
+    if(5*totalRenderTime < 4*maxTotalRenderTime)
+    {
+      // limit the number of shadow samples used for fast render
+      if(d->shadowSamplesFastRender < std::min<size_t>(3, d->shadowSamples))
+      {
+        setShadowSamplesFastRender(d->shadowSamplesFastRender+1);
+        tpDebug() << "Incrementing the fast render shadow samples to " << d->shadowSamplesFastRender;
+      }
+    }
+    else if(4*totalRenderTime > 5*maxTotalRenderTime)
+    {
+      if(d->shadowSamplesFastRender > 0)
+      {
+        setShadowSamplesFastRender(d->shadowSamplesFastRender-1);
+        tpDebug() << "Decrementing the fast render shadow samples to " << d->shadowSamplesFastRender;
+      }
+    }
+  }
 }
 
 //##################################################################################################
@@ -1898,7 +1946,7 @@ void Map::resizeGL(int w, int h)
 bool Map::mouseEvent(const MouseEvent& event)
 {
   // this controls how the rendering will be applied
-  if(event.type == MouseEventType::Move)
+  if(event.type == MouseEventType::Move || event.type == MouseEventType::Press)
     d->fastRender = true;
   else
     d->fastRender = false;

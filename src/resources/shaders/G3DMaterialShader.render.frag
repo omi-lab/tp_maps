@@ -387,7 +387,7 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
     if(0 == shadowSamples)
     {
       float linearDepth = lineariseDepth(uv.z, light.near, light.far);
-      float bias = 0.001f; //clamp((1.0-nDotL)*3.0, 0.1, 3.0) * linearDepth * linearDepth * 0.0950; // Original 0.0004
+      float bias = 0.002f; //clamp((1.0-nDotL)*3.0, 0.1, 3.0) * linearDepth * linearDepth * 0.0950; // Original 0.0004
       float biasedDepth = linearDepth - bias;
 
       for(int x = -shadowSamples; x <= shadowSamples; ++x)
@@ -468,7 +468,7 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
       sampleScale = max(0.8f/nSamplesXY, min(sampleScale, 50.f/nSamplesXY));
 
       // use a smaller bias now because we linearly interpolate the depth values
-      bias = 0.001f; // + min(0.001f, shadowMapDepthAbsGradient(lightTexture, uv.xy, light.near, light.far));
+      bias = 0.002f;
       {
         for(int x = -shadowSamples; x <= shadowSamples; ++x)
           for(int y = -shadowSamples; y <= shadowSamples; ++y)
@@ -499,7 +499,7 @@ float spotLightSampleShadow3D(vec3 norm, Light light, vec3 lightDirection_tangen
   if(nDotL>0.0 && uv.z>0.0 && uv.z<1.0)
   {
     float linearDepth = lineariseDepth(uv.z, light.near, light.far);
-    float bias = 0.001f; //clamp((1.0-nDotL)*3.0, 0.1, 3.0) * linearDepth * linearDepth * 0.0950;
+    float bias = 0.002f;
     float biasedDepth = linearDepth - bias;
 
     for(int x = -shadowSamples; x <= shadowSamples; ++x)
