@@ -476,6 +476,12 @@ bool Map::initialized() const
 }
 
 //################################################################################################
+void Map::setFastRender(bool fastRender)
+{
+  d->fastRender = fastRender;
+}
+
+//################################################################################################
 bool Map::fastRender() const
 {
   return d->fastRender;
@@ -1909,7 +1915,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
     if(5*totalRenderTime < 4*maxTotalRenderTime)
     {
       // limit the number of shadow samples used for fast render
-      if(d->shadowSamplesFastRender < std::min<size_t>(3, d->shadowSamples))
+      if(d->shadowSamplesFastRender < std::min<size_t>(0, d->shadowSamples))
       {
         setShadowSamplesFastRender(d->shadowSamplesFastRender+1);
         tpDebug() << "Incrementing the fast render shadow samples to " << d->shadowSamplesFastRender;
@@ -1945,12 +1951,6 @@ void Map::resizeGL(int w, int h)
 //##################################################################################################
 bool Map::mouseEvent(const MouseEvent& event)
 {
-  // this controls how the rendering will be applied
-  if(event.type == MouseEventType::Move || event.type == MouseEventType::Press)
-    d->fastRender = true;
-  else
-    d->fastRender = false;
-
   // If a layer or the controller has focus from a previous press event pass the release to it first.
   if(event.type == MouseEventType::Release || event.type == MouseEventType::Move)
   {
