@@ -44,8 +44,12 @@ public:
   void setLinesFromGeometry(const std::vector<tp_math_utils::Geometry3D>& geometry);
 
   //################################################################################################
-  //! Render the normals, tangents, and bitangents of the geometry.
+  //! Render the normals of the geometry.
   void setLinesFromGeometryNormals(const std::vector<tp_math_utils::Geometry3D>& geometry, float scale);
+
+  //################################################################################################
+  //! Render the tangents of the geometry.
+  void setLinesFromGeometryTangents(const std::vector<tp_math_utils::Geometry3D>& geometry, float scale);
 
   //################################################################################################
   float lineWidth() const;

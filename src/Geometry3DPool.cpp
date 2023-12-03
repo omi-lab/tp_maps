@@ -62,6 +62,11 @@ struct PoolDetails_lt
 
       for(const auto& shape : geometry)
       {
+        // build tangent vectors for each vertex
+        std::vector<glm::vec3> tangent;
+        if(!isOnlyMaterial)
+          shape.buildTangentVectors(tangent);
+
         for(const auto& part : shape.indexes)
         {
           ProcessedGeometry3D details;
@@ -69,10 +74,6 @@ struct PoolDetails_lt
 
           if(!isOnlyMaterial)
           {
-            // build tangent vectors for each vertex
-            std::vector<glm::vec3> tangent;
-            shape.buildTangentVectors(part, tangent);
-
             std::vector<GLuint> indexes;
             std::vector<G3DMaterialShader::Vertex> verts;
 
