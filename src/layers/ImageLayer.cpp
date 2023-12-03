@@ -167,10 +167,11 @@ void ImageLayer::render(RenderInfo& renderInfo)
 
     if(d->externalCoords)
     {
-      d->verts.push_back(G3DImageShader::Vertex(d->topRight   , {0,0,1}, { t.x,  t.y}));
-      d->verts.push_back(G3DImageShader::Vertex(d->bottomRight, {0,0,1}, { t.x, 0.0f}));
-      d->verts.push_back(G3DImageShader::Vertex(d->bottomLeft , {0,0,1}, {0.0f, 0.0f}));
-      d->verts.push_back(G3DImageShader::Vertex(d->topLeft    , {0,0,1}, {0.0f,  t.y}));
+      //                                        vertex            tbnq        texture
+      d->verts.push_back(G3DImageShader::Vertex(d->topRight   , {0,0,0,1}, { t.x,  t.y}));
+      d->verts.push_back(G3DImageShader::Vertex(d->bottomRight, {0,0,0,1}, { t.x, 0.0f}));
+      d->verts.push_back(G3DImageShader::Vertex(d->bottomLeft , {0,0,0,1}, {0.0f, 0.0f}));
+      d->verts.push_back(G3DImageShader::Vertex(d->topLeft    , {0,0,0,1}, {0.0f,  t.y}));
     }
     else
     {
@@ -181,10 +182,11 @@ void ImageLayer::render(RenderInfo& renderInfo)
       float x = 0.0f;
       float y = 0.0f;
 
-      d->verts.push_back(G3DImageShader::Vertex({w,y,0}, {0,0,1}, { t.x,  t.y}));
-      d->verts.push_back(G3DImageShader::Vertex({w,h,0}, {0,0,1}, { t.x, 0.0f}));
-      d->verts.push_back(G3DImageShader::Vertex({x,h,0}, {0,0,1}, {0.0f, 0.0f}));
-      d->verts.push_back(G3DImageShader::Vertex({x,y,0}, {0,0,1}, {0.0f,  t.y}));
+      //                                        vertex     tbnq       texture
+      d->verts.push_back(G3DImageShader::Vertex({w,y,0}, {0,0,0,1}, { t.x,  t.y}));
+      d->verts.push_back(G3DImageShader::Vertex({w,h,0}, {0,0,0,1}, { t.x, 0.0f}));
+      d->verts.push_back(G3DImageShader::Vertex({x,h,0}, {0,0,0,1}, {0.0f, 0.0f}));
+      d->verts.push_back(G3DImageShader::Vertex({x,y,0}, {0,0,0,1}, {0.0f,  t.y}));
     }
 
     delete d->vertexBuffer;

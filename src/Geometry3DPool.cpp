@@ -68,6 +68,10 @@ struct PoolDetails_lt
 
           if(!isOnlyMaterial)
           {
+            // build tangent vectors for each vertex
+            std::vector<glm::vec3> tangent;
+            shape.buildTangentVectors(part, tangent);
+
             std::vector<GLuint> indexes;
             std::vector<G3DMaterialShader::Vertex> verts;
 
@@ -81,7 +85,7 @@ struct PoolDetails_lt
               {
                 const auto& v = shape.verts.at(size_t(idx));
                 indexes.push_back(GLuint(n));
-                verts.emplace_back(G3DMaterialShader::Vertex(v.vert, v.normal, v.texture));
+                verts.emplace_back(G3DMaterialShader::Vertex(v.vert, glm::quatLookAtLH(v.normal, tangent.at(size_t(idx))), v.texture));
               }
             }
 

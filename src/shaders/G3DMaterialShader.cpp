@@ -221,7 +221,7 @@ struct G3DMaterialShader::Private
         LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform mat4 worldToLight%_proj;\n");
 
         LIGHT_FRAG_CALC += "\n  {\n";
-        LIGHT_FRAG_CALC += replaceLight(ii, ll, "    vec3 ldNormalized = normalize(invTBN * light%Direction_world);\n");
+        LIGHT_FRAG_CALC += replaceLight(ii, ll, "    vec3 ldNormalized = normalize(invmTBN * light%Direction_world);\n");
 
         LIGHT_FRAG_CALC += replaceLight(ii, ll, "    float shadow=0.0;\n");
         switch(light.type)
@@ -566,7 +566,7 @@ void G3DMaterialShader::bindLocations(GLuint program, ShaderType shaderType)
   case ShaderType::RenderExtendedFBO:
   {
     glBindAttribLocation(program, 0, "inVertex");
-    glBindAttribLocation(program, 1, "inNormal");
+    glBindAttribLocation(program, 1, "inTBNq");
     glBindAttribLocation(program, 2, "inTexture");
     break;
   }

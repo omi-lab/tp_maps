@@ -6,6 +6,7 @@
 #include "tp_utils/RefCount.h"
 
 #include "glm/glm.hpp" // IWYU pragma: keep
+#include "glm/gtc/quaternion.hpp" // IWYU pragma: keep
 
 namespace tp_maps
 {
@@ -23,16 +24,16 @@ public:
   //################################################################################################
   struct Vertex
   {
-    glm::vec3 position;
-    glm::vec3 normal;
-    glm::vec2 texture;
+    glm::vec3  position;
+    glm::fquat tbnq;
+    glm::vec2  texture;
 
     Vertex()=default;
-    Vertex(const glm::vec3& position_,
-           const glm::vec3& normal_,
-           const glm::vec2& texture_):
+    Vertex(const glm::vec3&  position_, // vertex position
+           const glm::fquat& tbnq_,     // TBN rotation represented as unit quaternion
+           const glm::vec2&  texture_): // vertex texture coordinates
       position(position_),
-      normal(normal_),
+      tbnq(tbnq_),
       texture(texture_)
     {
 
