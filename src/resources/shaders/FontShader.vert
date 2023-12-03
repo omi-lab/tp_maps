@@ -1,7 +1,8 @@
 /*TP_VERT_SHADER_HEADER*/
 
 /*TP_GLSL_IN_V*/vec3 inVertex;
-/*TP_GLSL_IN_V*/vec4 inTBNq;
+/*TP_GLSL_IN_V*/vec4 inNormal;
+/*TP_GLSL_IN_V*/vec4 inTangent;
 /*TP_GLSL_IN_V*/vec2 inTexture;
 
 uniform mat4 matrix;

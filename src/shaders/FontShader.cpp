@@ -17,7 +17,8 @@ namespace
 struct Vertex_lt
 {
   glm::vec3 position{};
-  glm::vec4 tbnq{};
+  glm::vec3 normal{};
+  glm::vec3 tangent{};
   glm::vec2 texture{};
 };
 }
@@ -77,10 +78,12 @@ struct FontShader::PreparedString::Private
     glBindBuffer(GL_ARRAY_BUFFER, vboID);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex_lt), tpVoidLiteral( 0));
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex_lt), tpVoidLiteral(12));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex_lt), tpVoidLiteral(24));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex_lt), tpVoidLiteral(24));
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex_lt), tpVoidLiteral(36));
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
     glDisableVertexAttribArray(3);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID);
   }
@@ -187,7 +190,8 @@ void FontShader::drawPreparedString(PreparedString& preparedString)
           if(preparedString.config().topDown)
             vert.position.y = -vert.position.y;
           vert.texture = glyph.textureCoords.at(i);
-          vert.tbnq = {0.0f, 0.0f, 0.f, 1.0f};
+          vert.normal  = {0.0f, 0.0f, 1.0f};
+          vert.tangent = {1.0f, 0.0f, 0.0f};
         }
       }
 
@@ -285,8 +289,9 @@ void FontShader::bindLocations(GLuint program, ShaderType shaderType)
   TP_UNUSED(shaderType);
 
   glBindAttribLocation(program, 0, "inVertex");
-  glBindAttribLocation(program, 1, "inTBNq");
-  glBindAttribLocation(program, 2, "inTexture");
+  glBindAttribLocation(program, 1, "inNormal");
+  glBindAttribLocation(program, 2, "inTangent");
+  glBindAttribLocation(program, 3, "inTexture");
 }
 
 //##################################################################################################

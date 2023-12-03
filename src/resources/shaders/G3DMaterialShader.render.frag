@@ -68,7 +68,8 @@ uniform vec3 cameraOrigin_world;
 
 /*TP_GLSL_IN_F*/vec3 fragPos_world;
 
-/*TP_GLSL_IN_F*/vec4 outTBNq;
+/*TP_GLSL_IN_F*/vec3 outNormal;
+/*TP_GLSL_IN_F*/vec3 outTangent;
 
 /*TP_GLSL_IN_F*/vec2 uv_tangent;
 vec3 fragPos_tangent;
@@ -443,34 +444,6 @@ mat4 transposeIntoMat4(mat3 i)
 }
 
 //##################################################################################################
-mat3 quaternionToMat3(vec4 q)
-{
-  float qxx = q.x * q.x;
-  float qyy = q.y * q.y;
-  float qzz = q.z * q.z;
-  float qxz = q.x * q.z;
-  float qxy = q.x * q.y;
-  float qyz = q.y * q.z;
-  float qwx = q.w * q.x;
-  float qwy = q.w * q.y;
-  float qwz = q.w * q.z;
-
-  mat3 R;
-  R[0][0] = 1.0f - 2.0f * (qyy +  qzz);
-  R[0][1] = 2.0f * (qxy + qwz);
-  R[0][2] = 2.0f * (qxz - qwy);
-
-  R[1][0] = 2.0f * (qxy - qwz);
-  R[1][1] = 1.0f - 2.0f * (qxx +  qzz);
-  R[1][2] = 2.0f * (qyz + qwx);
-
-  R[2][0] = 2.0f * (qxz + qwy);
-  R[2][1] = 2.0f * (qyz - qwx);
-  R[2][2] = 1.0f - 2.0f * (qxx +  qyy);
-  return R;
-}
-
-//##################################################################################################
 void main()
 {
   vec4     rgbaTex = /*TP_GLSL_TEXTURE_2D*/(    rgbaTexture, uv_tangent);
@@ -520,8 +493,11 @@ void main()
   vec3 specular = vec3(0,0,0);
 
   // Calculate the TBN matrix used to transform between world and tangent space.
+  vec3 b = cross(outNormal, outTangent);
+  vec3 t = cross(b, outNormal);
+  mat3 TBN = mat3(normalize(t), normalize(b), normalize(outNormal));
+
   mat3 m3 = mat3(m);
-  mat3 TBN = quaternionToMat3(normalize(outTBNq));
   mat3 mTBN = m3*TBN;
   mat3 invmTBN = transposeMat3(mTBN);
   mat3 vmTBN = mat3(v) * mTBN;

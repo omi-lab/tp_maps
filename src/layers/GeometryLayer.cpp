@@ -127,8 +127,8 @@ void GeometryLayer::render(RenderInfo& renderInfo)
             indexes.push_back(GLuint(n));            
             glm::vec4 vv = shape.transform * glm::vec4(v.x, v.y, 0.0f, 1.0f);
 
-            //                                        vertex                     tbnq                  texture
-            verts.push_back(Geometry3DShader::Vertex(glm::vec3(vv) / vv.w, {0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}));
+            //                                        vertex                    normal              tangent          texture
+            verts.push_back(Geometry3DShader::Vertex(glm::vec3(vv) / vv.w, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}));
           }
 
           std::pair<GLenum, G3DMaterialShader::VertexBuffer*> p;

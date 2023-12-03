@@ -264,8 +264,9 @@ void G3DStaticLightShader::bindLocations(GLuint program, ShaderType shaderType)
   case ShaderType::RenderExtendedFBO:
   {
     glBindAttribLocation(program, 0, "inVertex");
-    glBindAttribLocation(program, 1, "inTBNq");
-    glBindAttribLocation(program, 2, "inTexture");
+    glBindAttribLocation(program, 1, "inNormal");
+    glBindAttribLocation(program, 2, "inTangent");
+    glBindAttribLocation(program, 3, "inTexture");
     break;
   }
 

@@ -169,8 +169,9 @@ void G3DImageShader::bindLocations(GLuint program, ShaderType shaderType)
   TP_UNUSED(shaderType);
 
   glBindAttribLocation(program, 0, "inVertex");
-  glBindAttribLocation(program, 1, "inTBNq");
-  glBindAttribLocation(program, 2, "inTexture");
+  glBindAttribLocation(program, 1, "inNormal");
+  glBindAttribLocation(program, 2, "inTangent");
+  glBindAttribLocation(program, 3, "inTexture");
 }
 
 //##################################################################################################

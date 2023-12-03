@@ -195,11 +195,11 @@ void FBOLayer::render(RenderInfo& renderInfo)
 
       verts.clear();
 
-      //                                     vertex         tbnq       texture
-      verts.push_back(G3DImageShader::Vertex(topRight   , {0,0,0,1}, {1.0f, 1.0f}));
-      verts.push_back(G3DImageShader::Vertex(bottomRight, {0,0,0,1}, {1.0f, 0.0f}));
-      verts.push_back(G3DImageShader::Vertex(bottomLeft , {0,0,0,1}, {0.0f, 0.0f}));
-      verts.push_back(G3DImageShader::Vertex(topLeft    , {0,0,0,1}, {0.0f, 1.0f}));
+      //                                     vertex       normal   tangent  texture
+      verts.push_back(G3DImageShader::Vertex(topRight   , {0,0,1}, {1,0,0}, {1.0f, 1.0f}));
+      verts.push_back(G3DImageShader::Vertex(bottomRight, {0,0,1}, {1,0,0}, {1.0f, 0.0f}));
+      verts.push_back(G3DImageShader::Vertex(bottomLeft , {0,0,1}, {1,0,0}, {0.0f, 0.0f}));
+      verts.push_back(G3DImageShader::Vertex(topLeft    , {0,0,1}, {1,0,0}, {0.0f, 1.0f}));
 
       auto shader = d->findShader(window);
 
