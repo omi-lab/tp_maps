@@ -4,6 +4,7 @@
 #include "tp_maps/TexturePoolKey.h"
 
 #include "tp_utils/TimeUtils.h"
+#include "tp_utils/DebugUtils.h"
 
 namespace tp_maps
 {
@@ -80,12 +81,61 @@ struct PoolDetails_lt
 
             for(size_t n=0; n<part.indexes.size(); n++)
             {
-              auto idx = part.indexes.at(n);
-              if(size_t(idx)<shape.verts.size())
+              auto idx = size_t(part.indexes.at(n));
+              if(idx<shape.verts.size())
               {
-                const auto& v = shape.verts.at(size_t(idx));
+                const auto& v = shape.verts.at(idx);
                 indexes.push_back(GLuint(n));
-                verts.emplace_back(G3DMaterialShader::Vertex(v.vert, glm::quatLookAtLH(v.normal, tangent.at(size_t(idx))), v.texture));
+                auto tbnq = glm::quatLookAtLH(v.normal, tangent.at(idx));
+                verts.emplace_back(G3DMaterialShader::Vertex(v.vert, tbnq, v.texture));
+                if(glm::abs(glm::dot(v.normal, tangent.at(idx))) > 0.99f)
+                  tpDebug() << "Inconsistent normal & tangent";
+
+#if 0
+                // remove once artefacts from tangent calculation ENG-472 have been cleared
+                {
+                  glm::mat3 R = glm::mat3_cast(tbnq);
+                  tpDebug() << "tbnq= (" << tbnq.x << " " << tbnq.y << " " << tbnq.z << " " << tbnq.w << ") sizeof=" << sizeof(tbnq);
+
+                  // check against calculation in shader
+                  auto quaternionToMat3 = [](const glm::quat& q)
+                  {
+                    float qxx = q.x * q.x;
+                    float qyy = q.y * q.y;
+                    float qzz = q.z * q.z;
+                    float qxz = q.x * q.z;
+                    float qxy = q.x * q.y;
+                    float qyz = q.y * q.z;
+                    float qwx = q.w * q.x;
+                    float qwy = q.w * q.y;
+                    float qwz = q.w * q.z;
+
+                    glm::mat3 R;
+                    R[0][0] = 1.0f - 2.0f * (qyy +  qzz);
+                    R[0][1] = 2.0f * (qxy + qwz);
+                    R[0][2] = 2.0f * (qxz - qwy);
+
+                    R[1][0] = 2.0f * (qxy - qwz);
+                    R[1][1] = 1.0f - 2.0f * (qxx +  qzz);
+                    R[1][2] = 2.0f * (qyz + qwx);
+
+                    R[2][0] = 2.0f * (qxz + qwy);
+                    R[2][1] = 2.0f * (qyz - qwx);
+                    R[2][2] = 1.0f - 2.0f * (qxx +  qyy);
+                    return R;
+                  };
+
+                  glm::mat3 Rp = quaternionToMat3(tbnq);
+                  tpDebug() << "Idx==" << idx << " R1=(" << R[0][0] << " " << R[1][0] << " " << R[2][0] << ")";
+                  tpDebug() << "Idx==" << idx << " R2=(" << R[0][1] << " " << R[1][1] << " " << R[2][1] << ")";
+                  tpDebug() << "Idx==" << idx << " R3=(" << R[0][2] << " " << R[1][2] << " " << R[2][2] << ")";
+                  tpDebug() << "Idx==" << idx << " Q1=(" << Rp[0][0] << " " << Rp[1][0] << " " << Rp[2][0] << ")";
+                  tpDebug() << "Idx==" << idx << " Q2=(" << Rp[0][1] << " " << Rp[1][1] << " " << Rp[2][1] << ")";
+                  tpDebug() << "Idx==" << idx << " Q3=(" << Rp[0][2] << " " << Rp[1][2] << " " << Rp[2][2] << ")";
+                  tpDebug() << "Idx==" << idx << " n=(" << v.normal.x << " " << v.normal.y << " " << v.normal.z << ")";
+                  tpDebug() << "Idx=" << idx << " n.t=" << glm::dot(v.normal, tangent.at(idx));
+                }
+#endif
               }
             }
 
