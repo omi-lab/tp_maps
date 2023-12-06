@@ -825,10 +825,6 @@ void Map::setShadowSamples(size_t shadowSamples)
   {
     d->shadowSamples = shadowSamples;
     d->deleteShaders();
-#if 0
-    for(auto l : d->layers)
-      l->lightsChanged(LightingModelChanged::No);
-#endif
   }
 }
 
@@ -844,11 +840,7 @@ void Map::setShadowSamplesFastRender(size_t shadowSamples)
   if(d->shadowSamplesFastRender != shadowSamples)
   {
     d->shadowSamplesFastRender = shadowSamples;
-    d->deleteShaders();
-#if 0
-    for(auto l : d->layers)
-      l->lightsChanged(LightingModelChanged::No);
-#endif
+    //d->deleteShaders();
   }
 }
 
@@ -1907,18 +1899,19 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
 
   if(d->fastRender)
   {
-    // adjust the shadow samples up or down depending on the render time
     glFinish();
+#if 0
+    // adjust the shadow samples up or down depending on the render time
     auto totalRenderTime = d->renderTimer.elapsed();
     int64_t maxTotalRenderTime = 20;
-    tpDebug() << "Total render time: " << totalRenderTime << " max: " << maxTotalRenderTime;
+    //tpDebug() << "Total render time: " << totalRenderTime << " max: " << maxTotalRenderTime;
     if(5*totalRenderTime < 4*maxTotalRenderTime)
     {
       // limit the number of shadow samples used for fast render
-      if(d->shadowSamplesFastRender < std::min<size_t>(0, d->shadowSamples))
+      if(d->shadowSamplesFastRender < std::min<size_t>(1, d->shadowSamples))
       {
         setShadowSamplesFastRender(d->shadowSamplesFastRender+1);
-        tpDebug() << "Incrementing the fast render shadow samples to " << d->shadowSamplesFastRender;
+        //tpDebug() << "Incrementing the fast render shadow samples to " << d->shadowSamplesFastRender;
       }
     }
     else if(4*totalRenderTime > 5*maxTotalRenderTime)
@@ -1926,9 +1919,13 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
       if(d->shadowSamplesFastRender > 0)
       {
         setShadowSamplesFastRender(d->shadowSamplesFastRender-1);
-        tpDebug() << "Decrementing the fast render shadow samples to " << d->shadowSamplesFastRender;
+        //tpDebug() << "Decrementing the fast render shadow samples to " << d->shadowSamplesFastRender;
       }
     }
+#else
+    // just use a "small" fast render shadow kernel
+    setShadowSamplesFastRender(0);
+#endif
   }
 }
 
