@@ -1,7 +1,7 @@
 //varying vec4 fragNormal;
 //varying vec4 fragSpecular;
 
-void writeFragment(vec3 ambient, vec3 diffuse, vec3 specular, vec3 normal, float alpha, vec3 materialSpecular, float shininess)
+void writeFragment(vec3 ambient, vec3 diffuse, vec3 specular, float alpha)
 {
   if(alpha<discardOpacity)
     discard;

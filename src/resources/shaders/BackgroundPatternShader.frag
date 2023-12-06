@@ -23,10 +23,7 @@ void main()
 
   vec3 diffuse = vec3(0.0);
   vec3 specular = vec3(0.0);
-  vec3 normal = vec3(0.0,0.0,1.0);
   float alpha = 1.0;
-  vec3 materialSpecular = vec3(0.0);
-  float shininess = 0.0;
 
-  writeFragment(ambient, diffuse, specular, normal, alpha, materialSpecular, shininess);
+  writeFragment(ambient, diffuse, specular, alpha);
 }

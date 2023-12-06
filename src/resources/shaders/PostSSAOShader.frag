@@ -92,29 +92,11 @@ void main()
 {
   float depth = /*TP_GLSL_TEXTURE_2D*/(depthSampler   , coord_tex).x;
   gl_FragDepth = depth;
-  vec3 normal = normalize(/*TP_GLSL_TEXTURE_2D*/(normalsSampler , coord_tex).xyz);
-
-  //The position of the current texel in view coords
-  vec3 coord_view = clipToView(coord_tex, depth, invProjectionMatrix);
-
-  vec3 rndA = vec3(1.0, 0.0, 0.0); //texture(texNoise, TexCoords * noiseScale).xyz;
-  vec3 rndB = vec3(rndA.y, rndA.z, rndA.x);
-  vec3 randomVec = (abs(dot(rndA, normal)) > abs(dot(rndB, normal)))?rndB:rndA;
-
-  vec3 t = cross(randomVec, normal);
-  vec3 n = normal;
-  vec3 b = cross(n, t);
-  t = cross(n, b);
-
-  mat3 TBN = mat3(t, b, n);
 
   float occlusions = 0.0;
   for(int i=0; i<N_SAMPLES; i++)
   {
     vec2 occlusion = vec2(1.0);
-
-    vec3 samplePos_view = TBN * ssaoKernel[i];
-    samplePos_view = coord_view + samplePos_view * radius;
 
     /*AO_FRAG_CALC*/
 
@@ -127,12 +109,9 @@ void main()
 
   ambient = pow(ambient, vec3(1.0/1.2));
 
-
   vec3 diffuse = vec3(0.0);
   vec3 specular = vec3(0.0);
   float alpha = 1.0;
-  vec3 materialSpecular = vec3(0.0);
-  float shininess = 0.0;
 
-  writeFragment(ambient, diffuse, specular, normal, alpha, materialSpecular, shininess);
+  writeFragment(ambient, diffuse, specular, alpha);
 }

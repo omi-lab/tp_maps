@@ -276,7 +276,7 @@ vec3 calcFresnel(vec3 halfV, vec3 norm, vec3 F0)
 }
 
 //##################################################################################################
-LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent, highp sampler2D lightTexture, vec3 uv)
+LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent, highp sampler2D lightTexture, vec3 uv_light)
 {
   LightResult r;
 
@@ -284,9 +284,9 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
   float shadow = totShadowSamples();
   float nDotL = dot(norm, -lightDirection_tangent);
 
-  if(nDotL>0.0 && uv.z>0.0 && uv.z<1.0)
+  if(nDotL>0.0 && uv_light.z>0.0 && uv_light.z<1.0)
   {
-    float linearDepth = lineariseDepth(uv.z, light.near, light.far);
+    float linearDepth = lineariseDepth(uv_light.z, light.near, light.far);
     float bias = clamp((1.0-nDotL)*3.0, 0.1, 3.0) * linearDepth * linearDepth * 0.0004;
     float biasedDepth = linearDepth - bias;
 
@@ -294,7 +294,7 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
     {
       for(int y = -shadowSamples; y <= shadowSamples; ++y)
       {
-        vec2 coord = uv.xy + (vec2(x, y)*txlSize);
+        vec2 coord = uv_light.xy + (vec2(x, y)*txlSize);
         if(coord.x>=0.0 && coord.x<=1.0 && coord.y>=0.0 && coord.y<=1.0)
         {
           float extraBias = bias*(abs(float(x))+abs(float(y)));
@@ -341,12 +341,12 @@ LightResult directionalLight(vec3 norm, Light light, vec3 lightDirection_tangent
 }
 
 //##################################################################################################
-float maskLight(Light light, vec3 uv, float shadow)
+float maskLight(Light light, vec3 uv_light, float shadow)
 {
   float mask = 0.0;
-  if(light.spotLightBlend>0.0001 && uv.x>=0.0 && uv.x<=1.0 && uv.y>=0.0 && uv.y<=1.0)
+  if(light.spotLightBlend>0.0001 && uv_light.x>=0.0 && uv_light.x<=1.0 && uv_light.y>=0.0 && uv_light.y<=1.0)
   {
-    float l = length(uv.xy*2.0-1.0);
+    float l = length(uv_light.xy*2.0-1.0);
     mask = 1.0-clamp((l-(1.0-light.spotLightBlend))/light.spotLightBlend, 0.0, 1.0);
   }
 
@@ -482,14 +482,14 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
 
 //##################################################################################################
 #ifndef NO_TEXTURE3D
-float spotLightSampleShadow3D(vec3 norm, Light light, vec3 lightDirection_tangent, sampler3D lightTexture, vec3 uv, float level)
+float spotLightSampleShadow3D(vec3 norm, Light light, vec3 lightDirection_tangent, sampler3D lightTexture, vec3 uv_light, float level)
 {
   float shadow = totShadowSamples();
   float nDotL = dot(norm, -lightDirection_tangent);
 
-  if(nDotL>0.0 && uv.z>0.0 && uv.z<1.0)
+  if(nDotL>0.0 && uv_light.z>0.0 && uv_light.z<1.0)
   {
-    float linearDepth = lineariseDepth(uv.z, light.near, light.far);
+    float linearDepth = lineariseDepth(uv_light.z, light.near, light.far);
     float bias = 0.002f;
     float biasedDepth = linearDepth - bias;
 
@@ -497,7 +497,7 @@ float spotLightSampleShadow3D(vec3 norm, Light light, vec3 lightDirection_tangen
     {
       for(int y = -shadowSamples; y <= shadowSamples; ++y)
       {
-        vec2 coord = uv.xy + (vec2(x, y)*txlSize*(nDotL));
+        vec2 coord = uv_light.xy + (vec2(x, y)*txlSize*(nDotL));
         if(coord.x>=0.0 && coord.x<=1.0 && coord.y>=0.0 && coord.y<=1.0)
         {
           float extraBias = bias*(abs(float(x))+abs(float(y)));
@@ -505,7 +505,7 @@ float spotLightSampleShadow3D(vec3 norm, Light light, vec3 lightDirection_tangen
         }
       }
     }
-    return maskLight(light, uv, shadow);
+    return maskLight(light, uv_light, shadow);
   }
 
   return shadow*(material.rayVisibilityShadowCatcher?1.0:0.0);
@@ -633,12 +633,10 @@ void main()
   vec3 t2 = cross(vec3(0,1,0), outNormal);
   vec3 t = normalize((dot(t1, t1)>dot(t2,t2))?t1:t2);
   vec3 b = cross(n, t);
-  t = cross(b, n);
 
   mat3 m3 = mat3(m);
   mat3 TBN = mat3(m3*t, m3*b, m3*n);
   mat3 invTBN = transposeMat3(TBN);
-  mat3 TBNv = mat3(v) * TBN;
 
   mat4 worldToTangent = transposeIntoMat4(t, b, n) * mInv;
 
@@ -671,10 +669,6 @@ void main()
   if(transmission > 0.1)
     alpha = minAlpha + (1.0 - minAlpha) * (1.0 - transmission);
 
-  float shininess = metalness;
-
-  vec3 normal = TBNv*norm;
-
   /*POST*/
 
   if(material.rayVisibilityShadowCatcher)
@@ -685,5 +679,5 @@ void main()
     alpha = clamp(1.0 - accumulatedShadow, 0.0, 0.8);
   }
 
-  writeFragment(ambient, diffuse, specular, normal, alpha, vec3(1,1,1), shininess);
+  writeFragment(ambient, diffuse, specular, alpha);
 }

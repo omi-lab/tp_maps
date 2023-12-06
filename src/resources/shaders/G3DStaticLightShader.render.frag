@@ -114,11 +114,11 @@ float chiGGX(float f)
 }
 
 //##################################################################################################
-float calcGGXGeom(vec3 surfaceToCamera, vec3 norm, vec3 lightViewHalfVector, float roughness2)
+float calcGGXGeom(vec3 normp, vec3 norm, vec3 lightViewHalfVector, float roughness2)
 {
-  float fViewerDotLightViewHalf = clamp(dot(surfaceToCamera, lightViewHalfVector), 0.0, 1.0) ;
-  //float fChi = step(0.0, fViewerDotLightViewHalf / clamp(dot(surfaceToCamera, norm), 0.0, 1.0));
-  float fChi = chiGGX(fViewerDotLightViewHalf / clamp(dot(surfaceToCamera, norm), 0.0, 1.0));
+  float fViewerDotLightViewHalf = clamp(dot(normp, lightViewHalfVector), 0.0, 1.0) ;
+  //float fChi = step(0.0, fViewerDotLightViewHalf / clamp(dot(normp, norm), 0.0, 1.0));
+  float fChi = chiGGX(fViewerDotLightViewHalf / clamp(dot(normp, norm), 0.0, 1.0));
   fViewerDotLightViewHalf *= fViewerDotLightViewHalf;
   float fTan2 = (1.0 - fViewerDotLightViewHalf) / fViewerDotLightViewHalf;
 
@@ -259,12 +259,10 @@ void main()
   vec3 t2 = cross(vec3(0,1,0), outNormal);
   vec3 t = normalize((dot(t1, t1)>dot(t2,t2))?t1:t2);
   vec3 b = cross(n, t);
-  t = cross(b, n);
 
   mat3 m3 = mat3(m);
   mat3 TBN = mat3(m3*t, m3*b, m3*n);
   mat3 invTBN = transposeMat3(TBN);
-  mat3 TBNv = mat3(v) * TBN;
 
   mat4 worldToTangent = transposeIntoMat4(t, b, n) * mInv;
 
@@ -301,12 +299,7 @@ void main()
   if(transmission > 0.1)
     alpha = minAlpha + (1.0 - minAlpha) * (1.0 - transmission);
 
-  float shininess = metalness;
-
-  vec3 normal = TBNv*norm;
-
   /*POST*/
 
-
-  writeFragment(ambient, diffuse, specular, normal, alpha, vec3(1,1,1), shininess);
+  writeFragment(ambient, diffuse, specular, alpha);
 }
