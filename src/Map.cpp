@@ -1903,7 +1903,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
 #if 0
     // adjust the shadow samples up or down depending on the render time
     auto totalRenderTime = d->renderTimer.elapsed();
-    int64_t maxTotalRenderTime = 20;
+    int64_t maxTotalRenderTime = 0;
     //tpDebug() << "Total render time: " << totalRenderTime << " max: " << maxTotalRenderTime;
     if(5*totalRenderTime < 4*maxTotalRenderTime)
     {
@@ -1924,7 +1924,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
     }
 #else
     // just use a "small" fast render shadow kernel
-    setShadowSamplesFastRender(0);
+    setShadowSamplesFastRender(3);
 #endif
   }
 }

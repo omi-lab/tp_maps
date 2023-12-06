@@ -359,7 +359,7 @@ float maskLight(Light light, vec3 uv_light, float shadow)
 //##################################################################################################
 float spotLightSampleScale(float d_receiver, float d_blocker, Light light)
 {
-  // calculate effective ight size
+  // calculate effective ight size at the render pixel position
   float w_penumbra = light.offsetScale.x*(d_receiver - d_blocker)/d_blocker;
 
   // calculate width of penumbra in shadow depth map texture coordinates at rendered pixel
@@ -452,11 +452,11 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
       // calculate averaged shadow depth
       float d_blocker = totWeightedShadowDepth/totWeight;
       //return d_blocker*2000.f;
-      sampleScale = spotLightSampleScale(linearDepth, d_blocker, light);
+      sampleScale = 2.f*spotLightSampleScale(linearDepth, d_blocker, light);
 
       // put reasonable limits on the size of the shadow filter
+      sampleScale = max(0.8f/nSamplesXY, min(sampleScale, 500.f/nSamplesXY));
       //sampleScale = 1.f;
-      sampleScale = max(0.8f/nSamplesXY, min(sampleScale, 50.f/nSamplesXY));
 
       // use a smaller bias now because we linearly interpolate the depth values
       bias = 0.002f;
