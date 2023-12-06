@@ -418,7 +418,7 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
 
     // use sample scale that implicitly sets a maximum size for the shadow filter
     float nSamplesXY = float(1+2*shadowSamples);
-    sampleScale = max(1.f/nSamplesXY, min(sampleScale, 50.f/nSamplesXY));
+    sampleScale = max(1.f/nSamplesXY, min(sampleScale, 100.f/nSamplesXY));
     //sampleScale = .3f;
 
     // estimate blocker depth
@@ -452,10 +452,10 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
       // calculate averaged shadow depth
       float d_blocker = totWeightedShadowDepth/totWeight;
       //return d_blocker*2000.f;
-      sampleScale = 2.f*spotLightSampleScale(linearDepth, d_blocker, light);
+      sampleScale = spotLightSampleScale(linearDepth, d_blocker, light);
 
       // put reasonable limits on the size of the shadow filter
-      sampleScale = max(0.8f/nSamplesXY, min(sampleScale, 500.f/nSamplesXY));
+      sampleScale = max(0.8f/nSamplesXY, min(sampleScale, 100.f/nSamplesXY));
       //sampleScale = 1.f;
 
       // use a smaller bias now because we linearly interpolate the depth values
