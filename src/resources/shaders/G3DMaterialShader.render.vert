@@ -18,8 +18,6 @@ uniform vec3 cameraOrigin_world;
 /*TP_GLSL_OUT_V*/vec2 uv_tangent;
 
 /*TP_GLSL_OUT_V*/vec3 normal_view;
-/*TP_GLSL_OUT_V*/mat3 TBN;
-/*TP_GLSL_OUT_V*/mat3 TBNv;
 
 /*LIGHT_VERT_VARS*/
 
@@ -29,7 +27,7 @@ void main()
 
   gl_Position = mvp * vec4(inVertex, 1.0);
 
-  fragPos_world = (m * vec4(inVertex, 1.0)).xyz;
+  fragPos_world = (m * vec4(inVertex, 1.0f)).xyz;
 
   vec3 uv = uvMatrix * vec3(inTexture, 1.0f);
   uv_tangent = uv.xy;
