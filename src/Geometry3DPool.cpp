@@ -4,6 +4,7 @@
 #include "tp_maps/TexturePoolKey.h"
 
 #include "tp_utils/TimeUtils.h"
+#include "tp_utils/DebugUtils.h"
 
 namespace tp_maps
 {
@@ -49,6 +50,65 @@ struct PoolDetails_lt
   }
 
   //################################################################################################
+  static float axisDot(const glm::fquat& q1, const glm::fquat& q2)
+  {
+    return q1.x*q2.x + q1.y*q2.y + q1.z*q2.z;
+  }
+
+  //################################################################################################
+  static G3DMaterialShader::Vertex mixVertex(G3DMaterialShader::Vertex vert1, const G3DMaterialShader::Vertex& vert2, bool checkSign=false)
+  {
+    float alpha;
+    if(!checkSign || axisDot(vert1.tbnq, vert2.tbnq) < 0.f)
+    {
+      vert1.tbnq = -vert1.tbnq;
+      alpha = vert1.tbnq.w/(vert1.tbnq.w-vert2.tbnq.w);
+    }
+    else
+      // same sign - take the average
+      alpha = 0.5f;
+
+    G3DMaterialShader::Vertex vert;
+    vert.position = alpha*vert2.position + (1.f-alpha)*vert1.position;
+    vert.position = alpha*vert2.position + (1.f-alpha)*vert1.position;
+    vert.tbnq = alpha*vert2.tbnq + (1.f-alpha)*vert1.tbnq;
+    vert.tbnq = alpha*vert2.tbnq + (1.f-alpha)*vert1.tbnq;
+    vert.texture = alpha*vert2.texture + (1.f-alpha)*vert1.texture;
+    vert.texture = alpha*vert2.texture + (1.f-alpha)*vert1.texture;
+    return vert;
+  }
+
+  //################################################################################################
+  static void addTriangle(std::vector<G3DMaterialShader::Vertex>& verts,
+                          std::vector<GLuint>& indexes,
+                          const G3DMaterialShader::Vertex& vert1, const G3DMaterialShader::Vertex& vert2, const G3DMaterialShader::Vertex& vert3,
+                          bool checkSign=false)
+  {
+    verts.emplace_back(vert1);
+    indexes.push_back(GLuint(indexes.size()));
+
+    auto& v2 = verts.emplace_back(vert2);
+    indexes.push_back(GLuint(indexes.size()));
+    if(checkSign && axisDot(vert1.tbnq, v2.tbnq) < 0.f)
+      v2.tbnq = -v2.tbnq;
+
+    auto& v3 = verts.emplace_back(vert3);
+    indexes.push_back(GLuint(indexes.size()));
+    if(checkSign && axisDot(vert1.tbnq, v3.tbnq) < 0.f)
+      tpDebug() << "Here 3";
+  }
+  
+  //################################################################################################
+  static void overwriteExistingVertex(std::vector<G3DMaterialShader::Vertex>& verts, int i,
+                                      const G3DMaterialShader::Vertex& v,
+                                      int iref = -1)
+  {
+    verts[i] = v;
+    if(0>iref || axisDot(v.tbnq, verts[iref].tbnq) < 0.f)
+      verts[i].tbnq = -v.tbnq;
+  }
+
+  //################################################################################################
   void checkUpdateVertexBuffer(Geometry3DShader* shader, Map* map)
   {
     TP_FUNCTION_TIME("Geometry3DPool::PoolDetails_lt::checkUpdateVertexBuffer");
@@ -61,6 +121,11 @@ struct PoolDetails_lt
 
       for(const auto& shape : geometry)
       {
+        // build tangent vectors for each vertex
+        std::vector<glm::vec3> tangent;
+        if(!isOnlyMaterial)
+          shape.buildTangentVectors(tangent);
+
         for(const auto& part : shape.indexes)
         {
           ProcessedGeometry3D details;
@@ -76,12 +141,116 @@ struct PoolDetails_lt
 
             for(size_t n=0; n<part.indexes.size(); n++)
             {
-              auto idx = part.indexes.at(n);
-              if(size_t(idx)<shape.verts.size())
+              auto idx = size_t(part.indexes.at(n));
+              if(idx<shape.verts.size())
               {
-                const auto& v = shape.verts.at(size_t(idx));
+                const auto& v = shape.verts.at(idx);
                 indexes.push_back(GLuint(n));
-                verts.emplace_back(G3DMaterialShader::Vertex(v.vert, v.normal, v.texture));
+                auto tbnq = glm::quatLookAtLH(v.normal, tangent.at(idx));
+
+                // convention for quaternion sign is that the w component should be positive
+                if(tbnq.w < 0.f)
+                  tbnq = -tbnq;
+
+                verts.emplace_back(G3DMaterialShader::Vertex(v.vert, tbnq, v.texture));
+                if(glm::abs(glm::dot(v.normal, tangent.at(idx))) > 0.99f)
+                  tpDebug() << "Inconsistent normal & tangent";
+              }
+            }
+
+            // check for triangles with inconsistent quaternion axis direction
+            if(part.type == shape.triangles)
+            {
+              const size_t vsize = verts.size();
+              for(size_t n=0; n<vsize; n+=3)
+              {
+                auto quaternionToRZ = [](const glm::quat& q)
+                {
+                  glm::vec3 RZ;
+                  RZ[0] = 2.0f*(q.x*q.z + q.w*q.y);
+                  RZ[1] = 2.0f*(q.y*q.z - q.w*q.x);
+                  RZ[2] = 1.0f - 2.0f*(q.x*q.x +  q.y*q.y);
+                  return RZ;
+                };
+
+                // we will check quaternion sign change when the normals are consistent
+                glm::vec3 n1 = quaternionToRZ(verts[n].tbnq), n2 = quaternionToRZ(verts[n+1].tbnq), n3 = quaternionToRZ(verts[n+2].tbnq);
+                const float normalConsistencyThres = 0.5f;
+                if(glm::dot(n1,n2) > normalConsistencyThres && glm::dot(n1,n3) > normalConsistencyThres && glm::dot(n2,n3) > normalConsistencyThres)
+                {
+                  // the normals are consistent so the quaternions should be too. If they aren't it means that there is a sign change
+                  // in the rotation angle - we will introduce new triangles to avoid the sign change
+                  const auto& v1 = verts[n];
+                  const auto& v2 = verts[n+1];
+                  const auto& v3 = verts[n+2];
+                  const float dot12 = axisDot(v1.tbnq, v2.tbnq);
+                  const float dot13 = axisDot(v1.tbnq, v3.tbnq);
+                  const float dot23 = axisDot(v2.tbnq, v3.tbnq);
+
+                  // check for case that vertex 1 is inconsistent with vertices 2,3
+                  if(dot12 < 0.f && dot13 < 0.f && dot23 > 0.f)
+                  {
+                    // define two new vertices with zero rotation angle
+                    G3DMaterialShader::Vertex v12 = mixVertex(v1, v2);
+                    G3DMaterialShader::Vertex v13 = mixVertex(v1, v3);
+
+                    // build two new triangles
+                    addTriangle(verts, indexes, v12, v2, v3);
+                    addTriangle(verts, indexes, v13, v12, v3);
+                  
+                    // overwrite two vertices of existing triangle
+                    overwriteExistingVertex(verts, n+1, v12);
+                    overwriteExistingVertex(verts, n+2, v13);
+                  }
+                  // check for case that vertex 2 is inconsistent with vertices 1,3
+                  else if(dot12 < 0.f && dot13 > 0.f && dot23 < 0.f)
+                  {
+                    // define two new vertices with zero rotation angle
+                    G3DMaterialShader::Vertex v23 = mixVertex(v2, v3);
+                    G3DMaterialShader::Vertex v12 = mixVertex(v2, v1);
+
+                    // build two new triangles
+                    addTriangle(verts, indexes, v23, v3, v1);
+                    addTriangle(verts, indexes, v12, v23, v1);
+
+                    // overwrite two vertices of existing triangle
+                    overwriteExistingVertex(verts, n+2, v23);
+                    overwriteExistingVertex(verts, n,   v12);
+                  }
+                  // check for case that vertex 3 is inconsistent with vertices 1,2
+                  else if(dot12 > 0.f && dot13 < 0.f && dot23 < 0.f)
+                  {
+                    // define two new vertices with zero rotation angle
+                    G3DMaterialShader::Vertex v13 = mixVertex(v3, v1);
+                    G3DMaterialShader::Vertex v23 = mixVertex(v3, v2);
+
+                    // build two new triangles
+                    addTriangle(verts, indexes, v13, v1, v2);
+                    addTriangle(verts, indexes, v23, v13, v2);
+
+                    // overwrite two vertices of existing triangle
+                    overwriteExistingVertex(verts, n,   v13);
+                    overwriteExistingVertex(verts, n+1, v23);
+                  }
+#if 0
+                  // check for unhandled case - split into four triangles
+                  else if(dot12 < 0.f || dot13 < 0.f || dot23 < 0.f)
+                  {
+                    G3DMaterialShader::Vertex v12 = mixVertex(v1, v2, true/*checkSign*/);
+                    G3DMaterialShader::Vertex v13 = mixVertex(v1, v3, true/*checkSign*/);
+                    G3DMaterialShader::Vertex v23 = mixVertex(v2, v3, true/*checkSign*/);
+
+                    // build three new triangles
+                    addTriangle(verts, indexes, v12, v2,  v23, true/*checkSign*/);
+                    addTriangle(verts, indexes, v13, v23, v3,  true/*checkSign*/);
+                    addTriangle(verts, indexes, v23, v13, v12, true/*checkSign*/);
+
+                    // overwrite two vertices of existing triangle
+                    overwriteExistingVertex(verts, n+1, v12, n/*iref*/);
+                    overwriteExistingVertex(verts, n+2, v13, n/*iref*/);
+                  }
+#endif
+                }
               }
             }
 

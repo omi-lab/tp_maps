@@ -17,7 +17,7 @@ namespace
 struct Vertex_lt
 {
   glm::vec3 position{};
-  glm::vec3 normal{};
+  glm::vec4 tbnq{};
   glm::vec2 texture{};
 };
 }
@@ -187,7 +187,7 @@ void FontShader::drawPreparedString(PreparedString& preparedString)
           if(preparedString.config().topDown)
             vert.position.y = -vert.position.y;
           vert.texture = glyph.textureCoords.at(i);
-          vert.normal = {0.0f, 0.0f, 1.0f};
+          vert.tbnq = {0.0f, 0.0f, 0.f, 1.0f};
         }
       }
 
@@ -285,7 +285,7 @@ void FontShader::bindLocations(GLuint program, ShaderType shaderType)
   TP_UNUSED(shaderType);
 
   glBindAttribLocation(program, 0, "inVertex");
-  glBindAttribLocation(program, 1, "inNormal");
+  glBindAttribLocation(program, 1, "inTBNq");
   glBindAttribLocation(program, 2, "inTexture");
 }
 

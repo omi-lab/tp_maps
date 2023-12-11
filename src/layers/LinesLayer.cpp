@@ -212,6 +212,51 @@ void LinesLayer::setLinesFromGeometryNormals(const std::vector<tp_math_utils::Ge
 }
 
 //##################################################################################################
+void LinesLayer::setLinesFromGeometryTangents(const std::vector<tp_math_utils::Geometry3D>& geometry, float scale)
+{
+  size_t vertCount=0;
+  for(const auto& m : geometry)
+    vertCount += m.verts.size();
+  vertCount*=2;
+
+  std::vector<tp_maps::Lines> lines;
+  lines.resize(3);
+  auto& r = lines.at(0);
+  auto& g = lines.at(1);
+  auto& b = lines.at(2);
+
+  r.lines.reserve(vertCount);
+  g.lines.reserve(vertCount);
+  b.lines.reserve(vertCount);
+
+  r.color = {1.0f, 0.0f, 0.0f, 1.0f};
+  g.color = {0.0f, 1.0f, 0.0f, 1.0f};
+  b.color = {0.0f, 0.0f, 1.0f, 1.0f};
+
+  r.mode = GL_LINES;
+  g.mode = GL_LINES;
+  b.mode = GL_LINES;
+
+  for(const auto& m : geometry)
+  {
+    std::vector<glm::vec3> tangent;
+    m.buildTangentVectors(tangent);
+
+    for(size_t i=0; i<tangent.size(); ++i)
+    {
+      const auto& v = m.verts.at(i);
+      r.lines.push_back(v.vert);
+      g.lines.push_back(v.vert);
+      b.lines.push_back(v.vert);
+
+      g.lines.push_back(v.vert + (tangent.at(i)   * scale));
+    }
+  }
+
+  setLines(lines);
+}
+
+//##################################################################################################
 float LinesLayer::lineWidth() const
 {
   return d->lineWidth;

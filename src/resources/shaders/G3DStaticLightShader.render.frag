@@ -49,7 +49,7 @@ uniform vec3 cameraOrigin_world;
 
 /*TP_GLSL_IN_F*/vec3 fragPos_world;
 
-/*TP_GLSL_IN_F*/vec3 outNormal;
+/*TP_GLSL_IN_F*/vec4 outTBNq;
 
 /*TP_GLSL_IN_F*/vec2 uv_tangent;
 vec3 fragPos_tangent;
@@ -200,12 +200,40 @@ mat3 transposeMat3(mat3 inMatrix)
 }
 
 //##################################################################################################
-mat4 transposeIntoMat4(vec3 i0, vec3 i1, vec3 i2)
+mat4 transposeIntoMat4(mat3 i)
 {
-  return mat4(vec4(i0.x, i1.x, i2.x, 0.0),
-              vec4(i0.y, i1.y, i2.y, 0.0),
-              vec4(i0.z, i1.z, i2.z, 0.0),
+  return mat4(vec4(i[0][0], i[1][0], i[2][0], 0.0),
+              vec4(i[0][1], i[1][1], i[2][1], 0.0),
+              vec4(i[0][2], i[1][2], i[2][2], 0.0),
               vec4(0.0, 0.0, 0.0, 1.0));
+}
+
+//##################################################################################################
+mat3 quaternionToMat3(vec4 q)
+{
+  float qxx = q.x * q.x;
+  float qyy = q.y * q.y;
+  float qzz = q.z * q.z;
+  float qxz = q.x * q.z;
+  float qxy = q.x * q.y;
+  float qyz = q.y * q.z;
+  float qwx = q.w * q.x;
+  float qwy = q.w * q.y;
+  float qwz = q.w * q.z;
+
+  mat3 R;
+  R[0][0] = 1.0f - 2.0f * (qyy +  qzz);
+  R[0][1] = 2.0f * (qxy + qwz);
+  R[0][2] = 2.0f * (qxz - qwy);
+
+  R[1][0] = 2.0f * (qxy - qwz);
+  R[1][1] = 1.0f - 2.0f * (qxx +  qzz);
+  R[1][2] = 2.0f * (qyz + qwx);
+
+  R[2][0] = 2.0f * (qxz + qwy);
+  R[2][1] = 2.0f * (qyz - qwx);
+  R[2][2] = 1.0f - 2.0f * (qxx +  qyy);
+  return R;
 }
 
 //##################################################################################################
@@ -254,17 +282,12 @@ void main()
   transmissionRoughness = rmttrTex.w;
 
   // Calculate the TBN matrix used to transform between world and tangent space.
-  vec3 n = normalize(outNormal);
-  vec3 t1 = cross(vec3(1,0,0), outNormal);
-  vec3 t2 = cross(vec3(0,1,0), outNormal);
-  vec3 t = normalize((dot(t1, t1)>dot(t2,t2))?t1:t2);
-  vec3 b = cross(n, t);
-
   mat3 m3 = mat3(m);
-  mat3 TBN = mat3(m3*t, m3*b, m3*n);
-  mat3 invTBN = transposeMat3(TBN);
+  mat3 TBN = quaternionToMat3(normalize(outTBNq));
+  mat3 mTBN = m3*TBN;
+  mat3 invmTBN = transposeMat3(mTBN);
 
-  mat4 worldToTangent = transposeIntoMat4(t, b, n) * mInv;
+  mat4 worldToTangent = transposeIntoMat4(TBN) * mInv;
 
   {
     vec4 a = worldToTangent * vec4(cameraOrigin_world, 1.0);
@@ -279,7 +302,7 @@ void main()
   F0 = mix(vec3(0.04), albedo, metalness);
   surfaceToCamera = normalize(cameraOrigin_tangent-fragPos_tangent);
 
-  vec3 ldNormalized = normalize(invTBN * vec3(0.0,0.0,-1.0));
+  vec3 ldNormalized = normalize(invmTBN * vec3(0.0,0.0,-1.0));
 
   //directionalLight(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec2(0,0), worldToLight%_proj));
   LightResult r = directionalLight(norm, ldNormalized);

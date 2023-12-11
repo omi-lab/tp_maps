@@ -137,12 +137,18 @@ bool Shader::error() const
 //##################################################################################################
 ShaderDetails Shader::shaderDetails(ShaderType shaderType) const
 {
+  if(d->shaders.find(shaderType) == d->shaders.end())
+    tpDebug() << "Missing shader type " << int(shaderType);
+
   return d->shaders[shaderType];
 }
 
 //##################################################################################################
 void Shader::use(ShaderType shaderType)
 {
+  if(d->shaders.find(shaderType) == d->shaders.end())
+    tpDebug() << "Missing shader type " << int(shaderType);
+
   d->currentShaderType = shaderType;
   glUseProgram(d->shaders[shaderType].program);
 }

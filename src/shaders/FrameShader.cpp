@@ -142,8 +142,8 @@ void FrameShader::VertexBuffer::bindVBO() const
   glBindBuffer(GL_ARRAY_BUFFER, vboID);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), tpVoidLiteral( 0));
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), tpVoidLiteral(12));
-  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), tpVoidLiteral(24));
-  glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), tpVoidLiteral(36));
+  glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), tpVoidLiteral(24));
+  glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(FrameShader::Vertex), tpVoidLiteral(40));
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);
@@ -205,7 +205,7 @@ void FrameShader::bindLocations(GLuint program, ShaderType shaderType)
 
   glBindAttribLocation(program, 0, "inVertexP");
   glBindAttribLocation(program, 1, "inVertexR");
-  glBindAttribLocation(program, 2, "inNormal");
+  glBindAttribLocation(program, 2, "inTBNq");
   glBindAttribLocation(program, 3, "inTexture");
 }
 

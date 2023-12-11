@@ -6,6 +6,7 @@
 #include "tp_utils/RefCount.h"
 
 #include "glm/glm.hpp" // IWYU pragma: keep
+#include "glm/gtc/quaternion.hpp" // IWYU pragma: keep
 
 namespace tp_maps
 {
@@ -40,19 +41,19 @@ public:
   //################################################################################################
   struct Vertex
   {
-    glm::vec3 positionP; //!< A position added to positionR once it has been multiplied by the scale.
-    glm::vec3 positionR; //!< A position multiplied by the scale.
-    glm::vec3 normal;
-    glm::vec2 texture;
+    glm::vec3  positionP; //!< A position added to positionR once it has been multiplied by the scale.
+    glm::vec3  positionR; //!< A position multiplied by the scale.
+    glm::fquat tbnq;
+    glm::vec2  texture;
 
     Vertex(){}
-    Vertex(const glm::vec3& positionP_,
-           const glm::vec3& positionR_,
-           const glm::vec3& normal_,
-           const glm::vec2& texture_):
+    Vertex(const glm::vec3&  positionP_,
+           const glm::vec3&  positionR_,
+           const glm::fquat& tbnq_,
+           const glm::vec2&  texture_):
       positionP(positionP_),
       positionR(positionR_),
-      normal(normal_),
+      tbnq(tbnq_),
       texture(texture_)
     {
 
