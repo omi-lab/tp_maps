@@ -364,7 +364,7 @@ float spotLightSampleScale(float d_receiver, float d_blocker, Light light)
 
   // calculate width of penumbra in shadow depth map texture coordinates at rendered pixel
   // total width is d_receiver*2*tan(fov/2)
-  w_penumbra = 1.5f*w_penumbra/(2.0f*tan(0.5*light.fov)*d_receiver);
+  w_penumbra = 2.0f*w_penumbra/(2.0f*tan(0.5*light.fov)*d_receiver);
 
   // convert to pixel coordinates
   w_penumbra /= txlSize.x;
@@ -450,7 +450,7 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
     sampleScale = spotLightSampleScale(linearDepth, d_blocker, light);
 
     // put reasonable limits on the size of the shadow filter
-    sampleScale = max(0.1f/nSamplesXY, min(sampleScale, 500.f/nSamplesXY));
+    sampleScale = max(0.1f/nSamplesXY, min(sampleScale, 1000.f/nSamplesXY));
     //sampleScale = 1.f;
 
     for(int x = -shadowSamples; x <= shadowSamples; ++x)
