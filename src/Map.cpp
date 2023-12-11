@@ -1924,7 +1924,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
     }
 #else
     // just use a "small" fast render shadow kernel
-    setShadowSamplesFastRender(1);
+    setShadowSamplesFastRender(0);
 #endif
   }
 }
