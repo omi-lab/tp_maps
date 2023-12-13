@@ -153,8 +153,9 @@ struct PoolDetails_lt
                   tbnq = -tbnq;
 
                 verts.emplace_back(G3DMaterialShader::Vertex(v.vert, tbnq, v.texture));
-                if(glm::abs(glm::dot(v.normal, tangent.at(idx))) > 0.99f)
-                  tpDebug() << "Inconsistent normal & tangent";
+                auto dotNT = glm::abs(glm::dot(v.normal, tangent.at(idx)));
+                if(dotNT > 0.99f)
+                  tpDebug() << "Inconsistent normal & tangent (" << dotNT << ")";
               }
             }
 
