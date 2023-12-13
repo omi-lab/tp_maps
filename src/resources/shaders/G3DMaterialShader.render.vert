@@ -24,17 +24,10 @@ uniform vec3 cameraOrigin_world;
 //##################################################################################################
 vec3 quaternionToMat3Z(vec4 q)
 {
-  float qxx = q.x * q.x;
-  float qyy = q.y * q.y;
-  float qxz = q.x * q.z;
-  float qyz = q.y * q.z;
-  float qwx = q.w * q.x;
-  float qwy = q.w * q.y;
-
   vec3 res;
-  res.x = 2.0f * (q.x*q.z + qwy);
-  res.y = 2.0f * (qyz - qwx);
-  res.z = 1.0f - 2.0f * (qxx +  qyy);
+  res.x = 2.0f * (q.x*q.z + q.w*q.y);
+  res.y = 2.0f * (q.y*q.z - q.w*q.x);
+  res.z = 1.0f - 2.0f * (q.x*q.x +  q.y*q.y);
   return res;
 }
 

@@ -73,8 +73,10 @@ uniform vec3 cameraOrigin_world;
 /*TP_GLSL_IN_F*/vec4 outTBNq;
 
 /*TP_GLSL_IN_F*/vec2 uv_tangent;
-vec3 fragPos_tangent;
+  
+mat4 worldToTangent;
 vec3 cameraOrigin_tangent;
+vec3 fragPos_tangent;
 
 vec3 albedo;
 float roughness;
@@ -357,10 +359,10 @@ float maskLight(Light light, vec3 uv_light, float shadow)
 }
 
 //##################################################################################################
-float spotLightSampleScale(float d_receiver, float d_blocker, Light light)
+float spotLightSampleScale(float d_receiver, float d_blocker, Light light, float offsetScale)
 {
   // calculate effective ight size at the render pixel position
-  float w_penumbra = light.offsetScale.x*(d_receiver - d_blocker)/d_blocker;
+  float w_penumbra = offsetScale*(d_receiver - d_blocker)/d_blocker;
 
   // calculate width of penumbra in shadow depth map texture coordinates at rendered pixel
   // total width is d_receiver*2*tan(fov/2)
@@ -374,17 +376,23 @@ float spotLightSampleScale(float d_receiver, float d_blocker, Light light)
 }
 
 //##################################################################################################
+float rand(vec2 co){
+  return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+//##################################################################################################
 float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangent, highp sampler2D lightTexture, vec3 uv_light)
 {
   float totalShadowSamples = totShadowSamples();
   float lightLevel = totalShadowSamples;
-  float nDotL = dot(norm, -lightDirection_tangent);
 
+  float nDotL = dot(norm, -lightDirection_tangent);
   if(nDotL>0.0 && uv_light.z>0.0 && uv_light.z<1.0)
   {
     // bias depends on depth and tan of angle = sqrt(1 - cos^2)/cos
     float linearDepth = lineariseDepth(uv_light.z, light.near, light.far);
-    float bias = (0.0001f + 0.002f*sqrt(1.f-nDotL*nDotL)/nDotL)*linearDepth;
+    float tana = sqrt(1.f-nDotL*nDotL)/nDotL;
+    float bias = (0.0001f + 0.004f*tana)*linearDepth;
     float biasedDepth = linearDepth - bias;
 
     // apply simple loop if no shadow filtering
@@ -398,12 +406,15 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
 
     // use nominal low blocker depth value to estimate sample scale to include shadows.
     // We generally have objects close to the area being shadowed, so choose a nominal depth "close"
-    // to the current depth.
-    float nominalBlockerDepth = 0.8f*linearDepth;
+    // to the current depth. We choose to reduce the nominal blocker depth when
+    // the light is low to the horizon, indicated by nDotL being close to 0.
+    float nominalBlockerDepth = max(0.9f - 0.4f*tana, 0.1f)*linearDepth;
 
     // calculate sample scale based on the nominal blocked depth
     float nSamplesXY = float(1+2*shadowSamples);
-    float sampleScale = clamp(spotLightSampleScale(linearDepth, nominalBlockerDepth, light), 0.5f/nSamplesXY, 2000.f/nSamplesXY);
+    float sampleScale = clamp(spotLightSampleScale(linearDepth, nominalBlockerDepth, light, light.offsetScale.x), 0.5f/nSamplesXY, 5000.f/nSamplesXY);
+
+    vec2 randomOffset = vec2(rand(uv_light.xy)-0.5f, rand(uv_light.yz)-0.5f);
 
     // calculate blocker depth as average shadow-weighted depth around current pixel
     float totWeight = 0.00001f; // make sure the weight is never zero
@@ -411,11 +422,13 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
     for(int x = -shadowSamples; x <= shadowSamples; ++x)
       for(int y = -shadowSamples; y <= shadowSamples; ++y)
       {
-        vec2 coord = uv_light.xy + (vec2(x, y)*sampleScale*txlSize);
+        //vec2 coffset = sampleScale*(vec2(x, y) + randomOffset);
+        vec2 coffset = vec2(x, y)*sampleScale + randomOffset;
+        vec2 coord = uv_light.xy + coffset*txlSize;
         if(coord.x>=0.0 && coord.x<=1.0 && coord.y>=0.0 && coord.y<=1.0)
         {
           float depth = shadowMapMinDepth(lightTexture, coord, light.near, light.far);
-          float extraBias = bias*sampleScale*(abs(float(x))+abs(float(y)));
+          float extraBias = bias*(abs(coffset.x) + abs(coffset.y));
           float thisShadow = 1.0f-smoothstep(biasedDepth-extraBias, linearDepth-extraBias, depth);
           totWeightedShadowDepth += thisShadow*depth;
           totWeight += thisShadow;
@@ -424,17 +437,20 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
 
     // calculate averaged shadow depth
     float d_blocker = totWeightedShadowDepth/totWeight;
+    //return d_blocker;
 
     // put reasonable limits on the size of the shadow filter
-    sampleScale = clamp(spotLightSampleScale(linearDepth, d_blocker, light), 0.1f/nSamplesXY, 1000.f/nSamplesXY);
+    sampleScale = clamp(spotLightSampleScale(linearDepth, d_blocker, light, light.offsetScale.x), 0.1f/nSamplesXY, 3000.f/nSamplesXY);
 
     for(int x = -shadowSamples; x <= shadowSamples; ++x)
       for(int y = -shadowSamples; y <= shadowSamples; ++y)
       {
-        vec2 coord = uv_light.xy + (vec2(x, y)*sampleScale*txlSize);
+        //vec2 coffset = sampleScale*(vec2(x, y) + randomOffset);
+        vec2 coffset = vec2(x, y)*sampleScale + randomOffset;
+        vec2 coord = uv_light.xy + coffset*txlSize;
         if(coord.x>=0.0 && coord.x<=1.0 && coord.y>=0.0 && coord.y<=1.0)
         {
-          float extraBias = bias*sampleScale*(abs(float(x))+abs(float(y)));
+          float extraBias = bias*(abs(coffset.x) + abs(coffset.y));
           lightLevel -= 1.0-sampleShadowMapLinear2D(lightTexture, coord, biasedDepth-extraBias, linearDepth-extraBias, light.near, light.far);
         }
       }
@@ -626,7 +642,7 @@ void main()
   mat3 mTBN = m3*TBN;
   mat3 invmTBN = transposeMat3(mTBN);
 
-  mat4 worldToTangent = transposeIntoMat4(TBN) * mInv;
+  worldToTangent = transposeIntoMat4(TBN) * mInv;
 
   {
     vec4 a = worldToTangent * vec4(cameraOrigin_world, 1.0);

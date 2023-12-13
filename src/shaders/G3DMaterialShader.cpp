@@ -225,7 +225,7 @@ struct G3DMaterialShader::Private
         LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform mat4 worldToLight%_proj;\n");
 
         LIGHT_FRAG_CALC += "\n  {\n";
-        LIGHT_FRAG_CALC += replaceLight(ii, ll, "    vec3 ldNormalized = normalize(invmTBN * light%Direction_world);\n");
+        LIGHT_FRAG_CALC += replaceLight(ii, ll, "    vec3 ldNormalized;\n");
 
         LIGHT_FRAG_CALC += replaceLight(ii, ll, "    float shadow=0.0;\n");
         switch(light.type)
@@ -234,12 +234,18 @@ struct G3DMaterialShader::Private
         case tp_math_utils::LightType::Directional:
         {
           LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform highp sampler2D light%Texture;\n");
+          LIGHT_FRAG_CALC += replaceLight(ii, ll, "    ldNormalized = normalize(invmTBN * light%Direction_world);\n");
           LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = directionalLight(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec2(0,0), worldToLight%_proj));\n");
           break;
         }
 
         case tp_math_utils::LightType::Spot:
         {
+          LIGHT_FRAG_CALC += replaceLight(ii, ll, "    {\n");
+          LIGHT_FRAG_CALC += replaceLight(ii, ll, "        vec4 a = worldToTangent * vec4(light%.position, 1.0);\n");
+          LIGHT_FRAG_CALC += replaceLight(ii, ll, "        ldNormalized = normalize(fragPos_tangent - a.xyz/a.w);\n");
+          LIGHT_FRAG_CALC += replaceLight(ii, ll, "    }\n");
+
           if(q->map()->maxSpotLightLevels() == 1)
           {
             tpDebug() << "Spot light prepareBuffer()";
