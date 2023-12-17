@@ -17,8 +17,6 @@ uniform vec3 cameraOrigin_world;
 
 /*TP_GLSL_OUT_V*/vec2 uv_tangent;
 
-/*TP_GLSL_OUT_V*/vec3 normal_view;
-
 /*LIGHT_VERT_VARS*/
 
 //##################################################################################################
@@ -27,7 +25,7 @@ vec3 quaternionToMat3Z(vec4 q)
   vec3 res;
   res.x = 2.0f * (q.x*q.z + q.w*q.y);
   res.y = 2.0f * (q.y*q.z - q.w*q.x);
-  res.z = 1.0f - 2.0f * (q.x*q.x +  q.y*q.y);
+  res.z = 1.0f - 2.0f * (q.x*q.x + q.y*q.y);
   return res;
 }
 
@@ -43,6 +41,4 @@ void main()
   uv_tangent = uv.xy;
 
 /*LIGHT_VERT_CALC*/
-
-  normal_view = mat3(mv) * quaternionToMat3Z(normalize(inTBNq));
 }
