@@ -454,6 +454,7 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
     //float totDiscrepancy = 0.0f;
     //float minShadowDepth = 0.0f;
     //float minShadowSqrDist = 100000.0f;
+    float divN = 1.0f/(nSamplesXY*nSamplesXY);
     for(int x = -shadowSamples; x <= shadowSamples; ++x)
       for(int y = -shadowSamples; y <= shadowSamples; ++y)
       {
@@ -483,7 +484,7 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
             thisShadow = 0.f;
 #endif
           // weight shadow less at the edge of the window
-          float weight = thisShadow*pow(0.001f, float(x*x+y*y)/(nSamplesXY*nSamplesXY));
+          float weight = thisShadow*pow(0.001f, float(x*x+y*y)*divN);
           totWeightedShadowDepth += weight*depth;
           totWeight += weight;
           //if(x == -1/*shadowSamples*/ && y == 0)
