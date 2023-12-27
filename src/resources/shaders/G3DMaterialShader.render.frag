@@ -372,12 +372,6 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
     float depthdx = dFdx(linearDepth);
     float depthdy = dFdy(linearDepth);
 
-    // calculate sample scale based on the nominal blocker depth
-    float nSamplesXY = float(1+2*shadowSamples);
-    float sampleScale = clamp(spotLightSampleScale(linearDepth, nominalBlockerDepth, light, light.offsetScale.x), 1.0f, max(5.0f, 0.05f/(txlSize.x*tan(0.5f*light.fov))))/nSamplesXY;
-
-    vec2 randomOffset = vec2(rand(uv_light.xy)-0.5f, rand(uv_light.yz)-0.5f);
-
     // we have locally shadow map coordinates sx, sy, and we want to calculate gradxy = ( d(depth)/d(sx) )
     //                                                                                  ( d(depth)/d(sy) )
     // From the derivatives we are given we can estimate
