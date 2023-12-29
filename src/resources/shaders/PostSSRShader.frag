@@ -1,6 +1,9 @@
-/*TP_FRAG_SHADER_HEADER*/
+#pragma replace TP_FRAG_SHADER_HEADER
+#define TP_GLSL_IN_F
+#define TP_GLSL_GLFRAGCOLOR
+#define TP_GLSL_TEXTURE_2D
 
-/*TP_GLSL_IN_F*/vec2 coord_tex;
+TP_GLSL_IN_F vec2 coord_tex;
 
 uniform sampler2D textureSampler;
 uniform sampler2D depthSampler;
@@ -12,9 +15,8 @@ uniform mat4 invProjectionMatrix;
 
 const float discardOpacity=0.8;
 
-//out float gl_FragDepth;
-/*TP_GLSL_GLFRAGCOLOR_DEF*/
-/*TP_WRITE_FRAGMENT*/
+#pragma replace TP_GLSL_GLFRAGCOLOR_DEF
+#pragma replace TP_WRITE_FRAGMENT
 
 vec3 clipToView(vec2 xy_tex, float depth)
 {
@@ -46,17 +48,17 @@ void takeSample(vec3 viewCoord, vec3 reflectRay, vec3 noise)
     if(fragPosReflecting.x<0.0 || fragPosReflecting.x>1.0 || fragPosReflecting.y<0.0 || fragPosReflecting.y>1.0)
       return;
 
-    float fragDepth  = /*TP_GLSL_TEXTURE_2D*/(depthSampler, fragPosReflecting.xy).x;
+    float fragDepth  = TP_GLSL_TEXTURE_2D(depthSampler, fragPosReflecting.xy).x;
 
     float delta = (fragPosReflecting.z-0.000001) - fragDepth;
 
     if(delta>0.0 && delta<0.001)
     {
-      vec3 normalReflecting = normalize(/*TP_GLSL_TEXTURE_2D*/(normalsSampler, fragPosReflecting.xy).xyz);
+      vec3 normalReflecting = normalize(TP_GLSL_TEXTURE_2D(normalsSampler, fragPosReflecting.xy).xyz);
 
       if(dot(reflectRay, normalReflecting) < 0.0)
       {
-        fragColorR += /*TP_GLSL_TEXTURE_2D*/(textureSampler, fragPosReflecting.xy).xyz;// * max(0.0, (1.0-(i*2.0)));
+        fragColorR += TP_GLSL_TEXTURE_2D(textureSampler, fragPosReflecting.xy).xyz;// * max(0.0, (1.0-(i*2.0)));
         count+=1.0;
         break;
       }
@@ -66,10 +68,10 @@ void takeSample(vec3 viewCoord, vec3 reflectRay, vec3 noise)
 
 void main()
 {
-  float depth  = /*TP_GLSL_TEXTURE_2D*/(depthSampler, coord_tex).x;
+  float depth  = TP_GLSL_TEXTURE_2D(depthSampler, coord_tex).x;
   gl_FragDepth = depth;
 
-  vec3  normal = normalize(/*TP_GLSL_TEXTURE_2D*/(normalsSampler, coord_tex).xyz);
+  vec3  normal = normalize(TP_GLSL_TEXTURE_2D(normalsSampler, coord_tex).xyz);
 
   // The fragment position in view space
   vec3 viewCoord = clipToView(coord_tex, depth);
@@ -87,8 +89,8 @@ void main()
   if(count>1.0)
     fragColorR /= count;
 
-  vec3 fragColorA = /*TP_GLSL_TEXTURE_2D*/(textureSampler, coord_tex).xyz;
-  float metalness = /*TP_GLSL_TEXTURE_2D*/(specularSampler, coord_tex).x;
+  vec3 fragColorA = TP_GLSL_TEXTURE_2D(textureSampler, coord_tex).xyz;
+  float metalness = TP_GLSL_TEXTURE_2D(specularSampler, coord_tex).x;
 
   vec3 ambient = fragColorA+(fragColorR*metalness);
 

@@ -1,6 +1,9 @@
-/*TP_FRAG_SHADER_HEADER*/
+#pragma replace TP_FRAG_SHADER_HEADER
+#define TP_GLSL_IN_F
+#define TP_GLSL_GLFRAGCOLOR
+#define TP_GLSL_TEXTURE_2D
 
-/*TP_GLSL_IN_F*/vec2 coord_tex;
+TP_GLSL_IN_F vec2 coord_tex;
 
 uniform sampler2D textureSampler;
 uniform sampler2D depthSampler;
@@ -17,7 +20,7 @@ uniform vec2 pixelSize;
 
 uniform vec3 ssaoKernel[N_SAMPLES];
 
-/*TP_GLSL_GLFRAGCOLOR_DEF*/
+#pragma replace TP_GLSL_GLFRAGCOLOR_DEF
 
 //##################################################################################################
 vec3 clipToView(vec2 xy_tex, float depth, mat4 invProjectionMatrix)
@@ -35,7 +38,7 @@ vec2 testBuffer2D(vec3 coord_view, vec3 samplePos_view, mat4 projectionMatrix, m
 
   if(samplePos_clip.x>=0.0 && samplePos_clip.y>=0.0 && samplePos_clip.x<=1.0 && samplePos_clip.y<=1.0)
   {
-    float d = /*TP_GLSL_TEXTURE_2D*/(depthSampler, samplePos_clip.xy).x;
+    float d = TP_GLSL_TEXTURE_2D(depthSampler, samplePos_clip.xy).x;
     vec3 coord_view2 = clipToView(samplePos_clip.xy, d, invProjectionMatrix);
 
     if(samplePos_clip.z>(d+bias))
@@ -58,10 +61,10 @@ void main()
   vec2 noiseScale = (1.0 / pixelSize) / 4.0;
 
   // AO calc
-  float depth = /*TP_GLSL_TEXTURE_2D*/(depthSampler   , coord_tex).x;
+  float depth = TP_GLSL_TEXTURE_2D(depthSampler   , coord_tex).x;
   vec3 fragPos   = clipToView(coord_tex, depth, invProjectionMatrix);
-  vec3 normal    = /*TP_GLSL_TEXTURE_2D*/(normalsSampler , coord_tex).xyz;
-  vec3 randomVec = /*TP_GLSL_TEXTURE_2D*/(noiseSampler, coord_tex * noiseScale).xyz;
+  vec3 normal    = TP_GLSL_TEXTURE_2D(normalsSampler , coord_tex).xyz;
+  vec3 randomVec = TP_GLSL_TEXTURE_2D(noiseSampler, coord_tex * noiseScale).xyz;
 
   vec3 tangent   = normalize(randomVec - normal * dot(randomVec, normal));
   vec3 bitangent = cross(normal, tangent);
@@ -82,5 +85,5 @@ void main()
 
   float dim = 1.0 - (occlusions / float(N_SAMPLES));
 
-  /*TP_GLSL_GLFRAGCOLOR*/ = vec4(dim);
+  TP_GLSL_GLFRAGCOLOR = vec4(dim);
 }

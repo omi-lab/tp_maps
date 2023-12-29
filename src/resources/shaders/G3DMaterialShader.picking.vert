@@ -1,6 +1,7 @@
-/*TP_VERT_SHADER_HEADER*/
+#pragma replace TP_VERT_SHADER_HEADER
+#define TP_GLSL_IN_V
 
-/*TP_GLSL_IN_V*/vec3 inVertex;
+TP_GLSL_IN_V vec3 inVertex;
 
 uniform mat4 mvp;
 

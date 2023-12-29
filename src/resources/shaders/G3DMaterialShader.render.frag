@@ -1,4 +1,8 @@
-/*TP_FRAG_SHADER_HEADER*/
+#pragma replace TP_FRAG_SHADER_HEADER
+#define TP_GLSL_IN_F
+#define TP_GLSL_GLFRAGCOLOR
+#define TP_GLSL_TEXTURE_2D
+#define TP_GLSL_TEXTURE_3D
 
 struct Material
 {
@@ -51,6 +55,10 @@ struct LightResult
   vec3 specular;
 };
 
+TP_GLSL_IN_F vec3 fragPos_world;
+TP_GLSL_IN_F vec4 outTBNq;
+TP_GLSL_IN_F vec2 uv_tangent;
+
 uniform sampler2D rgbaTexture;
 uniform sampler2D normalsTexture;
 uniform sampler2D rmttrTexture;
@@ -67,12 +75,6 @@ uniform mat4 v;
 uniform mat4 mInv;
 
 uniform vec3 cameraOrigin_world;
-
-/*TP_GLSL_IN_F*/vec3 fragPos_world;
-
-/*TP_GLSL_IN_F*/vec4 outTBNq;
-
-/*TP_GLSL_IN_F*/vec2 uv_tangent;
   
 mat4 worldToTangent;
 vec3 cameraOrigin_tangent;
@@ -103,8 +105,8 @@ float totShadowSamples()
 
 const float pi = 3.14159265;
 
-/*TP_GLSL_GLFRAGCOLOR_DEF*/
-/*TP_WRITE_FRAGMENT*/
+#pragma replace TP_GLSL_GLFRAGCOLOR_DEF
+#pragma replace TP_WRITE_FRAGMENT
 
 //See MaterialShader.cpp for documentation.
 
@@ -143,10 +145,10 @@ float shadowMapDepth(highp sampler2D shadowMap, vec2 coords, float near, float f
   vec2 fracPart = fract(pixelPos);
   vec2 startTxl = (pixelPos-fracPart) * txlSize;
 
-  float blTxl = lineariseDepth(/*TP_GLSL_TEXTURE_2D*/(shadowMap, startTxl).r, near, far);
-  float brTxl = lineariseDepth(/*TP_GLSL_TEXTURE_2D*/(shadowMap, startTxl + vec2(txlSize.x, 0.0)).r, near, far);
-  float tlTxl = lineariseDepth(/*TP_GLSL_TEXTURE_2D*/(shadowMap, startTxl + vec2(0.0, txlSize.y)).r, near, far);
-  float trTxl = lineariseDepth(/*TP_GLSL_TEXTURE_2D*/(shadowMap, startTxl + txlSize).r, near, far);
+  float blTxl = lineariseDepth(TP_GLSL_TEXTURE_2D(shadowMap, startTxl).r, near, far);
+  float brTxl = lineariseDepth(TP_GLSL_TEXTURE_2D(shadowMap, startTxl + vec2(txlSize.x, 0.0)).r, near, far);
+  float tlTxl = lineariseDepth(TP_GLSL_TEXTURE_2D(shadowMap, startTxl + vec2(0.0, txlSize.y)).r, near, far);
+  float trTxl = lineariseDepth(TP_GLSL_TEXTURE_2D(shadowMap, startTxl + txlSize).r, near, far);
 
   float mixA = mix(blTxl, tlTxl, fracPart.y);
   float mixB = mix(brTxl, trTxl, fracPart.y);
@@ -168,10 +170,10 @@ float sampleShadowMapLinear3D(highp sampler3D shadowMap, vec2 coords, float comp
   vec2 fracPart = fract(pixelPos);
   vec2 startTxl = (pixelPos-fracPart) * txlSize;
 
-  float blTxl = lineariseDepth(/*TP_GLSL_TEXTURE_3D*/(shadowMap, vec3(startTxl, level)).r, near, far);
-  float brTxl = lineariseDepth(/*TP_GLSL_TEXTURE_3D*/(shadowMap, vec3(startTxl + vec2(txlSize.x, 0.0), level)).r, near, far);
-  float tlTxl = lineariseDepth(/*TP_GLSL_TEXTURE_3D*/(shadowMap, vec3(startTxl + vec2(0.0, txlSize.y), level)).r, near, far);
-  float trTxl = lineariseDepth(/*TP_GLSL_TEXTURE_3D*/(shadowMap, vec3(startTxl + txlSize, level)).r, near, far);
+  float blTxl = lineariseDepth(TP_GLSL_TEXTURE_3D(shadowMap, vec3(startTxl, level)).r, near, far);
+  float brTxl = lineariseDepth(TP_GLSL_TEXTURE_3D(shadowMap, vec3(startTxl + vec2(txlSize.x, 0.0), level)).r, near, far);
+  float tlTxl = lineariseDepth(TP_GLSL_TEXTURE_3D(shadowMap, vec3(startTxl + vec2(0.0, txlSize.y), level)).r, near, far);
+  float trTxl = lineariseDepth(TP_GLSL_TEXTURE_3D(shadowMap, vec3(startTxl + txlSize, level)).r, near, far);
 
   float mixA = mix(blTxl, tlTxl, fracPart.y);
   float mixB = mix(brTxl, trTxl, fracPart.y);
@@ -426,7 +428,6 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
         vec2 coord = uv_light.xy + coffset*txlSize;
         if(coord.x>=0.0 && coord.x<=1.0 && coord.y>=0.0 && coord.y<=1.0)
         {
-          //float depth = lineariseDepth(/*TP_GLSL_TEXTURE_2D*/(lightTexture, coord).r, light.near, light.far);
           float depth = shadowMapDepth(lightTexture, coord, light.near, light.far);
           float extraBias = 2.f*bias*(abs(coffset.x) + abs(coffset.y));
           float depthShift = dot(coffset, depthGradXY);
@@ -596,9 +597,9 @@ mat3 quaternionToMat3(vec4 q)
 //##################################################################################################
 void main()
 {
-  vec4     rgbaTex = /*TP_GLSL_TEXTURE_2D*/(    rgbaTexture, uv_tangent);
-  vec3  normalsTex = /*TP_GLSL_TEXTURE_2D*/( normalsTexture, uv_tangent).xyz;
-  vec4    rmttrTex = /*TP_GLSL_TEXTURE_2D*/(    rmttrTexture, uv_tangent);
+  vec4     rgbaTex = TP_GLSL_TEXTURE_2D(    rgbaTexture, uv_tangent);
+  vec3  normalsTex = TP_GLSL_TEXTURE_2D( normalsTexture, uv_tangent).xyz;
+  vec4    rmttrTex = TP_GLSL_TEXTURE_2D(    rmttrTexture, uv_tangent);
 
   //Note: GammaCorrection
   rgbaTex.xyz = pow(rgbaTex.xyz, vec3(2.2));
