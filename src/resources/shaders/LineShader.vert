@@ -1,8 +1,9 @@
-/*TP_VERT_SHADER_HEADER*/
+#pragma replace TP_VERT_SHADER_HEADER
+#define TP_GLSL_IN_V
+
+TP_GLSL_IN_V vec3 position;
 
 uniform mat4 matrix;
-
-/*TP_GLSL_IN_V*/vec3 position;
 
 void main()
 {

@@ -1,6 +1,8 @@
-/*TP_FRAG_SHADER_HEADER*/
+#pragma replace TP_FRAG_SHADER_HEADER
+#define TP_GLSL_IN_F
+#define TP_GLSL_GLFRAGCOLOR
 
-/*TP_GLSL_IN_F*/vec2 coord_tex;
+TP_GLSL_IN_F vec2 coord_tex;
 
 uniform sampler2D textureSampler;
 uniform sampler2D depthSampler;
@@ -15,7 +17,7 @@ const vec2 gridCentre = vec2(0.5f, 0.5f); // in texture coordinates
 const float gridSpacing = 0.1f;
 const float lineHalfWidth = 0.001f;
 
-/*TP_GLSL_GLFRAGCOLOR_DEF*/
+#pragma replace TP_GLSL_GLFRAGCOLOR_DEF
 
 bool isOnLine(float value)
 {
@@ -48,13 +50,10 @@ void main()
       if (isOnLine(distanceToClosestLine))
         color = gridColor;
       else
-      {
         // Normal pixel
         discard;
-        return;
-      }
     }
   }
 
-   /*TP_GLSL_GLFRAGCOLOR*/ = vec4(color, 1.0);
+  TP_GLSL_GLFRAGCOLOR = vec4(color, 1.0);
 }

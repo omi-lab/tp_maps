@@ -1,4 +1,7 @@
-/*TP_FRAG_SHADER_HEADER*/
+#pragma replace TP_FRAG_SHADER_HEADER
+#define TP_GLSL_IN_F
+#define TP_GLSL_GLFRAGCOLOR
+#define TP_GLSL_TEXTURE_2D
 
 struct Material
 {
@@ -30,6 +33,11 @@ struct LightResult
   vec3 specular;
 };
 
+TP_GLSL_IN_F vec3 fragPos_world;
+TP_GLSL_IN_F vec4 outTBNq;
+TP_GLSL_IN_F vec2 uv_tangent;
+TP_GLSL_IN_F vec3 normal_view;
+
 uniform sampler2D rgbaTexture;
 uniform sampler2D normalsTexture;
 uniform sampler2D rmttrTexture;
@@ -46,12 +54,6 @@ uniform mat4 v;
 uniform mat4 mInv;
 
 uniform vec3 cameraOrigin_world;
-
-/*TP_GLSL_IN_F*/vec3 fragPos_world;
-
-/*TP_GLSL_IN_F*/vec4 outTBNq;
-
-/*TP_GLSL_IN_F*/vec2 uv_tangent;
 vec3 fragPos_tangent;
 vec3 cameraOrigin_tangent;
 
@@ -65,14 +67,12 @@ float transmissionRoughness;
 vec3 F0;
 vec3 surfaceToCamera;
 
-/*TP_GLSL_IN_F*/vec3 normal_view;
-
 /*POST_VARS*/
 
 const float pi = 3.14159265;
 
-/*TP_GLSL_GLFRAGCOLOR_DEF*/
-/*TP_WRITE_FRAGMENT*/
+#pragma replace TP_GLSL_GLFRAGCOLOR_DEF
+#pragma replace TP_WRITE_FRAGMENT
 
 //See MaterialShader.cpp for documentation.
 
@@ -239,9 +239,9 @@ mat3 quaternionToMat3(vec4 q)
 //##################################################################################################
 void main()
 {
-  vec4     rgbaTex = /*TP_GLSL_TEXTURE_2D*/(    rgbaTexture, uv_tangent);
-  vec3  normalsTex = /*TP_GLSL_TEXTURE_2D*/( normalsTexture, uv_tangent).xyz;
-  vec4    rmttrTex = /*TP_GLSL_TEXTURE_2D*/(    rmttrTexture, uv_tangent);
+  vec4     rgbaTex = TP_GLSL_TEXTURE_2D(    rgbaTexture, uv_tangent);
+  vec3  normalsTex = TP_GLSL_TEXTURE_2D( normalsTexture, uv_tangent).xyz;
+  vec4    rmttrTex = TP_GLSL_TEXTURE_2D(   rmttrTexture, uv_tangent);
 
   //Note: GammaCorrection
   rgbaTex.xyz = pow(rgbaTex.xyz, vec3(2.2));
