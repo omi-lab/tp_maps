@@ -170,6 +170,9 @@ HEADERS += inc/tp_maps/shaders/PostSSAOShader.h
 SOURCES += src/shaders/PostSSRShader.cpp
 HEADERS += inc/tp_maps/shaders/PostSSRShader.h
 
+SOURCES += src/shaders/PostViewTransformShader.cpp
+HEADERS += inc/tp_maps/shaders/PostViewTransformShader.h
+
 SOURCES += src/shaders/PostGammaShader.cpp
 HEADERS += inc/tp_maps/shaders/PostGammaShader.h
 
@@ -275,6 +278,9 @@ HEADERS += inc/tp_maps/layers/PostSelectionLayer.h
 
 SOURCES += src/layers/PostBlitLayer.cpp
 HEADERS += inc/tp_maps/layers/PostBlitLayer.h
+
+SOURCES += src/layers/PostViewTransformLayer.cpp
+HEADERS += inc/tp_maps/layers/PostViewTransformLayer.h
 
 SOURCES += src/layers/PostGammaLayer.cpp
 HEADERS += inc/tp_maps/layers/PostGammaLayer.h

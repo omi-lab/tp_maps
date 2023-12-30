@@ -39,6 +39,7 @@ TP_DEFINE_ID(               mergeDofShaderSID,                 "Merge dof shader
 TP_DEFINE_ID(           gaussianBlurShaderSID,             "Gaussian blur shader");
 TP_DEFINE_ID(            passThroughShaderSID,              "Pass through shader");
 TP_DEFINE_ID(             postGrid2DShaderSID,              "Post grid 2D shader");
+TP_DEFINE_ID(      postViewTransformShaderSID,       "Post view transform shader");
 TP_DEFINE_ID(              postGammaShaderSID,                "Post gamma shader");
 TP_DEFINE_ID(             backgroundShaderSID,                "Background shader");
 TP_DEFINE_ID(        backgroundImageShaderSID,          "Background image shader");

@@ -226,6 +226,7 @@ TP_DECLARE_ID(             downsampleShaderSID,                "Downsample shade
 TP_DECLARE_ID(               mergeDofShaderSID,                 "Merge dof shader");
 TP_DECLARE_ID(            passThroughShaderSID,              "Pass through shader");
 TP_DECLARE_ID(             postGrid2DShaderSID,              "Post grid 2D shader");
+TP_DECLARE_ID(      postViewTransformShaderSID,       "Post view transform shader");
 TP_DECLARE_ID(              postGammaShaderSID,                "Post gamma shader");
 TP_DECLARE_ID(             backgroundShaderSID,                "Background shader");
 TP_DECLARE_ID(        backgroundImageShaderSID,          "Background image shader");
