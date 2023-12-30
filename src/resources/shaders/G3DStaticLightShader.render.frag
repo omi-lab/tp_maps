@@ -67,8 +67,6 @@ float transmissionRoughness;
 vec3 F0;
 vec3 surfaceToCamera;
 
-/*POST_VARS*/
-
 const float pi = 3.14159265;
 
 #pragma replace TP_GLSL_GLFRAGCOLOR_DEF
