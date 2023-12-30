@@ -42,6 +42,7 @@
         <file preprocess="shader" alias="G3DDepthImage3DShader.frag">resources/shaders/G3DDepthImage3DShader.frag</file>
         <file preprocess="shader" alias="PostSSAOShader.frag">resources/shaders/PostSSAOShader.frag</file>
         <file preprocess="shader" alias="PostSSRShader.frag">resources/shaders/PostSSRShader.frag</file>
+        <file preprocess="shader" alias="PostViewTransformShader.frag">resources/shaders/PostViewTransformShader.frag</file>
         <file preprocess="shader" alias="PostGammaShader.frag">resources/shaders/PostGammaShader.frag</file>
         <file preprocess="shader" alias="PostBlitShader.frag">resources/shaders/PostBlitShader.frag</file>
         <file preprocess="shader" alias="PostOutlineShader.frag">resources/shaders/PostOutlineShader.frag</file>
