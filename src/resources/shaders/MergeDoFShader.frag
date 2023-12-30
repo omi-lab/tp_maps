@@ -1,6 +1,9 @@
-/*TP_FRAG_SHADER_HEADER*/
+#pragma replace TP_FRAG_SHADER_HEADER
+#define TP_GLSL_IN_F
+#define TP_GLSL_GLFRAGCOLOR
+#define TP_GLSL_TEXTURE_2D
 
-/*TP_GLSL_IN_F*/vec2 coord_tex;
+TP_GLSL_IN_F vec2 coord_tex;
 
 uniform sampler2D textureSampler;
 uniform sampler2D depthSampler;
@@ -25,7 +28,7 @@ float radiusScale = 0.4;
 
 int numTaps = 6;
 
-/*TP_GLSL_GLFRAGCOLOR_DEF*/
+#pragma replace TP_GLSL_GLFRAGCOLOR_DEF
 
 
 void main()
@@ -45,9 +48,9 @@ void main()
 
   float discRadius, discRadiusLow, centerDepth;
 
-  color = /*TP_GLSL_TEXTURE_2D*/(textureSampler, coord_tex);
+  color = TP_GLSL_TEXTURE_2D(textureSampler, coord_tex);
 
-  float focus = /*TP_GLSL_TEXTURE_2D*/(focusTextureSampler, coord_tex).r;
+  float focus = TP_GLSL_TEXTURE_2D(focusTextureSampler, coord_tex).r;
   centerDepth = focus;
 
   // Convert the depth value in alpha to a blur radius in pixels
@@ -64,12 +67,12 @@ void main()
 
     // Mix low and high res textures based on tap bluriness
     // This gets the colors
-    vec4 tapLow = /*TP_GLSL_TEXTURE_2D*/(downsampledTextureSampler, coordLow);
-    vec4 tapHigh = /*TP_GLSL_TEXTURE_2D*/(textureSampler, coordHigh);
+    vec4 tapLow = TP_GLSL_TEXTURE_2D(downsampledTextureSampler, coordLow);
+    vec4 tapHigh = TP_GLSL_TEXTURE_2D(textureSampler, coordHigh);
 
     // This gets the depth values
-    float depthTapLow = /*TP_GLSL_TEXTURE_2D*/(downsampledFocusTextureSampler, coordLow).r;
-    float depthTapHigh = /*TP_GLSL_TEXTURE_2D*/(focusTextureSampler, coordHigh).r;
+    float depthTapLow = TP_GLSL_TEXTURE_2D(downsampledFocusTextureSampler, coordLow).r;
+    float depthTapHigh = TP_GLSL_TEXTURE_2D(focusTextureSampler, coordHigh).r;
 
     float tapBlur = abs( depthTapHigh * 2.0 - 1.0 );
     vec4 tap = mix( tapHigh, tapLow, tapBlur );
@@ -83,5 +86,5 @@ void main()
     color.a += tapDepth;
   }
 
-   /*TP_GLSL_GLFRAGCOLOR*/ = (color / color.a);
+   TP_GLSL_GLFRAGCOLOR = (color / color.a);
 }

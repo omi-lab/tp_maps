@@ -215,13 +215,13 @@ struct G3DMaterialShader::Private
         LIGHT_VERT_VARS += replaceLight(ii, ll, "uniform mat4 worldToLight%_view;\n");
         LIGHT_VERT_VARS += replaceLight(ii, ll, "uniform mat4 worldToLight%_proj;\n");
 
-        LIGHT_VERT_VARS += replaceLight(ii, ll, "/*TP_GLSL_OUT_V*/vec4 fragPos_light%View;\n\n");
+        LIGHT_VERT_VARS += replaceLight(ii, ll, "TP_GLSL_OUT_V vec4 fragPos_light%View;\n\n");
 
         LIGHT_VERT_CALC += replaceLight(ii, ll, "  fragPos_light%View = worldToLight%_view * (m * vec4(inVertex, 1.0));\n");
 
         LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform vec3 light%Direction_world;\n");
         LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform Light light%;\n");
-        LIGHT_FRAG_VARS += replaceLight(ii, ll, "/*TP_GLSL_IN_F*/vec4 fragPos_light%View;\n\n");
+        LIGHT_FRAG_VARS += replaceLight(ii, ll, "TP_GLSL_IN_F vec4 fragPos_light%View;\n\n");
         LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform mat4 worldToLight%_proj;\n");
 
         LIGHT_FRAG_CALC += "\n  {\n";
@@ -290,10 +290,10 @@ struct G3DMaterialShader::Private
     vertSrcScratch = vertShaderStr().data(q->openGLProfile(), shaderType);
     fragSrcScratch = fragShaderStr().data(q->openGLProfile(), shaderType);
 
-    tp_utils::replace(vertSrcScratch, "/*LIGHT_VERT_VARS*/", LIGHT_VERT_VARS);
-    tp_utils::replace(vertSrcScratch, "/*LIGHT_VERT_CALC*/", LIGHT_VERT_CALC);
-    tp_utils::replace(fragSrcScratch, "/*LIGHT_FRAG_VARS*/", LIGHT_FRAG_VARS);
-    tp_utils::replace(fragSrcScratch, "/*LIGHT_FRAG_CALC*/", LIGHT_FRAG_CALC);
+    tp_utils::replace(vertSrcScratch, "#pragma replace LIGHT_VERT_VARS", LIGHT_VERT_VARS);
+    tp_utils::replace(vertSrcScratch, "#pragma replace LIGHT_VERT_CALC", LIGHT_VERT_CALC);
+    tp_utils::replace(fragSrcScratch, "#pragma replace LIGHT_FRAG_VARS", LIGHT_FRAG_VARS);
+    tp_utils::replace(fragSrcScratch, "#pragma replace LIGHT_FRAG_CALC", LIGHT_FRAG_CALC);
   }
 
   //################################################################################################

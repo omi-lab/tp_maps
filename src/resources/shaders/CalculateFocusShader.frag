@@ -1,6 +1,9 @@
-/*TP_FRAG_SHADER_HEADER*/
+#pragma replace TP_FRAG_SHADER_HEADER
+#define TP_GLSL_IN_F
+#define TP_GLSL_GLFRAGCOLOR
+#define TP_GLSL_TEXTURE_2D
 
-/*TP_GLSL_IN_F*/vec2 coord_tex;
+TP_GLSL_IN_F vec2 coord_tex;
 
 uniform sampler2D textureSampler;
 uniform sampler2D depthSampler;
@@ -16,7 +19,7 @@ uniform float far;
 
 /*DOF_FRAG_VARS*/
 
-/*TP_GLSL_GLFRAGCOLOR_DEF*/
+#pragma replace TP_GLSL_GLFRAGCOLOR_DEF
 
 float LinearizeDepth( float depth )
 {
@@ -30,7 +33,7 @@ void main()
 
   float f = 0.0;
 
-  float depth = /*TP_GLSL_TEXTURE_2D*/(depthSampler, coord_tex).x;
+  float depth = TP_GLSL_TEXTURE_2D(depthSampler, coord_tex).x;
   depth = LinearizeDepth(depth);
 
   if( depth < focalDistance )
@@ -47,5 +50,5 @@ void main()
   // Scale and bias into [0,1] range
   float result = f * 0.5 + 0.5;
 
-   /*TP_GLSL_GLFRAGCOLOR*/ = vec4( result, 0.0, 0.0, 1.0 );
+   TP_GLSL_GLFRAGCOLOR = vec4( result, 0.0, 0.0, 1.0 );
 }

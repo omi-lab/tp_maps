@@ -1,6 +1,10 @@
-/*TP_FRAG_SHADER_HEADER*/
+#pragma replace TP_FRAG_SHADER_HEADER
+#define TP_GLSL_IN_F
+#define TP_GLSL_GLFRAGCOLOR
+#define TP_GLSL_TEXTURE_2D
+#define TP_GLSL_TEXTURE_3D
 
-/*TP_GLSL_IN_F*/vec2 coord_tex;
+TP_GLSL_IN_F vec2 coord_tex;
 
 uniform sampler2D textureSampler;
 uniform sampler2D depthSampler;
@@ -19,8 +23,8 @@ const float discardOpacity=0.8;
 
 uniform vec3 ssaoKernel[N_SAMPLES];
 
-/*TP_GLSL_GLFRAGCOLOR_DEF*/
-/*TP_WRITE_FRAGMENT*/
+#pragma replace TP_GLSL_GLFRAGCOLOR_DEF
+#pragma replace TP_WRITE_FRAGMENT
 
 //##################################################################################################
 float calcBias(float depth, mat4 projectionMatrix, mat4 invProjectionMatrix, float biasMeters)
@@ -44,7 +48,7 @@ vec2 testBuffer2D(vec3 coord_view, vec3 samplePos_view, mat4 projectionMatrix, m
 
   if(samplePos_clip.x>=0.0 && samplePos_clip.y>=0.0 && samplePos_clip.x<=1.0 && samplePos_clip.y<=1.0)
   {
-    float d = /*TP_GLSL_TEXTURE_2D*/(depthSampler, samplePos_clip.xy).x;
+    float d = TP_GLSL_TEXTURE_2D(depthSampler, samplePos_clip.xy).x;
     vec3 coord_view2 = clipToView(samplePos_clip.xy, d, invProjectionMatrix);
 
     float bias=calcBias(d, projectionMatrix, invProjectionMatrix, 0.0001);
@@ -70,7 +74,7 @@ vec2 testBuffer3D(vec3 coord_view, vec3 samplePos_view, mat4 projectionMatrix, m
 
   if(samplePos_clip.x>=0.0 && samplePos_clip.y>=0.0 && samplePos_clip.x<=1.0 && samplePos_clip.y<=1.0)
   {
-    float d = /*TP_GLSL_TEXTURE_3D*/(depthSampler, vec3(samplePos_clip.xy, 0.0)).x;
+    float d = TP_GLSL_TEXTURE_3D(depthSampler, vec3(samplePos_clip.xy, 0.0)).x;
     vec3 coord_view2 = clipToView(samplePos_clip.xy, d, invProjectionMatrix);
 
     float bias=calcBias(d, projectionMatrix, invProjectionMatrix, 0.0001);
@@ -90,7 +94,7 @@ vec2 testBuffer3D(vec3 coord_view, vec3 samplePos_view, mat4 projectionMatrix, m
 //##################################################################################################
 void main()
 {
-  float depth = /*TP_GLSL_TEXTURE_2D*/(depthSampler   , coord_tex).x;
+  float depth = TP_GLSL_TEXTURE_2D(depthSampler   , coord_tex).x;
   gl_FragDepth = depth;
 
   float occlusions = 0.0;
@@ -105,7 +109,7 @@ void main()
 
   float dim = 1.0 - (occlusions / float(N_SAMPLES));
 
-  vec3 ambient = /*TP_GLSL_TEXTURE_2D*/(textureSampler, coord_tex).xyz*dim;
+  vec3 ambient = TP_GLSL_TEXTURE_2D(textureSampler, coord_tex).xyz*dim;
 
   ambient = pow(ambient, vec3(1.0/1.2));
 

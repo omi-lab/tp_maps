@@ -1,16 +1,18 @@
-/*TP_VERT_SHADER_HEADER*/
+#pragma replace TP_VERT_SHADER_HEADER
+#define TP_GLSL_IN_V
+#define TP_GLSL_OUT_V
 
-/*TP_GLSL_IN_V*/vec4 inColor;
-/*TP_GLSL_IN_V*/vec3 inPosition;
-/*TP_GLSL_IN_V*/vec3 inOffset;
-/*TP_GLSL_IN_V*/vec2 inTexture;
+TP_GLSL_IN_V vec4 inColor;
+TP_GLSL_IN_V vec3 inPosition;
+TP_GLSL_IN_V vec3 inOffset;
+TP_GLSL_IN_V vec2 inTexture;
+
+TP_GLSL_OUT_V vec2 coord_tex;
+TP_GLSL_OUT_V vec4 picking;
 
 uniform mat4 matrix;
 uniform vec2 scaleFactor;
 uniform uint pickingID;
-
-/*TP_GLSL_OUT_V*/vec2 coord_tex;
-/*TP_GLSL_OUT_V*/vec4 picking;
 
 void main()
 {

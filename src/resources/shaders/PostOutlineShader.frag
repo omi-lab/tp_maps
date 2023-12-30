@@ -1,6 +1,9 @@
-/*TP_FRAG_SHADER_HEADER*/
+#pragma replace TP_FRAG_SHADER_HEADER
+#define TP_GLSL_IN_F
+#define TP_GLSL_GLFRAGCOLOR
+#define TP_GLSL_TEXTURE_2D
 
-/*TP_GLSL_IN_F*/vec2 coord_tex;
+TP_GLSL_IN_F vec2 coord_tex;
 
 uniform sampler2D textureSampler;
 uniform sampler2D depthSampler;
@@ -10,15 +13,12 @@ uniform mat4 invProjectionMatrix;
 
 uniform vec2 pixelSize;
 
-/*TP_GLSL_GLFRAGCOLOR_DEF*/
+#pragma replace TP_GLSL_GLFRAGCOLOR_DEF
 
 void main()
 {
-  if(/*TP_GLSL_TEXTURE_2D*/(depthSampler, coord_tex).x<1.0f)
-  {
+  if(TP_GLSL_TEXTURE_2D(depthSampler, coord_tex).x<1.0f)
     discard;
-    return;
-  }
 
   for(int y=-2; y<3; y++)
   {
@@ -32,9 +32,9 @@ void main()
       if(sx<0.0f || sx>1.0f)
         continue;
 
-      if(/*TP_GLSL_TEXTURE_2D*/(depthSampler, vec2(sx, sy)).x<1.0f)
+      if(TP_GLSL_TEXTURE_2D(depthSampler, vec2(sx, sy)).x<1.0f)
       {
-        /*TP_GLSL_GLFRAGCOLOR*/ = vec4(0.05,0.05,0.9,1.0);
+        TP_GLSL_GLFRAGCOLOR = vec4(0.05,0.05,0.9,1.0);
         return;
       }
     }

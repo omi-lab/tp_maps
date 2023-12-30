@@ -1,10 +1,11 @@
-/*TP_FRAG_SHADER_HEADER*/
+#pragma replace TP_FRAG_SHADER_HEADER
+#define TP_GLSL_GLFRAGCOLOR
 
 uniform vec4 pickingID;
 
-/*TP_GLSL_GLFRAGCOLOR_DEF*/
+#pragma replace TP_GLSL_GLFRAGCOLOR_DEF
 
 void main()
 {
-  /*TP_GLSL_GLFRAGCOLOR*/ = pickingID;
+  TP_GLSL_GLFRAGCOLOR = pickingID;
 }

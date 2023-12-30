@@ -1,6 +1,9 @@
-/*TP_FRAG_SHADER_HEADER*/
+#pragma replace TP_FRAG_SHADER_HEADER
+#define TP_GLSL_IN_F
+#define TP_GLSL_GLFRAGCOLOR
+#define TP_GLSL_TEXTURE_2D
 
-/*TP_GLSL_IN_F*/vec2 coord_tex;
+TP_GLSL_IN_F vec2 coord_tex;
 
 uniform sampler2D textureSampler;
 uniform sampler2D depthSampler;
@@ -13,7 +16,7 @@ uniform vec2 pixelSize;
 
 /*DOF_FRAG_VARS*/
 
-/*TP_GLSL_GLFRAGCOLOR_DEF*/
+#pragma replace TP_GLSL_GLFRAGCOLOR_DEF
 
 const vec2 offsets[4] = vec2[]
 (
@@ -27,10 +30,10 @@ void main()
 {
   vec4 color = vec4(0.0,0.0,0.0,0.0);
 
-  color += /*TP_GLSL_TEXTURE_2D*/(textureSampler, coord_tex + offsets[0] * pixelSize);
-  color += /*TP_GLSL_TEXTURE_2D*/(textureSampler, coord_tex + offsets[1] * pixelSize);
-  color += /*TP_GLSL_TEXTURE_2D*/(textureSampler, coord_tex + offsets[2] * pixelSize);
-  color += /*TP_GLSL_TEXTURE_2D*/(textureSampler, coord_tex + offsets[3] * pixelSize);
+  color += TP_GLSL_TEXTURE_2D(textureSampler, coord_tex + offsets[0] * pixelSize);
+  color += TP_GLSL_TEXTURE_2D(textureSampler, coord_tex + offsets[1] * pixelSize);
+  color += TP_GLSL_TEXTURE_2D(textureSampler, coord_tex + offsets[2] * pixelSize);
+  color += TP_GLSL_TEXTURE_2D(textureSampler, coord_tex + offsets[3] * pixelSize);
 
-   /*TP_GLSL_GLFRAGCOLOR*/ = color / 4.0;
+  TP_GLSL_GLFRAGCOLOR = color / 4.0;
 }
