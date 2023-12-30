@@ -1,0 +1,27 @@
+#ifndef tp_maps_PostViewTransformShader_h
+#define tp_maps_PostViewTransformShader_h
+
+#include "tp_maps/shaders/PostShader.h"
+
+namespace tp_maps
+{
+
+//##################################################################################################
+//! Applies gamma correction
+class TP_MAPS_EXPORT PostViewTransformShader: public PostShader
+{
+public:
+  //################################################################################################
+  static inline const tp_utils::StringID& name(){return postViewTransformShaderSID();}
+
+  //################################################################################################
+  using PostShader::PostShader;
+
+protected:
+  //################################################################################################
+  const char* fragmentShaderStr(ShaderType shaderType) override;
+};
+
+}
+
+#endif
