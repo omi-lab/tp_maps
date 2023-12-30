@@ -290,10 +290,10 @@ struct G3DMaterialShader::Private
     vertSrcScratch = vertShaderStr().data(q->openGLProfile(), shaderType);
     fragSrcScratch = fragShaderStr().data(q->openGLProfile(), shaderType);
 
-    tp_utils::replace(vertSrcScratch, "/*LIGHT_VERT_VARS*/", LIGHT_VERT_VARS);
-    tp_utils::replace(vertSrcScratch, "/*LIGHT_VERT_CALC*/", LIGHT_VERT_CALC);
-    tp_utils::replace(fragSrcScratch, "/*LIGHT_FRAG_VARS*/", LIGHT_FRAG_VARS);
-    tp_utils::replace(fragSrcScratch, "/*LIGHT_FRAG_CALC*/", LIGHT_FRAG_CALC);
+    tp_utils::replace(vertSrcScratch, "#pragma replace LIGHT_VERT_VARS", LIGHT_VERT_VARS);
+    tp_utils::replace(vertSrcScratch, "#pragma replace LIGHT_VERT_CALC", LIGHT_VERT_CALC);
+    tp_utils::replace(fragSrcScratch, "#pragma replace LIGHT_FRAG_VARS", LIGHT_FRAG_VARS);
+    tp_utils::replace(fragSrcScratch, "#pragma replace LIGHT_FRAG_CALC", LIGHT_FRAG_CALC);
   }
 
   //################################################################################################

@@ -1,58 +1,58 @@
 <RCC>
     <qresource prefix="/tp_maps">
-        <file alias="FontShader.frag">resources/shaders/FontShader.frag</file>
-        <file alias="FontShader.vert">resources/shaders/FontShader.vert</file>
-        <file alias="FrameShader.frag">resources/shaders/FrameShader.frag</file>
-        <file alias="FrameShader.vert">resources/shaders/FrameShader.vert</file>
-        <file alias="LineShader.frag">resources/shaders/LineShader.frag</file>
-        <file alias="LineShader.vert">resources/shaders/LineShader.vert</file>
-        <file alias="PointSpriteShader.frag">resources/shaders/PointSpriteShader.frag</file>
-        <file alias="PointSpriteShader.vert">resources/shaders/PointSpriteShader.vert</file>
-        <file alias="PointSpriteShader.picking.frag">resources/shaders/PointSpriteShader.picking.frag</file>
-        <file alias="PointSpriteShader.picking.vert">resources/shaders/PointSpriteShader.picking.vert</file>
-        <file alias="FullScreenShader.vert">resources/shaders/FullScreenShader.vert</file>
-        <file alias="ScreenWindowShader.vert">resources/shaders/ScreenWindowShader.vert</file>
-        <file alias="BackgroundSkyBoxShader.frag">resources/shaders/BackgroundSkyBoxShader.frag</file>
-        <file alias="BackgroundImageShader.vert">resources/shaders/BackgroundImageShader.vert</file>
-        <file alias="BackgroundImageShader.frag">resources/shaders/BackgroundImageShader.frag</file>
-        <file alias="BackgroundPatternShader.frag">resources/shaders/BackgroundPatternShader.frag</file>
-        <file alias="DepthOfFieldBlurShader.frag">resources/shaders/DepthOfFieldBlurShader.frag</file>
-        <file alias="CalculateFocusShader.frag">resources/shaders/CalculateFocusShader.frag</file>
-        <file alias="MergeDofShader.frag">resources/shaders/MergeDoFShader.frag</file>
-        <file alias="DownsampleShader.frag">resources/shaders/DownsampleShader.frag</file>
-        <file alias="PassThroughShader.frag">resources/shaders/PassThroughShader.frag</file>
-        <file alias="AmbientOcclusionShader.frag">resources/shaders/AmbientOcclusionShader.frag</file>
-        <file alias="MergeAmbientOcclusionShader.frag">resources/shaders/MergeAmbientOcclusionShader.frag</file>
-        <file alias="G3DImageShader.frag">resources/shaders/G3DImageShader.frag</file>
-        <file alias="G3DImageShader.vert">resources/shaders/G3DImageShader.vert</file>
-        <file alias="G3DImage3DShader.frag">resources/shaders/G3DImage3DShader.frag</file>
-        <file alias="G3DDepthShader.frag">resources/shaders/G3DDepthShader.frag</file>
-        <file alias="G3DXYZShader.vert">resources/shaders/G3DXYZShader.vert</file>
-        <file alias="G3DXYZShader.frag">resources/shaders/G3DXYZShader.frag</file>
-        <file alias="G3DMaterialShader.render.frag">resources/shaders/G3DMaterialShader.render.frag</file>
-        <file alias="G3DMaterialShader.render.vert">resources/shaders/G3DMaterialShader.render.vert</file>
-        <file alias="G3DMaterialShader.light.frag">resources/shaders/G3DMaterialShader.light.frag</file>
-        <file alias="G3DMaterialShader.light.vert">resources/shaders/G3DMaterialShader.light.vert</file>
-        <file alias="G3DMaterialShader.picking.frag">resources/shaders/G3DMaterialShader.picking.frag</file>
-        <file alias="G3DMaterialShader.picking.vert">resources/shaders/G3DMaterialShader.picking.vert</file>
-        <file alias="G3DStaticLightShader.render.frag">resources/shaders/G3DStaticLightShader.render.frag</file>
-        <file alias="G3DStaticLightShader.render.vert">resources/shaders/G3DStaticLightShader.render.vert</file>
-        <file alias="G3DYUVImageShader.frag">resources/shaders/G3DYUVImageShader.frag</file>
-        <file alias="G3DDepthImageShader.frag">resources/shaders/G3DDepthImageShader.frag</file>
-        <file alias="G3DDepthImage3DShader.frag">resources/shaders/G3DDepthImage3DShader.frag</file>
-        <file alias="PostSSAOShader.frag">resources/shaders/PostSSAOShader.frag</file>
-        <file alias="PostSSRShader.frag">resources/shaders/PostSSRShader.frag</file>
-        <file alias="PostGammaShader.frag">resources/shaders/PostGammaShader.frag</file>
-        <file alias="PostBlitShader.frag">resources/shaders/PostBlitShader.frag</file>
-        <file alias="PostOutlineShader.frag">resources/shaders/PostOutlineShader.frag</file>
-        <file alias="PostBlurAndTintShader.frag">resources/shaders/PostBlurAndTintShader.frag</file>
-        <file alias="PostBasicBlurShader.frag">resources/shaders/PostBasicBlurShader.frag</file>
-        <file alias="PostGrid2DShader.frag">resources/shaders/PostGrid2DShader.frag</file>
-        <file alias="WriteFragment.hdr.glsl">resources/shaders/WriteFragment.hdr.glsl</file>
-        <file alias="WriteFragment.render.glsl">resources/shaders/WriteFragment.render.glsl</file>
-        <file alias="WriteFragment.150.hdr.glsl">resources/shaders/WriteFragment.150.hdr.glsl</file>
-        <file alias="WriteFragment.150.render.glsl">resources/shaders/WriteFragment.150.render.glsl</file>
-        <file alias="WriteFragment.100.hdr.glsl">resources/shaders/WriteFragment.100.hdr.glsl</file>
-        <file alias="WriteFragment.100.render.glsl">resources/shaders/WriteFragment.100.render.glsl</file>
+        <file preprocess="shader" alias="FontShader.frag">resources/shaders/FontShader.frag</file>
+        <file preprocess="shader" alias="FontShader.vert">resources/shaders/FontShader.vert</file>
+        <file preprocess="shader" alias="FrameShader.frag">resources/shaders/FrameShader.frag</file>
+        <file preprocess="shader" alias="FrameShader.vert">resources/shaders/FrameShader.vert</file>
+        <file preprocess="shader" alias="LineShader.frag">resources/shaders/LineShader.frag</file>
+        <file preprocess="shader" alias="LineShader.vert">resources/shaders/LineShader.vert</file>
+        <file preprocess="shader" alias="PointSpriteShader.frag">resources/shaders/PointSpriteShader.frag</file>
+        <file preprocess="shader" alias="PointSpriteShader.vert">resources/shaders/PointSpriteShader.vert</file>
+        <file preprocess="shader" alias="PointSpriteShader.picking.frag">resources/shaders/PointSpriteShader.picking.frag</file>
+        <file preprocess="shader" alias="PointSpriteShader.picking.vert">resources/shaders/PointSpriteShader.picking.vert</file>
+        <file preprocess="shader" alias="FullScreenShader.vert">resources/shaders/FullScreenShader.vert</file>
+        <file preprocess="shader" alias="ScreenWindowShader.vert">resources/shaders/ScreenWindowShader.vert</file>
+        <file preprocess="shader" alias="BackgroundSkyBoxShader.frag">resources/shaders/BackgroundSkyBoxShader.frag</file>
+        <file preprocess="shader" alias="BackgroundImageShader.vert">resources/shaders/BackgroundImageShader.vert</file>
+        <file preprocess="shader" alias="BackgroundImageShader.frag">resources/shaders/BackgroundImageShader.frag</file>
+        <file preprocess="shader" alias="BackgroundPatternShader.frag">resources/shaders/BackgroundPatternShader.frag</file>
+        <file preprocess="shader" alias="DepthOfFieldBlurShader.frag">resources/shaders/DepthOfFieldBlurShader.frag</file>
+        <file preprocess="shader" alias="CalculateFocusShader.frag">resources/shaders/CalculateFocusShader.frag</file>
+        <file preprocess="shader" alias="MergeDofShader.frag">resources/shaders/MergeDoFShader.frag</file>
+        <file preprocess="shader" alias="DownsampleShader.frag">resources/shaders/DownsampleShader.frag</file>
+        <file preprocess="shader" alias="PassThroughShader.frag">resources/shaders/PassThroughShader.frag</file>
+        <file preprocess="shader" alias="AmbientOcclusionShader.frag">resources/shaders/AmbientOcclusionShader.frag</file>
+        <file preprocess="shader" alias="MergeAmbientOcclusionShader.frag">resources/shaders/MergeAmbientOcclusionShader.frag</file>
+        <file preprocess="shader" alias="G3DImageShader.frag">resources/shaders/G3DImageShader.frag</file>
+        <file preprocess="shader" alias="G3DImageShader.vert">resources/shaders/G3DImageShader.vert</file>
+        <file preprocess="shader" alias="G3DImage3DShader.frag">resources/shaders/G3DImage3DShader.frag</file>
+        <file preprocess="shader" alias="G3DDepthShader.frag">resources/shaders/G3DDepthShader.frag</file>
+        <file preprocess="shader" alias="G3DXYZShader.vert">resources/shaders/G3DXYZShader.vert</file>
+        <file preprocess="shader" alias="G3DXYZShader.frag">resources/shaders/G3DXYZShader.frag</file>
+        <file preprocess="shader" alias="G3DMaterialShader.render.frag">resources/shaders/G3DMaterialShader.render.frag</file>
+        <file preprocess="shader" alias="G3DMaterialShader.render.vert">resources/shaders/G3DMaterialShader.render.vert</file>
+        <file preprocess="shader" alias="G3DMaterialShader.light.frag">resources/shaders/G3DMaterialShader.light.frag</file>
+        <file preprocess="shader" alias="G3DMaterialShader.light.vert">resources/shaders/G3DMaterialShader.light.vert</file>
+        <file preprocess="shader" alias="G3DMaterialShader.picking.frag">resources/shaders/G3DMaterialShader.picking.frag</file>
+        <file preprocess="shader" alias="G3DMaterialShader.picking.vert">resources/shaders/G3DMaterialShader.picking.vert</file>
+        <file preprocess="shader" alias="G3DStaticLightShader.render.frag">resources/shaders/G3DStaticLightShader.render.frag</file>
+        <file preprocess="shader" alias="G3DStaticLightShader.render.vert">resources/shaders/G3DStaticLightShader.render.vert</file>
+        <file preprocess="shader" alias="G3DYUVImageShader.frag">resources/shaders/G3DYUVImageShader.frag</file>
+        <file preprocess="shader" alias="G3DDepthImageShader.frag">resources/shaders/G3DDepthImageShader.frag</file>
+        <file preprocess="shader" alias="G3DDepthImage3DShader.frag">resources/shaders/G3DDepthImage3DShader.frag</file>
+        <file preprocess="shader" alias="PostSSAOShader.frag">resources/shaders/PostSSAOShader.frag</file>
+        <file preprocess="shader" alias="PostSSRShader.frag">resources/shaders/PostSSRShader.frag</file>
+        <file preprocess="shader" alias="PostGammaShader.frag">resources/shaders/PostGammaShader.frag</file>
+        <file preprocess="shader" alias="PostBlitShader.frag">resources/shaders/PostBlitShader.frag</file>
+        <file preprocess="shader" alias="PostOutlineShader.frag">resources/shaders/PostOutlineShader.frag</file>
+        <file preprocess="shader" alias="PostBlurAndTintShader.frag">resources/shaders/PostBlurAndTintShader.frag</file>
+        <file preprocess="shader" alias="PostBasicBlurShader.frag">resources/shaders/PostBasicBlurShader.frag</file>
+        <file preprocess="shader" alias="PostGrid2DShader.frag">resources/shaders/PostGrid2DShader.frag</file>
+        <file preprocess="shader" alias="WriteFragment.hdr.glsl">resources/shaders/WriteFragment.hdr.glsl</file>
+        <file preprocess="shader" alias="WriteFragment.render.glsl">resources/shaders/WriteFragment.render.glsl</file>
+        <file preprocess="shader" alias="WriteFragment.150.hdr.glsl">resources/shaders/WriteFragment.150.hdr.glsl</file>
+        <file preprocess="shader" alias="WriteFragment.150.render.glsl">resources/shaders/WriteFragment.150.render.glsl</file>
+        <file preprocess="shader" alias="WriteFragment.100.hdr.glsl">resources/shaders/WriteFragment.100.hdr.glsl</file>
+        <file preprocess="shader" alias="WriteFragment.100.render.glsl">resources/shaders/WriteFragment.100.render.glsl</file>
     </qresource>
 </RCC>

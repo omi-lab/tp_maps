@@ -18,7 +18,7 @@ uniform mat3 uvMatrix;
 
 uniform vec3 cameraOrigin_world;
 
-/*LIGHT_VERT_VARS*/
+#pragma replace LIGHT_VERT_VARS
 
 //##################################################################################################
 vec3 quaternionToMat3Z(vec4 q)
@@ -41,5 +41,5 @@ void main()
   vec3 uv = uvMatrix * vec3(inTexture, 1.0f);
   uv_tangent = uv.xy;
 
-/*LIGHT_VERT_CALC*/
+#pragma replace LIGHT_VERT_CALC
 }

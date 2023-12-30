@@ -92,9 +92,7 @@ vec3 surfaceToCamera;
 
 vec2 invTxlSize;
 
-/*LIGHT_FRAG_VARS*/
-
-/*POST_VARS*/
+#pragma replace LIGHT_FRAG_VARS
 
 uniform int shadowSamples;
 
@@ -669,7 +667,7 @@ void main()
   float accumulatedShadow = 1.0;
   float numShadows = 0.0;
 
-  /*LIGHT_FRAG_CALC*/
+#pragma replace LIGHT_FRAG_CALC
 
   float alpha = rgbaTex.a;
   // Use transparency to display transmission and transmissionRoughness.
