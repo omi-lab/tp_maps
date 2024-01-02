@@ -16,7 +16,7 @@ public:
   static inline const tp_utils::StringID& name(){return backgroundPatternShaderSID();}
 
   //################################################################################################
-  BackgroundPatternShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+  BackgroundPatternShader(Map* map, tp_maps::ShaderProfile shaderProfile);
 
   //################################################################################################
   ~BackgroundPatternShader() override;

@@ -19,8 +19,8 @@ struct FullScreenShader::Private
 };
 
 //##################################################################################################
-FullScreenShader::FullScreenShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
-  Shader(map, openGLProfile),
+FullScreenShader::FullScreenShader(Map* map, tp_maps::ShaderProfile shaderProfile):
+  Shader(map, shaderProfile),
   d(new Private)
 {
   d->object.reset(makeRectangleObject({1.0f, 1.0f}));
@@ -150,7 +150,7 @@ FullScreenShader::Object* FullScreenShader::makeFrameObject(const glm::vec2& hol
 const char* FullScreenShader::vertexShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/FullScreenShader.vert"};
-  return s.data(openGLProfile(), shaderType);
+  return s.data(shaderProfile(), shaderType);
 }
 
 //##################################################################################################

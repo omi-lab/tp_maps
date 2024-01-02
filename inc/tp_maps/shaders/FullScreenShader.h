@@ -12,7 +12,7 @@ class TP_MAPS_EXPORT FullScreenShader: public Shader
 {
 public:
   //################################################################################################
-  FullScreenShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+    FullScreenShader(Map* map, tp_maps::ShaderProfile shaderProfile);
 
   //################################################################################################
   ~FullScreenShader() override;

@@ -21,7 +21,7 @@ public:
   static inline const tp_utils::StringID& name(){return staticLightShaderSID();}
 
   //################################################################################################
-  G3DStaticLightShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+  G3DStaticLightShader(Map* map, tp_maps::ShaderProfile shaderProfile);
 
   //################################################################################################
   ~G3DStaticLightShader() override;

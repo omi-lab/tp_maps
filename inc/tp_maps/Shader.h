@@ -31,7 +31,7 @@ class TP_MAPS_EXPORT Shader
   mutable std::vector<ShaderPointer*> m_pointers;
 public:
   //################################################################################################
-  Shader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+  Shader(Map* map, tp_maps::ShaderProfile shaderProfile);
 
   //################################################################################################
   virtual ~Shader();
@@ -40,7 +40,7 @@ public:
   Map* map() const;
 
   //################################################################################################
-  tp_maps::OpenGLProfile openGLProfile() const;
+  tp_maps::ShaderProfile shaderProfile() const;
 
   //################################################################################################
   ShaderType currentShaderType() const;

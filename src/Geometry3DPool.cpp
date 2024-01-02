@@ -81,7 +81,9 @@ struct PoolDetails_lt
   //################################################################################################
   static void addTriangle(std::vector<G3DMaterialShader::Vertex>& verts,
                           std::vector<GLuint>& indexes,
-                          const G3DMaterialShader::Vertex& vert1, const G3DMaterialShader::Vertex& vert2, const G3DMaterialShader::Vertex& vert3,
+                          const G3DMaterialShader::Vertex& vert1,
+                          const G3DMaterialShader::Vertex& vert2,
+                          const G3DMaterialShader::Vertex& vert3,
                           bool checkSign=false)
   {
     verts.push_back(vert1);
@@ -128,9 +130,10 @@ struct PoolDetails_lt
         if(!isOnlyMaterial)
           shape.buildTangentVectors(tangent);
 
+        ProcessedGeometry3D details;
+
         for(const auto& part : shape.indexes)
         {
-          ProcessedGeometry3D details;
           details.material = shape.material;
 
           if(!isOnlyMaterial)
@@ -177,12 +180,15 @@ struct PoolDetails_lt
                 };
 
                 // we will check quaternion sign change when the normals are consistent
-                glm::vec3 n1 = quaternionToRZ(verts[n].tbnq), n2 = quaternionToRZ(verts[n+1].tbnq), n3 = quaternionToRZ(verts[n+2].tbnq);
+                glm::vec3 n1 = quaternionToRZ(verts[n].tbnq);
+                glm::vec3 n2 = quaternionToRZ(verts[n+1].tbnq);
+                glm::vec3 n3 = quaternionToRZ(verts[n+2].tbnq);
                 const float normalConsistencyThres = 0.5f;
                 if(glm::dot(n1,n2) > normalConsistencyThres && glm::dot(n1,n3) > normalConsistencyThres && glm::dot(n2,n3) > normalConsistencyThres)
                 {
                   // the normals are consistent so the quaternions should be too. If they aren't it means that there is a sign change
                   // in the rotation angle - we will introduce new triangles to avoid the sign change
+#warning we modify verts so can't take references here
                   const auto v1 = verts[n];
                   const auto v2 = verts[n+1];
                   const auto v3 = verts[n+2];
@@ -262,9 +268,9 @@ struct PoolDetails_lt
             p.second = shader->generateVertexBuffer(map, indexes, verts);
             details.vertexBuffers.push_back(p);
           }
-
-          processedGeometry.push_back(details);
         }
+
+        processedGeometry.push_back(details);
       }
     }
   }

@@ -23,7 +23,7 @@ public:
   static inline const tp_utils::StringID& name(){return materialShaderSID();}
 
   //################################################################################################
-  G3DMaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+  G3DMaterialShader(Map* map, tp_maps::ShaderProfile shaderProfile);
 
   //################################################################################################
   ~G3DMaterialShader() override;

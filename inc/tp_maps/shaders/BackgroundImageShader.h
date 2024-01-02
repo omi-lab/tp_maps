@@ -16,7 +16,7 @@ public:
   static inline const tp_utils::StringID& name(){return backgroundImageShaderSID();}
 
   //################################################################################################
-  BackgroundImageShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+  BackgroundImageShader(Map* map, tp_maps::ShaderProfile shaderProfile);
 
   //################################################################################################
   ~BackgroundImageShader();

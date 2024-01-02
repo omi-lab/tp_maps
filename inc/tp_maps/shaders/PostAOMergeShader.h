@@ -17,7 +17,7 @@ public:
 
   //################################################################################################
   PostAOMergeShader(Map* map,
-                    tp_maps::OpenGLProfile openGLProfile,
+                    tp_maps::ShaderProfile shaderProfile,
                     const PostAOParameters& parameters);
 
   //################################################################################################

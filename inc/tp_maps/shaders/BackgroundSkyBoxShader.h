@@ -15,7 +15,7 @@ public:
   static inline const tp_utils::StringID& name(){return backgroundShaderSID();}
 
   //################################################################################################
-  BackgroundSkyBoxShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+  BackgroundSkyBoxShader(Map* map, tp_maps::ShaderProfile shaderProfile);
 
   //################################################################################################
   ~BackgroundSkyBoxShader();

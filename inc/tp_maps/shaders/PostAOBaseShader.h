@@ -29,7 +29,7 @@ class TP_MAPS_EXPORT PostAOBaseShader: public PostShader
 public:
   //################################################################################################
   PostAOBaseShader(Map* map,
-                   tp_maps::OpenGLProfile openGLProfile,
+                   tp_maps::ShaderProfile shaderProfile,
                    const PostAOParameters& parameters);
 
   //################################################################################################

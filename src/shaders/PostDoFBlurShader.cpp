@@ -6,7 +6,7 @@ namespace tp_maps
 const char* PostDoFBlurShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/DepthOfFieldBlurShader.frag"};
-  fragSrcScratch = s.dataStr(openGLProfile(), shaderType);
+  fragSrcScratch = s.dataStr(shaderProfile(), shaderType);
 
   const auto& parameters = this->parameters();
 

@@ -34,8 +34,8 @@ struct LineShader::Private
 };
 
 //##################################################################################################
-LineShader::LineShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
-  Shader(map, openGLProfile),
+LineShader::LineShader(Map* map, tp_maps::ShaderProfile shaderProfile):
+  Shader(map, shaderProfile),
   d(new Private())
 {
 
@@ -51,14 +51,14 @@ LineShader::~LineShader()
 const char* LineShader::vertexShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/LineShader.vert"};
-  return s.data(openGLProfile(), shaderType);
+  return s.data(shaderProfile(), shaderType);
 }
 
 //##################################################################################################
 const char* LineShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/LineShader.frag"};
-  return s.data(openGLProfile(), shaderType);
+  return s.data(shaderProfile(), shaderType);
 }
 
 //##################################################################################################

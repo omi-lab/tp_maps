@@ -13,8 +13,8 @@ struct BackgroundPatternShader::Private
 };
 
 //##################################################################################################
-BackgroundPatternShader::BackgroundPatternShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
-  FullScreenShader(map, openGLProfile),
+BackgroundPatternShader::BackgroundPatternShader(Map* map, tp_maps::ShaderProfile shaderProfile):
+  FullScreenShader(map, shaderProfile),
   d(new Private())
 {
 
@@ -37,7 +37,7 @@ void BackgroundPatternShader::setScreenSizeAndGridSpacing(const glm::vec2& scree
 const char* BackgroundPatternShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/BackgroundPatternShader.frag"};
-  return s.data(openGLProfile(), shaderType);
+  return s.data(shaderProfile(), shaderType);
 }
 
 //##################################################################################################

@@ -18,14 +18,14 @@ struct Shader::Private
   TP_NONCOPYABLE(Private);
 
   Map* map;
-  tp_maps::OpenGLProfile openGLProfile;
+  tp_maps::ShaderProfile shaderProfile;
   std::unordered_map<ShaderType, ShaderDetails> shaders;
   bool error{false};
   ShaderType currentShaderType{ShaderType::Render};
 
-  Private(Map* map_, tp_maps::OpenGLProfile profile_):
+  Private(Map* map_, tp_maps::ShaderProfile profile_):
     map(map_),
-    openGLProfile(profile_)
+    shaderProfile(profile_)
   {
 
   }
@@ -48,8 +48,8 @@ struct Shader::Private
 };
 
 //##################################################################################################
-Shader::Shader(Map* map, tp_maps::OpenGLProfile openGLProfile):
-  d(new Private(map, openGLProfile))
+Shader::Shader(Map* map, tp_maps::ShaderProfile shaderProfile):
+  d(new Private(map, shaderProfile))
 {
 
 }
@@ -82,9 +82,9 @@ Map* Shader::map() const
 }
 
 //##################################################################################################
-tp_maps::OpenGLProfile Shader::openGLProfile() const
+tp_maps::ShaderProfile Shader::shaderProfile() const
 {
-  return d->openGLProfile;
+  return d->shaderProfile;
 }
 //##################################################################################################
 ShaderType Shader::currentShaderType() const
@@ -138,7 +138,7 @@ bool Shader::error() const
 ShaderDetails Shader::shaderDetails(ShaderType shaderType) const
 {
   if(d->shaders.find(shaderType) == d->shaders.end())
-    tpDebug() << "Missing shader type " << int(shaderType);
+    tpWarning() << "Missing shader type " << int(shaderType);
 
   return d->shaders[shaderType];
 }
@@ -147,7 +147,7 @@ ShaderDetails Shader::shaderDetails(ShaderType shaderType) const
 void Shader::use(ShaderType shaderType)
 {
   if(d->shaders.find(shaderType) == d->shaders.end())
-    tpDebug() << "Missing shader type " << int(shaderType);
+    tpWarning() << "Missing shader type " << int(shaderType);
 
   d->currentShaderType = shaderType;
   glUseProgram(d->shaders[shaderType].program);

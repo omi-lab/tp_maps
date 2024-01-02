@@ -37,8 +37,8 @@ struct G3DImageShader::Private
 };
 
 //##################################################################################################
-G3DImageShader::G3DImageShader(Map* map, OpenGLProfile openGLProfile):
-  Geometry3DShader(map, openGLProfile),
+G3DImageShader::G3DImageShader(Map* map, ShaderProfile shaderProfile):
+  Geometry3DShader(map, shaderProfile),
   d(new Private())
 {
 
@@ -153,14 +153,14 @@ void G3DImageShader::use(ShaderType shaderType)
 const char* G3DImageShader::vertexShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/G3DImageShader.vert"};
-  return s.data(openGLProfile(), shaderType);
+  return s.data(shaderProfile(), shaderType);
 }
 
 //##################################################################################################
 const char* G3DImageShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/G3DImageShader.frag"};
-  return s.data(openGLProfile(), shaderType);
+  return s.data(shaderProfile(), shaderType);
 }
 
 //##################################################################################################
@@ -196,7 +196,7 @@ const char* G3DImage3DShader::fragmentShaderStr(ShaderType shaderType)
   if(shaderType == ShaderType::Picking)
     return G3DImageShader::fragmentShaderStr(shaderType);
 
-  return s.data(openGLProfile(), shaderType);
+  return s.data(shaderProfile(), shaderType);
 }
 
 }

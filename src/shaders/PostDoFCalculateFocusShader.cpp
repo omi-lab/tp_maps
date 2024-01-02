@@ -6,7 +6,7 @@ namespace tp_maps
 const char* PostDoFCalculateFocusShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/CalculateFocusShader.frag"};
-  fragSrcScratch = s.dataStr(openGLProfile(), shaderType);
+  fragSrcScratch = s.dataStr(shaderProfile(), shaderType);
 
   const auto& parameters = this->parameters();
 
