@@ -183,9 +183,9 @@ struct PoolDetails_lt
                 {
                   // the normals are consistent so the quaternions should be too. If they aren't it means that there is a sign change
                   // in the rotation angle - we will introduce new triangles to avoid the sign change
-                  const auto& v1 = verts[n];
-                  const auto& v2 = verts[n+1];
-                  const auto& v3 = verts[n+2];
+                  const auto v1 = verts[n];
+                  const auto v2 = verts[n+1];
+                  const auto v3 = verts[n+2];
                   const float dot12 = axisDot(v1.tbnq, v2.tbnq);
                   const float dot13 = axisDot(v1.tbnq, v3.tbnq);
                   const float dot23 = axisDot(v2.tbnq, v3.tbnq);
