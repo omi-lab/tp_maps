@@ -84,17 +84,19 @@ struct PoolDetails_lt
                           const G3DMaterialShader::Vertex& vert1, const G3DMaterialShader::Vertex& vert2, const G3DMaterialShader::Vertex& vert3,
                           bool checkSign=false)
   {
-    verts.emplace_back(vert1);
+    verts.push_back(vert1);
     indexes.push_back(GLuint(indexes.size()));
 
-    auto& v2 = verts.emplace_back(vert2);
+    verts.push_back(vert2);
+    auto& v2 = verts.back();
     indexes.push_back(GLuint(indexes.size()));
     if(checkSign && axisDot(vert1.tbnq, v2.tbnq) < 0.f)
       v2.tbnq = -v2.tbnq;
 
-    auto& v3 = verts.emplace_back(vert3);
+    verts.push_back(vert3);
+    //auto& v3 = verts.back();
     indexes.push_back(GLuint(indexes.size()));
-    if(checkSign && axisDot(vert1.tbnq, v3.tbnq) < 0.f)
+    if(checkSign && axisDot(vert1.tbnq, vert3.tbnq) < 0.f)
       tpDebug() << "Here 3";
   }
   
