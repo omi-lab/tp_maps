@@ -6,6 +6,6 @@ namespace tp_maps
 const char* G3DDepthShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/DepthShader.frag"};
-  return s.data(openGLProfile(), shaderType);
+  return s.data(shaderProfile(), shaderType);
 }
 }

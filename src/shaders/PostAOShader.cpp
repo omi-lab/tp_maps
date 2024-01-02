@@ -30,9 +30,9 @@ struct PostAOShader::Private
 
 //##################################################################################################
 PostAOShader::PostAOShader(Map* map,
-                           tp_maps::OpenGLProfile openGLProfile,
+                           tp_maps::ShaderProfile shaderProfile,
                            const PostAOParameters& parameters):
-  PostAOBaseShader(map, openGLProfile, parameters),
+  PostAOBaseShader(map, shaderProfile, parameters),
   d(new Private())
 {
 
@@ -70,12 +70,12 @@ PostAOShader::PostAOShader(Map* map,
 #ifdef TP_GLES2
     return (alpha==Alpha::Yes)?GL_RGBA32F_EXT:GL_RGB16F_EXT;
 #else
-    switch(map->openGLProfile())
+    switch(map->shaderProfile())
     {
-    case OpenGLProfile::VERSION_100_ES: [[fallthrough]];
-    case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
-    case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
-    case OpenGLProfile::VERSION_320_ES:
+        case ShaderProfile::GLSL_100_ES: [[fallthrough]];
+        case ShaderProfile::GLSL_300_ES: [[fallthrough]];
+        case ShaderProfile::GLSL_310_ES: [[fallthrough]];
+        case ShaderProfile::GLSL_320_ES:
     return (alpha==Alpha::Yes)?GL_RGBA32F:GL_RGB16F;
 
     default:
@@ -115,7 +115,7 @@ void PostAOShader::use(ShaderType shaderType)
 const char* PostAOShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/AmbientOcclusionShader.frag"};
-  fragSrcScratch = s.dataStr(openGLProfile(), shaderType);
+  fragSrcScratch = s.dataStr(shaderProfile(), shaderType);
 
   const auto& parameters = this->parameters();
 

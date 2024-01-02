@@ -23,9 +23,9 @@ struct PostDoFBaseShader::Private
 
 //##################################################################################################
 PostDoFBaseShader::PostDoFBaseShader(Map* map,
-                                     tp_maps::OpenGLProfile openGLProfile,
+                                     tp_maps::ShaderProfile shaderProfile,
                                      const PostDoFParameters& parameters):
-  PostShader(map, openGLProfile),
+  PostShader(map, shaderProfile),
   d(new Private(parameters))
 {
 }

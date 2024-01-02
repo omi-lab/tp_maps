@@ -67,7 +67,7 @@ protected:
 
   //################################################################################################
   //! Only ever call this before any calls to render.
-  void setOpenGLProfile(OpenGLProfile openGLProfile);
+  void setShaderProfile(ShaderProfile shaderProfile);
 
   //################################################################################################
   void setVisible(bool visible);
@@ -82,7 +82,7 @@ public:
 #endif
 
   //################################################################################################
-  OpenGLProfile openGLProfile() const;
+  ShaderProfile shaderProfile() const;
 
   //################################################################################################
   //! Returns true if the 3D view is currently visible
@@ -367,7 +367,7 @@ public:
     T* shader = static_cast<T*>(getShader(name));
     if(!shader)
     {
-      shader = new T(this, openGLProfile(), args...);
+      shader = new T(this, shaderProfile(), args...);
       static_cast<Shader*>(shader)->init();
       addShader(name, shader);
     }

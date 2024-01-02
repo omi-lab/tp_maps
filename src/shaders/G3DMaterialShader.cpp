@@ -6,8 +6,6 @@
 
 #include "tp_math_utils/Material.h"
 
-#include "tp_utils/DebugUtils.h"
-
 #include "glm/gtc/type_ptr.hpp"
 
 namespace tp_maps
@@ -248,7 +246,6 @@ struct G3DMaterialShader::Private
 
           if(q->map()->maxSpotLightLevels() == 1)
           {
-            tpDebug() << "Spot light prepareBuffer()";
             LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform highp sampler2D light%Texture;\n");
             LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow += spotLightSampleShadow2D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec2(0,0), worldToLight%_proj));\n");
             LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totShadowSamples();\n");
@@ -282,13 +279,13 @@ struct G3DMaterialShader::Private
       }
     }
 
-    LIGHT_VERT_VARS = parseShaderString(LIGHT_VERT_VARS, q->openGLProfile(), shaderType);
-    LIGHT_VERT_CALC = parseShaderString(LIGHT_VERT_CALC, q->openGLProfile(), shaderType);
-    LIGHT_FRAG_VARS = parseShaderString(LIGHT_FRAG_VARS, q->openGLProfile(), shaderType);
-    LIGHT_FRAG_CALC = parseShaderString(LIGHT_FRAG_CALC, q->openGLProfile(), shaderType);
+    LIGHT_VERT_VARS = parseShaderString(LIGHT_VERT_VARS, q->shaderProfile(), shaderType);
+    LIGHT_VERT_CALC = parseShaderString(LIGHT_VERT_CALC, q->shaderProfile(), shaderType);
+    LIGHT_FRAG_VARS = parseShaderString(LIGHT_FRAG_VARS, q->shaderProfile(), shaderType);
+    LIGHT_FRAG_CALC = parseShaderString(LIGHT_FRAG_CALC, q->shaderProfile(), shaderType);
 
-    vertSrcScratch = vertShaderStr().data(q->openGLProfile(), shaderType);
-    fragSrcScratch = fragShaderStr().data(q->openGLProfile(), shaderType);
+    vertSrcScratch = vertShaderStr().data(q->shaderProfile(), shaderType);
+    fragSrcScratch = fragShaderStr().data(q->shaderProfile(), shaderType);
 
     tp_utils::replace(vertSrcScratch, "#pragma replace LIGHT_VERT_VARS", LIGHT_VERT_VARS);
     tp_utils::replace(vertSrcScratch, "#pragma replace LIGHT_VERT_CALC", LIGHT_VERT_CALC);
@@ -299,15 +296,15 @@ struct G3DMaterialShader::Private
   //################################################################################################
   void compileOtherShader(ShaderResource& vertShaderStr, ShaderResource& fragShaderStr, ShaderType shaderType)
   {
-    vertSrcScratch = vertShaderStr.data(q->openGLProfile(), shaderType);
-    fragSrcScratch = fragShaderStr.data(q->openGLProfile(), shaderType);
+    vertSrcScratch = vertShaderStr.data(q->shaderProfile(), shaderType);
+    fragSrcScratch = fragShaderStr.data(q->shaderProfile(), shaderType);
   };
 
 };
 
 //##################################################################################################
-G3DMaterialShader::G3DMaterialShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
-  Geometry3DShader(map, openGLProfile),
+G3DMaterialShader::G3DMaterialShader(Map* map, tp_maps::ShaderProfile shaderProfile):
+  Geometry3DShader(map, shaderProfile),
   d(new Private(this))
 {
   auto bindTexture = [&](const TPPixel& color)

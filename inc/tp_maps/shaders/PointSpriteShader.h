@@ -21,7 +21,7 @@ public:
   static inline const tp_utils::StringID& name(){return pointSpriteShaderSID();}
 
   //################################################################################################
-  PointSpriteShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+  PointSpriteShader(Map* map, tp_maps::ShaderProfile shaderProfile);
 
   //################################################################################################
   ~PointSpriteShader() override;

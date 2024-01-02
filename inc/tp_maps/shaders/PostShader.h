@@ -12,7 +12,7 @@ class TP_MAPS_EXPORT PostShader: public FullScreenShader
 {
 public:
   //################################################################################################
-  PostShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+    PostShader(Map* map, tp_maps::ShaderProfile shaderProfile);
 
   //################################################################################################
   ~PostShader();

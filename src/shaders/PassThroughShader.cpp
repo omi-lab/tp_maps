@@ -6,6 +6,6 @@ namespace tp_maps
 const char* PassThroughShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/PassThroughShader.frag"};
-  return s.data(openGLProfile(), shaderType);
+  return s.data(shaderProfile(), shaderType);
 }
 }

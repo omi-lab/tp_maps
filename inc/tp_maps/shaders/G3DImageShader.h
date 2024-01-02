@@ -16,7 +16,7 @@ public:
   static inline const tp_utils::StringID& name(){return imageShaderSID();}
 
   //################################################################################################
-  G3DImageShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+  G3DImageShader(Map* map, tp_maps::ShaderProfile shaderProfile);
 
   //################################################################################################
   ~G3DImageShader() override;

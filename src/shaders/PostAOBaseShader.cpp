@@ -18,9 +18,9 @@ struct PostAOBaseShader::Private
 
 //##################################################################################################
 PostAOBaseShader::PostAOBaseShader(Map* map,
-                                   tp_maps::OpenGLProfile openGLProfile,
+                                   tp_maps::ShaderProfile shaderProfile,
                                    const PostAOParameters& parameters):
-  PostShader(map, openGLProfile),
+  PostShader(map, shaderProfile),
   d(new Private(parameters))
 {
 
