@@ -17,7 +17,7 @@ public:
 
   //################################################################################################
   PostDoFMergeShader(Map* map,
-                     tp_maps::OpenGLProfile openGLProfile,
+                     tp_maps::ShaderProfile shaderProfile,
                      const PostDoFParameters& parameters);
 
   //################################################################################################

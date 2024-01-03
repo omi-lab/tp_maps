@@ -6,6 +6,6 @@ namespace tp_maps
 const char* PostBlurAndTintShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/PostBlurAndTintShader.frag"};
-  return s.data(openGLProfile(), shaderType);
+  return s.data(shaderProfile(), shaderType);
 }
 }

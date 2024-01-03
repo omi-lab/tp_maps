@@ -22,10 +22,10 @@
 #  include <GLES3/gl3.h>
 
 #elif defined(TP_OSX) //----------------------------------------------------------------------------
-#  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
+#  define GL_DO_NOT_WARN_IF_MULTI_GL_GLSL_HEADERS_INCLUDED
 #  include <gl3.h>
 #  include <OpenGL/glext.h>
-#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_410
+#  define TP_DEFAULT_PROFILE tp_maps::ShaderProfile::GLSL_410
 #  define TP_GL3
 #  define TP_ENABLE_MULTISAMPLE
 #  define TP_ENABLE_MULTISAMPLE_FBO
@@ -33,7 +33,7 @@
 #define TP_ENABLE_3D_TEXTURE
 
 #elif defined(TP_IOS) //----------------------------------------------------------------------------
-#  define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
+#  define GL_DO_NOT_WARN_IF_MULTI_GL_GLSL_HEADERS_INCLUDED
 #  include <OpenGLES/ES3/gl.h>
 #  define TP_GLES3
 
@@ -51,7 +51,7 @@
 #  endif
 #elif defined(TP_WIN32) //--------------------------------------------------------------------------
 #  include <GL/glew.h>
-#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_130
+#  define TP_DEFAULT_PROFILE tp_maps::ShaderProfile::GLSL_130
 #  define TP_GL3
 #  define TP_ENABLE_MULTISAMPLE
 #  define TP_ENABLE_MULTISAMPLE_FBO
@@ -70,7 +70,7 @@
 #    define __glext_h_ 1
 #  endif
 
-#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_130
+#  define TP_DEFAULT_PROFILE tp_maps::ShaderProfile::GLSL_130
 #  define TP_GL3
 #  define TP_ENABLE_MULTISAMPLE
 #  define TP_ENABLE_MULTISAMPLE_FBO
@@ -81,7 +81,7 @@
 #  define GL_GLEXT_LEGACY
 #  include <GLES3/gl3.h>
 #  include <GL/gl.h>
-#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_130
+#  define TP_DEFAULT_PROFILE tp_maps::ShaderProfile::GLSL_130
 #  define TP_GL3
 #  define TP_ENABLE_MULTISAMPLE
 
@@ -108,7 +108,7 @@ using TPGLenum = GLenum;
 #endif
 
 #ifdef TP_GLES2 //----------------------------------------------------------------------------------
-#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_100_ES
+#  define TP_DEFAULT_PROFILE tp_maps::ShaderProfile::GLSL_100_ES
 
 #  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT16
 #  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT16
@@ -120,7 +120,7 @@ using TPGLenum = GLenum;
 #endif
 
 #ifdef TP_GLES3 //-------------------------------------------------------------------------------------
-#  define TP_DEFAULT_PROFILE tp_maps::OpenGLProfile::VERSION_300_ES
+#  define TP_DEFAULT_PROFILE tp_maps::ShaderProfile::GLSL_300_ES
 
 #  define TP_VERTEX_ARRAYS_SUPPORTED
 //#  define tpGenVertexArrays glGenVertexArrays
@@ -410,6 +410,15 @@ enum class ShaderType
 std::string shaderTypeToString(ShaderType shaderType);
 
 //##################################################################################################
+enum class Subsystem
+{
+  OpenGL,
+  OpenGLFixed,
+  Vulkan,
+  Direct3D
+};
+
+//##################################################################################################
 /*
 GLSL Version 	OpenGL Version 	Date               Shader Preprocessor
 1.10.59[1]    2.0             30 April     2004  #version 110
@@ -425,26 +434,70 @@ GLSL Version 	OpenGL Version 	Date               Shader Preprocessor
 4.40.9[11]    4.4             16 June      2014  #version 440
 4.50.7[12]    4.5             09 May       2017  #version 450
 4.60.5[13]    4.6             14 June      2018  #version 460
+
+HLSL
+PS 1.0            - Unreleased 3dfx Rampage, DirectX 8
+PS 1.1            - GeForce 3, DirectX 8
+PS 1.2            - 3Dlabs Wildcat VP, DirectX 8.1
+PS 1.3            - GeForce 4 Ti, DirectX 8.1
+PS 1.4            - Radeon 8500-9250, Matrox Parhelia, DirectX 8.1
+Shader Model 2.0  - Radeon 9500-9800/X300-X600, DirectX 9
+Shader Model 2.0a - GeForce FX/PCX-optimized model, DirectX 9.0a
+Shader Model 2.0b - Radeon X700-X850 shader model, DirectX 9.0b
+Shader Model 3.0  - Radeon X1000 and GeForce 6, DirectX 9.0c
+Shader Model 4.0  - Radeon HD 2000 and GeForce 8, DirectX 10
+Shader Model 4.1  - Radeon HD 3000 and GeForce 200, DirectX 10.1
+Shader Model 5.0  - Radeon HD 5000 and GeForce 400, DirectX 11
+Shader Model 5.1  - GCN 1+, Fermi+, DirectX 12 (11_0+) with WDDM 2.0
+Shader Model 6.0  - GCN 1+, Kepler+, DirectX 12 (11_0+) with WDDM 2.1
+Shader Model 6.1  - GCN 1+, Kepler+, DirectX 12 (11_0+) with WDDM 2.3
+Shader Model 6.2  - GCN 1+, Kepler+, DirectX 12 (11_0+) with WDDM 2.4
+Shader Model 6.3  - GCN 1+, Kepler+, DirectX 12 (11_0+) with WDDM 2.5
+Shader Model 6.4  - GCN 1+, Kepler+, Skylake+, DirectX 12 (11_0+) with WDDM 2.6
+Shader Model 6.5  - GCN 1+, Kepler+, Skylake+, DirectX 12 (11_0+) with WDDM 2.7
+Shader Model 6.6  - GCN 4+, Maxwell+, DirectX 12 (11_0+) with WDDM 3.0
+Shader Model 6.7  - GCN 4+, Maxwell+, DirectX 12 (12_0+) with WDDM 3.1
 */
-enum class OpenGLProfile
+enum class ShaderProfile
 {
-  VERSION_110 = 20,  // Not really supported by most of the shaders in tp_maps
-  VERSION_120 = 21,
-  VERSION_130 = 30,
-  VERSION_140 = 31,
-  VERSION_150 = 32,
-  VERSION_330 = 33,
-  VERSION_400 = 40,
-  VERSION_410 = 41,
-  VERSION_420 = 42,
-  VERSION_430 = 43,
-  VERSION_440 = 44,
-  VERSION_450 = 45,
-  VERSION_460 = 46,
-  VERSION_100_ES,
-  VERSION_300_ES,
-  VERSION_310_ES,
-  VERSION_320_ES
+  GLSL_110 = 20,  // Not really supported by most of the shaders in tp_maps
+  GLSL_120 = 21,
+  GLSL_130 = 30,
+  GLSL_140 = 31,
+  GLSL_150 = 32,
+  GLSL_330 = 33,
+  GLSL_400 = 40,
+  GLSL_410 = 41,
+  GLSL_420 = 42,
+  GLSL_430 = 43,
+  GLSL_440 = 44,
+  GLSL_450 = 45,
+  GLSL_460 = 46,
+  GLSL_100_ES,
+  GLSL_300_ES,
+  GLSL_310_ES,
+  GLSL_320_ES,
+  HLSL_10,
+  HLSL_11,
+  HLSL_12,
+  HLSL_13,
+  HLSL_14,
+  HLSL_20,
+  HLSL_20a,
+  HLSL_20b,
+  HLSL_30,
+  HLSL_40,
+  HLSL_41,
+  HLSL_50,
+  HLSL_51,
+  HLSL_60,
+  HLSL_61,
+  HLSL_62,
+  HLSL_63,
+  HLSL_64,
+  HLSL_65,
+  HLSL_66,
+  HLSL_67
 };
 
 //##################################################################################################
@@ -494,18 +547,18 @@ std::string replaceLight(const std::string& lightIndex, const std::string& level
 
 //##################################################################################################
 //! Performs string replacement on the shader string to make it compatible with the given GLSL version.
-std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfile, ShaderType shaderType);
+std::string parseShaderString(const std::string& text, ShaderProfile shaderProfile, ShaderType shaderType);
 
 //##################################################################################################
 struct TP_MAPS_EXPORT ShaderString
 {
   TP_NONCOPYABLE(ShaderString);
   ShaderString(const char* text);
-  const char* data(OpenGLProfile openGLProfile, ShaderType shaderType);
+  const char* data(ShaderProfile shaderProfile, ShaderType shaderType);
 
 private:
   std::string m_str;
-  std::unordered_map<OpenGLProfile, std::unordered_map<ShaderType, std::string>> m_parsed;
+  std::unordered_map<ShaderProfile, std::unordered_map<ShaderType, std::string>> m_parsed;
 };
 
 //##################################################################################################
@@ -513,12 +566,12 @@ struct TP_MAPS_EXPORT ShaderResource
 {
   TP_NONCOPYABLE(ShaderResource);
   ShaderResource(const std::string& resourceName);
-  const char* data(OpenGLProfile openGLProfile, ShaderType shaderType);
-  const std::string& dataStr(OpenGLProfile openGLProfile, ShaderType shaderType);
+  const char* data(ShaderProfile shaderProfile, ShaderType shaderType);
+  const std::string& dataStr(ShaderProfile shaderProfile, ShaderType shaderType);
 
 private:
   const std::string m_resourceName;
-  std::unordered_map<OpenGLProfile, std::unordered_map<ShaderType, std::string>> m_parsed;
+  std::unordered_map<ShaderProfile, std::unordered_map<ShaderType, std::string>> m_parsed;
 };
 
 //################################################################################################

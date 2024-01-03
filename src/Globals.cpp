@@ -62,10 +62,10 @@ std::string shaderTypeToString(ShaderType shaderType)
 {
   switch(shaderType)
   {
-  case ShaderType::Render           : return "Render";
-  case ShaderType::RenderExtendedFBO: return "RenderExtendedFBO";
-  case ShaderType::Picking          : return "Picking";
-  case ShaderType::Light            : return "Light";
+    case ShaderType::Render           : return "Render";
+    case ShaderType::RenderExtendedFBO: return "RenderExtendedFBO";
+    case ShaderType::Picking          : return "Picking";
+    case ShaderType::Light            : return "Light";
   }
   return {};
 }
@@ -91,7 +91,7 @@ std::string replaceLight(const std::string& lightIndex, const std::string& level
 }
 
 //##################################################################################################
-std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfile, ShaderType shaderType)
+std::string parseShaderString(const std::string& text, ShaderProfile shaderProfile, ShaderType shaderType)
 {
   std::string result(text);
 
@@ -111,279 +111,305 @@ std::string parseShaderString(const std::string& text, OpenGLProfile openGLProfi
     tp_utils::replace(result, "#define " + key, "#define " + key + " " + value);
   };
 
-  switch(openGLProfile)
+  switch(shaderProfile)
   {
-  case OpenGLProfile::VERSION_110:
-  {
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.100.render.glsl", ShaderType::Render   );
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.100.hdr.glsl"   , ShaderType::RenderExtendedFBO);
-    replace("TP_VERT_SHADER_HEADER",     "#version 110\n");
-    replace("TP_FRAG_SHADER_HEADER",     "#version 110\n#define NO_TEXTURE3D\n");
-    define ("TP_GLSL_IN_V",              "attribute ");
-    define ("TP_GLSL_IN_F",              "varying ");
-    define ("TP_GLSL_OUT_V",             "varying ");
-    define ("TP_GLSL_GLFRAGCOLOR",       "gl_FragColor");
-    replace("TP_GLSL_GLFRAGCOLOR_DEF",   "");
-    define ("TP_GLSL_TEXTURE_2D",        "texture");
-    define ("TP_GLSL_TEXTURE_3D",        "texture");
-    break;
-  }
+    case ShaderProfile::GLSL_110:
+    {
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.100.render.glsl", ShaderType::Render   );
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.100.hdr.glsl"   , ShaderType::RenderExtendedFBO);
+      replace("TP_VERT_SHADER_HEADER",     "#version 110\n");
+      replace("TP_FRAG_SHADER_HEADER",     "#version 110\n#define NO_TEXTURE3D\n");
+      define ("TP_GLSL_IN_V",              "attribute ");
+      define ("TP_GLSL_IN_F",              "varying ");
+      define ("TP_GLSL_OUT_V",             "varying ");
+      define ("TP_GLSL_GLFRAGCOLOR",       "gl_FragColor");
+      replace("TP_GLSL_GLFRAGCOLOR_DEF",   "");
+      define ("TP_GLSL_TEXTURE_2D",        "texture");
+      define ("TP_GLSL_TEXTURE_3D",        "texture");
+      break;
+    }
 
-  case OpenGLProfile::VERSION_120:
-  {
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.100.render.glsl", ShaderType::Render   );
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.100.hdr.glsl"   , ShaderType::RenderExtendedFBO);
-    replace("TP_VERT_SHADER_HEADER",     "#version 120\n");
-    replace("TP_FRAG_SHADER_HEADER",     "#version 120\n#define NO_TEXTURE3D\n");
-    define ("TP_GLSL_IN_V",              "attribute ");
-    define ("TP_GLSL_IN_F",              "varying ");
-    define ("TP_GLSL_OUT_V",             "varying ");
-    define ("TP_GLSL_GLFRAGCOLOR",       "gl_FragColor");
-    replace("TP_GLSL_GLFRAGCOLOR_DEF",   "");
-    define ("TP_GLSL_TEXTURE_2D",        "texture2D");
-    define ("TP_GLSL_TEXTURE_3D",        "texture3D");
-    break;
-  }
+    case ShaderProfile::GLSL_120:
+    {
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.100.render.glsl", ShaderType::Render   );
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.100.hdr.glsl"   , ShaderType::RenderExtendedFBO);
+      replace("TP_VERT_SHADER_HEADER",     "#version 120\n");
+      replace("TP_FRAG_SHADER_HEADER",     "#version 120\n#define NO_TEXTURE3D\n");
+      define ("TP_GLSL_IN_V",              "attribute ");
+      define ("TP_GLSL_IN_F",              "varying ");
+      define ("TP_GLSL_OUT_V",             "varying ");
+      define ("TP_GLSL_GLFRAGCOLOR",       "gl_FragColor");
+      replace("TP_GLSL_GLFRAGCOLOR_DEF",   "");
+      define ("TP_GLSL_TEXTURE_2D",        "texture2D");
+      define ("TP_GLSL_TEXTURE_3D",        "texture3D");
+      break;
+    }
 
-  case OpenGLProfile::VERSION_130:
-  {
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.150.render.glsl", ShaderType::Render   );
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.150.hdr.glsl"   , ShaderType::RenderExtendedFBO);
-    replace("TP_VERT_SHADER_HEADER",     "#version 130\nprecision highp float;\n");
-    replace("TP_FRAG_SHADER_HEADER",     "#version 130\nprecision highp float;\n");
-    define ("TP_GLSL_IN_V",              "in ");
-    define ("TP_GLSL_IN_F",              "in ");
-    define ("TP_GLSL_OUT_V",             "out ");
-    define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
-    replace("TP_GLSL_GLFRAGCOLOR_DEF",   "out vec4 fragColor;");
-    define ("TP_GLSL_TEXTURE_2D",        "texture");
-    define ("TP_GLSL_TEXTURE_3D",        "texture");
-    break;
-  }
+    case ShaderProfile::GLSL_130:
+    {
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.150.render.glsl", ShaderType::Render   );
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.150.hdr.glsl"   , ShaderType::RenderExtendedFBO);
+      replace("TP_VERT_SHADER_HEADER",     "#version 130\nprecision highp float;\n");
+      replace("TP_FRAG_SHADER_HEADER",     "#version 130\nprecision highp float;\n");
+      define ("TP_GLSL_IN_V",              "in ");
+      define ("TP_GLSL_IN_F",              "in ");
+      define ("TP_GLSL_OUT_V",             "out ");
+      define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
+      replace("TP_GLSL_GLFRAGCOLOR_DEF",   "out vec4 fragColor;");
+      define ("TP_GLSL_TEXTURE_2D",        "texture");
+      define ("TP_GLSL_TEXTURE_3D",        "texture");
+      break;
+    }
 
-  case OpenGLProfile::VERSION_140:
-  {
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.150.render.glsl", ShaderType::Render   );
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.150.hdr.glsl"   , ShaderType::RenderExtendedFBO);
-    replace("TP_VERT_SHADER_HEADER",     "#version 140\nprecision highp float;\n");
-    replace("TP_FRAG_SHADER_HEADER",     "#version 140\nprecision highp float;\n");
-    define ("TP_GLSL_IN_V",              "in ");
-    define ("TP_GLSL_IN_F",              "in ");
-    define ("TP_GLSL_OUT_V",             "out ");
-    define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
-    replace("TP_GLSL_GLFRAGCOLOR_DEF",   "out vec4 fragColor;");
-    define ("TP_GLSL_TEXTURE_2D",        "texture");
-    define ("TP_GLSL_TEXTURE_3D",        "texture");
-    break;
-  }
+    case ShaderProfile::GLSL_140:
+    {
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.150.render.glsl", ShaderType::Render   );
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.150.hdr.glsl"   , ShaderType::RenderExtendedFBO);
+      replace("TP_VERT_SHADER_HEADER",     "#version 140\nprecision highp float;\n");
+      replace("TP_FRAG_SHADER_HEADER",     "#version 140\nprecision highp float;\n");
+      define ("TP_GLSL_IN_V",              "in ");
+      define ("TP_GLSL_IN_F",              "in ");
+      define ("TP_GLSL_OUT_V",             "out ");
+      define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
+      replace("TP_GLSL_GLFRAGCOLOR_DEF",   "out vec4 fragColor;");
+      define ("TP_GLSL_TEXTURE_2D",        "texture");
+      define ("TP_GLSL_TEXTURE_3D",        "texture");
+      break;
+    }
 
-  case OpenGLProfile::VERSION_150:
-  {
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.150.render.glsl", ShaderType::Render   );
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.150.hdr.glsl"   , ShaderType::RenderExtendedFBO);
-    replace("TP_VERT_SHADER_HEADER",     "#version 150\nprecision highp float;\n");
-    replace("TP_FRAG_SHADER_HEADER",     "#version 150\nprecision highp float;\n");
-    define ("TP_GLSL_IN_V",              "in ");
-    define ("TP_GLSL_IN_F",              "in ");
-    define ("TP_GLSL_OUT_V",             "out ");
-    define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
-    replace("TP_GLSL_GLFRAGCOLOR_DEF",   "out vec4 fragColor;");
-    define ("TP_GLSL_TEXTURE_2D",        "texture");
-    define ("TP_GLSL_TEXTURE_3D",        "texture");
-    break;
-  }
+    case ShaderProfile::GLSL_150:
+    {
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.150.render.glsl", ShaderType::Render   );
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.150.hdr.glsl"   , ShaderType::RenderExtendedFBO);
+      replace("TP_VERT_SHADER_HEADER",     "#version 150\nprecision highp float;\n");
+      replace("TP_FRAG_SHADER_HEADER",     "#version 150\nprecision highp float;\n");
+      define ("TP_GLSL_IN_V",              "in ");
+      define ("TP_GLSL_IN_F",              "in ");
+      define ("TP_GLSL_OUT_V",             "out ");
+      define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
+      replace("TP_GLSL_GLFRAGCOLOR_DEF",   "out vec4 fragColor;");
+      define ("TP_GLSL_TEXTURE_2D",        "texture");
+      define ("TP_GLSL_TEXTURE_3D",        "texture");
+      break;
+    }
 
-  case OpenGLProfile::VERSION_330:
-  {
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
-    replace("TP_VERT_SHADER_HEADER",     "#version 330\nprecision highp float;\n");
-    replace("TP_FRAG_SHADER_HEADER",     "#version 330\nprecision highp float;\n");
-    define ("TP_GLSL_IN_V",              "in ");
-    define ("TP_GLSL_IN_F",              "in ");
-    define ("TP_GLSL_OUT_V",             "out ");
-    define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
-    replace("TP_GLSL_GLFRAGCOLOR_DEF",   "out vec4 fragColor;");
-    define ("TP_GLSL_TEXTURE_2D",        "texture");
-    define ("TP_GLSL_TEXTURE_3D",        "texture");
-    break;
-  }
+    case ShaderProfile::GLSL_330:
+    {
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
+      replace("TP_VERT_SHADER_HEADER",     "#version 330\nprecision highp float;\n");
+      replace("TP_FRAG_SHADER_HEADER",     "#version 330\nprecision highp float;\n");
+      define ("TP_GLSL_IN_V",              "in ");
+      define ("TP_GLSL_IN_F",              "in ");
+      define ("TP_GLSL_OUT_V",             "out ");
+      define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
+      replace("TP_GLSL_GLFRAGCOLOR_DEF",   "out vec4 fragColor;");
+      define ("TP_GLSL_TEXTURE_2D",        "texture");
+      define ("TP_GLSL_TEXTURE_3D",        "texture");
+      break;
+    }
 
-  case OpenGLProfile::VERSION_400:
-  {
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
-    replace("TP_VERT_SHADER_HEADER",     "#version 400\nprecision highp float;\n");
-    replace("TP_FRAG_SHADER_HEADER",     "#version 400\nprecision highp float;\n");
-    define ("TP_GLSL_IN_V",              "in ");
-    define ("TP_GLSL_IN_F",              "in ");
-    define ("TP_GLSL_OUT_V",             "out ");
-    define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
-    replace("TP_GLSL_GLFRAGCOLOR_DEF",   "out vec4 fragColor;");
-    define ("TP_GLSL_TEXTURE_2D",        "texture");
-    define ("TP_GLSL_TEXTURE_3D",        "texture");
-    break;
-  }
+    case ShaderProfile::GLSL_400:
+    {
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
+      replace("TP_VERT_SHADER_HEADER",     "#version 400\nprecision highp float;\n");
+      replace("TP_FRAG_SHADER_HEADER",     "#version 400\nprecision highp float;\n");
+      define ("TP_GLSL_IN_V",              "in ");
+      define ("TP_GLSL_IN_F",              "in ");
+      define ("TP_GLSL_OUT_V",             "out ");
+      define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
+      replace("TP_GLSL_GLFRAGCOLOR_DEF",   "out vec4 fragColor;");
+      define ("TP_GLSL_TEXTURE_2D",        "texture");
+      define ("TP_GLSL_TEXTURE_3D",        "texture");
+      break;
+    }
 
-  case OpenGLProfile::VERSION_410:
-  {
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
-    replace("TP_VERT_SHADER_HEADER",     "#version 410\nprecision highp float;\n");
-    replace("TP_FRAG_SHADER_HEADER",     "#version 410\nprecision highp float;\n");
-    define ("TP_GLSL_IN_V",              "in ");
-    define ("TP_GLSL_IN_F",              "in ");
-    define ("TP_GLSL_OUT_V",             "out ");
-    define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
-    replace("TP_GLSL_GLFRAGCOLOR_DEF",   "out vec4 fragColor;");
-    define ("TP_GLSL_TEXTURE_2D",        "texture");
-    define ("TP_GLSL_TEXTURE_3D",        "texture");
-    break;
-  }
+    case ShaderProfile::GLSL_410:
+    {
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
+      replace("TP_VERT_SHADER_HEADER",     "#version 410\nprecision highp float;\n");
+      replace("TP_FRAG_SHADER_HEADER",     "#version 410\nprecision highp float;\n");
+      define ("TP_GLSL_IN_V",              "in ");
+      define ("TP_GLSL_IN_F",              "in ");
+      define ("TP_GLSL_OUT_V",             "out ");
+      define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
+      replace("TP_GLSL_GLFRAGCOLOR_DEF",   "out vec4 fragColor;");
+      define ("TP_GLSL_TEXTURE_2D",        "texture");
+      define ("TP_GLSL_TEXTURE_3D",        "texture");
+      break;
+    }
 
-  case OpenGLProfile::VERSION_420:
-  {
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
-    replace("TP_VERT_SHADER_HEADER",     "#version 420\nprecision highp float;\n");
-    replace("TP_FRAG_SHADER_HEADER",     "#version 420\nprecision highp float;\n");
-    define ("TP_GLSL_IN_V",              "in ");
-    define ("TP_GLSL_IN_F",              "in ");
-    define ("TP_GLSL_OUT_V",             "out ");
-    define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
-    replace("TP_GLSL_GLFRAGCOLOR_DEF",   "out vec4 fragColor;");
-    define ("TP_GLSL_TEXTURE_2D",        "texture");
-    define ("TP_GLSL_TEXTURE_3D",        "texture");
-    break;
-  }
+    case ShaderProfile::GLSL_420:
+    {
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
+      replace("TP_VERT_SHADER_HEADER",     "#version 420\nprecision highp float;\n");
+      replace("TP_FRAG_SHADER_HEADER",     "#version 420\nprecision highp float;\n");
+      define ("TP_GLSL_IN_V",              "in ");
+      define ("TP_GLSL_IN_F",              "in ");
+      define ("TP_GLSL_OUT_V",             "out ");
+      define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
+      replace("TP_GLSL_GLFRAGCOLOR_DEF",   "out vec4 fragColor;");
+      define ("TP_GLSL_TEXTURE_2D",        "texture");
+      define ("TP_GLSL_TEXTURE_3D",        "texture");
+      break;
+    }
 
-  case OpenGLProfile::VERSION_430:
-  {
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
-    replace("TP_VERT_SHADER_HEADER",     "#version 430\nprecision highp float;\n");
-    replace("TP_FRAG_SHADER_HEADER",     "#version 430\nprecision highp float;\n");
-    define ("TP_GLSL_IN_V",              "in ");
-    define ("TP_GLSL_IN_F",              "in ");
-    define ("TP_GLSL_OUT_V",             "out ");
-    define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
-    replace("TP_GLSL_GLFRAGCOLOR_DEF",   "out vec4 fragColor;");
-    define ("TP_GLSL_TEXTURE_2D",        "texture");
-    define ("TP_GLSL_TEXTURE_3D",        "texture");
-    break;
-  }
+    case ShaderProfile::GLSL_430:
+    {
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
+      replace("TP_VERT_SHADER_HEADER",     "#version 430\nprecision highp float;\n");
+      replace("TP_FRAG_SHADER_HEADER",     "#version 430\nprecision highp float;\n");
+      define ("TP_GLSL_IN_V",              "in ");
+      define ("TP_GLSL_IN_F",              "in ");
+      define ("TP_GLSL_OUT_V",             "out ");
+      define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
+      replace("TP_GLSL_GLFRAGCOLOR_DEF",   "out vec4 fragColor;");
+      define ("TP_GLSL_TEXTURE_2D",        "texture");
+      define ("TP_GLSL_TEXTURE_3D",        "texture");
+      break;
+    }
 
-  case OpenGLProfile::VERSION_440:
-  {
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
-    replace("TP_VERT_SHADER_HEADER",     "#version 440\nprecision highp float;\n");
-    replace("TP_FRAG_SHADER_HEADER",     "#version 440\nprecision highp float;\n");
-    define ("TP_GLSL_IN_V",              "in ");
-    define ("TP_GLSL_IN_F",              "in ");
-    define ("TP_GLSL_OUT_V",             "out ");
-    define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
-    replace("TP_GLSL_GLFRAGCOLOR_DEF",   "out vec4 fragColor;");
-    define ("TP_GLSL_TEXTURE_2D",        "texture");
-    define ("TP_GLSL_TEXTURE_3D",        "texture");
-    break;
-  }
+    case ShaderProfile::GLSL_440:
+    {
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
+      replace("TP_VERT_SHADER_HEADER",     "#version 440\nprecision highp float;\n");
+      replace("TP_FRAG_SHADER_HEADER",     "#version 440\nprecision highp float;\n");
+      define ("TP_GLSL_IN_V",              "in ");
+      define ("TP_GLSL_IN_F",              "in ");
+      define ("TP_GLSL_OUT_V",             "out ");
+      define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
+      replace("TP_GLSL_GLFRAGCOLOR_DEF",   "out vec4 fragColor;");
+      define ("TP_GLSL_TEXTURE_2D",        "texture");
+      define ("TP_GLSL_TEXTURE_3D",        "texture");
+      break;
+    }
 
-  case OpenGLProfile::VERSION_450:
-  {
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
-    replace("TP_VERT_SHADER_HEADER",     "#version 450\nprecision highp float;\n");
-    replace("TP_FRAG_SHADER_HEADER",     "#version 450\nprecision highp float;\n");
-    define ("TP_GLSL_IN_V",              "in ");
-    define ("TP_GLSL_IN_F",              "in ");
-    define ("TP_GLSL_OUT_V",             "out ");
-    define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
-    replace("TP_GLSL_GLFRAGCOLOR_DEF",   "out vec4 fragColor;");
-    define ("TP_GLSL_TEXTURE_2D",        "texture");
-    define ("TP_GLSL_TEXTURE_3D",        "texture");
-    break;
-  }
+    case ShaderProfile::GLSL_450:
+    {
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
+      replace("TP_VERT_SHADER_HEADER",     "#version 450\nprecision highp float;\n");
+      replace("TP_FRAG_SHADER_HEADER",     "#version 450\nprecision highp float;\n");
+      define ("TP_GLSL_IN_V",              "in ");
+      define ("TP_GLSL_IN_F",              "in ");
+      define ("TP_GLSL_OUT_V",             "out ");
+      define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
+      replace("TP_GLSL_GLFRAGCOLOR_DEF",   "out vec4 fragColor;");
+      define ("TP_GLSL_TEXTURE_2D",        "texture");
+      define ("TP_GLSL_TEXTURE_3D",        "texture");
+      break;
+    }
 
-  case OpenGLProfile::VERSION_460:
-  {
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
-    replace("TP_VERT_SHADER_HEADER",     "#version 460\nprecision highp float;\n");
-    replace("TP_FRAG_SHADER_HEADER",     "#version 460\nprecision highp float;\n");
-    define ("TP_GLSL_IN_V",              "in ");
-    define ("TP_GLSL_IN_F",              "in ");
-    define ("TP_GLSL_OUT_V",             "out ");
-    define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
-    replace("TP_GLSL_GLFRAGCOLOR_DEF",   "layout(location = 0) out vec4 fragColor;");
-    define ("TP_GLSL_TEXTURE_2D",        "texture");
-    define ("TP_GLSL_TEXTURE_3D",        "texture");
-    break;
-  }
+    case ShaderProfile::GLSL_460:
+    {
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
+      replace("TP_VERT_SHADER_HEADER",     "#version 460\nprecision highp float;\n");
+      replace("TP_FRAG_SHADER_HEADER",     "#version 460\nprecision highp float;\n");
+      define ("TP_GLSL_IN_V",              "in ");
+      define ("TP_GLSL_IN_F",              "in ");
+      define ("TP_GLSL_OUT_V",             "out ");
+      define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
+      replace("TP_GLSL_GLFRAGCOLOR_DEF",   "layout(location = 0) out vec4 fragColor;");
+      define ("TP_GLSL_TEXTURE_2D",        "texture");
+      define ("TP_GLSL_TEXTURE_3D",        "texture");
+      break;
+    }
 
-  case OpenGLProfile::VERSION_100_ES:
-  {
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.100.render.glsl", ShaderType::Render   );
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.100.hdr.glsl"   , ShaderType::RenderExtendedFBO);
-    replace("TP_VERT_SHADER_HEADER",     "#version 100\nprecision highp float;\n");
-    replace("TP_FRAG_SHADER_HEADER",     "#version 100\nprecision highp float;\n#define NO_TEXTURE3D\n");
-    define ("TP_GLSL_IN_V",              "attribute ");
-    define ("TP_GLSL_IN_F",              "varying ");
-    define ("TP_GLSL_OUT_V",             "varying ");
-    define ("TP_GLSL_GLFRAGCOLOR",       "gl_FragColor");
-    replace("TP_GLSL_GLFRAGCOLOR_DEF",   "");
-    define ("TP_GLSL_TEXTURE_2D",        "texture2D");
-    define ("TP_GLSL_TEXTURE_3D",        "texture3D");
-    break;
-  }
+    case ShaderProfile::GLSL_100_ES:
+    {
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.100.render.glsl", ShaderType::Render   );
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.100.hdr.glsl"   , ShaderType::RenderExtendedFBO);
+      replace("TP_VERT_SHADER_HEADER",     "#version 100\nprecision highp float;\n");
+      replace("TP_FRAG_SHADER_HEADER",     "#version 100\nprecision highp float;\n#define NO_TEXTURE3D\n");
+      define ("TP_GLSL_IN_V",              "attribute ");
+      define ("TP_GLSL_IN_F",              "varying ");
+      define ("TP_GLSL_OUT_V",             "varying ");
+      define ("TP_GLSL_GLFRAGCOLOR",       "gl_FragColor");
+      replace("TP_GLSL_GLFRAGCOLOR_DEF",   "");
+      define ("TP_GLSL_TEXTURE_2D",        "texture2D");
+      define ("TP_GLSL_TEXTURE_3D",        "texture3D");
+      break;
+    }
 
-  case OpenGLProfile::VERSION_300_ES:
-  {
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
-    replace("TP_VERT_SHADER_HEADER",     "#version 300 es\nprecision highp float;\nprecision highp sampler3D;");
-    replace("TP_FRAG_SHADER_HEADER",     "#version 300 es\nprecision highp float;\nprecision highp sampler3D;");
-    define ("TP_GLSL_IN_V",              "in ");
-    define ("TP_GLSL_IN_F",              "in ");
-    define ("TP_GLSL_OUT_V",             "out ");
-    define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
-    replace("TP_GLSL_GLFRAGCOLOR_DEF",   "layout(location = 0) out vec4 fragColor;");
-    define ("TP_GLSL_TEXTURE_2D",        "texture");
-    define ("TP_GLSL_TEXTURE_3D",        "texture");
-    break;
-  }
+    case ShaderProfile::GLSL_300_ES:
+    {
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
+      replace("TP_VERT_SHADER_HEADER",     "#version 300 es\nprecision highp float;\nprecision highp sampler3D;");
+      replace("TP_FRAG_SHADER_HEADER",     "#version 300 es\nprecision highp float;\nprecision highp sampler3D;");
+      define ("TP_GLSL_IN_V",              "in ");
+      define ("TP_GLSL_IN_F",              "in ");
+      define ("TP_GLSL_OUT_V",             "out ");
+      define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
+      replace("TP_GLSL_GLFRAGCOLOR_DEF",   "layout(location = 0) out vec4 fragColor;");
+      define ("TP_GLSL_TEXTURE_2D",        "texture");
+      define ("TP_GLSL_TEXTURE_3D",        "texture");
+      break;
+    }
 
-  case OpenGLProfile::VERSION_310_ES:
-  {
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
-    replace("TP_VERT_SHADER_HEADER",     "#version 310 es\nprecision highp float;\nprecision highp sampler3D;");
-    replace("TP_FRAG_SHADER_HEADER",     "#version 310 es\nprecision highp float;\nprecision highp sampler3D;");
-    define ("TP_GLSL_IN_V",              "in ");
-    define ("TP_GLSL_IN_F",              "in ");
-    define ("TP_GLSL_OUT_V",             "out ");
-    define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
-    replace("TP_GLSL_GLFRAGCOLOR_DEF",   "layout(location = 0) out vec4 fragColor;");
-    define ("TP_GLSL_TEXTURE_2D",        "texture");
-    define ("TP_GLSL_TEXTURE_3D",        "texture");
-    break;
-  }
+    case ShaderProfile::GLSL_310_ES:
+    {
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
+      replace("TP_VERT_SHADER_HEADER",     "#version 310 es\nprecision highp float;\nprecision highp sampler3D;");
+      replace("TP_FRAG_SHADER_HEADER",     "#version 310 es\nprecision highp float;\nprecision highp sampler3D;");
+      define ("TP_GLSL_IN_V",              "in ");
+      define ("TP_GLSL_IN_F",              "in ");
+      define ("TP_GLSL_OUT_V",             "out ");
+      define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
+      replace("TP_GLSL_GLFRAGCOLOR_DEF",   "layout(location = 0) out vec4 fragColor;");
+      define ("TP_GLSL_TEXTURE_2D",        "texture");
+      define ("TP_GLSL_TEXTURE_3D",        "texture");
+      break;
+    }
 
-  case OpenGLProfile::VERSION_320_ES:
-  {
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
-    replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
-    replace("TP_VERT_SHADER_HEADER",     "#version 320 es\nprecision highp float;\nprecision highp sampler3D;");
-    replace("TP_FRAG_SHADER_HEADER",     "#version 320 es\nprecision highp float;\nprecision highp sampler3D;");
-    define ("TP_GLSL_IN_V",              "in ");
-    define ("TP_GLSL_IN_F",              "in ");
-    define ("TP_GLSL_OUT_V",             "out ");
-    define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
-    replace("TP_GLSL_GLFRAGCOLOR_DEF",   "layout(location = 0) out vec4 fragColor;");
-    define ("TP_GLSL_TEXTURE_2D",        "texture");
-    define ("TP_GLSL_TEXTURE_3D",        "texture");
-    break;
-  }
+    case ShaderProfile::GLSL_320_ES:
+    {
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.render.glsl", ShaderType::Render   );
+      replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.hdr.glsl"   , ShaderType::RenderExtendedFBO);
+      replace("TP_VERT_SHADER_HEADER",     "#version 320 es\nprecision highp float;\nprecision highp sampler3D;");
+      replace("TP_FRAG_SHADER_HEADER",     "#version 320 es\nprecision highp float;\nprecision highp sampler3D;");
+      define ("TP_GLSL_IN_V",              "in ");
+      define ("TP_GLSL_IN_F",              "in ");
+      define ("TP_GLSL_OUT_V",             "out ");
+      define ("TP_GLSL_GLFRAGCOLOR",       "fragColor");
+      replace("TP_GLSL_GLFRAGCOLOR_DEF",   "layout(location = 0) out vec4 fragColor;");
+      define ("TP_GLSL_TEXTURE_2D",        "texture");
+      define ("TP_GLSL_TEXTURE_3D",        "texture");
+      break;
+    }
+
+    case ShaderProfile::HLSL_10:
+    case ShaderProfile::HLSL_11:
+    case ShaderProfile::HLSL_12:
+    case ShaderProfile::HLSL_13:
+    case ShaderProfile::HLSL_14:
+    case ShaderProfile::HLSL_20:
+    case ShaderProfile::HLSL_20a:
+    case ShaderProfile::HLSL_20b:
+    case ShaderProfile::HLSL_30:
+    case ShaderProfile::HLSL_40:
+    case ShaderProfile::HLSL_41:
+    case ShaderProfile::HLSL_50:
+    case ShaderProfile::HLSL_51:
+    case ShaderProfile::HLSL_60:
+    case ShaderProfile::HLSL_61:
+    case ShaderProfile::HLSL_62:
+    case ShaderProfile::HLSL_63:
+    case ShaderProfile::HLSL_64:
+    case ShaderProfile::HLSL_65:
+    case ShaderProfile::HLSL_66:
+    case ShaderProfile::HLSL_67:
+    {
+      tpWarning() << "HLSL not implemented.";
+      break;
+    }
   }
 
   return result;
@@ -402,12 +428,12 @@ ShaderString::ShaderString(const char* text)
 }
 
 //##################################################################################################
-const char* ShaderString::data(OpenGLProfile openGLProfile, ShaderType shaderType)
+const char* ShaderString::data(ShaderProfile shaderProfile, ShaderType shaderType)
 {
-  std::string& parsed = m_parsed[openGLProfile][shaderType];
+  std::string& parsed = m_parsed[shaderProfile][shaderType];
 
   if(parsed.empty())
-    parsed = parseShaderString(m_str, openGLProfile, shaderType);
+    parsed = parseShaderString(m_str, shaderProfile, shaderType);
 
   return parsed.c_str();
 }
@@ -420,20 +446,20 @@ ShaderResource::ShaderResource(const std::string& resourceName):
 }
 
 //##################################################################################################
-const char* ShaderResource::data(OpenGLProfile openGLProfile, ShaderType shaderType)
+const char* ShaderResource::data(ShaderProfile shaderProfile, ShaderType shaderType)
 {
-  return dataStr(openGLProfile, shaderType).c_str();
+  return dataStr(shaderProfile, shaderType).c_str();
 }
 
 //##################################################################################################
-const std::string& ShaderResource::dataStr(OpenGLProfile openGLProfile, ShaderType shaderType)
+const std::string& ShaderResource::dataStr(ShaderProfile shaderProfile, ShaderType shaderType)
 {
-  std::string& parsed = m_parsed[openGLProfile][shaderType];
+  std::string& parsed = m_parsed[shaderProfile][shaderType];
 
   if(parsed.empty())
   {
     if(auto data = tp_utils::resource(m_resourceName).data; data)
-      parsed = parseShaderString(data, openGLProfile, shaderType);
+      parsed = parseShaderString(data, shaderProfile, shaderType);
     else
       tpWarning() << "ShaderResource is null, resourceName=" << m_resourceName;
   }

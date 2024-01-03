@@ -16,7 +16,7 @@ public:
   static inline const tp_utils::StringID& name(){return xyzShaderSID();}
 
   //################################################################################################
-  G3DXYZShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+  G3DXYZShader(Map* map, tp_maps::ShaderProfile shaderProfile);
 
   //################################################################################################
   ~G3DXYZShader() override;

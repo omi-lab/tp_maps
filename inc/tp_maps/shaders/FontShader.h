@@ -17,7 +17,7 @@ public:
   static inline const tp_utils::StringID& name(){return fontShaderSID();}
 
   //################################################################################################
-  FontShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+  FontShader(Map* map, tp_maps::ShaderProfile shaderProfile);
 
   //################################################################################################
   ~FontShader() override;

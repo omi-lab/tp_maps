@@ -2,13 +2,7 @@
 #include "tp_maps/MouseEvent.h"
 #include "tp_maps/Map.h"
 
-#include "tp_math_utils/JSONUtils.h"
-#include "tp_math_utils/Plane.h"
-
-#include "tp_utils/JSONUtils.h"
-
-#include "glm/gtx/transform.hpp"
-#include "glm/gtx/norm.hpp"
+#include "glm/gtx/norm.hpp" // IWYU pragma: keep
 
 namespace tp_maps
 {

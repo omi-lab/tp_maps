@@ -7,12 +7,8 @@
 
 #include "tp_math_utils/Plane.h"
 
-#include "tp_utils/DebugUtils.h"
-
 #include "glm/gtx/norm.hpp" // IWYU pragma: keep
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtx/rotate_normalized_axis.hpp"
-#include "glm/gtx/rotate_vector.hpp"
+
 namespace tp_maps
 {
 
