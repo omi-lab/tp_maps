@@ -416,9 +416,8 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
     vec2 randomOffset = vec2(rand(uv_light.xy)-0.5f, rand(uv_light.yz)-0.5f);
 
     // calculate blocker depth as average shadow-weighted depth around current pixel
-    float totWeight = 0.0f; // make sure the weight is never zero
+    float totWeight = 0.0f;
     float totWeightedShadowDepth = 0.f;
-    float divN = 1.0f/(nSamplesXY*nSamplesXY);
     for(int x = -shadowSamples; x <= shadowSamples; ++x)
       for(int y = -shadowSamples; y <= shadowSamples; ++y)
       {
@@ -426,7 +425,7 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
         vec2 coord = uv_light.xy + coffset*txlSize;
         if(coord.x>=0.0 && coord.x<=1.0 && coord.y>=0.0 && coord.y<=1.0)
         {
-          float depth = lineariseDepth(/*TP_GLSL_TEXTURE_2D*/(lightTexture, coord).r, light.near, light.far);
+          float depth = lineariseDepth(TP_GLSL_TEXTURE_2D(lightTexture, coord).r, light.near, light.far);
           float extraBias = 2.f*bias*(abs(coffset.x) + abs(coffset.y)) - dot(coffset, depthGradXY)/*depthShift*/;
           float weight = 1.0f-smoothstep(biasedDepth-extraBias, linearDepth-extraBias, depth);
 
@@ -454,7 +453,7 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
           {
             float extraBias = 2.0f*bias*(abs(coffset.x) + abs(coffset.y)) - dot(coffset, depthGradXY)/*depthShift*/;
             //lightLevel -= 1.0-sampleShadowMapLinear2D(lightTexture, coord, biasedDepth+depthShift-extraBias, linearDepth+depthShift-extraBias, light.near, light.far);
-            lightLevel -= 1.0-smoothstep(biasedDepth-extraBias, linearDepth-extraBias, lineariseDepth(/*TP_GLSL_TEXTURE_2D*/(lightTexture, coord).r, light.near, light.far));
+            lightLevel -= 1.0-smoothstep(biasedDepth-extraBias, linearDepth-extraBias, lineariseDepth(TP_GLSL_TEXTURE_2D(lightTexture, coord).r, light.near, light.far));
           }
         }
     }
