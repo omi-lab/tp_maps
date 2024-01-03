@@ -843,10 +843,7 @@ size_t Map::shadowSamples() const
 void Map::setShadowSamplesFastRender(size_t shadowSamples)
 {
   if(d->shadowSamplesFastRender != shadowSamples)
-  {
     d->shadowSamplesFastRender = shadowSamples;
-    //d->deleteShaders();
-  }
 }
 
 //##################################################################################################
@@ -1905,32 +1902,9 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
   if(d->fastRender)
   {
     glFinish();
-#if 0
-    // adjust the shadow samples up or down depending on the render time
-    auto totalRenderTime = d->renderTimer.elapsed();
-    int64_t maxTotalRenderTime = 0;
-    //tpDebug() << "Total render time: " << totalRenderTime << " max: " << maxTotalRenderTime;
-    if(5*totalRenderTime < 4*maxTotalRenderTime)
-    {
-      // limit the number of shadow samples used for fast render
-      if(d->shadowSamplesFastRender < std::min<size_t>(1, d->shadowSamples))
-      {
-        setShadowSamplesFastRender(d->shadowSamplesFastRender+1);
-        //tpDebug() << "Incrementing the fast render shadow samples to " << d->shadowSamplesFastRender;
-      }
-    }
-    else if(4*totalRenderTime > 5*maxTotalRenderTime)
-    {
-      if(d->shadowSamplesFastRender > 0)
-      {
-        setShadowSamplesFastRender(d->shadowSamplesFastRender-1);
-        //tpDebug() << "Decrementing the fast render shadow samples to " << d->shadowSamplesFastRender;
-      }
-    }
-#else
-    // just use a "small" fast render shadow kernel
-    setShadowSamplesFastRender(0);
-#endif
+
+    // use a "small" fast render shadow kernel
+    setShadowSamplesFastRender(1);
   }
 }
 
