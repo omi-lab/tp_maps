@@ -14,8 +14,8 @@ struct BackgroundImageShader::Private
 };
 
 //##################################################################################################
-BackgroundImageShader::BackgroundImageShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
-  FullScreenShader(map, openGLProfile),
+BackgroundImageShader::BackgroundImageShader(Map* map, tp_maps::ShaderProfile shaderProfile):
+  FullScreenShader(map, shaderProfile),
   d(new Private())
 {
 
@@ -45,14 +45,14 @@ void BackgroundImageShader::setMatrix(const glm::mat4& matrix)
 const char* BackgroundImageShader::vertexShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/BackgroundImageShader.vert"};
-  return s.data(openGLProfile(), shaderType);
+  return s.data(shaderProfile(), shaderType);
 }
 
 //##################################################################################################
 const char* BackgroundImageShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/BackgroundImageShader.frag"};
-  return s.data(openGLProfile(), shaderType);
+  return s.data(shaderProfile(), shaderType);
 }
 
 //##################################################################################################

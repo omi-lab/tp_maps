@@ -13,9 +13,9 @@ struct PostDoFMergeShader::Private
 
 //##################################################################################################
 PostDoFMergeShader::PostDoFMergeShader(Map* map,
-                                       tp_maps::OpenGLProfile openGLProfile,
+                                       tp_maps::ShaderProfile shaderProfile,
                                        const PostDoFParameters& parameters):
-  PostDoFBaseShader(map, openGLProfile, parameters),
+  PostDoFBaseShader(map, shaderProfile, parameters),
   d(new Private())
 {
 
@@ -64,7 +64,7 @@ void PostDoFMergeShader::setDownsampledFocusTexture(const GLuint downsampledFocu
 const char* PostDoFMergeShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/MergeDofShader.frag"};
-  return s.data(openGLProfile(), shaderType);
+  return s.data(shaderProfile(), shaderType);
 }
 
 //##################################################################################################

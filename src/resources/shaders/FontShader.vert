@@ -3,7 +3,7 @@
 #define TP_GLSL_OUT_V
 
 TP_GLSL_IN_V vec3 inVertex;
-TP_GLSL_IN_V vec4 inTBNq;
+//TP_GLSL_IN_V vec4 inTBNq;
 TP_GLSL_IN_V vec2 inTexture;
 
 TP_GLSL_OUT_V vec2 coord_tex;

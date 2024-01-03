@@ -20,7 +20,7 @@ public:
   static inline const tp_utils::StringID& name(){return lineShaderSID();}
 
   //################################################################################################
-  LineShader(Map* map, tp_maps::OpenGLProfile openGLProfile);
+  LineShader(Map* map, tp_maps::ShaderProfile shaderProfile);
 
   //################################################################################################
   ~LineShader() override;

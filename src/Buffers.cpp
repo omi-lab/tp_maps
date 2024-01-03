@@ -37,12 +37,12 @@ struct Buffers::Private
 #ifdef TP_GLES2
     return (alpha==Alpha::Yes)?GL_RGBA32F_EXT:GL_RGB16F_EXT;
 #else
-    switch(map->openGLProfile())
+    switch(map->shaderProfile())
     {
-    case OpenGLProfile::VERSION_100_ES: [[fallthrough]];
-    case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
-    case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
-    case OpenGLProfile::VERSION_320_ES:
+        case ShaderProfile::GLSL_100_ES: [[fallthrough]];
+        case ShaderProfile::GLSL_300_ES: [[fallthrough]];
+        case ShaderProfile::GLSL_310_ES: [[fallthrough]];
+        case ShaderProfile::GLSL_320_ES:
       return (alpha==Alpha::Yes)?GL_RGBA32F:GL_RGB16F;
     default:
       return (alpha==Alpha::Yes)?GL_RGBA32F:GL_RGB32F;
@@ -56,12 +56,12 @@ struct Buffers::Private
 #ifdef TP_GLES2
     return GL_R32F_EXT;
 #else
-    switch(map->openGLProfile())
+    switch(map->shaderProfile())
     {
-    case OpenGLProfile::VERSION_100_ES: [[fallthrough]];
-    case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
-    case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
-    case OpenGLProfile::VERSION_320_ES:
+        case ShaderProfile::GLSL_100_ES: [[fallthrough]];
+        case ShaderProfile::GLSL_300_ES: [[fallthrough]];
+        case ShaderProfile::GLSL_310_ES: [[fallthrough]];
+        case ShaderProfile::GLSL_320_ES:
       return GL_R32F;
 
     default:
@@ -90,12 +90,12 @@ struct Buffers::Private
       // On ES force alpha as GL_RGB32F is not an option but GL_RGBA32F is.
       if(alpha == Alpha::No)
       {
-        switch (map->openGLProfile())
+        switch (map->shaderProfile())
         {
-        case OpenGLProfile::VERSION_100_ES: [[fallthrough]];
-        case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
-        case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
-        case OpenGLProfile::VERSION_320_ES:
+            case ShaderProfile::GLSL_100_ES: [[fallthrough]];
+            case ShaderProfile::GLSL_300_ES: [[fallthrough]];
+            case ShaderProfile::GLSL_310_ES: [[fallthrough]];
+            case ShaderProfile::GLSL_320_ES:
           alpha = Alpha::Yes;
           break;
 
@@ -120,12 +120,12 @@ struct Buffers::Private
   //################################################################################################
   void createMultisampleTexture(GLuint& multisampleTextureID, size_t width, size_t height, HDR hdr, Alpha alpha, GLenum attachment)
   {
-    switch(map->openGLProfile())
+    switch(map->shaderProfile())
     {
-    case OpenGLProfile::VERSION_100_ES: [[fallthrough]];
-    case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
-    case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
-    case OpenGLProfile::VERSION_320_ES:
+        case ShaderProfile::GLSL_100_ES: [[fallthrough]];
+        case ShaderProfile::GLSL_300_ES: [[fallthrough]];
+        case ShaderProfile::GLSL_310_ES: [[fallthrough]];
+        case ShaderProfile::GLSL_320_ES:
       break;
 
     default:
@@ -161,15 +161,15 @@ struct Buffers::Private
 
     glBindTexture(GL_TEXTURE_2D, depthID);
 
-    switch(map->openGLProfile())
+    switch(map->shaderProfile())
     {
-    case OpenGLProfile::VERSION_100_ES:
+        case ShaderProfile::GLSL_100_ES:
       glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, TPGLsizei(width), TPGLsizei(height), 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
       break;
 
-    case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
-    case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
-    case OpenGLProfile::VERSION_320_ES:
+        case ShaderProfile::GLSL_300_ES: [[fallthrough]];
+        case ShaderProfile::GLSL_310_ES: [[fallthrough]];
+        case ShaderProfile::GLSL_320_ES:
 
       //          (GLenum target, GLint level,    GLint internalformat,    GLsizei width,    GLsizei height, GLint border,      GLenum format,  GLenum type, const void *pixels);
       glTexImage2D(GL_TEXTURE_2D,           0, TP_GL_DEPTH_COMPONENT32, TPGLsizei(width), TPGLsizei(height),            0, GL_DEPTH_COMPONENT,     GL_FLOAT,            nullptr);
@@ -195,15 +195,15 @@ struct Buffers::Private
 
     glBindTexture(GL_TEXTURE_3D, depthID);
 
-    switch(map->openGLProfile())
+    switch(map->shaderProfile())
     {
-    case OpenGLProfile::VERSION_100_ES:
+        case ShaderProfile::GLSL_100_ES:
       glTexImage3D(GL_TEXTURE_3D, 0, GL_DEPTH_COMPONENT, TPGLsizei(width), TPGLsizei(height), TPGLsizei(levels), 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
       break;
 
-    case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
-    case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
-    case OpenGLProfile::VERSION_320_ES:
+        case ShaderProfile::GLSL_300_ES: [[fallthrough]];
+        case ShaderProfile::GLSL_310_ES: [[fallthrough]];
+        case ShaderProfile::GLSL_320_ES:
       glTexImage3D(GL_TEXTURE_3D, 0, depthFormatF(), TPGLsizei(width), TPGLsizei(height), TPGLsizei(levels), 0, GL_RED, GL_FLOAT, nullptr);
       break;
 
@@ -260,13 +260,13 @@ struct Buffers::Private
   //################################################################################################
   void setDrawBuffers(const std::vector<GLenum>& buffers)
   {
-    switch(map->openGLProfile())
+    switch(map->shaderProfile())
     {
     default:
       glDrawBuffers(TPGLsizei(buffers.size()), buffers.data());
       break;
 
-    case OpenGLProfile::VERSION_100_ES:
+        case ShaderProfile::GLSL_100_ES:
       break;
     }
 
@@ -354,7 +354,7 @@ struct Buffers::Private
     // Some versions of OpenGL must have a color buffer even if we are not going to use it.
     if(createColorBuffer == CreateColorBuffer::No)
     {
-      if(map->openGLProfile() == OpenGLProfile::VERSION_100_ES)
+        if(map->shaderProfile() == ShaderProfile::GLSL_100_ES)
         createColorBuffer = CreateColorBuffer::Yes;
     }
 
@@ -386,15 +386,15 @@ struct Buffers::Private
         // For most OpenGL versions, we do however still require an actual depth
         //buffer to perform depth tests against. So here textureID gets prepared as a 2D depth buffer.
         //The 2D depth buffer is bound as GL_DEPTH_ATTACHMENT.
-        switch(map->openGLProfile())
+        switch(map->shaderProfile())
         {
         default:
           create2DDepthTexture(buffer.textureID, width, height);
           break;
 
-        case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
-        case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
-        case OpenGLProfile::VERSION_320_ES:
+            case ShaderProfile::GLSL_300_ES: [[fallthrough]];
+            case ShaderProfile::GLSL_310_ES: [[fallthrough]];
+            case ShaderProfile::GLSL_320_ES:
           break;
         }
       }
@@ -405,15 +405,15 @@ struct Buffers::Private
 #else
       glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, buffer.depthID, 0, GLint(level));
 #endif
-      switch(map->openGLProfile())
+      switch(map->shaderProfile())
       {
       default:
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.textureID, 0);
         break;
 
-      case OpenGLProfile::VERSION_300_ES: [[fallthrough]];
-      case OpenGLProfile::VERSION_310_ES: [[fallthrough]];
-      case OpenGLProfile::VERSION_320_ES:
+          case ShaderProfile::GLSL_300_ES: [[fallthrough]];
+          case ShaderProfile::GLSL_310_ES: [[fallthrough]];
+          case ShaderProfile::GLSL_320_ES:
         break;
       }
       DEBUG_printOpenGLError("prepareBuffer bind 3D texture to FBO as color but to store depth");

@@ -59,8 +59,8 @@ struct PointSpriteShader::Private
 };
 
 //##################################################################################################
-PointSpriteShader::PointSpriteShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
-  Shader(map, openGLProfile),
+PointSpriteShader::PointSpriteShader(Map* map, tp_maps::ShaderProfile shaderProfile):
+  Shader(map, shaderProfile),
   d(new Private())
 {
 
@@ -79,12 +79,12 @@ const char* PointSpriteShader::vertexShaderStr(ShaderType shaderType)
   if(shaderType == ShaderType::Picking)
   {
     static ShaderResource s{"/tp_maps/PointSpriteShader.picking.vert"};
-    return s.data(openGLProfile(), shaderType);
+    return s.data(shaderProfile(), shaderType);
   }
 #endif
 
   static ShaderResource s{"/tp_maps/PointSpriteShader.vert"};
-  return s.data(openGLProfile(), shaderType);
+  return s.data(shaderProfile(), shaderType);
 }
 
 //##################################################################################################
@@ -94,12 +94,12 @@ const char* PointSpriteShader::fragmentShaderStr(ShaderType shaderType)
   if(shaderType == ShaderType::Picking)
   {
     static ShaderResource s{"/tp_maps/PointSpriteShader.picking.frag"};
-    return s.data(openGLProfile(), shaderType);
+    return s.data(shaderProfile(), shaderType);
   }
 #endif
 
   static ShaderResource s{"/tp_maps/PointSpriteShader.frag"};
-  return s.data(openGLProfile(), shaderType);
+  return s.data(shaderProfile(), shaderType);
 }
 
 //##################################################################################################

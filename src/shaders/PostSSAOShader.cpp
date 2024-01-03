@@ -41,8 +41,8 @@ struct PostSSAOShader::Private
 };
 
 //##################################################################################################
-PostSSAOShader::PostSSAOShader(Map* map, tp_maps::OpenGLProfile openGLProfile, const PostSSAOParameters& parameters):
-  PostShader(map, openGLProfile),
+PostSSAOShader::PostSSAOShader(Map* map, tp_maps::ShaderProfile shaderProfile, const PostSSAOParameters& parameters):
+  PostShader(map, shaderProfile),
   d(new Private(parameters))
 {
   std::uniform_real_distribution<float> randomFloats(0.0, 1.0);
@@ -113,7 +113,7 @@ void PostSSAOShader::use(ShaderType shaderType)
 const char* PostSSAOShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/PostSSAOShader.frag"};
-  fragSrcScratch = s.dataStr(openGLProfile(), shaderType);
+  fragSrcScratch = s.dataStr(shaderProfile(), shaderType);
 
   const auto& parameters = d->parameters;
   auto map = this->map();

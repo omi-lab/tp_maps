@@ -27,8 +27,8 @@ struct PostShader::Private
 };
 
 //##################################################################################################
-PostShader::PostShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
-  FullScreenShader(map, openGLProfile),
+PostShader::PostShader(Map* map, tp_maps::ShaderProfile shaderProfile):
+  FullScreenShader(map, shaderProfile),
   d(new Private())
 {
 

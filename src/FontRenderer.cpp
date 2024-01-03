@@ -350,9 +350,22 @@ void FontRenderer::generate()
   fillColor.r = 0;
   fillColor.g = 0;
   fillColor.b = 0;
-  fillColor.a = 0;
+  fillColor.a = 255;
 
   tp_image_utils::ColorMap textureData(textureSize, textureSize, nullptr, fillColor);
+
+  for(size_t y=0; y<textureSize; y++)
+  {
+    for(size_t x=0; x<textureSize; x++)
+    {
+      TPPixel p;
+      p.r = (float(x) / float(textureSize)) * 255.0f;
+      p.g = (float(y) / float(textureSize)) * 255.0f;
+      p.b=0;
+      p.a = 255;
+      textureData.setPixel(x, y, p);
+    }
+  }
 
   //-- Draw glyphs to the texture ------------------------------------------------------------------
   {

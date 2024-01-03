@@ -42,8 +42,8 @@ struct G3DXYZShader::Private
 };
 
 //##################################################################################################
-G3DXYZShader::G3DXYZShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
-  Geometry3DShader(map, openGLProfile),
+G3DXYZShader::G3DXYZShader(Map* map, tp_maps::ShaderProfile shaderProfile):
+  Geometry3DShader(map, shaderProfile),
   d(new Private())
 {
 
@@ -134,14 +134,14 @@ void G3DXYZShader::use(ShaderType shaderType)
 const char* G3DXYZShader::vertexShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/G3DXYZShader.vert"};
-  return s.data(openGLProfile(), shaderType);
+  return s.data(shaderProfile(), shaderType);
 }
 
 //##################################################################################################
 const char* G3DXYZShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/G3DXYZShader.frag"};
-  return s.data(openGLProfile(), shaderType);
+  return s.data(shaderProfile(), shaderType);
 }
 
 //##################################################################################################

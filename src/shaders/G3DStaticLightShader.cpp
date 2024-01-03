@@ -73,8 +73,8 @@ struct G3DStaticLightShader::Private
 };
 
 //##################################################################################################
-G3DStaticLightShader::G3DStaticLightShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
-  G3DMaterialShader(map, openGLProfile),
+G3DStaticLightShader::G3DStaticLightShader(Map* map, tp_maps::ShaderProfile shaderProfile):
+  G3DMaterialShader(map, shaderProfile),
   d(new Private(this))
 {
 
@@ -220,7 +220,7 @@ const char* G3DStaticLightShader::vertexShaderStr(ShaderType shaderType)
   case ShaderType::RenderExtendedFBO:
   {
     static ShaderResource s{"/tp_maps/G3DStaticLightShader.render.vert"};
-    return s.data(openGLProfile(), shaderType);
+    return s.data(shaderProfile(), shaderType);
   }
 
   case ShaderType::Picking:
@@ -242,7 +242,7 @@ const char* G3DStaticLightShader::fragmentShaderStr(ShaderType shaderType)
   case ShaderType::RenderExtendedFBO:
   {
     static ShaderResource s{"/tp_maps/G3DStaticLightShader.render.frag"};
-    return s.data(openGLProfile(), shaderType);
+    return s.data(shaderProfile(), shaderType);
   }
 
   case ShaderType::Picking:

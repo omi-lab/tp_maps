@@ -11,7 +11,7 @@ const char* G3DDepthImageShader::fragmentShaderStr(ShaderType shaderType)
   if(shaderType == ShaderType::Picking)
     return G3DImageShader::fragmentShaderStr(shaderType);
 
-  return s.data(openGLProfile(), shaderType);
+  return s.data(shaderProfile(), shaderType);
 }
 
 //##################################################################################################
@@ -22,7 +22,7 @@ const char* G3DDepthImage3DShader::fragmentShaderStr(ShaderType shaderType)
   if(shaderType == ShaderType::Picking)
     return G3DImageShader::fragmentShaderStr(shaderType);
 
-  return s.data(openGLProfile(), shaderType);
+  return s.data(shaderProfile(), shaderType);
 }
 
 }

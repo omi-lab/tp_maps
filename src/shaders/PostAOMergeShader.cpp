@@ -11,9 +11,9 @@ struct PostAOMergeShader::Private
 
 //##################################################################################################
 PostAOMergeShader::PostAOMergeShader(Map* map,
-                                     tp_maps::OpenGLProfile openGLProfile,
+                                     tp_maps::ShaderProfile shaderProfile,
                                      const PostAOParameters& parameters):
-  PostAOBaseShader(map, openGLProfile, parameters),
+  PostAOBaseShader(map, shaderProfile, parameters),
 d(new Private())
 {
 
@@ -40,7 +40,7 @@ void PostAOMergeShader::setSSAOTexture(const GLuint ssaoTextureID)
 const char* PostAOMergeShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/MergeAmbientOcclusionShader.frag"};
-  fragSrcScratch = s.dataStr(openGLProfile(), shaderType);
+  fragSrcScratch = s.dataStr(shaderProfile(), shaderType);
 
   const auto& parameters = this->parameters();
 

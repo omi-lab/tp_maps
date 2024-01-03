@@ -15,8 +15,8 @@ struct BackgroundSkyBoxShader::Private
 };
 
 //##################################################################################################
-BackgroundSkyBoxShader::BackgroundSkyBoxShader(Map* map, tp_maps::OpenGLProfile openGLProfile):
-  FullScreenShader(map, openGLProfile),
+BackgroundSkyBoxShader::BackgroundSkyBoxShader(Map* map, tp_maps::ShaderProfile shaderProfile):
+  FullScreenShader(map, shaderProfile),
   d(new Private())
 {
 
@@ -54,7 +54,7 @@ void BackgroundSkyBoxShader::setRotationFactor(float rotationFactor)
 const char* BackgroundSkyBoxShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/BackgroundSkyBoxShader.frag"};
-  return s.data(openGLProfile(), shaderType);
+  return s.data(shaderProfile(), shaderType);
 }
 
 //##################################################################################################
