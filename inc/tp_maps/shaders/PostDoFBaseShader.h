@@ -18,6 +18,9 @@ struct PostDoFParameters
   float farPlane{50.0f};
   float focalDistance{8.0f};
   float blurinessCutoffConstant{10.0f};
+
+  // fuzzy equality function used to indicate that shaders need to be recompiled
+  bool fuzzyEquals(const PostDoFParameters& other) const;
 };
 
 //##################################################################################################

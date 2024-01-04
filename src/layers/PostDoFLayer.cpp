@@ -89,9 +89,12 @@ const PostDoFParameters& PostDoFLayer::parameters() const
 //##################################################################################################
 void PostDoFLayer::setParameters(const PostDoFParameters& parameters)
 {
-  d->parameters = parameters;
-  setBypass(!parameters.enabled);
-  d->recompileShaders();
+  if(!parameters.fuzzyEquals(d->parameters))
+  {
+    d->parameters = parameters;
+    setBypass(!parameters.enabled);
+    d->recompileShaders();
+  }
 }
 
 //##################################################################################################

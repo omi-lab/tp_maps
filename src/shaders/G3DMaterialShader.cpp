@@ -4,6 +4,8 @@
 #include "tp_maps/Map.h"
 #include "tp_maps/Geometry3DPool.h"
 
+#include "tp_utils/DebugUtils.h"
+
 #include "tp_math_utils/Material.h"
 
 #include "glm/gtc/type_ptr.hpp"
@@ -179,6 +181,7 @@ struct G3DMaterialShader::Private
   //################################################################################################
   void compileRenderShader(ShaderType shaderType)
   {
+    tpDebug() << "compiling shader: " << int(shaderType);
     std::string LIGHT_VERT_VARS;
     std::string LIGHT_VERT_CALC;
 

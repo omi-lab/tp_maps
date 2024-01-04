@@ -425,7 +425,6 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
         vec2 coord = uv_light.xy + coffset*txlSize;
         if(coord.x>=0.0 && coord.x<=1.0 && coord.y>=0.0 && coord.y<=1.0)
         {
-          //float depth = shadowMapDepth(lightTexture, coord, light.near, light.far);
           float depth = lineariseDepth(TP_GLSL_TEXTURE_2D(lightTexture, coord).r, light.near, light.far);
           float extraBias = 2.f*bias*(abs(coffset.x) + abs(coffset.y)) - dot(coffset, depthGradXY)/*depthShift*/;
           float weight = 1.0f-smoothstep(biasedDepth-extraBias, linearDepth-extraBias, depth);
