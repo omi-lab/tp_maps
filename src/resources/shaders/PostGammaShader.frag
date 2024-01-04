@@ -35,7 +35,7 @@ void main()
 {
   //Note: View transform
   vec3 hsv = rgb2hsv(TP_GLSL_TEXTURE_2D(textureSampler, coord_tex).xyz);
-  hsv.y *= 0.9f;
+  //hsv.y *= 0.9f;
   //hsv.z *= 0.1f;
 
   //Note: GammaCorrection
