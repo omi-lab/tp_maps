@@ -686,7 +686,6 @@ void Map::setLights(const std::vector<tp_math_utils::Light>& lights)
         break;
       }
 
-      //tpDebug() << "Offset scale: " << d->lights.at(i).offsetScale << " " << lights.at(i).offsetScale;
       if(std::fabs(glm::distance2(d->lights.at(i).offsetScale, lights.at(i).offsetScale)) > 0.00001f)
       {
         lightingModelChanged=LightingModelChanged::Yes;
@@ -1293,7 +1292,6 @@ void Map::deleteTexture(GLuint id)
 //##################################################################################################
 void Map::deleteShader(const tp_utils::StringID& name)
 {
-  tpDebug() << "deleting shader: " << name.toString();
   auto i = d->shaders.find(name);
   if(i == d->shaders.end())
     return;
