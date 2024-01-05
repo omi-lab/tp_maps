@@ -17,8 +17,7 @@ uniform vec2 pixelSize;
 uniform float near;
 uniform float far;
 
-/*DOF_FRAG_VARS*/
-
+#pragma replace DOF_FRAG_VARS
 #pragma replace TP_GLSL_GLFRAGCOLOR_DEF
 
 float LinearizeDepth( float depth )

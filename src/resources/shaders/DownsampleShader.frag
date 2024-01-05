@@ -14,8 +14,7 @@ uniform mat4 invProjectionMatrix;
 
 uniform vec2 pixelSize;
 
-/*DOF_FRAG_VARS*/
-
+#pragma replace DOF_FRAG_VARS
 #pragma replace TP_GLSL_GLFRAGCOLOR_DEF
 
 const vec2 offsets[4] = vec2[]

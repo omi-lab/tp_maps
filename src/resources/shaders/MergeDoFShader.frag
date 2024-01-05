@@ -14,7 +14,6 @@ uniform mat4 invProjectionMatrix;
 
 uniform vec2 pixelSize;
 
-/*DOF_FRAG_VARS*/
 
 // ------------------------------------------------
 uniform sampler2D downsampledTextureSampler;
@@ -28,8 +27,8 @@ float radiusScale = 0.4;
 
 int numTaps = 6;
 
+#pragma replace DOF_FRAG_VARS
 #pragma replace TP_GLSL_GLFRAGCOLOR_DEF
-
 
 void main()
 {

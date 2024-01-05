@@ -100,6 +100,8 @@ public:
   #endif
     m_color(color)
   {
+    TP_UNUSED(m_color);
+
 #ifndef TP_ENABLE_FUNCTION_TIME
     TP_UNUSED(file);
     TP_UNUSED(line);
@@ -334,6 +336,17 @@ struct Map::Private
     }
   }
 
+  //################################################################################################
+  void setRenderPassesInternal(const std::vector<RenderPass>& renderPasses)
+  {
+    for(const auto& renderPass : this->renderPasses)
+      delete renderPass.postLayer;
+
+    this->renderPasses = renderPasses;
+    for(const auto& renderPass : this->renderPasses)
+      if(renderPass.postLayer)
+        q->insertLayer(0, renderPass.postLayer);
+  }
 };
 
 //##################################################################################################
@@ -343,17 +356,17 @@ Map::Map(bool enableDepthBuffer):
   TP_UNUSED(enableDepthBuffer);
   d->controller = new FlatController(this);
 
-  setRenderPasses({
-                    tp_maps::RenderPass::LightFBOs     ,
-                    tp_maps::RenderPass::PrepareDrawFBO,
-                    tp_maps::RenderPass::Background    ,
-                    tp_maps::RenderPass::Normal        ,
-                    tp_maps::RenderPass::Transparency  ,
-                    tp_maps::RenderPass::FinishDrawFBO ,
-                    new tp_maps::PostGammaLayer()      ,
-                    tp_maps::RenderPass::Text          ,
-                    tp_maps::RenderPass::GUI
-                  });
+  d->setRenderPassesInternal({
+                               tp_maps::RenderPass::LightFBOs     ,
+                               tp_maps::RenderPass::PrepareDrawFBO,
+                               tp_maps::RenderPass::Background    ,
+                               tp_maps::RenderPass::Normal        ,
+                               tp_maps::RenderPass::Transparency  ,
+                               tp_maps::RenderPass::FinishDrawFBO ,
+                               new tp_maps::PostGammaLayer()      ,
+                               tp_maps::RenderPass::Text          ,
+                               tp_maps::RenderPass::GUI
+                             });
 }
 
 //##################################################################################################
@@ -646,13 +659,7 @@ void Map::setRenderPasses(const std::vector<RenderPass>& renderPasses)
     d->intermediateFBOs.clear();
   }
 
-  for(const auto& renderPass : d->renderPasses)
-    delete renderPass.postLayer;
-
-  d->renderPasses = renderPasses;
-  for(const auto& renderPass : d->renderPasses)
-    if(renderPass.postLayer)
-      insertLayer(0, renderPass.postLayer);
+  d->setRenderPassesInternal(renderPasses);
 }
 
 //##################################################################################################
