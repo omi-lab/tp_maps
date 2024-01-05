@@ -5,15 +5,15 @@ namespace tp_maps
 //##################################################################################################
 bool PostDoFParameters::fuzzyEquals(const PostDoFParameters& other) const
 {
-  float fuzzy = 0.001f;
+  float fuzzFactor = 0.003f;
   float avDepth = 0.5f*(nearPlane + farPlane);
   return other.enabled == enabled
-         && std::abs(other.depthOfField-depthOfField) <= fuzzy*depthOfField
-         && std::abs(other.fStop-fStop) <= fuzzy*fStop
-         && std::abs(other.nearPlane-nearPlane) <= fuzzy*avDepth
-         && std::abs(other.farPlane-farPlane) <= fuzzy*avDepth
-         && std::abs(other.focalDistance-focalDistance) <= fuzzy*focalDistance
-         && std::abs(other.blurinessCutoffConstant-blurinessCutoffConstant) <= fuzzy*blurinessCutoffConstant;
+         && std::abs(other.depthOfField-depthOfField) <= fuzzFactor*depthOfField
+         && std::abs(other.fStop-fStop) <= fuzzFactor*fStop
+         && std::abs(other.nearPlane-nearPlane) <= fuzzFactor*avDepth
+         && std::abs(other.farPlane-farPlane) <= fuzzFactor*avDepth
+         && std::abs(other.focalDistance-focalDistance) <= fuzzFactor*focalDistance
+         && std::abs(other.blurinessCutoffConstant-blurinessCutoffConstant) <= fuzzFactor*blurinessCutoffConstant;
 }
 
 //##################################################################################################
