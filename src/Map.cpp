@@ -1293,7 +1293,6 @@ void Map::deleteTexture(GLuint id)
 //##################################################################################################
 void Map::deleteShader(const tp_utils::StringID& name)
 {
-  tpDebug() << "deleting shader: " << name.toString();
   auto i = d->shaders.find(name);
   if(i == d->shaders.end())
     return;

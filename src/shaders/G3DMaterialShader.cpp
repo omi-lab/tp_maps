@@ -181,7 +181,6 @@ struct G3DMaterialShader::Private
   //################################################################################################
   void compileRenderShader(ShaderType shaderType)
   {
-    tpDebug() << "compiling shader: " << int(shaderType);
     std::string LIGHT_VERT_VARS;
     std::string LIGHT_VERT_CALC;
 
