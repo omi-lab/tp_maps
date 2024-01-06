@@ -30,8 +30,6 @@
 #  define TP_ENABLE_MULTISAMPLE
 #  define TP_ENABLE_MULTISAMPLE_FBO
 
-#define TP_ENABLE_3D_TEXTURE
-
 #elif defined(TP_IOS) //----------------------------------------------------------------------------
 #  define GL_DO_NOT_WARN_IF_MULTI_GL_GLSL_HEADERS_INCLUDED
 #  include <OpenGLES/ES3/gl.h>
@@ -55,7 +53,6 @@
 #  define TP_GL3
 #  define TP_ENABLE_MULTISAMPLE
 #  define TP_ENABLE_MULTISAMPLE_FBO
-#  define TP_ENABLE_3D_TEXTURE
 
 #elif defined(TP_LINUX)
 
@@ -74,7 +71,6 @@
 #  define TP_GL3
 #  define TP_ENABLE_MULTISAMPLE
 #  define TP_ENABLE_MULTISAMPLE_FBO
-#  define TP_ENABLE_3D_TEXTURE
 
 
 #else //--------------------------------------------------------------------------------------------
@@ -535,14 +531,13 @@ enum class Alpha
 };
 
 //##################################################################################################
-//! Replace light index and levels
+//! Replace light index
 /*!
 \param lightIndex will replace %
-\param levels will replace @
 \param pattern containing the %'s and @'s to be replaced
 \return The pattern with the %'s and @'s to be replaced.
  */
-std::string replaceLight(const std::string& lightIndex, const std::string& levels, const std::string& pattern);
+std::string replaceLight(const std::string& lightIndex, const std::string& pattern);
 
 //##################################################################################################
 //! Performs string replacement on the shader string to make it compatible with the given GLSL version.
@@ -619,8 +614,6 @@ struct FBO
 
   size_t width{1};
   size_t height{1};
-  size_t levels{1}; //!< Number of levels in the 3D texture generated for shadow maps.
-  size_t level{0};  //!< The level that we are currently rendering, when rendering shadows.
   size_t samples{1};
 
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
@@ -637,8 +630,7 @@ struct FBO
   GLuint multisampleSpecularRBO{0};
 #endif
 
-  //There will be 1 for each level
-  std::vector<Matrices> worldToTexture; //!< For lighting this is used to map world coords onto the texture, per level.
+  Matrices worldToTexture; //!< For lighting this is used to map world coords onto the texture.
 
   Multisample multisample{Multisample::No}; //!< Yes if multisample buffers have been created.
   HDR hdr{HDR::No};                         //!< Yes if HDR buffers have been created.

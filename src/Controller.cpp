@@ -55,7 +55,7 @@ bool Controller::hasMatrices(const tp_utils::StringID& coordinateSystem) const
 }
 
 //##################################################################################################
-void Controller::setCurrentLight(const tp_math_utils::Light& light, size_t level)
+void Controller::setCurrentLight(const tp_math_utils::Light& light)
 {
   d->currentLight = light;
 
@@ -87,12 +87,10 @@ void Controller::setCurrentLight(const tp_math_utils::Light& light, size_t level
   }
   }
 
-  glm::mat4 offset = glm::translate(glm::mat4(1.0f), glm::vec3(tp_math_utils::Light::lightLevelOffsets()[level], 0.0f) * d->currentLight.offsetScale);
-
   Matrices vp;
   vp.p  = projection;
-  vp.v  = offset * view;
-  vp.vp = projection * offset * view;
+  vp.v  = view;
+  vp.vp = projection * view;
 
   d->lightMatrices = vp;
 }

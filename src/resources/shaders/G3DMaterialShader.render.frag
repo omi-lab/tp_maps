@@ -161,32 +161,6 @@ float sampleShadowMapLinear2D(highp sampler2D shadowMap, vec2 coords, float comp
 }
 
 //##################################################################################################
-#ifndef NO_TEXTURE3D
-float sampleShadowMapLinear3D(highp sampler3D shadowMap, vec2 coords, float compareLight, float compareDark, float level, float near, float far)
-{
-  vec2 pixelPos = (coords*invTxlSize) - 0.5;
-  vec2 fracPart = fract(pixelPos);
-  vec2 startTxl = (pixelPos-fracPart) * txlSize;
-
-  float blTxl = lineariseDepth(TP_GLSL_TEXTURE_3D(shadowMap, vec3(startTxl, level)).r, near, far);
-  float brTxl = lineariseDepth(TP_GLSL_TEXTURE_3D(shadowMap, vec3(startTxl + vec2(txlSize.x, 0.0), level)).r, near, far);
-  float tlTxl = lineariseDepth(TP_GLSL_TEXTURE_3D(shadowMap, vec3(startTxl + vec2(0.0, txlSize.y), level)).r, near, far);
-  float trTxl = lineariseDepth(TP_GLSL_TEXTURE_3D(shadowMap, vec3(startTxl + txlSize, level)).r, near, far);
-
-  float mixA = mix(blTxl, tlTxl, fracPart.y);
-  float mixB = mix(brTxl, trTxl, fracPart.y);
-
-  return smoothstep(compareLight, compareDark, mix(mixA, mixB, fracPart.x));
-}
-#endif
-
-//##################################################################################################
-vec2 computeLightOffset(Light light, int offsetIdx)
-{
-  return lightOffsets[offsetIdx].xy * light.offsetScale.xy;
-}
-
-//##################################################################################################
 vec3 lightPosToTexture(vec4 fragPos_light, vec2 offset, mat4 proj)
 {
   vec4 fp = proj * (fragPos_light + vec4(offset,0.0,0.0)); // range is now [-1,1] in each axis
@@ -463,38 +437,6 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
 
   return lightLevel*(material.rayVisibilityShadowCatcher?1.0:0.0);
 }
-
-//##################################################################################################
-#ifndef NO_TEXTURE3D
-float spotLightSampleShadow3D(vec3 norm, Light light, vec3 lightDirection_tangent, sampler3D lightTexture, vec3 uv_light, float level)
-{
-  float shadow = totShadowSamples();
-  float nDotL = dot(norm, -lightDirection_tangent);
-
-  if(nDotL>0.0 && uv_light.z>0.0 && uv_light.z<1.0)
-  {
-    float linearDepth = lineariseDepth(uv_light.z, light.near, light.far);
-    float bias = 0.002f;
-    float biasedDepth = linearDepth - bias;
-
-    for(int x = -shadowSamples; x <= shadowSamples; ++x)
-    {
-      for(int y = -shadowSamples; y <= shadowSamples; ++y)
-      {
-        vec2 coord = uv_light.xy + (vec2(x, y)*txlSize*(nDotL));
-        if(coord.x>=0.0 && coord.x<=1.0 && coord.y>=0.0 && coord.y<=1.0)
-        {
-          float extraBias = bias*(abs(float(x))+abs(float(y)));
-          shadow -= 1.0-sampleShadowMapLinear3D(lightTexture, coord, biasedDepth-extraBias, linearDepth-extraBias, level, light.near, light.far);
-        }
-      }
-    }
-    return maskLight(light, uv_light, shadow);
-  }
-
-  return shadow*(material.rayVisibilityShadowCatcher?1.0:0.0);
-}
-#endif
 
 //##################################################################################################
 LightResult spotLight(vec3 norm, Light light, vec3 lightDirection_tangent, vec3 fragPos_light, float shadow)

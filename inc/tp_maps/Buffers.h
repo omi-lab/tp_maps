@@ -27,8 +27,6 @@ public:
                      Multisample multisample,
                      HDR hdr,
                      ExtendedFBO extendedFBO,
-                     size_t levels,
-                     size_t level,
                      bool clear) const;
 
   //################################################################################################

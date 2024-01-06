@@ -195,21 +195,6 @@ public:
   size_t maxSamples() const;
 
   //################################################################################################
-  void setMaxSpotLightLevels(size_t maxSpotLightLevels);
-
-  //################################################################################################
-  size_t maxSpotLightLevels() const;
-
-  //################################################################################################
-  size_t renderedLightLevels() const;
-
-  //################################################################################################
-  void setMaxLightRenderTime(size_t maxLightRenderTime);
-
-  //################################################################################################
-  size_t maxLightRenderTime() const;
-
-  //################################################################################################
   void setShadowSamples(size_t shadowSamples);
 
   //################################################################################################
@@ -217,7 +202,7 @@ public:
   /*!
   The actual number of samples that is made is as follows:
 
-  samples = (shadowSamples+1) * (shadowSamples+1) * spotLightLevels * nLights;
+  samples = (shadowSamples+1) * (shadowSamples+1) * nLights;
   */
   size_t shadowSamples() const;
 
@@ -488,7 +473,7 @@ protected:
   size_t skipRenderPasses();
 
   //################################################################################################
-  void executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool renderMoreLights);
+  void executeRenderPasses(size_t rp, GLint& originalFrameBuffer);
 
 private:
   //################################################################################################

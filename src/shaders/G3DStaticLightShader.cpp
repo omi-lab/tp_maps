@@ -45,7 +45,6 @@ struct UniformLocations_lt
 
   GLint                             txlSizeLocation{0};
   GLint                      discardOpacityLocation{0};
-  GLint                        lightOffsetsLocation{0};
 
   GLint                         rgbaTextureLocation{0};
   GLint                      normalsTextureLocation{0};
@@ -320,7 +319,6 @@ void G3DStaticLightShader::getLocations(GLuint program, ShaderType shaderType)
 
     d->locations.txlSizeLocation                = loc(program, "txlSize");
     d->locations.discardOpacityLocation         = loc(program, "discardOpacity");
-    d->locations.lightOffsetsLocation           = loc(program, "lightOffsets");
 
     d->locations.     rgbaTextureLocation       = loc(program, "rgbaTexture"     );
     d->locations.  normalsTextureLocation       = loc(program, "normalsTexture"  );

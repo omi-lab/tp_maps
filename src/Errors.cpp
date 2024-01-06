@@ -182,7 +182,6 @@ bool Errors::printFBOError(FBO& buffer, const std::string& description)
                    "  specularID:                   " << buffer.specularID  << '\n' <<
                    "  width:                        " << buffer.width       << '\n' <<
                    "  height:                       " << buffer.height      << '\n' <<
-                   "  levels:                       " << buffer.levels      << '\n' <<
                    "  samples:                      " << buffer.samples     << '\n' <<
                #ifdef TP_ENABLE_MULTISAMPLE_FBO
                    "  multisampleFrameBuffer:       " << buffer.multisampleFrameBuffer       << '\n' <<

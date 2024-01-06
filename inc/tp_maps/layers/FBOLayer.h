@@ -24,7 +24,6 @@ struct FBOWindow
 {
   std::string    fboName;                        //!< The name of the FBO to display.
   FBOLayerSource source {FBOLayerSource::Color}; //!< The texture to display.
-  size_t         level  {0};                     //!< The level to display for 3D textures.
   glm::vec2      origin {0.75f, 0.75f};          //!< The origin of the window.
   glm::vec2      size   {0.20f, 0.20f};          //!< The size of the window.
 

@@ -60,7 +60,7 @@ public:
 
   //################################################################################################
   //! Sets the light that is currently being rendered in the LightFBOs pass.
-  void setCurrentLight(const tp_math_utils::Light& light, size_t level);
+  void setCurrentLight(const tp_math_utils::Light& light);
 
   //################################################################################################
   Matrices lightMatrices();

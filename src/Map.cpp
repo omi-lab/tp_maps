@@ -215,12 +215,9 @@ struct Map::Private
   std::vector<tp_math_utils::Light> lights;
   std::vector<FBO> lightBuffers;
   size_t lightTextureSize{1024};
-  size_t spotLightLevels{1};
   size_t shadowSamples{0};
   size_t shadowSamplesFastRender{0};
-  size_t lightLevelIndex{0};
 
-  int64_t maxLightRenderTime = 30; // 30ms
   tp_utils::ElapsedTimer renderTimer;
 
   HDR hdr{HDR::No};
@@ -401,8 +398,6 @@ void Map::preDelete()
 
   for(auto& lightBuffer : d->lightBuffers)
     d->buffers.deleteBuffer(lightBuffer);
-
-  d->lightLevelIndex = 0;
 
 #ifdef TP_BLIT_WITH_SHADER
   delete d->rectangleObject;
@@ -594,8 +589,6 @@ void Map::invalidateBuffers()
     d->buffers.invalidateBuffer(lightTexture);
   d->lightBuffers.clear();
 
-  d->lightLevelIndex = 0;
-
   for(auto i : d->layers)
     i->invalidateBuffers();
 
@@ -783,51 +776,6 @@ void Map::setMaxSamples(size_t maxSamples)
 size_t Map::maxSamples() const
 {
   return d->buffers.maxSamples();
-}
-
-//##################################################################################################
-void Map::setMaxSpotLightLevels(size_t maxSpotLightLevels)
-{
-  if(d->spotLightLevels != maxSpotLightLevels)
-  {
-#ifdef TP_ENABLE_3D_TEXTURE
-    d->spotLightLevels = tpMin(tp_math_utils::Light::lightLevelOffsets().size(), maxSpotLightLevels);
-#else
-    tpWarning() << "TP_ENABLE_3D_TEXTURE not defined. Only 1 spot light level used.";
-    d->spotLightLevels = 1;
-#endif
-
-    d->deleteShaders();
-
-    for(auto l : d->layers)
-      l->lightsChanged(LightingModelChanged::Yes);
-
-    update();
-  }
-}
-
-//##################################################################################################
-size_t Map::maxSpotLightLevels() const
-{
-  return d->spotLightLevels;
-}
-
-//##################################################################################################
-size_t Map::renderedLightLevels() const
-{
-  return d->lightLevelIndex;
-}
-
-//##################################################################################################
-void Map::setMaxLightRenderTime(size_t maxLightRenderTime)
-{
-  d->maxLightRenderTime = maxLightRenderTime;
-}
-
-//##################################################################################################
-size_t Map::maxLightRenderTime() const
-{
-  return d->maxLightRenderTime;
 }
 
 //##################################################################################################
@@ -1090,8 +1038,6 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
                                Multisample::No,
                                HDR::No,
                                ExtendedFBO::No,
-                               1,
-                               0,
                                true))
     return nullptr;
 
@@ -1243,8 +1189,6 @@ bool Map::renderToImage(size_t width, size_t height, HDR hdr, const std::functio
                                Multisample::No,
                                hdr,
                                ExtendedFBO::No,
-                               1,
-                               0,
                                true))
   {
     tpWarning() << "Error Map::renderToImage failed to create render buffer.";
@@ -1437,11 +1381,10 @@ void Map::paintGLNoMakeCurrent()
   // Skip the passes that don't need a full render.
   size_t rp = skipRenderPasses();
 
-  bool renderMoreLights = (d->renderFromStage==RenderFromStage::RenderMoreLights);
   d->renderFromStage = RenderFromStage::Reset;
 
 #ifdef TP_FBO_SUPPORTED
-  executeRenderPasses(rp, originalFrameBuffer, renderMoreLights);
+  executeRenderPasses(rp, originalFrameBuffer);
 #endif
 
   Errors::printOpenGLError("Map::paintGL");
@@ -1528,7 +1471,7 @@ size_t Map::skipRenderPasses()
 }
 
 //##################################################################################################
-void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool renderMoreLights)
+void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
 {
   PRF_SCOPED_RANGE(d->profiler.get(), "executeRenderPasses", {255,255,255});
 
@@ -1557,16 +1500,12 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
           d->renderInfo.extendedFBO = ExtendedFBO::No;
 
           while(d->lightBuffers.size() < d->lights.size())
-          {
             d->lightBuffers.emplace_back();
-            d->lightLevelIndex = 0;
-          }
 
           while(d->lightBuffers.size() > d->lights.size())
           {
             auto buffer = tpTakeLast(d->lightBuffers);
             d->buffers.deleteBuffer(buffer);
-            d->lightLevelIndex = 0;
           }
           DEBUG_printOpenGLError("RenderPass::LightFBOs delete buffers");
 
@@ -1575,69 +1514,34 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
           glDepthMask(true);
           DEBUG_printOpenGLError("RenderPass::LightFBOs enable depth");
 
-          size_t levels = 1;
-#ifdef TP_ENABLE_3D_TEXTURE
-          levels = d->spotLightLevels;
-#endif
-          int64_t renderTime = 0;
-          // Reset to re-render all light levels.
-          if (!renderMoreLights)
-            d->lightLevelIndex = 0;
-
-          // Only render 1 light level at once.
-          // Keep rendering more levels for better soft shadows, until time is up.
-          while (renderTime < d->maxLightRenderTime && d->lightLevelIndex < levels)
+          for(size_t i=0; i<d->lightBuffers.size(); i++)
           {
-            for(size_t i=0; i<d->lightBuffers.size(); i++)
-            {
-              const auto& light = d->lights.at(i);
-              auto& lightBuffer = d->lightBuffers.at(i);
+            const auto& light = d->lights.at(i);
+            auto& lightBuffer = d->lightBuffers.at(i);
 
-              // Multi light levels only supported for Spot lights.
-              if (d->lightLevelIndex == 0)
-              {
-                lightBuffer.worldToTexture.resize((light.type == tp_math_utils::LightType::Spot)?levels:1);
-              }
-              else
-              {
-                if(light.type != tp_math_utils::LightType::Spot)
-                  break;
-              }
+            DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers (A)");
+            if(!d->buffers.prepareBuffer(std::string( "lightBuffer_" ) + std::to_string(i),
+                                         lightBuffer,
+                                         d->lightTextureSize,
+                                         d->lightTextureSize,
+                                         CreateColorBuffer::No,
+                                         Multisample::No,
+                                         HDR::No,
+                                         ExtendedFBO::No,
+                                         true))
+              return;
 
-              DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers (A)");
-              if(!d->buffers.prepareBuffer(std::string( "lightBuffer_" ) + std::to_string(i),
-                                           lightBuffer,
-                                           d->lightTextureSize,
-                                           d->lightTextureSize,
-                                           CreateColorBuffer::No,
-                                           Multisample::No,
-                                           HDR::No,
-                                           ExtendedFBO::No,
-                                           levels,
-                                           d->lightLevelIndex,
-                                           true))
-                return;
+            DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers (B)");
+            d->controller->setCurrentLight(light);
+            DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers (C)");
+            lightBuffer.worldToTexture = d->controller->lightMatrices();
+            DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers (D)");
 
-              DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers (B)");
-              d->controller->setCurrentLight(light, d->lightLevelIndex);
-              DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers (C)");
-              lightBuffer.worldToTexture[d->lightLevelIndex] = d->controller->lightMatrices();
-              DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers (D)");
+            if(light.castShadows)
+              d->render();
 
-              if(light.castShadows)
-                d->render();
-
-              DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers (E)");
-            }
-
-            // Increment.
-            ++d->lightLevelIndex;
-            renderTime = d->renderTimer.elapsed();
+            DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers (E)");
           }
-
-          // Carry on rendering levels later.
-          if (d->lightLevelIndex < levels)
-            d->renderFromStage = RenderFromStage::RenderMoreLights;
 
           DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers");
 
@@ -1666,8 +1570,6 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
                                        Multisample::Yes,
                                        hdr(),
                                        extendedFBO(),
-                                       1,
-                                       0,
                                        true))
           {
             Errors::printOpenGLError("RenderPass::PrepareDrawFBO");
@@ -1698,8 +1600,6 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
                                        multisample,
                                        hdr(),
                                        extendedFBO(),
-                                       1,
-                                       0,
                                        true))
           {
             Errors::printOpenGLError("RenderPass::SwapDrawFBO " + renderPass.getNameString());
@@ -1730,8 +1630,6 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer, bool render
                                        multisample,
                                        hdr(),
                                        extendedFBO(),
-                                       1,
-                                       0,
                                        false))
           {
             Errors::printOpenGLError("RenderPass::SwapDrawFBO " + renderPass.getNameString() + "NoClear");

@@ -21,7 +21,6 @@ nlohmann::json FBOWindow::saveState() const
 
   j["fboName"] = fboName;
   j["source"] = fboLayerSourceToString(source);
-  j["level"]  = level;
   j["origin"] = tp_math_utils::vec2ToJSON(origin);
   j["size"  ] = tp_math_utils::vec2ToJSON(size  );
 
@@ -33,7 +32,6 @@ void FBOWindow::loadState(const nlohmann::json& j)
 {
   fboName = TPJSONString(j, "fboName");
   source  = fboLayerSourceFromString(TPJSONString(j, "source"));
-  level   = TPJSONSizeT(j, "level");
   origin  = TPJSONVec2(j, "origin", origin);
   size    = TPJSONVec2(j, "size", size);
 }
@@ -266,10 +264,7 @@ void FBOLayer::render(RenderInfo& renderInfo)
 
     shader->use(renderInfo.shaderType());
     shader->setMatrix(matrix);
-    if(fbo->levels == 1)
-      shader->setTexture(textureID);
-    else
-      shader->setTexture3D(textureID, window.level);
+    shader->setTexture(textureID);
 
     glScissor(0, 0, map()->width(), map()->height());
 

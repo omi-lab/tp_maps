@@ -64,14 +64,6 @@ void G3DImageShader::setTexture(GLuint textureID)
 }
 
 //##################################################################################################
-void G3DImageShader::setTexture3D(GLuint textureID, size_t level)
-{
-  TP_UNUSED(level);
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_3D, textureID);
-}
-
-//##################################################################################################
 void G3DImageShader::draw(GLenum mode, VertexBuffer* vertexBuffer, const glm::vec4& color)
 {
   glUniform4fv(d->colorLocation, 1, &color.x);
@@ -186,17 +178,6 @@ void G3DImageShader::getLocations(GLuint program, ShaderType shaderType)
 
   if(d->colorLocation<0)
     tpWarning() << "G3DImageShader d->colorLocation: " << d->colorLocation;
-}
-
-//##################################################################################################
-const char* G3DImage3DShader::fragmentShaderStr(ShaderType shaderType)
-{
-  static ShaderResource s{"/tp_maps/G3DImage3DShader.frag"};
-
-  if(shaderType == ShaderType::Picking)
-    return G3DImageShader::fragmentShaderStr(shaderType);
-
-  return s.data(shaderProfile(), shaderType);
 }
 
 }

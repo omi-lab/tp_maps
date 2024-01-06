@@ -30,9 +30,6 @@ public:
   void setTexture(GLuint textureID);
 
   //################################################################################################
-  void setTexture3D(GLuint textureID, size_t level);
-
-  //################################################################################################
   void draw(GLenum mode, VertexBuffer* vertexBuffer, const glm::vec4& color);
 
   //################################################################################################
@@ -79,22 +76,6 @@ protected:
 
   //################################################################################################
   void getLocations(GLuint program, ShaderType shaderType) override;
-};
-
-//##################################################################################################
-//! Used to textures with multiple levels (3D textures).
-class TP_MAPS_EXPORT G3DImage3DShader: public G3DImageShader
-{
-public:
-  //################################################################################################
-  static inline const tp_utils::StringID& name(){return image3DShaderSID();}
-
-  //################################################################################################
-  using G3DImageShader::G3DImageShader;
-
-protected:
-  //################################################################################################
-  const char* fragmentShaderStr(ShaderType shaderType) override;
 };
 
 }

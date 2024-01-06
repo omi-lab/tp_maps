@@ -25,7 +25,6 @@
         <file preprocess="shader" alias="MergeAmbientOcclusionShader.frag">resources/shaders/MergeAmbientOcclusionShader.frag</file>
         <file preprocess="shader" alias="G3DImageShader.frag">resources/shaders/G3DImageShader.frag</file>
         <file preprocess="shader" alias="G3DImageShader.vert">resources/shaders/G3DImageShader.vert</file>
-        <file preprocess="shader" alias="G3DImage3DShader.frag">resources/shaders/G3DImage3DShader.frag</file>
         <file preprocess="shader" alias="G3DDepthShader.frag">resources/shaders/G3DDepthShader.frag</file>
         <file preprocess="shader" alias="G3DXYZShader.vert">resources/shaders/G3DXYZShader.vert</file>
         <file preprocess="shader" alias="G3DXYZShader.frag">resources/shaders/G3DXYZShader.frag</file>
@@ -39,7 +38,6 @@
         <file preprocess="shader" alias="G3DStaticLightShader.render.vert">resources/shaders/G3DStaticLightShader.render.vert</file>
         <file preprocess="shader" alias="G3DYUVImageShader.frag">resources/shaders/G3DYUVImageShader.frag</file>
         <file preprocess="shader" alias="G3DDepthImageShader.frag">resources/shaders/G3DDepthImageShader.frag</file>
-        <file preprocess="shader" alias="G3DDepthImage3DShader.frag">resources/shaders/G3DDepthImage3DShader.frag</file>
         <file preprocess="shader" alias="PostSSAOShader.frag">resources/shaders/PostSSAOShader.frag</file>
         <file preprocess="shader" alias="PostSSRShader.frag">resources/shaders/PostSSRShader.frag</file>
         <file preprocess="shader" alias="PostGammaShader.frag">resources/shaders/PostGammaShader.frag</file>

@@ -160,8 +160,6 @@ void PostDoFLayer::render(tp_maps::RenderInfo& renderInfo)
                                        Multisample::No,
                                        HDR::No,
                                        ExtendedFBO::No,
-                                       1,
-                                       0,
                                        true))
     {
       Errors::printOpenGLError("Focus calc FBO creation failed!");
@@ -188,8 +186,6 @@ void PostDoFLayer::render(tp_maps::RenderInfo& renderInfo)
                                        Multisample::No,
                                        HDR::No,
                                        ExtendedFBO::No,
-                                       1,
-                                       0,
                                        true))
     {
       Errors::printOpenGLError("Downsampled focus calc FBO creation failed!");
@@ -225,8 +221,6 @@ void PostDoFLayer::render(tp_maps::RenderInfo& renderInfo)
                                        Multisample::No,
                                        HDR::No,
                                        ExtendedFBO::No,
-                                       1,
-                                       0,
                                        true))
     {
       Errors::printOpenGLError("Downsample FBO creation failed!");

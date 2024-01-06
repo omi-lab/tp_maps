@@ -113,7 +113,6 @@ struct UniformLocations_lt
   GLint                             txlSizeLocation{0};
   GLint                       shadowSamplesLocation{0};
   GLint                      discardOpacityLocation{0};
-  GLint                        lightOffsetsLocation{0};
 
   GLint                         rgbaTextureLocation{0};
   GLint                      normalsTextureLocation{0};
@@ -200,8 +199,6 @@ struct G3DMaterialShader::Private
           maxLights = size_t(textureUnits) - size_t(staticTextures);
       }
 
-      LIGHT_FRAG_VARS += "uniform vec3 lightOffsets["+std::to_string(q->map()->maxSpotLightLevels())+"];\n";
-
       const auto& lights = q->map()->lights();
       size_t iMax = tpMin(maxLights, lights.size());
       for(size_t i=0; i<iMax; i++)
@@ -209,65 +206,46 @@ struct G3DMaterialShader::Private
         const auto& light = lights.at(i);
         auto ii = std::to_string(i);
 
-        size_t levels = (light.type==tp_math_utils::LightType::Spot)?q->map()->maxSpotLightLevels():1;
-        auto ll = std::to_string(levels);
+        LIGHT_VERT_VARS += replaceLight(ii, "uniform mat4 worldToLight%_view;\n");
+        LIGHT_VERT_VARS += replaceLight(ii, "uniform mat4 worldToLight%_proj;\n");
 
-        LIGHT_VERT_VARS += replaceLight(ii, ll, "uniform mat4 worldToLight%_view;\n");
-        LIGHT_VERT_VARS += replaceLight(ii, ll, "uniform mat4 worldToLight%_proj;\n");
+        LIGHT_VERT_VARS += replaceLight(ii, "TP_GLSL_OUT_V vec4 fragPos_light%View;\n\n");
 
-        LIGHT_VERT_VARS += replaceLight(ii, ll, "TP_GLSL_OUT_V vec4 fragPos_light%View;\n\n");
+        LIGHT_VERT_CALC += replaceLight(ii, "  fragPos_light%View = worldToLight%_view * (m * vec4(inVertex, 1.0));\n");
 
-        LIGHT_VERT_CALC += replaceLight(ii, ll, "  fragPos_light%View = worldToLight%_view * (m * vec4(inVertex, 1.0));\n");
-
-        LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform vec3 light%Direction_world;\n");
-        LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform Light light%;\n");
-        LIGHT_FRAG_VARS += replaceLight(ii, ll, "TP_GLSL_IN_F vec4 fragPos_light%View;\n\n");
-        LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform mat4 worldToLight%_proj;\n");
+        LIGHT_FRAG_VARS += replaceLight(ii, "uniform vec3 light%Direction_world;\n");
+        LIGHT_FRAG_VARS += replaceLight(ii, "uniform Light light%;\n");
+        LIGHT_FRAG_VARS += replaceLight(ii, "TP_GLSL_IN_F vec4 fragPos_light%View;\n\n");
+        LIGHT_FRAG_VARS += replaceLight(ii, "uniform mat4 worldToLight%_proj;\n");
 
         LIGHT_FRAG_CALC += "\n  {\n";
-        LIGHT_FRAG_CALC += replaceLight(ii, ll, "    vec3 ldNormalized;\n");
+        LIGHT_FRAG_CALC += replaceLight(ii, "    vec3 ldNormalized;\n");
 
-        LIGHT_FRAG_CALC += replaceLight(ii, ll, "    float shadow=0.0;\n");
+        LIGHT_FRAG_CALC += replaceLight(ii, "    float shadow=0.0;\n");
         switch(light.type)
         {
         case tp_math_utils::LightType::Global:[[fallthrough]];
         case tp_math_utils::LightType::Directional:
         {
-          LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform highp sampler2D light%Texture;\n");
-          LIGHT_FRAG_CALC += replaceLight(ii, ll, "    ldNormalized = normalize(invmTBN * light%Direction_world);\n");
-          LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = directionalLight(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec2(0,0), worldToLight%_proj));\n");
+          LIGHT_FRAG_VARS += replaceLight(ii, "uniform highp sampler2D light%Texture;\n");
+          LIGHT_FRAG_CALC += replaceLight(ii, "    ldNormalized = normalize(invmTBN * light%Direction_world);\n");
+          LIGHT_FRAG_CALC += replaceLight(ii, "    LightResult r = directionalLight(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec2(0,0), worldToLight%_proj));\n");
           break;
         }
 
         case tp_math_utils::LightType::Spot:
         {
-          LIGHT_FRAG_CALC += replaceLight(ii, ll, "    {\n");
-          LIGHT_FRAG_CALC += replaceLight(ii, ll, "        vec4 a = worldToTangent * vec4(light%.position, 1.0);\n");
-          LIGHT_FRAG_CALC += replaceLight(ii, ll, "        ldNormalized = normalize(fragPos_tangent - a.xyz/a.w);\n");
-          LIGHT_FRAG_CALC += replaceLight(ii, ll, "    }\n");
+          LIGHT_FRAG_CALC += replaceLight(ii, "    {\n");
+          LIGHT_FRAG_CALC += replaceLight(ii, "        vec4 a = worldToTangent * vec4(light%.position, 1.0);\n");
+          LIGHT_FRAG_CALC += replaceLight(ii, "        ldNormalized = normalize(fragPos_tangent - a.xyz/a.w);\n");
+          LIGHT_FRAG_CALC += replaceLight(ii, "    }\n");
 
-          if(q->map()->maxSpotLightLevels() == 1)
-          {
-            LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform highp sampler2D light%Texture;\n");
-            LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow += spotLightSampleShadow2D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec2(0,0), worldToLight%_proj));\n");
-            LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totShadowSamples();\n");
-          }
-          else
-          {
-            LIGHT_FRAG_VARS += replaceLight(ii, ll, "uniform sampler3D light%Texture;\n");
-            LIGHT_FRAG_CALC += "    vec2 offset;\n";
+          LIGHT_FRAG_VARS += replaceLight(ii, "uniform highp sampler2D light%Texture;\n");
+          LIGHT_FRAG_CALC += replaceLight(ii, "    shadow += spotLightSampleShadow2D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, vec2(0,0), worldToLight%_proj));\n");
+          LIGHT_FRAG_CALC += replaceLight(ii, "    shadow /= totShadowSamples();\n");
 
-            for (size_t levelIdx=0; levelIdx < levels; ++levelIdx)
-            {
-              LIGHT_FRAG_CALC += replaceLight(ii, std::to_string(levelIdx), "    offset = computeLightOffset(light%, @);\n");
-              LIGHT_FRAG_CALC += replaceLight(ii, std::to_string(levelIdx), "    shadow += spotLightSampleShadow3D(norm, light%, ldNormalized, light%Texture, lightPosToTexture(fragPos_light%View, offset, worldToLight%_proj), lightOffsets[@].z);\n");
-            }
-
-            LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow /= totShadowSamples() * @.0;\n");
-          }
-
-          LIGHT_FRAG_CALC += replaceLight(ii, ll, "    shadow = mix(1.0, shadow, material.useShadow);\n");
-          LIGHT_FRAG_CALC += replaceLight(ii, ll, "    LightResult r = spotLight(norm, light%, ldNormalized, lightPosToTexture(fragPos_light%View, vec2(0,0), worldToLight%_proj), shadow);\n");
+          LIGHT_FRAG_CALC += replaceLight(ii, "    shadow = mix(1.0, shadow, material.useShadow);\n");
+          LIGHT_FRAG_CALC += replaceLight(ii, "    LightResult r = spotLight(norm, light%, ldNormalized, lightPosToTexture(fragPos_light%View, vec2(0,0), worldToLight%_proj), shadow);\n");
           break;
         }
         }
@@ -379,15 +357,11 @@ void G3DMaterialShader::setLights(const std::vector<tp_math_utils::Light>& light
         const auto& lightBuffer = lightBuffers.at(i);
         const auto& lightLocations = locations.lightLocations.at(i);
 
-        glUniformMatrix4fv(lightLocations.worldToLightViewLocation, 1, GL_FALSE, glm::value_ptr(lightBuffer.worldToTexture[0].v));
-        glUniformMatrix4fv(lightLocations.worldToLightProjLocation, 1, GL_FALSE, glm::value_ptr(lightBuffer.worldToTexture[0].p));
+        glUniformMatrix4fv(lightLocations.worldToLightViewLocation, 1, GL_FALSE, glm::value_ptr(lightBuffer.worldToTexture.v));
+        glUniformMatrix4fv(lightLocations.worldToLightProjLocation, 1, GL_FALSE, glm::value_ptr(lightBuffer.worldToTexture.p));
 
         glActiveTexture(GLenum(GL_TEXTURE6 + i));
-
-        if(lightBuffer.levels == 1)
-          glBindTexture(GL_TEXTURE_2D, lightBuffer.depthID);
-        else
-          glBindTexture(GL_TEXTURE_3D, lightBuffer.depthID);
+        glBindTexture(GL_TEXTURE_2D, lightBuffer.depthID);
 
         glUniform1i(lightLocations.lightTextureIDLocation, GLint(6 + i));
       }
@@ -401,35 +375,6 @@ void G3DMaterialShader::setLights(const std::vector<tp_math_utils::Light>& light
     }
 
     setShadowSamples(map()->fastRender() ? map()->shadowSamplesFastRender()  : map()->shadowSamples());
-  };
-
-  if(currentShaderType() == ShaderType::Render)
-    exec(d->renderLocations);
-
-  else if(currentShaderType() == ShaderType::RenderExtendedFBO)
-    exec(d->renderHDRLocations);
-}
-
-//##################################################################################################
-void G3DMaterialShader::setLightOffsets(size_t renderedlightLevels)
-{
-  if(renderedlightLevels<1)
-    renderedlightLevels=1;
-
-  auto exec = [&](const UniformLocations_lt& locations)
-  {
-    size_t lightLevels = map()->maxSpotLightLevels();
-
-    std::vector<glm::vec3> lightOffsets;
-    lightOffsets.reserve(lightLevels);
-    for (size_t levelIndex = 0; levelIndex < lightLevels; ++levelIndex)
-    {
-      // If the light level hasn't been rendered, re-use an existing light level.
-      size_t availableLevelIdx = levelIndex % renderedlightLevels;
-      float levelTexCoord = float(availableLevelIdx)/float(lightLevels-1);
-      lightOffsets.emplace_back(glm::vec3(tp_math_utils::Light::lightLevelOffsets()[availableLevelIdx], levelTexCoord));
-    }
-    glUniform3fv(locations.lightOffsetsLocation, GLsizei(lightLevels), glm::value_ptr(lightOffsets[0]));
   };
 
   if(currentShaderType() == ShaderType::Render)
@@ -634,7 +579,6 @@ void G3DMaterialShader::getLocations(GLuint program, ShaderType shaderType)
     locations.txlSizeLocation                = loc(program, "txlSize");
     locations.shadowSamplesLocation          = loc(program, "shadowSamples");
     locations.discardOpacityLocation         = loc(program, "discardOpacity");
-    locations.lightOffsetsLocation           = loc(program, "lightOffsets");
 
     locations.     rgbaTextureLocation       = loc(program, "rgbaTexture"     );
     locations.  normalsTextureLocation       = loc(program, "normalsTexture"  );
@@ -650,28 +594,28 @@ void G3DMaterialShader::getLocations(GLuint program, ShaderType shaderType)
 
       auto ii = std::to_string(i);
 
-      lightLocations.worldToLightViewLocation = loc(program, replaceLight(ii, "", "worldToLight%_view").c_str());
-      lightLocations.worldToLightProjLocation = loc(program, replaceLight(ii, "", "worldToLight%_proj").c_str());
+      lightLocations.worldToLightViewLocation = loc(program, replaceLight(ii, "worldToLight%_view").c_str());
+      lightLocations.worldToLightProjLocation = loc(program, replaceLight(ii, "worldToLight%_proj").c_str());
 
-      lightLocations.positionLocation         = loc(program, replaceLight(ii, "", "light%.position").c_str());
-      lightLocations.directionLocation        = loc(program, replaceLight(ii, "", "light%Direction_world").c_str());
-      lightLocations.ambientLocation          = loc(program, replaceLight(ii, "", "light%.ambient").c_str());
-      lightLocations.diffuseLocation          = loc(program, replaceLight(ii, "", "light%.diffuse").c_str());
-      lightLocations.diffuseScaleLocation     = loc(program, replaceLight(ii, "", "light%.diffuseScale").c_str());
+      lightLocations.positionLocation         = loc(program, replaceLight(ii, "light%.position").c_str());
+      lightLocations.directionLocation        = loc(program, replaceLight(ii, "light%Direction_world").c_str());
+      lightLocations.ambientLocation          = loc(program, replaceLight(ii, "light%.ambient").c_str());
+      lightLocations.diffuseLocation          = loc(program, replaceLight(ii, "light%.diffuse").c_str());
+      lightLocations.diffuseScaleLocation     = loc(program, replaceLight(ii, "light%.diffuseScale").c_str());
 
-      lightLocations.constantLocation         = loc(program, replaceLight(ii, "", "light%.constant").c_str());
-      lightLocations.linearLocation           = loc(program, replaceLight(ii, "", "light%.linear").c_str());
-      lightLocations.quadraticLocation        = loc(program, replaceLight(ii, "", "light%.quadratic").c_str());
-      lightLocations.spotLightBlendLocation   = loc(program, replaceLight(ii, "", "light%.spotLightBlend").c_str());
+      lightLocations.constantLocation         = loc(program, replaceLight(ii, "light%.constant").c_str());
+      lightLocations.linearLocation           = loc(program, replaceLight(ii, "light%.linear").c_str());
+      lightLocations.quadraticLocation        = loc(program, replaceLight(ii, "light%.quadratic").c_str());
+      lightLocations.spotLightBlendLocation   = loc(program, replaceLight(ii, "light%.spotLightBlend").c_str());
 
-      lightLocations.nearLocation             = loc(program, replaceLight(ii, "", "light%.near").c_str());
-      lightLocations.farLocation              = loc(program, replaceLight(ii, "", "light%.far").c_str());
+      lightLocations.nearLocation             = loc(program, replaceLight(ii, "light%.near").c_str());
+      lightLocations.farLocation              = loc(program, replaceLight(ii, "light%.far").c_str());
 
-      lightLocations.offsetScaleLocation      = loc(program, replaceLight(ii, "", "light%.offsetScale").c_str());
+      lightLocations.offsetScaleLocation      = loc(program, replaceLight(ii, "light%.offsetScale").c_str());
 
-      lightLocations.fovLocation              = loc(program, replaceLight(ii, "", "light%.fov").c_str());
+      lightLocations.fovLocation              = loc(program, replaceLight(ii, "light%.fov").c_str());
       
-      lightLocations.lightTextureIDLocation   = loc(program, replaceLight(ii, "", "light%Texture").c_str());
+      lightLocations.lightTextureIDLocation   = loc(program, replaceLight(ii, "light%Texture").c_str());
     }
   };
 
@@ -815,7 +759,6 @@ void G3DMaterialShader::initPass(RenderInfo& renderInfo,
   use(renderInfo.shaderType());
   setMatrix(modelToWorldMatrix, m.v, m.p);
   setLights(map()->lights(), map()->lightBuffers());
-  setLightOffsets(map()->renderedLightLevels());
 }
 
 //##################################################################################################

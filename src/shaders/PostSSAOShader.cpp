@@ -78,8 +78,8 @@ void PostSSAOShader::setLights(const std::vector<tp_math_utils::Light>& lights, 
       const auto& lightLocations = d->lightLocations.at(i);
 
       auto invCameraV = glm::inverse(map()->controller()->matrices(tp_maps::defaultSID()).v);
-      const auto& lightV = lightBuffer.worldToTexture[0].v;
-      const auto& lightP = lightBuffer.worldToTexture[0].p;
+      const auto& lightV = lightBuffer.worldToTexture.v;
+      const auto& lightP = lightBuffer.worldToTexture.p;
 
       glm::mat4 viewToLight = lightP * lightV * invCameraV;
       glm::mat4 invViewToLight = glm::inverse(viewToLight);
@@ -88,11 +88,7 @@ void PostSSAOShader::setLights(const std::vector<tp_math_utils::Light>& lights, 
       glUniformMatrix4fv(lightLocations.invViewToLightProjLocation, 1, GL_FALSE, glm::value_ptr(invViewToLight));
 
       glActiveTexture(GLenum(GL_TEXTURE6 + i));
-
-      if(lightBuffer.levels == 1)
-        glBindTexture(GL_TEXTURE_2D, lightBuffer.depthID);
-      else
-        glBindTexture(GL_TEXTURE_3D, lightBuffer.depthID);
+      glBindTexture(GL_TEXTURE_2D, lightBuffer.depthID);
 
       glUniform1i(lightLocations.lightTextureIDLocation, GLint(6 + i));
     }
@@ -146,25 +142,13 @@ const char* PostSSAOShader::fragmentShaderStr(ShaderType shaderType)
     size_t iMax = tpMin(d->maxLights, lights.size());
     for(size_t i=0; i<iMax; i++)
     {
-      const auto& light = lights.at(i);
       auto ii = std::to_string(i);
 
-      size_t levels = (light.type==tp_math_utils::LightType::Spot)?map->maxSpotLightLevels():1;
-      auto ll = std::to_string(levels);
+      AO_FRAG_VARS += replaceLight(ii, "uniform mat4 viewToLight%;\n");
+      AO_FRAG_VARS += replaceLight(ii, "uniform mat4 invViewToLight%;\n");
 
-      AO_FRAG_VARS += replaceLight(ii, ll, "uniform mat4 viewToLight%;\n");
-      AO_FRAG_VARS += replaceLight(ii, ll, "uniform mat4 invViewToLight%;\n");
-
-      if(map->maxSpotLightLevels() == 1)
-      {
-        AO_FRAG_VARS += replaceLight(ii, ll, "uniform sampler2D light%Texture;\n");
-        AO_FRAG_CALC += replaceLight(ii, ll, "    occlusion = min(testBuffer2D(coord_view, samplePos_view, viewToLight%, invViewToLight%, light%Texture), occlusion);\n");
-      }
-      else
-      {
-        AO_FRAG_VARS += replaceLight(ii, ll, "uniform sampler3D light%Texture;\n");
-        AO_FRAG_CALC += replaceLight(ii, ll, "    occlusion = min(testBuffer3D(coord_view, samplePos_view, viewToLight%, invViewToLight%, light%Texture), occlusion);\n");
-      }
+      AO_FRAG_VARS += replaceLight(ii, "uniform sampler2D light%Texture;\n");
+      AO_FRAG_CALC += replaceLight(ii, "    occlusion = min(testBuffer2D(coord_view, samplePos_view, viewToLight%, invViewToLight%, light%Texture), occlusion);\n");
     }
   }
 
@@ -191,9 +175,9 @@ void PostSSAOShader::getLocations(GLuint program, ShaderType shaderType)
 
     auto ii = std::to_string(i);
 
-    lightLocations.   viewToLightProjLocation = glGetUniformLocation(program, replaceLight(ii, "",    "viewToLight%").c_str());
-    lightLocations.invViewToLightProjLocation = glGetUniformLocation(program, replaceLight(ii, "", "invViewToLight%").c_str());
-    lightLocations.lightTextureIDLocation     = glGetUniformLocation(program, replaceLight(ii, "", "light%Texture"  ).c_str());
+    lightLocations.   viewToLightProjLocation = glGetUniformLocation(program, replaceLight(ii,    "viewToLight%").c_str());
+    lightLocations.invViewToLightProjLocation = glGetUniformLocation(program, replaceLight(ii, "invViewToLight%").c_str());
+    lightLocations.lightTextureIDLocation     = glGetUniformLocation(program, replaceLight(ii, "light%Texture"  ).c_str());
   }
 }
 

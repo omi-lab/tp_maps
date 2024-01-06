@@ -189,38 +189,6 @@ struct Buffers::Private
   }
 
   //################################################################################################
-  void create3DDepthTexture(GLuint& depthID, size_t width, size_t height, size_t levels)
-  {
-    glGenTextures(1, &depthID);
-
-    glBindTexture(GL_TEXTURE_3D, depthID);
-
-    switch(map->shaderProfile())
-    {
-        case ShaderProfile::GLSL_100_ES:
-      glTexImage3D(GL_TEXTURE_3D, 0, GL_DEPTH_COMPONENT, TPGLsizei(width), TPGLsizei(height), TPGLsizei(levels), 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
-      break;
-
-        case ShaderProfile::GLSL_300_ES: [[fallthrough]];
-        case ShaderProfile::GLSL_310_ES: [[fallthrough]];
-        case ShaderProfile::GLSL_320_ES:
-      glTexImage3D(GL_TEXTURE_3D, 0, depthFormatF(), TPGLsizei(width), TPGLsizei(height), TPGLsizei(levels), 0, GL_RED, GL_FLOAT, nullptr);
-      break;
-
-    default:
-      glTexImage3D(GL_TEXTURE_3D, 0, depthFormatF(), TPGLsizei(width), TPGLsizei(height), TPGLsizei(levels), 0, GL_RED, GL_UNSIGNED_SHORT, nullptr);
-      break;
-    }
-
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    DEBUG_printOpenGLError("create3DDepthTexture generate 3D texture for depth buffer");
-  }
-
-  //################################################################################################
   void createColorRBO(GLuint& rboID, size_t width, size_t height, HDR hdr, Alpha alpha, GLenum attachment)
   {
     glGenRenderbuffers(1, &rboID);
@@ -288,8 +256,6 @@ struct Buffers::Private
   \param multisample should be true to enable antialiasing (MSAA).
   \param hdr are we using 8 bit or HDR buffers.
   \param extendedFBO are we creating extra buffers for normals and specular.
-  \param levels controls the number of textures to generate for a shadow texture, else 1.
-  \param level index to bind when rendering lights.
 
   \return true if we managed to create a functional FBO.
   */
@@ -301,8 +267,6 @@ struct Buffers::Private
                      Multisample multisample,
                      HDR hdr,
                      ExtendedFBO extendedFBO,
-                     size_t levels,
-                     size_t level,
                      bool clear)
   {
     DEBUG_printOpenGLError("prepareBuffer Start");
@@ -323,23 +287,16 @@ struct Buffers::Private
     }
 #endif
 
-#ifndef TP_ENABLE_3D_TEXTURE
-    levels = 1;
-#endif
-
     multisample = (multisample==Multisample::Yes && (samples>1))?Multisample::Yes:Multisample::No;
 
-    if(buffer.width!=width || buffer.height!=height || buffer.levels!=levels || buffer.samples!=samples || buffer.hdr != hdr || buffer.extendedFBO != extendedFBO || buffer.multisample != multisample)
+    if(buffer.width!=width || buffer.height!=height || buffer.samples!=samples || buffer.hdr != hdr || buffer.extendedFBO != extendedFBO || buffer.multisample != multisample)
       deleteBuffer(buffer);
-
-    buffer.level = level;
 
     if(!buffer.frameBuffer)
     {
       glGenFramebuffers(1, &buffer.frameBuffer);
       buffer.width       = width;
       buffer.height      = height;
-      buffer.levels      = levels;
       buffer.samples     = samples;
       buffer.hdr         = hdr;
       buffer.extendedFBO = extendedFBO;
@@ -358,11 +315,6 @@ struct Buffers::Private
         createColorBuffer = CreateColorBuffer::Yes;
     }
 
-#ifdef TP_ENABLE_3D_TEXTURE
-    if(levels != 1)
-      createColorBuffer = CreateColorBuffer::No;
-#endif
-
     if(createColorBuffer == CreateColorBuffer::Yes)
     {
       if(!buffer.textureID)
@@ -372,54 +324,6 @@ struct Buffers::Private
       DEBUG_printOpenGLError("prepareBuffer bind 2D texture to FBO");
     }
 
-#ifdef TP_ENABLE_3D_TEXTURE
-    if(levels != 1)
-    {
-      //It's not possible to bind a 3D texture as a depth buffer, so we bind it as the color buffer
-      //and copy the depth values to that color buffer.
-      //The 3D depth buffer is bound as GL_COLOR_ATTACHMENT0.
-      if(!buffer.depthID)
-        create3DDepthTexture(buffer.depthID, width, height, levels);
-
-      if(!buffer.textureID)
-      {
-        // For most OpenGL versions, we do however still require an actual depth
-        //buffer to perform depth tests against. So here textureID gets prepared as a 2D depth buffer.
-        //The 2D depth buffer is bound as GL_DEPTH_ATTACHMENT.
-        switch(map->shaderProfile())
-        {
-        default:
-          create2DDepthTexture(buffer.textureID, width, height);
-          break;
-
-            case ShaderProfile::GLSL_300_ES: [[fallthrough]];
-            case ShaderProfile::GLSL_310_ES: [[fallthrough]];
-            case ShaderProfile::GLSL_320_ES:
-          break;
-        }
-      }
-
-#ifdef TP_GLES3
-      // glFramebufferTexture3D is not supported in GLES.
-      glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, buffer.depthID, 0, GLint(level));
-#else
-      glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, buffer.depthID, 0, GLint(level));
-#endif
-      switch(map->shaderProfile())
-      {
-      default:
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer.textureID, 0);
-        break;
-
-          case ShaderProfile::GLSL_300_ES: [[fallthrough]];
-          case ShaderProfile::GLSL_310_ES: [[fallthrough]];
-          case ShaderProfile::GLSL_320_ES:
-        break;
-      }
-      DEBUG_printOpenGLError("prepareBuffer bind 3D texture to FBO as color but to store depth");
-    }
-    else
-#endif
     {
       if(!buffer.depthID)
         create2DDepthTexture(buffer.depthID, width, height);
@@ -499,14 +403,8 @@ struct Buffers::Private
     {
       glClearDepthf(1.0f);
 
-      if(levels!=1)
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-      else
-      {
-        auto backgroundColor = map->backgroundColor();
-        glClearColor(backgroundColor.x, backgroundColor.y, backgroundColor.z, 1.0f);
-      }
-
+      auto backgroundColor = map->backgroundColor();
+      glClearColor(backgroundColor.x, backgroundColor.y, backgroundColor.z, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
@@ -694,8 +592,6 @@ bool Buffers::prepareBuffer(const std::string& name,
                             Multisample multisample,
                             HDR hdr,
                             ExtendedFBO extendedFBO,
-                            size_t levels,
-                            size_t level,
                             bool clear) const
 {
   return d->prepareBuffer( name,
@@ -706,8 +602,6 @@ bool Buffers::prepareBuffer(const std::string& name,
                            multisample,
                            hdr,
                            extendedFBO,
-                           levels,
-                           level,
                            clear);
 }
 

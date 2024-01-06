@@ -70,7 +70,7 @@ std::string shaderTypeToString(ShaderType shaderType)
 }
 
 //##################################################################################################
-std::string replaceLight(const std::string& lightIndex, const std::string& levels, const std::string& pattern)
+std::string replaceLight(const std::string& lightIndex, const std::string& pattern)
 {
   std::string result = pattern;
 
@@ -85,7 +85,6 @@ std::string replaceLight(const std::string& lightIndex, const std::string& level
   };
 
   replace('%', lightIndex);
-  replace('@', levels);
   return result;
 }
 
@@ -117,7 +116,7 @@ std::string parseShaderString(const std::string& text, ShaderProfile shaderProfi
       replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.100.render.glsl", ShaderType::Render   );
       replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.100.hdr.glsl"   , ShaderType::RenderExtendedFBO);
       replace("TP_VERT_SHADER_HEADER",     "#version 110\n");
-      replace("TP_FRAG_SHADER_HEADER",     "#version 110\n#define NO_TEXTURE3D\n");
+      replace("TP_FRAG_SHADER_HEADER",     "#version 110\n");
       define ("TP_GLSL_IN_V",              "attribute ");
       define ("TP_GLSL_IN_F",              "varying ");
       define ("TP_GLSL_OUT_V",             "varying ");
@@ -133,7 +132,7 @@ std::string parseShaderString(const std::string& text, ShaderProfile shaderProfi
       replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.100.render.glsl", ShaderType::Render   );
       replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.100.hdr.glsl"   , ShaderType::RenderExtendedFBO);
       replace("TP_VERT_SHADER_HEADER",     "#version 120\n");
-      replace("TP_FRAG_SHADER_HEADER",     "#version 120\n#define NO_TEXTURE3D\n");
+      replace("TP_FRAG_SHADER_HEADER",     "#version 120\n");
       define ("TP_GLSL_IN_V",              "attribute ");
       define ("TP_GLSL_IN_F",              "varying ");
       define ("TP_GLSL_OUT_V",             "varying ");
@@ -325,7 +324,7 @@ std::string parseShaderString(const std::string& text, ShaderProfile shaderProfi
       replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.100.render.glsl", ShaderType::Render   );
       replaceRC("TP_WRITE_FRAGMENT", "WriteFragment.100.hdr.glsl"   , ShaderType::RenderExtendedFBO);
       replace("TP_VERT_SHADER_HEADER",     "#version 100\nprecision highp float;\n");
-      replace("TP_FRAG_SHADER_HEADER",     "#version 100\nprecision highp float;\n#define NO_TEXTURE3D\n");
+      replace("TP_FRAG_SHADER_HEADER",     "#version 100\nprecision highp float;\n");
       define ("TP_GLSL_IN_V",              "attribute ");
       define ("TP_GLSL_IN_F",              "varying ");
       define ("TP_GLSL_OUT_V",             "varying ");
