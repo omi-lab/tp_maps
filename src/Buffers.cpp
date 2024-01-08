@@ -39,12 +39,12 @@ struct Buffers::Private
 #else
     switch(map->shaderProfile())
     {
-        case ShaderProfile::GLSL_100_ES: [[fallthrough]];
-        case ShaderProfile::GLSL_300_ES: [[fallthrough]];
-        case ShaderProfile::GLSL_310_ES: [[fallthrough]];
-        case ShaderProfile::GLSL_320_ES:
+      case ShaderProfile::GLSL_100_ES: [[fallthrough]];
+      case ShaderProfile::GLSL_300_ES: [[fallthrough]];
+      case ShaderProfile::GLSL_310_ES: [[fallthrough]];
+      case ShaderProfile::GLSL_320_ES:
       return (alpha==Alpha::Yes)?GL_RGBA32F:GL_RGB16F;
-    default:
+      default:
       return (alpha==Alpha::Yes)?GL_RGBA32F:GL_RGB32F;
     }
 #endif
@@ -58,13 +58,13 @@ struct Buffers::Private
 #else
     switch(map->shaderProfile())
     {
-        case ShaderProfile::GLSL_100_ES: [[fallthrough]];
-        case ShaderProfile::GLSL_300_ES: [[fallthrough]];
-        case ShaderProfile::GLSL_310_ES: [[fallthrough]];
-        case ShaderProfile::GLSL_320_ES:
+      case ShaderProfile::GLSL_100_ES: [[fallthrough]];
+      case ShaderProfile::GLSL_300_ES: [[fallthrough]];
+      case ShaderProfile::GLSL_310_ES: [[fallthrough]];
+      case ShaderProfile::GLSL_320_ES:
       return GL_R32F;
 
-    default:
+      default:
       return GL_R32F;
     }
 #endif
@@ -92,14 +92,14 @@ struct Buffers::Private
       {
         switch (map->shaderProfile())
         {
-            case ShaderProfile::GLSL_100_ES: [[fallthrough]];
-            case ShaderProfile::GLSL_300_ES: [[fallthrough]];
-            case ShaderProfile::GLSL_310_ES: [[fallthrough]];
-            case ShaderProfile::GLSL_320_ES:
+          case ShaderProfile::GLSL_100_ES: [[fallthrough]];
+          case ShaderProfile::GLSL_300_ES: [[fallthrough]];
+          case ShaderProfile::GLSL_310_ES: [[fallthrough]];
+          case ShaderProfile::GLSL_320_ES:
           alpha = Alpha::Yes;
           break;
 
-        default:
+          default:
           break;
         }
       }
@@ -122,13 +122,13 @@ struct Buffers::Private
   {
     switch(map->shaderProfile())
     {
-        case ShaderProfile::GLSL_100_ES: [[fallthrough]];
-        case ShaderProfile::GLSL_300_ES: [[fallthrough]];
-        case ShaderProfile::GLSL_310_ES: [[fallthrough]];
-        case ShaderProfile::GLSL_320_ES:
+      case ShaderProfile::GLSL_100_ES: [[fallthrough]];
+      case ShaderProfile::GLSL_300_ES: [[fallthrough]];
+      case ShaderProfile::GLSL_310_ES: [[fallthrough]];
+      case ShaderProfile::GLSL_320_ES:
       break;
 
-    default:
+      default:
       glGenTextures(1, &multisampleTextureID);
       glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, multisampleTextureID);
 
@@ -163,19 +163,19 @@ struct Buffers::Private
 
     switch(map->shaderProfile())
     {
-        case ShaderProfile::GLSL_100_ES:
+      case ShaderProfile::GLSL_100_ES:
       glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, TPGLsizei(width), TPGLsizei(height), 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
       break;
 
-        case ShaderProfile::GLSL_300_ES: [[fallthrough]];
-        case ShaderProfile::GLSL_310_ES: [[fallthrough]];
-        case ShaderProfile::GLSL_320_ES:
+      case ShaderProfile::GLSL_300_ES: [[fallthrough]];
+      case ShaderProfile::GLSL_310_ES: [[fallthrough]];
+      case ShaderProfile::GLSL_320_ES:
 
       //          (GLenum target, GLint level,    GLint internalformat,    GLsizei width,    GLsizei height, GLint border,      GLenum format,  GLenum type, const void *pixels);
       glTexImage2D(GL_TEXTURE_2D,           0, TP_GL_DEPTH_COMPONENT32, TPGLsizei(width), TPGLsizei(height),            0, GL_DEPTH_COMPONENT,     GL_FLOAT,            nullptr);
       break;
 
-    default:
+      default:
       glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, TPGLsizei(width), TPGLsizei(height), 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
       break;
     }
@@ -230,11 +230,11 @@ struct Buffers::Private
   {
     switch(map->shaderProfile())
     {
-    default:
+      default:
       glDrawBuffers(TPGLsizei(buffers.size()), buffers.data());
       break;
 
-        case ShaderProfile::GLSL_100_ES:
+      case ShaderProfile::GLSL_100_ES:
       break;
     }
 
@@ -311,7 +311,7 @@ struct Buffers::Private
     // Some versions of OpenGL must have a color buffer even if we are not going to use it.
     if(createColorBuffer == CreateColorBuffer::No)
     {
-        if(map->shaderProfile() == ShaderProfile::GLSL_100_ES)
+      if(map->shaderProfile() == ShaderProfile::GLSL_100_ES)
         createColorBuffer = CreateColorBuffer::Yes;
     }
 
@@ -594,15 +594,15 @@ bool Buffers::prepareBuffer(const std::string& name,
                             ExtendedFBO extendedFBO,
                             bool clear) const
 {
-  return d->prepareBuffer( name,
-                           buffer,
-                           width,
-                           height,
-                           createColorBuffer,
-                           multisample,
-                           hdr,
-                           extendedFBO,
-                           clear);
+  return d->prepareBuffer(name,
+                          buffer,
+                          width,
+                          height,
+                          createColorBuffer,
+                          multisample,
+                          hdr,
+                          extendedFBO,
+                          clear);
 }
 
 //##################################################################################################
