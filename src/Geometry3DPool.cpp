@@ -103,7 +103,8 @@ struct PoolDetails_lt
   }
   
   //################################################################################################
-  static void overwriteExistingVertex(std::vector<G3DMaterialShader::Vertex>& verts, int i,
+  static void overwriteExistingVertex(std::vector<G3DMaterialShader::Vertex>& verts,
+                                      int i,
                                       const G3DMaterialShader::Vertex& v,
                                       int iref = -1)
   {
@@ -211,8 +212,8 @@ struct PoolDetails_lt
                     addTriangle(verts, indexes, v13, v12, v3);
                   
                     // overwrite two vertices of existing triangle
-                    overwriteExistingVertex(verts, n+1, v12);
-                    overwriteExistingVertex(verts, n+2, v13);
+                    overwriteExistingVertex(verts, int(n+1), v12);
+                    overwriteExistingVertex(verts, int(n+2), v13);
                   }
                   // check for case that vertex 2 is inconsistent with vertices 1,3
                   else if(dot12 < 0.f && dot13 > 0.f && dot23 < 0.f)
@@ -226,8 +227,8 @@ struct PoolDetails_lt
                     addTriangle(verts, indexes, v12, v23, v1);
 
                     // overwrite two vertices of existing triangle
-                    overwriteExistingVertex(verts, n+2, v23);
-                    overwriteExistingVertex(verts, n,   v12);
+                    overwriteExistingVertex(verts, int(n+2), v23);
+                    overwriteExistingVertex(verts, int(n  ), v12);
                   }
                   // check for case that vertex 3 is inconsistent with vertices 1,2
                   else if(dot12 > 0.f && dot13 < 0.f && dot23 < 0.f)
@@ -241,8 +242,8 @@ struct PoolDetails_lt
                     addTriangle(verts, indexes, v23, v13, v2);
 
                     // overwrite two vertices of existing triangle
-                    overwriteExistingVertex(verts, n,   v13);
-                    overwriteExistingVertex(verts, n+1, v23);
+                    overwriteExistingVertex(verts, int(n  ), v13);
+                    overwriteExistingVertex(verts, int(n+1), v23);
                   }
 #if 0
                   // check for unhandled case - split into four triangles
