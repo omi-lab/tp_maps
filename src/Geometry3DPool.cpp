@@ -98,8 +98,6 @@ struct PoolDetails_lt
     verts.push_back(vert3);
     //auto& v3 = verts.back();
     indexes.push_back(GLuint(indexes.size()));
-    if(checkSign && axisDot(vert1.tbnq, vert3.tbnq) < 0.f)
-      tpDebug() << "Here 3";
   }
   
   //################################################################################################
@@ -159,9 +157,6 @@ struct PoolDetails_lt
                   tbnq = -tbnq;
 
                 verts.emplace_back(G3DMaterialShader::Vertex(v.vert, tbnq, v.texture));
-                //auto dotNT = glm::abs(glm::dot(v.normal, tangent.at(idx)));
-                // if(dotNT > 0.99f)
-                //   tpDebug() << "Inconsistent normal & tangent (" << dotNT << ")";
               }
             }
 
