@@ -359,8 +359,8 @@ void FontRenderer::generate()
     for(size_t x=0; x<textureSize; x++)
     {
       TPPixel p;
-      p.r = (float(x) / float(textureSize)) * 255.0f;
-      p.g = (float(y) / float(textureSize)) * 255.0f;
+      p.r = uint8_t((float(x) / float(textureSize)) * 255.0f);
+      p.g = uint8_t((float(y) / float(textureSize)) * 255.0f);
       p.b=0;
       p.a = 255;
       textureData.setPixel(x, y, p);
