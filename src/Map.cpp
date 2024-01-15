@@ -1806,8 +1806,6 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
 
   if(d->fastRender)
   {
-    glFinish();
-
     // use a "small" fast render shadow kernel
     setShadowSamplesFastRender(1);
   }
