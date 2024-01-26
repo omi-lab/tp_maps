@@ -324,8 +324,19 @@ float spotLightSampleScale(float d_receiver, float d_blocker, Light light, float
 }
 
 //##################################################################################################
-float rand(vec2 co){
+float rand(vec2 co)
+{
   return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+//##################################################################################################
+mat2 invMat2(mat2 m)
+{
+  float det = m[0][0]*m[1][1] - m[1][0]*m[0][1];
+  return mat2( + m[1][1] / det,
+               - m[0][1] / det,
+               - m[1][0] / det,
+               + m[0][0] / det);
 }
 
 //##################################################################################################
@@ -362,7 +373,7 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
     //
     // 
     mat2 A = mat2(uvxydx, uvxydy);
-    mat2 Ai = inverse(A);
+    mat2 Ai = invMat2(A);
     vec2 depthGradXY = txlSize*vec2(Ai[0][0]*depthdx + Ai[0][1]*depthdy, Ai[1][0]*depthdx + Ai[1][1]*depthdy);
 
     float bias = /*0.0001f*linearDepth +*/ 0.6f*length(depthGradXY);
