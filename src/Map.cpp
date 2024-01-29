@@ -1808,8 +1808,8 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
 
   if(d->fastRender)
   {
-    // use a "small" fast render shadow kernel
-    setShadowSamplesFastRender(1);
+    // switch off soft shadows for fast render
+    setShadowSamplesFastRender(0);
   }
 }
 
