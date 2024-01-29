@@ -2,6 +2,7 @@
 #define tp_maps_FullScreenShader_h
 
 #include "tp_maps/Shader.h"
+#include "tp_maps/subsystems/open_gl/OpenGL.h" // IWYU pragma: keep
 
 namespace tp_maps
 {

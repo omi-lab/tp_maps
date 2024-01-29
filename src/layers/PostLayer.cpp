@@ -249,7 +249,7 @@ void PostLayer::renderWithShader(PostShader* shader, std::function<void()> bindA
 }
 
 //##################################################################################################
-void PostLayer::renderToFbo(PostShader* shader, FBO& customFbo, const GLuint sourceTexture)
+void PostLayer::renderToFbo(PostShader* shader, OpenGLFBO& customFbo, const GLuint sourceTexture)
 {
   // Blit shader stuff
   {

@@ -2,6 +2,7 @@
 #define tp_maps_PostSSAOShader_h
 
 #include "tp_maps/shaders/PostShader.h"
+#include "tp_maps/subsystems/open_gl/OpenGL.h" // IWYU pragma: keep
 
 #include "tp_math_utils/Light.h"
 
@@ -36,7 +37,7 @@ public:
   ~PostSSAOShader();
 
   //################################################################################################
-  void setLights(const std::vector<tp_math_utils::Light>& lights, const std::vector<FBO>& lightBuffers);
+  void setLights(const std::vector<tp_math_utils::Light>& lights, const std::vector<OpenGLFBO>& lightBuffers);
 
   //################################################################################################
   void use(ShaderType shaderType) override;

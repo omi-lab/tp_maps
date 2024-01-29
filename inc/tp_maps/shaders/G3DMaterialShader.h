@@ -2,6 +2,7 @@
 #define tp_maps_G3DMaterialShader_h
 
 #include "tp_maps/shaders/Geometry3DShader.h"
+#include "tp_maps/subsystems/open_gl/OpenGL.h" // IWYU pragma: keep
 
 #include "tp_math_utils/Light.h"
 
@@ -31,7 +32,7 @@ public:
   //################################################################################################
   //! Call this to set the lights before drawing the geometry
   void setLights(const std::vector<tp_math_utils::Light>& lights,
-                 const std::vector<FBO>& lightBuffers);
+                 const std::vector<OpenGLFBO>& lightBuffers);
 
   //################################################################################################
   //! Call this to set the model, view, and projection matrices before drawing the geometry.

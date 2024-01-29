@@ -3,8 +3,7 @@
 #include "tp_maps/textures/BasicTexture.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/Geometry3DPool.h"
-
-#include "tp_utils/DebugUtils.h"
+#include "tp_maps/subsystems/open_gl/OpenGL.h" // IWYU pragma: keep
 
 #include "tp_math_utils/Material.h"
 
@@ -319,7 +318,7 @@ void G3DMaterialShader::use(ShaderType shaderType)
 
 //##################################################################################################
 void G3DMaterialShader::setLights(const std::vector<tp_math_utils::Light>& lights,
-                                  const std::vector<FBO>& lightBuffers)
+                                  const std::vector<OpenGLFBO>& lightBuffers)
 {
   auto exec = [&](const UniformLocations_lt& locations)
   {

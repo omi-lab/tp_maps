@@ -3,9 +3,8 @@
 #include "tp_maps/shaders/PostAOMergeShader.h"
 #include "tp_maps/shaders/PostBasicBlurShader.h"
 #include "tp_maps/Map.h"
-
-#include "tp_maps/Buffers.h"
 #include "tp_maps/Errors.h"
+#include "tp_maps/subsystems/open_gl/OpenGLBuffers.h" // IWYU pragma: keep
 
 namespace tp_maps
 {
@@ -24,8 +23,8 @@ struct PostAOLayer::Private
   RenderPass customRenderPass2{tp_maps::RenderPass::Custom, ssaoPass2};
   RenderPass customRenderPass3{tp_maps::RenderPass::Custom, ssaoPass3};
 
-  FBO ssaoFbo;
-  FBO blurFbo;
+  OpenGLFBO ssaoFbo;
+  OpenGLFBO blurFbo;
 
   //################################################################################################
   void recompileShaders()
@@ -58,8 +57,8 @@ PostAOLayer::~PostAOLayer()
 {
   if(map())
   {
-    map()->buffers().deleteBuffer( d->ssaoFbo );
-    map()->buffers().deleteBuffer( d->blurFbo );
+    map()->buffers().deleteBuffer(d->ssaoFbo);
+    map()->buffers().deleteBuffer(d->blurFbo);
   }
   delete d;
 }

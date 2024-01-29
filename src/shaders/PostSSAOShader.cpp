@@ -1,6 +1,7 @@
 #include "tp_maps/shaders/PostSSAOShader.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/Controller.h"
+#include "tp_maps/subsystems/open_gl/OpenGL.h" // IWYU pragma: keep
 
 #include "glm/gtc/type_ptr.hpp"
 
@@ -66,7 +67,7 @@ PostSSAOShader::~PostSSAOShader()
 }
 
 //##################################################################################################
-void PostSSAOShader::setLights(const std::vector<tp_math_utils::Light>& lights, const std::vector<FBO>& lightBuffers)
+void PostSSAOShader::setLights(const std::vector<tp_math_utils::Light>& lights, const std::vector<OpenGLFBO>& lightBuffers)
 {
   TP_UNUSED(lights);
 

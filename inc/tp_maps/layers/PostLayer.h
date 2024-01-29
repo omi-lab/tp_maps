@@ -2,6 +2,7 @@
 #define tp_maps_PostLayer_h
 
 #include "tp_maps/Layer.h"
+#include "tp_maps/subsystems/open_gl/OpenGL.h" // IWYU pragma: keep
 
 #include "tp_utils/RefCount.h"
 
@@ -85,7 +86,7 @@ protected:
   void renderWithShader(PostShader* shader, std::function<void()> bindAdditionalTextures = []{});
 
   //################################################################################################
-  void renderToFbo(PostShader* shader, FBO& fbo, const GLuint sourceTexture=0);
+  void renderToFbo(PostShader* shader, OpenGLFBO& fbo, const GLuint sourceTexture=0);
 
   //################################################################################################
   void invalidateBuffers() override;

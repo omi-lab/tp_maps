@@ -1,7 +1,7 @@
 #include "tp_maps/layers/PostDoFLayer.h"
 #include "tp_maps/Controller.h"
-#include "tp_maps/Buffers.h"
 #include "tp_maps/Errors.h"
+#include "tp_maps/subsystems/open_gl/OpenGLBuffers.h"
 
 #include "tp_maps/shaders/PostDoFBlurShader.h"
 #include "tp_maps/shaders/PostDoFCalculateFocusShader.h"
@@ -35,9 +35,9 @@ struct PostDoFLayer::Private
 
   int downsampleFactor{4};
 
-  FBO downsampleFbo;
-  FBO focusCalcFbo;
-  FBO downsampledFocusCalcFbo;
+  OpenGLFBO downsampleFbo;
+  OpenGLFBO focusCalcFbo;
+  OpenGLFBO downsampledFocusCalcFbo;
 
   //################################################################################################
   Private(PostDoFLayer* q_):

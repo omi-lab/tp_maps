@@ -1,6 +1,5 @@
 ﻿#include "tp_maps/Map.h"
 #include "tp_maps/Errors.h"
-#include "tp_maps/Buffers.h"
 #include "tp_maps/Shader.h"
 #include "tp_maps/Layer.h"
 #include "tp_maps/layers/PostGammaLayer.h"
@@ -13,6 +12,7 @@
 #include "tp_maps/FontRenderer.h"
 #include "tp_maps/SwapRowOrder.h"
 #include "tp_maps/event_handlers/MouseEventHandler.h"
+#include "tp_maps/subsystems/open_gl/OpenGLBuffers.h"
 
 #include "tp_math_utils/Plane.h"
 #include "tp_math_utils/Ray.h"
@@ -31,6 +31,8 @@
 
 #include <numeric>
 #include <algorithm>
+
+// Note: GL
 
 #ifdef TP_EMSCRIPTEN
 #include "tp_maps/shaders/PostBlitShader.h"
@@ -172,7 +174,7 @@ struct Map::Private
 
   Map* q;
   Errors errors;
-  Buffers buffers;
+  OpenGLBuffers buffers;
 
   Controller* controller{nullptr};
   std::vector<Layer*> layers;
@@ -207,13 +209,13 @@ struct Map::Private
   // We don't want to multisample multiple times it just makes the result blury. So what we do here
   // is have 3 buffers, the first has the 3D geometry drawn to it and is multisampled after this the
   // render pipeline toggles between the second and third for the remaining post processing steps.
-  std::unordered_map<tp_utils::WeakStringID, std::unique_ptr<FBO>> intermediateFBOs;
+  std::unordered_map<tp_utils::WeakStringID, std::unique_ptr<OpenGLFBO>> intermediateFBOs;
 
-  FBO* currentReadFBO{intermediateFBO(0)};
-  FBO* currentDrawFBO{intermediateFBO(0)};
+  OpenGLFBO* currentReadFBO{intermediateFBO(0)};
+  OpenGLFBO* currentDrawFBO{intermediateFBO(0)};
 
   std::vector<tp_math_utils::Light> lights;
-  std::vector<FBO> lightBuffers;
+  std::vector<OpenGLFBO> lightBuffers;
   size_t lightTextureSize{1024};
   size_t shadowSamples{0};
   size_t shadowSamplesFastRender{0};
@@ -223,8 +225,8 @@ struct Map::Private
   HDR hdr{HDR::No};
   ExtendedFBO extendedFBO{ExtendedFBO::No};
 
-  FBO pickingBuffer;
-  FBO renderToImageBuffer;
+  OpenGLFBO pickingBuffer;
+  OpenGLFBO renderToImageBuffer;
 
 #ifdef TP_BLIT_WITH_SHADER
   FullScreenShader::Object* rectangleObject{nullptr};
@@ -299,11 +301,11 @@ struct Map::Private
   }
 
   //################################################################################################
-  FBO* intermediateFBO(tp_utils::WeakStringID name)
+  OpenGLFBO* intermediateFBO(tp_utils::WeakStringID name)
   {
     auto& intermediateFBO = intermediateFBOs[name];
     if(!intermediateFBO)
-      intermediateFBO = std::make_unique<FBO>();
+      intermediateFBO = std::make_unique<OpenGLFBO>();
     return intermediateFBO.get();
   }
 
@@ -488,20 +490,20 @@ bool Map::initialized() const
   return d->initialized;
 }
 
-//################################################################################################
+//##################################################################################################
 void Map::setFastRender(bool fastRender)
 {
   d->fastRender = fastRender;
 }
 
-//################################################################################################
+//##################################################################################################
 bool Map::fastRender() const
 {
   return d->fastRender;
 }
 
 //##################################################################################################
-const Buffers& Map::buffers() const
+const OpenGLBuffers& Map::buffers() const
 {
   return d->buffers;
 }
@@ -1248,19 +1250,19 @@ void Map::deleteShader(const tp_utils::StringID& name)
 }
 
 //##################################################################################################
-const FBO& Map::currentReadFBO()
+const OpenGLFBO& Map::currentReadFBO()
 {
   return *d->currentReadFBO;
 }
 
 //##################################################################################################
-const FBO& Map::currentDrawFBO()
+const OpenGLFBO& Map::currentDrawFBO()
 {
   return *d->currentDrawFBO;
 }
 
 //##################################################################################################
-const std::vector<FBO>& Map::lightBuffers() const
+const std::vector<OpenGLFBO>& Map::lightBuffers() const
 {
   return d->lightBuffers;
 }
@@ -1489,10 +1491,10 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
       d->renderInfo.pass = renderPass;
       switch(renderPass.type)
       {
-        case RenderPass::PreRender: //----------------------------------------------------------------
+        case RenderPass::PreRender: //--------------------------------------------------------------
         break;
 
-        case RenderPass::LightFBOs: //----------------------------------------------------------------
+        case RenderPass::LightFBOs: //--------------------------------------------------------------
         {
 #ifdef TP_FBO_SUPPORTED
           DEBUG_scopedDebug("RenderPass::LightFBOs", TPPixel(255, 0, 0));
@@ -1552,7 +1554,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
           break;
         }
 
-        case RenderPass::PrepareDrawFBO: //-----------------------------------------------------------
+        case RenderPass::PrepareDrawFBO: //---------------------------------------------------------
         {
 #ifdef TP_FBO_SUPPORTED
           DEBUG_scopedDebug("RenderPass::PrepareDrawFBO", TPPixel(0, 255, 0));
@@ -1579,7 +1581,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
           break;
         }
 
-        case RenderPass::SwapToFBO: //----------------------------------------------------------------
+        case RenderPass::SwapToFBO: //--------------------------------------------------------------
         {
 #ifdef TP_FBO_SUPPORTED
           DEBUG_scopedDebug("RenderPass::SwapToFBO " + renderPass.getNameString(), TPPixel(0, 0, 255));
@@ -1609,7 +1611,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
           break;
         }
 
-        case RenderPass::SwapToFBONoClear: //---------------------------------------------------------
+        case RenderPass::SwapToFBONoClear: //-------------------------------------------------------
         {
 #ifdef TP_FBO_SUPPORTED
           DEBUG_scopedDebug("RenderPass::SwapToFBONoClear " + renderPass.getNameString(), TPPixel(255, 255, 0));
@@ -1639,12 +1641,12 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
           break;
         }
 
-        case RenderPass::BlitFromFBO: //--------------------------------------------------------------
+        case RenderPass::BlitFromFBO: //------------------------------------------------------------
         {
 #ifdef TP_FBO_SUPPORTED
           DEBUG_scopedDebug("RenderPass::BlitFromFBO " + renderPass.getNameString(), TPPixel(0, 255, 255));
 
-          FBO* readFBO = d->intermediateFBO(renderPass.name);
+          OpenGLFBO* readFBO = d->intermediateFBO(renderPass.name);
 
 #ifdef TP_BLIT_WITH_SHADER
           // Kludge to get round a crash in glBlitFramebuffer on Chrome.
@@ -1705,7 +1707,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
           break;
         }
 
-        case RenderPass::Background: //---------------------------------------------------------------
+        case RenderPass::Background: //-------------------------------------------------------------
         {
           DEBUG_scopedDebug("RenderPass::Background", TPPixel(255, 0, 255));
           glDisable(GL_DEPTH_TEST);
@@ -1714,7 +1716,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
           break;
         }
 
-        case RenderPass::Normal: //-------------------------------------------------------------------
+        case RenderPass::Normal: //-----------------------------------------------------------------
         {
           DEBUG_scopedDebug("RenderPass::Normal", TPPixel(125, 125, 0));
           glEnable(GL_DEPTH_TEST);
@@ -1724,7 +1726,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
           break;
         }
 
-        case RenderPass::Transparency: //-------------------------------------------------------------
+        case RenderPass::Transparency: //-----------------------------------------------------------
         {
           DEBUG_scopedDebug("RenderPass::Transparency", TPPixel(125, 125, 255));
           glEnable(GL_DEPTH_TEST);
@@ -1734,7 +1736,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
           break;
         }
 
-        case RenderPass::FinishDrawFBO: //------------------------------------------------------------
+        case RenderPass::FinishDrawFBO: //----------------------------------------------------------
         {
           DEBUG_scopedDebug("RenderPass::FinishDrawFBO", TPPixel(50, 200, 255));
 #ifdef TP_FBO_SUPPORTED
@@ -1747,7 +1749,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
           break;
         }
 
-        case RenderPass::Text: //---------------------------------------------------------------------
+        case RenderPass::Text: //-------------------------------------------------------------------
         {
           DEBUG_scopedDebug("RenderPass::Text", TPPixel(200, 152, 255));
           glDisable(GL_DEPTH_TEST);
@@ -1756,7 +1758,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
           break;
         }
 
-        case RenderPass::GUI: //----------------------------------------------------------------------
+        case RenderPass::GUI: //--------------------------------------------------------------------
         {
           DEBUG_scopedDebug("RenderPass::GUI", TPPixel(200, 152, 50));
           glEnable(GL_SCISSOR_TEST);
@@ -1769,23 +1771,23 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
           break;
         }
 
-        case RenderPass::Picking: //------------------------------------------------------------------
+        case RenderPass::Picking: //----------------------------------------------------------------
         {
           tpWarning() << "Error: Performing a picking render pass in paintGL does not make sense.";
           break;
         }
 
-        case RenderPass::Custom: //-------------------------------------------------------------------
+        case RenderPass::Custom: //-----------------------------------------------------------------
         {
           DEBUG_scopedDebug("RenderPass::Custom " + renderPass.getNameString(), TPPixel(90, 200, 100));
           d->render();
           break;
         }
 
-        case RenderPass::Delegate: //-----------------------------------------------------------------
+        case RenderPass::Delegate: //---------------------------------------------------------------
         break;
 
-        case RenderPass::Stage: //--------------------------------------------------------------------
+        case RenderPass::Stage: //------------------------------------------------------------------
         break;
       }
 

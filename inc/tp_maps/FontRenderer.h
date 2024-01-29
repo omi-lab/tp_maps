@@ -2,6 +2,7 @@
 #define tp_maps_FontRenderer_h
 
 #include "tp_maps/Globals.h"
+#include "tp_maps/subsystems/open_gl/OpenGL.h" // IWYU pragma: keep
 
 #include <unordered_set>
 #include <memory>

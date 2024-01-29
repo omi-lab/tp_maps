@@ -2,6 +2,8 @@
 #define tp_maps_Map_h
 
 #include "tp_maps/Shader.h"
+#include "tp_maps/subsystems/open_gl/OpenGL.h" // IWYU pragma: keep
+#include "tp_maps/subsystems/open_gl/OpenGLBuffers.h" // IWYU pragma: keep
 
 #include "tp_image_utils/ColorMap.h"
 #include "tp_image_utils/ColorMapF.h"
@@ -35,7 +37,6 @@ class Shader;
 class Texture;
 class PickingResult;
 class FontRenderer;
-class Buffers;
 class PostLayer;
 class EventHandler;
 struct MouseEvent;
@@ -105,7 +106,7 @@ public:
   bool fastRender() const;
 
   //################################################################################################
-  const Buffers& buffers() const;
+  const OpenGLBuffers& buffers() const;
 
   //################################################################################################
   //!Sets the background clear color
@@ -364,14 +365,14 @@ public:
   void deleteShader(const tp_utils::StringID& name);
 
   //################################################################################################
-  const FBO& currentReadFBO();
+  const OpenGLFBO& currentReadFBO();
 
   //################################################################################################
-  const FBO& currentDrawFBO();
+  const OpenGLFBO& currentDrawFBO();
 
   //################################################################################################
   //! Returns the depth textures for each light.
-  const std::vector<FBO>& lightBuffers() const;
+  const std::vector<OpenGLFBO>& lightBuffers() const;
 
   //################################################################################################
   //! Return the map's window width

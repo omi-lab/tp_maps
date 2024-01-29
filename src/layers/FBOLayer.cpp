@@ -3,7 +3,7 @@
 #include "tp_maps/shaders/G3DDepthImageShader.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/RenderInfo.h"
-#include "tp_maps/Buffers.h"
+#include "tp_maps/subsystems/open_gl/OpenGLBuffers.h" // IWYU pragma: keep
 
 #include "tp_math_utils/JSONUtils.h"
 
@@ -218,7 +218,7 @@ void FBOLayer::render(RenderInfo& renderInfo)
     const auto& window = d->windows.at(i);
     auto vertexBuffer = d->vertexBuffers.at(i);
 
-    FBO* fbo = tpGetMapValue(map()->buffers().storedBuffers(), window.fboName, nullptr);
+    OpenGLFBO* fbo = tpGetMapValue(map()->buffers().storedBuffers(), window.fboName, nullptr);
     if(!fbo)
       continue;
 

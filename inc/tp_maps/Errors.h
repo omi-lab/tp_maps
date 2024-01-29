@@ -2,6 +2,7 @@
 #define tp_maps_Errors_h
 
 #include "tp_maps/Globals.h"
+#include "tp_maps/subsystems/open_gl/OpenGL.h"
 
 namespace tp_maps
 {
@@ -33,7 +34,7 @@ public:
 
   //################################################################################################
   //! Prints error and returns true if there is an FBO error detected.
-  static bool printFBOError(FBO& buffer, const std::string& description);
+  static bool printFBOError(OpenGLFBO& buffer, const std::string& description);
 
 private:
   struct Private;

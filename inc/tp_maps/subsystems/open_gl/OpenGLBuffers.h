@@ -1,26 +1,29 @@
-#ifndef tp_maps_Buffers_h
-#define tp_maps_Buffers_h
+#ifndef tp_maps_OpenGLBuffers_h
+#define tp_maps_OpenGLBuffers_h
 
-#include "tp_maps/Globals.h"
+#include "tp_maps/subsystems/Subsystem.h"
+#ifdef TP_MAPS_SUBSYSTEM_OPENGL
+
+#include "tp_maps/subsystems/open_gl/OpenGL.h"
 
 namespace tp_maps
 {
 class Map;
 
 //##################################################################################################
-class TP_MAPS_EXPORT Buffers
+class TP_MAPS_EXPORT OpenGLBuffers
 {
-  TP_NONCOPYABLE(Buffers);
+  TP_NONCOPYABLE(OpenGLBuffers);
 public:
   //################################################################################################
-  Buffers(Map* map);
+  OpenGLBuffers(Map* map);
 
   //################################################################################################
-  ~Buffers();
+  ~OpenGLBuffers();
 
   //################################################################################################
   bool prepareBuffer(const std::string& name,
-                     FBO& buffer,
+                     OpenGLFBO& buffer,
                      size_t width,
                      size_t height,
                      CreateColorBuffer createColorBuffer,
@@ -30,13 +33,13 @@ public:
                      bool clear) const;
 
   //################################################################################################
-  void invalidateBuffer(FBO& fbo) const;
+  void invalidateBuffer(OpenGLFBO& fbo) const;
 
   //################################################################################################
-  void deleteBuffer(FBO& fbo) const;
+  void deleteBuffer(OpenGLFBO& fbo) const;
 
   //################################################################################################
-  void swapMultisampledBuffer(FBO& fbo) const;
+  void swapMultisampledBuffer(OpenGLFBO& fbo) const;
 
   //################################################################################################
   void setDrawBuffers(const std::vector<GLenum>& buffers) const;
@@ -51,7 +54,7 @@ public:
   void initializeGL();
 
   //################################################################################################
-  std::unordered_map< std::string, FBO* > storedBuffers() const;
+  std::unordered_map<std::string, OpenGLFBO*> storedBuffers() const;
 
 private:
   struct Private;
@@ -61,4 +64,5 @@ private:
 
 }
 
+#endif
 #endif

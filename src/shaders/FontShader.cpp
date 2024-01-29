@@ -8,6 +8,8 @@
 
 #include "glm/gtc/type_ptr.hpp"
 
+//Note: GL
+
 namespace tp_maps
 {
 

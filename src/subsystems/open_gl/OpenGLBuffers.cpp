@@ -1,4 +1,6 @@
-#include "tp_maps/Buffers.h"
+#include "tp_maps/subsystems/open_gl/OpenGLBuffers.h"
+#ifdef TP_MAPS_SUBSYSTEM_OPENGL
+
 #include "tp_maps/Errors.h"
 #include "tp_maps/Map.h"
 
@@ -14,7 +16,7 @@ namespace tp_maps
 {
 
 //##################################################################################################
-struct Buffers::Private
+struct OpenGLBuffers::Private
 {
   Map* map;
 
@@ -22,7 +24,7 @@ struct Buffers::Private
   size_t maxSamples{1};
   size_t samples{1};
 
-  std::unordered_map< std::string, FBO* > storedBuffers;
+  std::unordered_map<std::string, OpenGLFBO*> storedBuffers;
 
   //################################################################################################
   Private(Map* map_):
@@ -260,7 +262,7 @@ struct Buffers::Private
   \return true if we managed to create a functional FBO.
   */
   bool prepareBuffer(const std::string& name,
-                     FBO& buffer,
+                     OpenGLFBO& buffer,
                      size_t width,
                      size_t height,
                      CreateColorBuffer createColorBuffer,
@@ -419,7 +421,7 @@ struct Buffers::Private
   //################################################################################################
   //If we are rendering to a multisample FBO we need to blit the results to a non multisampled FBO
   //before we can actually use it. (thanks OpenGL)
-  void swapMultisampledBuffer(FBO& buffer)
+  void swapMultisampledBuffer(OpenGLFBO& buffer)
   {
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
     if(buffer.multisample == Multisample::Yes)
@@ -462,7 +464,7 @@ struct Buffers::Private
   }
 
   //################################################################################################
-  void deleteBuffer(FBO& buffer)
+  void deleteBuffer(OpenGLFBO& buffer)
   {
     glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -548,7 +550,7 @@ struct Buffers::Private
   }
 
   //################################################################################################
-  void invalidateBuffer(FBO& buffer)
+  void invalidateBuffer(OpenGLFBO& buffer)
   {
     buffer.frameBuffer = 0;
     buffer.textureID   = 0;
@@ -571,21 +573,21 @@ struct Buffers::Private
 };
 
 //##################################################################################################
-Buffers::Buffers(Map* map):
+OpenGLBuffers::OpenGLBuffers(Map* map):
   d(new Private(map))
 {
 
 }
 
 //##################################################################################################
-Buffers::~Buffers()
+OpenGLBuffers::~OpenGLBuffers()
 {
   delete d;
 }
 
 //##################################################################################################
-bool Buffers::prepareBuffer(const std::string& name,
-                            FBO& buffer,
+bool OpenGLBuffers::prepareBuffer(const std::string& name,
+                            OpenGLFBO& buffer,
                             size_t width,
                             size_t height,
                             CreateColorBuffer createColorBuffer,
@@ -606,52 +608,53 @@ bool Buffers::prepareBuffer(const std::string& name,
 }
 
 //##################################################################################################
-void Buffers::invalidateBuffer(FBO& fbo) const
+void OpenGLBuffers::invalidateBuffer(OpenGLFBO& fbo) const
 {
   d->invalidateBuffer(fbo);
 }
 
 //##################################################################################################
-void Buffers::deleteBuffer(FBO& fbo) const
+void OpenGLBuffers::deleteBuffer(OpenGLFBO& fbo) const
 {
   d->deleteBuffer(fbo);
 }
 
 //##################################################################################################
-void Buffers::swapMultisampledBuffer(FBO& fbo) const
+void OpenGLBuffers::swapMultisampledBuffer(OpenGLFBO& fbo) const
 {
   d->swapMultisampledBuffer(fbo);
 }
 
 //##################################################################################################
-void Buffers::setDrawBuffers(const std::vector<GLenum>& buffers) const
+void OpenGLBuffers::setDrawBuffers(const std::vector<GLenum>& buffers) const
 {
   d->setDrawBuffers(buffers);
 }
 
 //##################################################################################################
-void Buffers::setMaxSamples(size_t maxSamples)
+void OpenGLBuffers::setMaxSamples(size_t maxSamples)
 {
   d->updateSamplesRequired = true;
   d->maxSamples = maxSamples;
 }
 
 //##################################################################################################
-size_t Buffers::maxSamples() const
+size_t OpenGLBuffers::maxSamples() const
 {
   return d->maxSamples;
 }
 
 //##################################################################################################
-void Buffers::initializeGL()
+void OpenGLBuffers::initializeGL()
 {
   d->updateSamplesRequired = true;
 }
 
 //##################################################################################################
-std::unordered_map< std::string, FBO* > Buffers::storedBuffers() const
+std::unordered_map<std::string, OpenGLFBO*> OpenGLBuffers::storedBuffers() const
 {
   return d->storedBuffers;
 }
 
 }
+#endif

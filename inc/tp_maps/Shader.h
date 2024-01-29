@@ -2,6 +2,7 @@
 #define tp_maps_Shader_h
 
 #include "tp_maps/Globals.h"
+#include "tp_maps/subsystems/open_gl/OpenGL.h" // IWYU pragma: keep
 
 #include <functional>
 
@@ -9,13 +10,6 @@ namespace tp_maps
 {
 class Map;
 class ShaderPointer;
-
-struct ShaderDetails
-{
-  GLuint vertexShader{0};
-  GLuint fragmentShader{0};
-  GLuint program{0};
-};
 
 //##################################################################################################
 //! The base class for shaders.
@@ -50,9 +44,6 @@ public:
 
   //################################################################################################
   bool error() const;
-
-  //################################################################################################
-  ShaderDetails shaderDetails(ShaderType shaderType) const;
 
   //################################################################################################
   virtual void use(ShaderType shaderType);

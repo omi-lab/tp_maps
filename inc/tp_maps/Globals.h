@@ -15,134 +15,6 @@
 #  define TP_MAPS_EXPORT TP_IMPORT
 #endif
 
-#ifdef TP_GLES2 //----------------------------------------------------------------------------------
-#  include <GLES2/gl2.h>
-
-#elif defined(TP_GLES3) //--------------------------------------------------------------------------
-#  include <GLES3/gl3.h>
-
-#elif defined(TP_OSX) //----------------------------------------------------------------------------
-#  define GL_DO_NOT_WARN_IF_MULTI_GL_GLSL_HEADERS_INCLUDED
-#  include <gl3.h>
-#  include <OpenGL/glext.h>
-#  define TP_DEFAULT_PROFILE tp_maps::ShaderProfile::GLSL_410
-#  define TP_GL3
-#  define TP_ENABLE_MULTISAMPLE
-#  define TP_ENABLE_MULTISAMPLE_FBO
-
-#elif defined(TP_IOS) //----------------------------------------------------------------------------
-#  define GL_DO_NOT_WARN_IF_MULTI_GL_GLSL_HEADERS_INCLUDED
-#  include <OpenGLES/ES3/gl.h>
-#  define TP_GLES3
-
-#elif defined(TP_EMSCRIPTEN) //---------------------------------------------------------------------
-#  include <GLES3/gl3.h>
-#  define TP_GLES3
-
-#elif defined(TP_ANDROID) //------------------------------------------------------------------------
-#  if __ANDROID_API__ < 18
-#    include <GLES2/gl2.h>
-#    define TP_GLES2
-#  else
-#    include <GLES3/gl3.h>
-#    define TP_GLES3
-#  endif
-#elif defined(TP_WIN32) //--------------------------------------------------------------------------
-#  include <GL/glew.h>
-#  define TP_DEFAULT_PROFILE tp_maps::ShaderProfile::GLSL_130
-#  define TP_GL3
-#  define TP_ENABLE_MULTISAMPLE
-#  define TP_ENABLE_MULTISAMPLE_FBO
-
-#elif defined(TP_LINUX)
-
-#  define GL_GLEXT_PROTOTYPES
-
-#  include <GLES3/gl32.h>
-#  include <GL/gl.h>
-#  include <GL/glext.h>
-
-// Don't bring in qopenglext.h
-#  ifndef __glext_h_
-#    define __glext_h_ 1
-#  endif
-
-#  define TP_DEFAULT_PROFILE tp_maps::ShaderProfile::GLSL_130
-#  define TP_GL3
-#  define TP_ENABLE_MULTISAMPLE
-#  define TP_ENABLE_MULTISAMPLE_FBO
-
-
-#else //--------------------------------------------------------------------------------------------
-#  define GL_GLEXT_LEGACY
-#  include <GLES3/gl3.h>
-#  include <GL/gl.h>
-#  define TP_DEFAULT_PROFILE tp_maps::ShaderProfile::GLSL_130
-#  define TP_GL3
-#  define TP_ENABLE_MULTISAMPLE
-
-#endif //-------------------------------------------------------------------------------------------
-
-#ifdef TP_GL3 //------------------------------------------------------------------------------------
-#  define TP_VERTEX_ARRAYS_SUPPORTED
-#  define tpGenVertexArrays glGenVertexArrays
-#  define tpBindVertexArray glBindVertexArray
-#  define tpDeleteVertexArrays glDeleteVertexArrays
-#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
-
-#  define TP_GLSL_PICKING_SUPPORTED
-#  define TP_FBO_SUPPORTED
-
-#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
-#  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24
-#  define TP_GL_DRAW_FRAMEBUFFER GL_DRAW_FRAMEBUFFER
-
-using TPGLsizei = GLsizei;
-using TPGLfloat = float;
-using TPGLenum = GLenum;
-//using TPGLenum  = GLint;
-#endif
-
-#ifdef TP_GLES2 //----------------------------------------------------------------------------------
-#  define TP_DEFAULT_PROFILE tp_maps::ShaderProfile::GLSL_100_ES
-
-#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT16
-#  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT16
-#  define TP_GL_DRAW_FRAMEBUFFER GL_FRAMEBUFFER
-
-using TPGLsizei = GLsizei;
-using TPGLfloat = float;
-using TPGLenum = GLenum;
-#endif
-
-#ifdef TP_GLES3 //-------------------------------------------------------------------------------------
-#  define TP_DEFAULT_PROFILE tp_maps::ShaderProfile::GLSL_300_ES
-
-#  define TP_VERTEX_ARRAYS_SUPPORTED
-//#  define tpGenVertexArrays glGenVertexArrays
-//#  define tpBindVertexArray glBindVertexArray
-//#  define tpDeleteVertexArrays glDeleteVertexArrays
-//#  define tpDrawElements(mode, count, type, indices) glDrawRangeElements(mode, 0, count, GLsizei(count), type, indices)
-#  define tpGenVertexArrays glGenVertexArrays
-#  define tpBindVertexArray glBindVertexArray
-#  define tpDeleteVertexArrays glDeleteVertexArrays
-#  define tpDrawElements(mode, count, type, indices) glDrawElements(mode, count, type, indices)
-
-//#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT16
-//#  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT16
-//#  define TP_GL_DRAW_FRAMEBUFFER GL_FRAMEBUFFER
-#  define TP_GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32F
-#  define TP_GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24
-#  define TP_GL_DRAW_FRAMEBUFFER GL_DRAW_FRAMEBUFFER
-
-#  define TP_GLSL_PICKING_SUPPORTED
-#  define TP_FBO_SUPPORTED
-
-using TPGLsizei = GLsizei;
-using TPGLfloat = float;
-using TPGLenum = GLenum;
-#endif
-
 #define      TP_UP_KEY         82
 #define      TP_LEFT_KEY       80
 #define      TP_RIGHT_KEY      79
@@ -415,20 +287,20 @@ enum class Subsystem
 
 //##################################################################################################
 /*
-GLSL Version 	OpenGL Version 	Date               Shader Preprocessor
-1.10.59[1]    2.0             30 April     2004  #version 110
-1.20.8[2]     2.1             07 September 2006  #version 120
-1.30.10[3]    3.0             22 November  2009  #version 130
-1.40.08[4]    3.1             22 November  2009  #version 140
-1.50.11[5]    3.2             04 December  2009  #version 150
-3.30.6[6]     3.3             11 March     2010  #version 330
-4.00.9[7]     4.0             24 July      2010  #version 400
-4.10.6[8]     4.1             24 July      2010  #version 410
-4.20.11[9]    4.2             12 December  2011  #version 420
-4.30.8[10]    4.3             7 February   2013  #version 430
-4.40.9[11]    4.4             16 June      2014  #version 440
-4.50.7[12]    4.5             09 May       2017  #version 450
-4.60.5[13]    4.6             14 June      2018  #version 460
+GLSL Version 	OpenGL Version 	  Date                 Shader Preprocessor
+1.10.59[1]      2.0               30 April     2004    #version 110
+1.20.8[2]       2.1               07 September 2006    #version 120
+1.30.10[3]      3.0               22 November  2009    #version 130
+1.40.08[4]      3.1               22 November  2009    #version 140
+1.50.11[5]      3.2               04 December  2009    #version 150
+3.30.6[6]       3.3               11 March     2010    #version 330
+4.00.9[7]       4.0               24 July      2010    #version 400
+4.10.6[8]       4.1               24 July      2010    #version 410
+4.20.11[9]      4.2               12 December  2011    #version 420
+4.30.8[10]      4.3               7 February   2013    #version 430
+4.40.9[11]      4.4               16 June      2014    #version 440
+4.50.7[12]      4.5               09 May       2017    #version 450
+4.60.5[13]      4.6               14 June      2018    #version 460
 
 HLSL
 PS 1.0            - Unreleased 3dfx Rampage, DirectX 8
@@ -597,44 +469,6 @@ enum class LightingModelChanged
 {
   Yes, //!< The number of lights or the types of lights used changed.
   No   //!< Just the parameters of the lights changed.
-};
-
-//##################################################################################################
-struct FBO
-{
-  GLuint frameBuffer{0};
-
-  GLuint textureID{0};  //!< The color buffer texture.
-  GLuint depthID{0};    //!< The depth buffer texture.
-
-  // These are used for deferred rendering, useful for SSR and post processing. Only created if
-  // using ExtendedFBO::Yes.
-  GLuint normalsID{0};  //!< The normals of each fragment, useful for ray marching.
-  GLuint specularID{0}; //!< The specular colors of each fragment, as well as the shininess in the alpha.
-
-  size_t width{1};
-  size_t height{1};
-  size_t samples{1};
-
-#ifdef TP_ENABLE_MULTISAMPLE_FBO
-  GLuint multisampleFrameBuffer{0};
-  GLuint multisampleTextureID{0};
-
-  GLuint multisampleColorRBO{0};
-  GLuint multisampleDepthRBO{0};
-
-  GLuint multisampleNormalsTextureID{0};
-  GLuint multisampleSpecularTextureID{0};
-
-  GLuint multisampleNormalsRBO{0};
-  GLuint multisampleSpecularRBO{0};
-#endif
-
-  Matrices worldToTexture; //!< For lighting this is used to map world coords onto the texture.
-
-  Multisample multisample{Multisample::No}; //!< Yes if multisample buffers have been created.
-  HDR hdr{HDR::No};                         //!< Yes if HDR buffers have been created.
-  ExtendedFBO extendedFBO{ExtendedFBO::No}; //!< Yes if deferred rendering buffers have been created.
 };
 
 //##################################################################################################

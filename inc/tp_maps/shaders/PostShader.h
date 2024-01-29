@@ -2,6 +2,7 @@
 #define tp_maps_PostShader_h
 
 #include "tp_maps/shaders/FullScreenShader.h"
+#include "tp_maps/subsystems/open_gl/OpenGL.h" // IWYU pragma: keep
 
 namespace tp_maps
 {
@@ -18,7 +19,7 @@ public:
   ~PostShader();
 
   //################################################################################################
-  void setReadFBO(const FBO& readFBO);
+  void setReadFBO(const OpenGLFBO& readFBO);
 
   //################################################################################################
   void setFBOSourceTexture(const GLuint id);

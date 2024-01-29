@@ -7,6 +7,15 @@
 
 namespace tp_maps
 {
+namespace
+{
+struct ShaderDetails
+{
+  GLuint vertexShader{0};
+  GLuint fragmentShader{0};
+  GLuint program{0};
+};
+}
 
 std::string Shader::vertSrcScratch;
 std::string Shader::fragSrcScratch;
@@ -132,15 +141,6 @@ GLuint Shader::loadShader(const char* shaderSrc, GLenum type)
 bool Shader::error() const
 {
   return d->error;
-}
-
-//##################################################################################################
-ShaderDetails Shader::shaderDetails(ShaderType shaderType) const
-{
-  if(d->shaders.find(shaderType) == d->shaders.end())
-    tpWarning() << "Missing shader type " << int(shaderType);
-
-  return d->shaders[shaderType];
 }
 
 //##################################################################################################

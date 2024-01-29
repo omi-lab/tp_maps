@@ -1,7 +1,6 @@
 #include "tp_maps/shaders/PostShader.h"
 #include "tp_maps/Map.h"
-
-#include "tp_utils/DebugUtils.h"
+#include "tp_maps/subsystems/open_gl/OpenGL.h" // IWYU pragma: keep
 
 #include "glm/gtc/type_ptr.hpp"
 
@@ -41,7 +40,7 @@ PostShader::~PostShader()
 }
 
 //##################################################################################################
-void PostShader::setReadFBO(const FBO& readFBO)
+void PostShader::setReadFBO(const OpenGLFBO& readFBO)
 {
   if(d->textureLocation>=0)
   {

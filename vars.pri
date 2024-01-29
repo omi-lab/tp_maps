@@ -11,9 +11,6 @@ HEADERS += inc/tp_maps/Globals.h
 SOURCES += src/Map.cpp
 HEADERS += inc/tp_maps/Map.h
 
-SOURCES += src/Buffers.cpp
-HEADERS += inc/tp_maps/Buffers.h
-
 SOURCES += src/Errors.cpp
 HEADERS += inc/tp_maps/Errors.h
 
@@ -69,6 +66,38 @@ HEADERS += inc/tp_maps/Geometry3DPool.h
 
 SOURCES += src/SwapRowOrder.cpp
 HEADERS += inc/tp_maps/SwapRowOrder.h
+
+
+#-- Subsystems -------------------------------------------------------------------------------------
+HEADERS += inc/tp_maps/subsystems/Subsystem.h
+
+# None
+HEADERS += inc/tp_maps/subsystems/open_gl/None.h
+HEADERS += inc/tp_maps/subsystems/none/Buffers.h
+
+
+# OpenGL
+HEADERS += inc/tp_maps/subsystems/open_gl/OpenGL.h
+
+SOURCES += src/subsystems/open_gl/OpenGLBuffers.cpp
+HEADERS += inc/tp_maps/subsystems/open_gl/OpenGLBuffers.h
+
+
+# OpenGLFixed
+HEADERS += inc/tp_maps/subsystems/open_gl/OpenGLFixed.h
+HEADERS += inc/tp_maps/subsystems/open_gl_fixed/Buffers.h
+
+
+# Vulkan
+HEADERS += inc/tp_maps/subsystems/open_gl/Vulkan.h
+HEADERS += inc/tp_maps/subsystems/vulkan/Buffers.h
+
+
+# Direct3D
+HEADERS += inc/tp_maps/subsystems/open_gl/Direct3D.h
+HEADERS += inc/tp_maps/subsystems/direct_3d/Buffers.h
+
+
 
 
 #-- Picking Results --------------------------------------------------------------------------------

@@ -1,8 +1,9 @@
 #include "tp_maps/Errors.h"
 #include "tp_maps/Map.h"
+#include "tp_maps/subsystems/open_gl/OpenGL.h" // IWYU pragma: keep
 
 #include "tp_utils/DebugUtils.h"
-#include "tp_utils/StackTrace.h"
+#include "tp_utils/StackTrace.h" // IWYU pragma: keep
 
 #ifdef TP_MAPS_DEBUG
 #  define DEBUG_printOpenGLError(A) Errors::printOpenGLError(A)
@@ -145,7 +146,7 @@ void Errors::printOpenGLError(const std::string& description, GLenum error)
 }
 
 //##################################################################################################
-bool Errors::printFBOError(FBO& buffer, const std::string& description)
+bool Errors::printFBOError(OpenGLFBO& buffer, const std::string& description)
 {
   if(auto e=glCheckFramebufferStatus(GL_FRAMEBUFFER); e != GL_FRAMEBUFFER_COMPLETE)
   {

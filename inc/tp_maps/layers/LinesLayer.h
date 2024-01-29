@@ -1,11 +1,12 @@
 #ifndef tp_maps_LinesLayer_h
 #define tp_maps_LinesLayer_h
 
-#include "tp_maps/layers/Geometry3DLayer.h"
+#include "tp_maps/Layer.h"
+#include "tp_maps/subsystems/open_gl/OpenGL.h" // IWYU pragma: keep
 
 #include "tp_math_utils/Geometry3D.h"
 
-#include "glm/glm.hpp"
+#include "glm/glm.hpp" // IWYU pragma: keep
 
 namespace tp_maps
 {

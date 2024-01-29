@@ -2,6 +2,8 @@
 
 #include "tp_math_utils/Plane.h"
 
+#include "tp_utils/RefCount.h"
+
 namespace tp_maps
 {
 
