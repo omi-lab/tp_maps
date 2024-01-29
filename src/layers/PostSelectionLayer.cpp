@@ -39,6 +39,12 @@ tp_maps::RenderPass PostSelectionLayer::selectionRenderPass()
 }
 
 //##################################################################################################
+tp_maps::RenderFromStage PostSelectionLayer::renderFromStage() const
+{
+  return d->renderFromStage;
+}
+
+//##################################################################################################
 void PostSelectionLayer::addRenderPasses(std::vector<tp_maps::RenderPass>& renderPasses)
 {
   if(bypass())

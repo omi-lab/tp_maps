@@ -20,6 +20,9 @@ public:
   //################################################################################################
   static tp_maps::RenderPass selectionRenderPass();
 
+  //################################################################################################
+  tp_maps::RenderFromStage renderFromStage() const;
+
 protected:
   //################################################################################################
   void addRenderPasses(std::vector<tp_maps::RenderPass>& renderPasses) override;
