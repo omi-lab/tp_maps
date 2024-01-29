@@ -526,9 +526,6 @@ void Map::animate(double timestampMS)
   for(auto l : d->layers)
     l->animate(timestampMS);
 
-  if(d->renderFromStage == RenderFromStage::RenderMoreLights)
-    update(RenderFromStage::RenderMoreLights);
-
   animateCallbacks(timestampMS);
 }
 
@@ -1304,6 +1301,11 @@ glm::vec2 Map::screenSize() const
 //##################################################################################################
 void Map::update(RenderFromStage renderFromStage)
 {
+#ifdef TP_MAPS_DEBUG
+  if(renderFromStage.type != RenderFromStage::RenderFromStageType::Stage)
+    tpDebug() << "Render from stage: " << renderFromStage.typeToString();
+#endif
+
   if(renderFromStage<d->renderFromStage)
     d->renderFromStage = renderFromStage;
 }
@@ -1417,9 +1419,6 @@ size_t Map::skipRenderPasses()
     for(; rp<d->computedRenderPasses.size(); rp++)
     {
       auto renderPass = d->computedRenderPasses.at(rp);
-
-      if ((d->renderFromStage == RenderFromStage::RenderMoreLights) && (renderPass >= RenderPass::LightFBOs))
-        break;
 
 #ifdef TP_FBO_SUPPORTED
       switch(renderPass.type)

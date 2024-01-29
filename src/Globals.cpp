@@ -55,6 +55,17 @@ int staticInit()
 }
 
 
+//##################################################################################################
+std::string RenderFromStage::typeToString() const
+{
+  switch(type)
+  {
+    case RenderFromStageType::Full : return "Full";
+    case RenderFromStageType::Stage : return "Stage";
+    case RenderFromStageType::Reset : return "Reset";
+  }
+  return {};
+}
 
 //##################################################################################################
 std::string shaderTypeToString(ShaderType shaderType)

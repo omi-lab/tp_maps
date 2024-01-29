@@ -112,9 +112,8 @@ struct RenderFromStage
   enum RenderFromStageType : size_t
   {
     Full = 1, //!< Start from the first RenderPass pass.
-    RenderMoreLights = 2, //!< Start from the first RenderPass::LightFBOs pass and don't execute earlier passes.
-    Stage = 3, //!< Start from the first RenderPass::Stage where the name matches pass and don't execute earlier passes.
-    Reset = 4, //!< The render stage will be set to this after a render, ready for the next call to update.
+    Stage = 2, //!< Start from the first RenderPass::Stage where the name matches pass and don't execute earlier passes.
+    Reset = 3, //!< The render stage will be set to this after a render, ready for the next call to update.
   };
 
   RenderFromStageType type;
@@ -153,7 +152,11 @@ struct RenderFromStage
       return true;
     return index<other.index;
   }
+
+  //##################################################################################################
+  std::string typeToString() const;
 };
+
 
 //##################################################################################################
 struct RenderPass
