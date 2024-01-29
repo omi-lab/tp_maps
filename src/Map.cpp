@@ -217,8 +217,9 @@ struct Map::Private
   std::vector<tp_math_utils::Light> lights;
   std::vector<OpenGLFBO> lightBuffers;
   size_t lightTextureSize{1024};
-  size_t shadowSamples{0};
-  size_t shadowSamplesFastRender{0};
+  size_t shadowSamplesFull{0};
+  size_t shadowSamplesIntermediate{0};
+  size_t shadowSamplesFast{0};
 
   tp_utils::ElapsedTimer renderTimer;
 
@@ -242,7 +243,7 @@ struct Map::Private
   std::shared_ptr<tp_utils::Profiler> profiler{nullptr};
 #endif
 
-  bool fastRender{false};
+  RenderMode renderMode{RenderMode::Intermediate};
 
   //################################################################################################
   Private(Map* q_):
@@ -491,15 +492,15 @@ bool Map::initialized() const
 }
 
 //##################################################################################################
-void Map::setFastRender(bool fastRender)
+void Map::setRenderMode(RenderMode renderMode)
 {
-  d->fastRender = fastRender;
+  d->renderMode = renderMode;
 }
 
 //##################################################################################################
-bool Map::fastRender() const
+RenderMode Map::renderMode() const
 {
-  return d->fastRender;
+  return d->renderMode;
 }
 
 //##################################################################################################
@@ -781,32 +782,47 @@ size_t Map::maxSamples() const
 }
 
 //##################################################################################################
-void Map::setShadowSamples(size_t shadowSamples)
+void Map::setShadowSamples(RenderMode renderMode, size_t shadowSamples)
 {
-  if(d->shadowSamples != shadowSamples)
-  {
-    d->shadowSamples = shadowSamples;
-    d->deleteShaders();
+  switch(renderMode) {
+    case RenderMode::Full:
+    {
+      if(d->shadowSamplesFull != shadowSamples)
+      {
+        d->shadowSamplesFull = shadowSamples;
+        d->deleteShaders();
+      }
+    }
+    break;
+
+    case RenderMode::Intermediate:
+    {
+      if(d->shadowSamplesIntermediate != shadowSamples)
+      {
+        d->shadowSamplesIntermediate = shadowSamples;
+        d->deleteShaders();
+      }
+    }
+    break;
+
+    case RenderMode::Fast:
+    {
+      if(d->shadowSamplesFast != shadowSamples)
+        d->shadowSamplesFast = shadowSamples;
+    }
+    break;
   }
 }
 
 //##################################################################################################
-size_t Map::shadowSamples() const
+size_t Map::shadowSamples(RenderMode renderMode) const
 {
-  return d->shadowSamples;
-}
-
-//##################################################################################################
-void Map::setShadowSamplesFastRender(size_t shadowSamples)
-{
-  if(d->shadowSamplesFastRender != shadowSamples)
-    d->shadowSamplesFastRender = shadowSamples;
-}
-
-//##################################################################################################
-size_t Map::shadowSamplesFastRender() const
-{
-  return d->shadowSamplesFastRender;
+  if(renderMode == RenderMode::Full)
+    return d->shadowSamplesFull;
+  else if(renderMode == RenderMode::Intermediate)
+    return d->shadowSamplesIntermediate;
+  else // renderMode == RenderMode::Fast
+    return d->shadowSamplesFast;
 }
 
 //##################################################################################################
@@ -1806,10 +1822,10 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
     }
   }
 
-  if(d->fastRender)
+  if(d->renderMode == RenderMode::Fast)
   {
     // switch off soft shadows for fast render
-    setShadowSamplesFastRender(0);
+    setShadowSamples(RenderMode::Fast, 0);
   }
 }
 

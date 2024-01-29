@@ -100,10 +100,10 @@ public:
   bool initialized() const;
 
   //################################################################################################
-  void setFastRender(bool fastRender);
+  void setRenderMode(RenderMode renderMode);
 
   //################################################################################################
-  bool fastRender() const;
+  RenderMode renderMode() const;
 
   //################################################################################################
   const OpenGLBuffers& buffers() const;
@@ -196,7 +196,7 @@ public:
   size_t maxSamples() const;
 
   //################################################################################################
-  void setShadowSamples(size_t shadowSamples);
+  void setShadowSamples(RenderMode renderMode, size_t shadowSamples);
 
   //################################################################################################
   //! The number of adjacent samples to take from a shadow texture
@@ -205,14 +205,7 @@ public:
 
   samples = (shadowSamples+1) * (shadowSamples+1) * nLights;
   */
-  size_t shadowSamples() const;
-
-  //################################################################################################
-  void setShadowSamplesFastRender(size_t shadowSamples);
-
-  //################################################################################################
-  //! The number of adjacent samples to take from a shadow texture for fast rendering
-  size_t shadowSamplesFastRender() const;
+  size_t shadowSamples(RenderMode renderMode) const;
 
   //################################################################################################
   //! Enable high dynamic range rendering buffers.
