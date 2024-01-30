@@ -184,7 +184,8 @@ struct RenderPass
   };
 
   RenderPassType type{RenderPassType::PreRender};
-  tp_utils::WeakStringID name{nullptr};
+  tp_utils::StringID name{};
+  size_t stage{0};
   PostLayer* postLayer{nullptr};
 
   //################################################################################################
@@ -194,17 +195,16 @@ struct RenderPass
   }
 
   //################################################################################################
-  RenderPass(RenderPassType type_, tp_utils::WeakStringID name_=nullptr):
-    type(type_),
-    name(name_)
+  RenderPass(RenderPassType type_):
+    type(type_)
   {
 
   }
 
   //################################################################################################
-  RenderPass(RenderPassType type_, tp_utils::StringID name_):
+  RenderPass(RenderPassType type_, const tp_utils::StringID& name_):
     type(type_),
-    name(name_.weak())
+    name(name_)
   {
 
   }
@@ -220,7 +220,7 @@ struct RenderPass
   //################################################################################################
   RenderPass(const RenderFromStage& renderFromStage):
     type(Stage),
-    name(reinterpret_cast<tp_utils::WeakStringID>(renderFromStage.index))
+    stage(renderFromStage.index)
   {
 
   }
@@ -240,13 +240,13 @@ struct RenderPass
   //################################################################################################
   bool operator==(const RenderPass& other) const
   {
-    return type == other.type && name == other.name;
+    return type == other.type && name == other.name && stage == other.stage;
   }
 
   //################################################################################################
   bool operator!=(const RenderPass& other) const
   {
-    return type != other.type || name != other.name;
+    return type != other.type || name != other.name || stage != other.stage;
   }
 
   //################################################################################################
@@ -258,9 +258,33 @@ struct RenderPass
   //################################################################################################
   std::string getNameString() const
   {
-    if(name)
-      return tp_utils::StringID::fromWeak(name).toString();
-    return std::to_string(size_t(type));
+    if(name.isValid())
+      return name.toString();
+    return std::to_string(size_t(stage));
+  }
+
+  //################################################################################################
+  std::string describe() const
+  {
+    switch(type)
+    {
+    case PreRender        : return "PreRender "        + getNameString();
+    case LightFBOs        : return "LightFBOs "        + getNameString();
+    case PrepareDrawFBO   : return "PrepareDrawFBO "   + getNameString();
+    case SwapToFBO        : return "SwapToFBO "        + getNameString();
+    case SwapToFBONoClear : return "SwapToFBONoClear " + getNameString();
+    case BlitFromFBO      : return "BlitFromFBO "      + getNameString();
+    case Background       : return "Background "       + getNameString();
+    case Normal           : return "Normal "           + getNameString();
+    case Transparency     : return "Transparency "     + getNameString();
+    case FinishDrawFBO    : return "FinishDrawFBO "    + getNameString();
+    case Text             : return "Text "             + getNameString();
+    case GUI              : return "GUI "              + getNameString();
+    case Picking          : return "Picking "          + getNameString();
+    case Custom           : return "Custom "           + getNameString();
+    case Delegate         : return "Delegate "         + getNameString();
+    case Stage            : return "Stage "            + getNameString();
+    }
   }
 };
 
