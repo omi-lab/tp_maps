@@ -187,7 +187,7 @@ struct RenderPass
   };
 
   RenderPassType type{RenderPassType::PreRender};
-  tp_utils::StringID name{};
+  tp_utils::StringID name{defaultSID()};
   size_t index{0};
   PostLayer* postLayer{nullptr};
 
