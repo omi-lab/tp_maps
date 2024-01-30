@@ -11,7 +11,7 @@ class TP_MAPS_EXPORT PostOutlineLayer: public PostSelectionLayer
 {
 public:
   //################################################################################################
-  PostOutlineLayer(size_t stage=1);
+  PostOutlineLayer(size_t stageMask=1, size_t stageUpdate=2);
 
 protected:
   //################################################################################################

@@ -12,7 +12,7 @@ class TP_MAPS_EXPORT PostSelectionLayer: public PostLayer
 {
 public:
   //################################################################################################
-  PostSelectionLayer(const RenderPass& customRenderPass, size_t stage=1);
+  PostSelectionLayer(const RenderPass& customRenderPass, size_t stageMask=1, size_t stageUpdate=2);
 
   //################################################################################################
   ~PostSelectionLayer();
@@ -21,7 +21,12 @@ public:
   static tp_maps::RenderPass selectionRenderPass();
 
   //################################################################################################
-  tp_maps::RenderFromStage renderFromStage() const;
+  //! Render from stage to render mask
+  tp_maps::RenderFromStage renderFromStageMask() const;
+
+  //################################################################################################
+  //! Render from stage to update state given mask already rendered
+  tp_maps::RenderFromStage renderFromStageUpdate() const;
 
 protected:
   //################################################################################################

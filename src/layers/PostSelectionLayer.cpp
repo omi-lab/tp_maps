@@ -8,20 +8,21 @@ struct PostSelectionLayer::Private
 {
   tp_utils::StringID selectionOutput{"Selection output"};
   tp_maps::RenderPass selectionRenderPass{PostSelectionLayer::selectionRenderPass()};
-  tp_maps::RenderFromStage renderFromStage;
+  tp_maps::RenderFromStage renderFromStageMask, renderFromStageUpdate;
 
   //################################################################################################
-  Private(size_t stage):
-    renderFromStage(tp_maps::RenderFromStage::Stage, stage)
+  Private(size_t stageMask, size_t stageUpdate):
+    renderFromStageMask(tp_maps::RenderFromStage::Stage, stageMask),
+    renderFromStageUpdate(tp_maps::RenderFromStage::Stage, stageUpdate)
   {
 
   }
 };
 
 //##################################################################################################
-PostSelectionLayer::PostSelectionLayer(const RenderPass& customRenderPass, size_t stage):
+PostSelectionLayer::PostSelectionLayer(const RenderPass& customRenderPass, size_t stageMask, size_t stageUpdate):
   PostLayer(customRenderPass),
-  d(new Private(stage))
+  d(new Private(stageMask, stageUpdate))
 {
   d->selectionRenderPass.postLayer = this;
 }
@@ -39,9 +40,15 @@ tp_maps::RenderPass PostSelectionLayer::selectionRenderPass()
 }
 
 //##################################################################################################
-tp_maps::RenderFromStage PostSelectionLayer::renderFromStage() const
+tp_maps::RenderFromStage PostSelectionLayer::renderFromStageMask() const
 {
-  return d->renderFromStage;
+  return d->renderFromStageMask;
+}
+
+//##################################################################################################
+tp_maps::RenderFromStage PostSelectionLayer::renderFromStageUpdate() const
+{
+  return d->renderFromStageUpdate;
 }
 
 //##################################################################################################
@@ -53,9 +60,10 @@ void PostSelectionLayer::addRenderPasses(std::vector<tp_maps::RenderPass>& rende
   if(!containsPass(renderPasses, d->selectionRenderPass))
   {
     auto inputFBO = findInputFBO(renderPasses);
-    renderPasses.emplace_back(d->renderFromStage);
+    renderPasses.emplace_back(d->renderFromStageMask);
     renderPasses.emplace_back(tp_maps::RenderPass::SwapToFBO, tp_maps::selectionPassSID());
     renderPasses.emplace_back(d->selectionRenderPass);
+    renderPasses.emplace_back(d->renderFromStageUpdate);
     renderPasses.emplace_back(tp_maps::RenderPass::SwapToFBO, d->selectionOutput);
     renderPasses.emplace_back(tp_maps::RenderPass::BlitFromFBO, inputFBO);
   }
