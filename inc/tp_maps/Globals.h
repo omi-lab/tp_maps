@@ -188,7 +188,7 @@ struct RenderPass
 
   RenderPassType type{RenderPassType::PreRender};
   tp_utils::StringID name{};
-  size_t stage{0};
+  size_t index{0};
   PostLayer* postLayer{nullptr};
 
   //################################################################################################
@@ -223,7 +223,7 @@ struct RenderPass
   //################################################################################################
   RenderPass(const RenderFromStage& renderFromStage):
     type(Stage),
-    stage(renderFromStage.index)
+    index(renderFromStage.index)
   {
 
   }
@@ -243,13 +243,13 @@ struct RenderPass
   //################################################################################################
   bool operator==(const RenderPass& other) const
   {
-    return type == other.type && name == other.name && stage == other.stage;
+    return type == other.type && name == other.name && index == other.index;
   }
 
   //################################################################################################
   bool operator!=(const RenderPass& other) const
   {
-    return type != other.type || name != other.name || stage != other.stage;
+    return type != other.type || name != other.name || index != other.index;
   }
 
   //################################################################################################
@@ -263,7 +263,7 @@ struct RenderPass
   {
     if(name.isValid())
       return name.toString();
-    return std::to_string(size_t(stage));
+    return std::to_string(index);
   }
 
   //################################################################################################

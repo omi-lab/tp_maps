@@ -211,8 +211,8 @@ struct Map::Private
   // render pipeline toggles between the second and third for the remaining post processing steps.
   std::unordered_map<tp_utils::StringID, std::unique_ptr<OpenGLFBO>> intermediateFBOs;
 
-  OpenGLFBO* currentReadFBO{intermediateFBO(0)};
-  OpenGLFBO* currentDrawFBO{intermediateFBO(0)};
+  OpenGLFBO* currentReadFBO{intermediateFBO(defaultSID())};
+  OpenGLFBO* currentDrawFBO{intermediateFBO(defaultSID())};
 
   std::vector<tp_math_utils::Light> lights;
   std::vector<OpenGLFBO> lightBuffers;
@@ -1384,7 +1384,11 @@ void Map::paintGLNoMakeCurrent()
     else
       d->computedRenderPasses.push_back(renderPass);
   }
-
+#if 0
+  int ctr=0;
+  for(auto const& rp : d->computedRenderPasses)
+    tpDebug() << "Render pass: " << rp.describe() << " index: " << ctr++;
+#endif
 #ifdef TP_FBO_SUPPORTED
   GLint originalFrameBuffer = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
@@ -1429,8 +1433,8 @@ size_t Map::skipRenderPasses()
 
         case RenderPass::PrepareDrawFBO: //---------------------------------------------------------
         {
-          d->currentDrawFBO = d->intermediateFBO(0);
-          d->currentReadFBO = d->intermediateFBO(0);
+          d->currentDrawFBO = d->intermediateFBO(defaultSID());
+          d->currentReadFBO = d->intermediateFBO(defaultSID());
           break;
         }
 
@@ -1469,9 +1473,12 @@ size_t Map::skipRenderPasses()
 
         case RenderPass::Stage: //------------------------------------------------------------------
         {
-          if(d->renderFromStage == RenderFromStage::Stage && renderPass.stage == d->renderFromStage.index)
+          if(d->renderFromStage == RenderFromStage::Stage && renderPass.index == d->renderFromStage.index)
           {
             rp++;
+#ifdef TP_MAPS_DEBUG
+            tpDebug() << "skipRenderPasses: " << rp;
+#endif
             return rp;
           }
 
@@ -1483,6 +1490,9 @@ size_t Map::skipRenderPasses()
     }
   }
 
+#ifdef TP_MAPS_DEBUG
+  tpDebug() << "skipRenderPasses: " << rp;
+#endif
   return rp;
 }
 
@@ -1575,8 +1585,8 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
           d->renderInfo.hdr = hdr();
           d->renderInfo.extendedFBO = extendedFBO();
           glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
-          d->currentDrawFBO = d->intermediateFBO(0);
-          d->currentReadFBO = d->intermediateFBO(0);
+          d->currentDrawFBO = d->intermediateFBO(defaultSID());
+          d->currentReadFBO = d->intermediateFBO(defaultSID());
 
           if(!d->buffers.prepareBuffer("currentDraw",
                                        *d->currentDrawFBO,
@@ -1600,7 +1610,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
 #ifdef TP_FBO_SUPPORTED
           DEBUG_scopedDebug("RenderPass::SwapToFBO " + renderPass.getNameString(), TPPixel(0, 0, 255));
 
-          Multisample multisample = renderPass.name==0?Multisample::Yes:Multisample::No;
+          Multisample multisample = renderPass.index==0?Multisample::Yes:Multisample::No;
 
           d->renderInfo.hdr = hdr();
           d->renderInfo.extendedFBO = extendedFBO();
@@ -1630,7 +1640,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
 #ifdef TP_FBO_SUPPORTED
           DEBUG_scopedDebug("RenderPass::SwapToFBONoClear " + renderPass.getNameString(), TPPixel(255, 255, 0));
 
-          Multisample multisample = renderPass.name==0?Multisample::Yes:Multisample::No;
+          Multisample multisample = renderPass.name==defaultSID()?Multisample::Yes:Multisample::No;
 
           d->renderInfo.hdr = hdr();
           d->renderInfo.extendedFBO = extendedFBO();
