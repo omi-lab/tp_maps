@@ -118,12 +118,12 @@ void PostLayer::addRenderPasses(std::vector<RenderPass>& renderPasses)
 }
 
 //##################################################################################################
-tp_utils::WeakStringID PostLayer::findInputFBO(const std::vector<tp_maps::RenderPass>& c)
+tp_utils::StringID PostLayer::findInputFBO(const std::vector<tp_maps::RenderPass>& c)
 {
   for(size_t i=c.size()-1; i<c.size(); i--)
     if(const auto& p=c[i]; p.type == RenderPass::SwapToFBO || p.type == RenderPass::PrepareDrawFBO)
       return p.name;
-  return 0;
+  return {};
 }
 
 //##################################################################################################
