@@ -60,7 +60,7 @@ protected:
   virtual void addRenderPasses(std::vector<RenderPass>& renderPasses);
 
   //################################################################################################
-  static tp_utils::WeakStringID findInputFBO(const std::vector<tp_maps::RenderPass>& c);
+  static tp_utils::StringID findInputFBO(const std::vector<tp_maps::RenderPass>& c);
 
   //################################################################################################
   static bool containsPass(const std::vector<tp_maps::RenderPass>& renderPasses, tp_maps::RenderPass pass);

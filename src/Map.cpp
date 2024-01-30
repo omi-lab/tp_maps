@@ -209,7 +209,7 @@ struct Map::Private
   // We don't want to multisample multiple times it just makes the result blury. So what we do here
   // is have 3 buffers, the first has the 3D geometry drawn to it and is multisampled after this the
   // render pipeline toggles between the second and third for the remaining post processing steps.
-  std::unordered_map<tp_utils::WeakStringID, std::unique_ptr<OpenGLFBO>> intermediateFBOs;
+  std::unordered_map<tp_utils::StringID, std::unique_ptr<OpenGLFBO>> intermediateFBOs;
 
   OpenGLFBO* currentReadFBO{intermediateFBO(0)};
   OpenGLFBO* currentDrawFBO{intermediateFBO(0)};
@@ -301,7 +301,7 @@ struct Map::Private
   }
 
   //################################################################################################
-  OpenGLFBO* intermediateFBO(tp_utils::WeakStringID name)
+  OpenGLFBO* intermediateFBO(const tp_utils::StringID& name)
   {
     auto& intermediateFBO = intermediateFBOs[name];
     if(!intermediateFBO)
@@ -1408,54 +1408,53 @@ size_t Map::skipRenderPasses()
 #ifdef TP_FBO_SUPPORTED
       switch(renderPass.type)
       {
-        case RenderPass::PreRender: //----------------------------------------------------------------
-        case RenderPass::LightFBOs: //----------------------------------------------------------------
+        case RenderPass::PreRender: //--------------------------------------------------------------
+        case RenderPass::LightFBOs: //--------------------------------------------------------------
         break;
 
-        case RenderPass::PrepareDrawFBO: //-----------------------------------------------------------
+        case RenderPass::PrepareDrawFBO: //---------------------------------------------------------
         {
           d->currentDrawFBO = d->intermediateFBO(0);
           d->currentReadFBO = d->intermediateFBO(0);
           break;
         }
 
-        case RenderPass::SwapToFBO: //----------------------------------------------------------------
+        case RenderPass::SwapToFBO: //--------------------------------------------------------------
         {
           d->currentReadFBO = d->currentDrawFBO;
           d->currentDrawFBO = d->intermediateFBO(renderPass.name);
           break;
         }
 
-        case RenderPass::SwapToFBONoClear: //---------------------------------------------------------
+        case RenderPass::SwapToFBONoClear: //-------------------------------------------------------
         {
           d->currentReadFBO = d->currentDrawFBO;
           d->currentDrawFBO = d->intermediateFBO(renderPass.name);
           break;
         }
 
-        case RenderPass::BlitFromFBO: //--------------------------------------------------------------
-        case RenderPass::Background: //---------------------------------------------------------------
-        case RenderPass::Normal: //-------------------------------------------------------------------
-        case RenderPass::Transparency: //-------------------------------------------------------------
+        case RenderPass::BlitFromFBO: //------------------------------------------------------------
+        case RenderPass::Background: //-------------------------------------------------------------
+        case RenderPass::Normal: //-----------------------------------------------------------------
+        case RenderPass::Transparency: //-----------------------------------------------------------
         break;
 
-        case RenderPass::FinishDrawFBO: //------------------------------------------------------------
+        case RenderPass::FinishDrawFBO: //----------------------------------------------------------
         {
           std::swap(d->currentDrawFBO, d->currentReadFBO);
           break;
         }
 
-        case RenderPass::Text: //---------------------------------------------------------------------
-        case RenderPass::GUI: //----------------------------------------------------------------------
-        case RenderPass::Picking: //------------------------------------------------------------------
-        case RenderPass::Custom: //-------------------------------------------------------------------
-        case RenderPass::Delegate: //-----------------------------------------------------------------
+        case RenderPass::Text: //-------------------------------------------------------------------
+        case RenderPass::GUI: //--------------------------------------------------------------------
+        case RenderPass::Picking: //----------------------------------------------------------------
+        case RenderPass::Custom: //-----------------------------------------------------------------
+        case RenderPass::Delegate: //---------------------------------------------------------------
         break;
 
-        case RenderPass::Stage: //--------------------------------------------------------------------
+        case RenderPass::Stage: //------------------------------------------------------------------
         {
-          if(d->renderFromStage == RenderFromStage::Stage &&
-             size_t(renderPass.name) == d->renderFromStage.index)
+          if(d->renderFromStage == RenderFromStage::Stage && renderPass.stage == d->renderFromStage.index)
           {
             rp++;
             return rp;
