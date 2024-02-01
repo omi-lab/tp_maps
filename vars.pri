@@ -72,7 +72,7 @@ HEADERS += inc/tp_maps/SwapRowOrder.h
 HEADERS += inc/tp_maps/subsystems/Subsystem.h
 
 # None
-HEADERS += inc/tp_maps/subsystems/open_gl/None.h
+HEADERS += inc/tp_maps/subsystems/none/None.h
 HEADERS += inc/tp_maps/subsystems/none/Buffers.h
 
 
@@ -84,17 +84,17 @@ HEADERS += inc/tp_maps/subsystems/open_gl/OpenGLBuffers.h
 
 
 # OpenGLFixed
-HEADERS += inc/tp_maps/subsystems/open_gl/OpenGLFixed.h
+HEADERS += inc/tp_maps/subsystems/open_gl_fixed/OpenGLFixed.h
 HEADERS += inc/tp_maps/subsystems/open_gl_fixed/Buffers.h
 
 
 # Vulkan
-HEADERS += inc/tp_maps/subsystems/open_gl/Vulkan.h
+HEADERS += inc/tp_maps/subsystems/vulkan/Vulkan.h
 HEADERS += inc/tp_maps/subsystems/vulkan/Buffers.h
 
 
 # Direct3D
-HEADERS += inc/tp_maps/subsystems/open_gl/Direct3D.h
+HEADERS += inc/tp_maps/subsystems/direct_3d/Direct3D.h
 HEADERS += inc/tp_maps/subsystems/direct_3d/Buffers.h
 
 
