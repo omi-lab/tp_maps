@@ -4,7 +4,6 @@
 #include "tp_maps/TexturePoolKey.h"
 
 #include "tp_utils/TimeUtils.h"
-#include "tp_utils/DebugUtils.h"
 
 namespace tp_maps
 {
@@ -184,10 +183,6 @@ struct PoolDetails_lt
                 {
                   // the normals are consistent so the quaternions should be too. If they aren't it means that there is a sign change
                   // in the rotation angle - we will introduce new triangles to avoid the sign change
-#ifndef WIN32
-#warning "we modify verts so can't take references here"
-#endif
-
                   const auto v1 = verts[n];
                   const auto v2 = verts[n+1];
                   const auto v3 = verts[n+2];

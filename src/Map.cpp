@@ -1301,11 +1301,6 @@ glm::vec2 Map::screenSize() const
 //##################################################################################################
 void Map::update(RenderFromStage renderFromStage)
 {
-#ifdef TP_MAPS_DEBUG
-  if(renderFromStage.type != RenderFromStage::RenderFromStageType::Stage)
-    tpDebug() << "Render from stage: " << renderFromStage.typeToString();
-#endif
-
   if(renderFromStage<d->renderFromStage)
     d->renderFromStage = renderFromStage;
 }
@@ -1387,7 +1382,7 @@ void Map::paintGLNoMakeCurrent()
 #if 0
   int ctr=0;
   for(auto const& rp : d->computedRenderPasses)
-    tpDebug() << "Render pass: " << rp.describe() << " index: " << ctr++;
+    tpWarning() << "Render pass: " << rp.describe() << " index: " << ctr++;
 #endif
 #ifdef TP_FBO_SUPPORTED
   GLint originalFrameBuffer = 0;
@@ -1476,9 +1471,6 @@ size_t Map::skipRenderPasses()
           if(d->renderFromStage == RenderFromStage::Stage && renderPass.index == d->renderFromStage.index)
           {
             rp++;
-#ifdef TP_MAPS_DEBUG
-            tpDebug() << "skipRenderPasses: " << rp;
-#endif
             return rp;
           }
 
@@ -1490,9 +1482,6 @@ size_t Map::skipRenderPasses()
     }
   }
 
-#ifdef TP_MAPS_DEBUG
-  tpDebug() << "skipRenderPasses: " << rp;
-#endif
   return rp;
 }
 
