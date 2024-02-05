@@ -63,7 +63,7 @@ public:
   Value 0 indicates a hard shadow edge. Larger values give softer shadow edges but make the shader
   run slower.
   */
-  virtual void setShadowSamples(int shadowSamples);
+  virtual void setShadowSamples(size_t shadowSamples);
 
   //################################################################################################
   //! Discard alpha values less than this

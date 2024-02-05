@@ -708,11 +708,11 @@ void G3DMaterialShader::setBlankTextures()
 }
 
 //##################################################################################################
-void G3DMaterialShader::setShadowSamples(int shadowSamples)
+void G3DMaterialShader::setShadowSamples(size_t shadowSamples)
 {
   auto exec = [&](const UniformLocations_lt& locations)
   {
-    glUniform1i(locations.shadowSamplesLocation, shadowSamples);
+    glUniform1i(locations.shadowSamplesLocation, int(shadowSamples));
   };
 
   if(currentShaderType() == ShaderType::Render)
