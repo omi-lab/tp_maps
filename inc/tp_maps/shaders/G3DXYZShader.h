@@ -25,7 +25,7 @@ public:
   void setMatrix(const glm::mat4& m, const glm::mat4& mvp);
 
   //################################################################################################
-  void initPass(RenderInfo& renderInfo,
+  bool initPass(RenderInfo& renderInfo,
                 const Matrices& m,
                 const glm::mat4& modelToWorldMatrix) override;
 

@@ -78,12 +78,14 @@ void G3DImageShader::drawPicking(GLenum mode, VertexBuffer* vertexBuffer)
 }
 
 //##################################################################################################
-void G3DImageShader::initPass(RenderInfo& renderInfo,
+bool G3DImageShader::initPass(RenderInfo& renderInfo,
                               const Matrices& m,
                               const glm::mat4& modelToWorldMatrix)
 {
   use(renderInfo.shaderType());
   setMatrix(m.vp * modelToWorldMatrix);
+
+  return true;
 }
 
 //##################################################################################################

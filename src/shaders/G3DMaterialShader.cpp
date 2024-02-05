@@ -366,6 +366,7 @@ void G3DMaterialShader::setLights(const std::vector<tp_math_utils::Light>& light
       }
     }
 
+    if(locations.txlSizeLocation>=0)
     {
       glm::vec2 txlSize{1.0f, 1.0f};
       if(!lightBuffers.empty())
@@ -752,13 +753,15 @@ void G3DMaterialShader::drawPicking(GLenum mode, VertexBuffer* vertexBuffer, con
 }
 
 //##################################################################################################
-void G3DMaterialShader::initPass(RenderInfo& renderInfo,
+bool G3DMaterialShader::initPass(RenderInfo& renderInfo,
                                  const Matrices& m,
                                  const glm::mat4& modelToWorldMatrix)
 {
   use(renderInfo.shaderType());
   setMatrix(modelToWorldMatrix, m.v, m.p);
   setLights(map()->lights(), map()->lightBuffers());
+
+  return true;
 }
 
 //##################################################################################################

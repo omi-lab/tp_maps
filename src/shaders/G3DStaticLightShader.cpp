@@ -1,5 +1,6 @@
 ﻿#include "tp_maps/shaders/G3DStaticLightShader.h"
 #include "tp_maps/Map.h"
+#include "tp_maps/RenderInfo.h"
 
 #include "tp_math_utils/Material.h"
 
@@ -84,6 +85,24 @@ G3DStaticLightShader::~G3DStaticLightShader()
 {
   delete d;
 }
+
+
+
+//##################################################################################################
+bool G3DStaticLightShader::initPass(RenderInfo& renderInfo,
+                                    const Matrices& m,
+                                    const glm::mat4& modelToWorldMatrix)
+{
+  auto shaderType = renderInfo.shaderType();
+  if(shaderType == ShaderType::Light)
+    return false;
+
+  use(renderInfo.shaderType());
+  setMatrix(modelToWorldMatrix, m.v, m.p);
+
+  return true;
+}
+
 
 //##################################################################################################
 void G3DStaticLightShader::setMatrix(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p)
@@ -223,10 +242,10 @@ const char* G3DStaticLightShader::vertexShaderStr(ShaderType shaderType)
   }
 
   case ShaderType::Picking:
-  return G3DMaterialShader::vertexShaderStr(shaderType);
+    return G3DMaterialShader::vertexShaderStr(shaderType);
 
   case ShaderType::Light:
-  break;
+    break;
   }
 
   return nullptr;
@@ -245,10 +264,10 @@ const char* G3DStaticLightShader::fragmentShaderStr(ShaderType shaderType)
   }
 
   case ShaderType::Picking:
-  return G3DMaterialShader::fragmentShaderStr(shaderType);
+    return G3DMaterialShader::fragmentShaderStr(shaderType);
 
   case ShaderType::Light:
-  break;
+    break;
   }
 
   return nullptr;
@@ -275,7 +294,7 @@ void G3DStaticLightShader::bindLocations(GLuint program, ShaderType shaderType)
   }
 
   case ShaderType::Light:
-  break;
+    break;
   }
 }
 

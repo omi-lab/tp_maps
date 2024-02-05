@@ -27,6 +27,11 @@ public:
   ~G3DStaticLightShader() override;
 
   //################################################################################################
+  bool initPass(RenderInfo& renderInfo,
+                const Matrices& m,
+                const glm::mat4& modelToWorldMatrix) override;
+
+  //################################################################################################
   //! Call this to set the model, view, and projection matrices before drawing the geometry.
   void setMatrix(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p) override;
 

@@ -78,7 +78,7 @@ public:
                                      const std::vector<Vertex>& verts) const;
 
   //################################################################################################
-  virtual void initPass(RenderInfo& renderInfo,
+  virtual bool initPass(RenderInfo& renderInfo,
                         const Matrices& m,
                         const glm::mat4& modelToWorldMatrix)=0;
 

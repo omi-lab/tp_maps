@@ -63,12 +63,14 @@ void G3DXYZShader::setMatrix(const glm::mat4& m, const glm::mat4& mvp)
 }
 
 //##################################################################################################
-void G3DXYZShader::initPass(RenderInfo& renderInfo,
+bool G3DXYZShader::initPass(RenderInfo& renderInfo,
                         const Matrices& m,
                         const glm::mat4& modelToWorldMatrix)
 {
   use(renderInfo.shaderType());
   setMatrix(modelToWorldMatrix, m.vp * modelToWorldMatrix);
+
+  return true;
 }
 
 //##################################################################################################

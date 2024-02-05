@@ -227,7 +227,8 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
   if(!shader || shader->error())
     return;
 
-  shader->initPass(renderInfo, m, modelToWorldMatrix());
+  if(!shader->initPass(renderInfo, m, modelToWorldMatrix()))
+    return;
 
   if(renderInfo.pass == RenderPass::Picking)
   {

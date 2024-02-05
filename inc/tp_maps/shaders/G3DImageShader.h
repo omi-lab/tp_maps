@@ -36,7 +36,7 @@ public:
   void drawPicking(GLenum mode, VertexBuffer* vertexBuffer);
 
   //################################################################################################
-  void initPass(RenderInfo& renderInfo,
+  bool initPass(RenderInfo& renderInfo,
                 const Matrices& m,
                 const glm::mat4& modelToWorldMatrix) override;
 
