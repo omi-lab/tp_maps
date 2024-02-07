@@ -1381,7 +1381,7 @@ void Map::paintGLNoMakeCurrent()
   }
 #if 0
   int ctr=0;
-  for(auto const& rp : d->computedRenderPasses)
+  for(const auto& rp : d->computedRenderPasses)
     tpWarning() << "Render pass: " << rp.describe() << " index: " << ctr++;
 #endif
 #ifdef TP_FBO_SUPPORTED
