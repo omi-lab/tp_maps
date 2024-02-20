@@ -34,10 +34,9 @@ vec3 hsv2rgb(vec3 c)
 void main()
 {
   //Note: View transform
+  //ABlinov Note: GammaCorrection forward correction (see for reverse correction look also to
+  //omi_scene_3d_maps\src\resources\PreviewShader.frag: main for forward correction)
   vec3 hsv = rgb2hsv(TP_GLSL_TEXTURE_2D(textureSampler, coord_tex).xyz);
   hsv.y *= 0.9f;
-  //hsv.z *= 0.1f;
-
-  //Note: GammaCorrection
   TP_GLSL_GLFRAGCOLOR = vec4(pow(hsv2rgb(hsv), vec3(1.0f/2.2)), 1.0);
 }
