@@ -57,7 +57,7 @@
 #    define __glext_h_ 1
 #  endif
 
-#  define TP_DEFAULT_PROFILE tp_maps::ShaderProfile::GLSL_130
+#  define TP_DEFAULT_PROFILE tp_maps::ShaderProfile::GLSL_460
 #  define TP_GL3
 #  define TP_ENABLE_MULTISAMPLE
 #  define TP_ENABLE_MULTISAMPLE_FBO
