@@ -353,9 +353,6 @@ struct Map::Private
 Map::Map(bool enableDepthBuffer):
   d(new Private(this))
 {
-#ifdef OMI_PREVIEW_INTERFACE_DEBUG
-  tpWarning() << "Map::constructor this=" << this;
-#endif
   TP_UNUSED(enableDepthBuffer);
   d->controller = new FlatController(this);
 
@@ -375,9 +372,6 @@ Map::Map(bool enableDepthBuffer):
 //##################################################################################################
 Map::~Map()
 {
-#ifdef OMI_PREVIEW_INTERFACE_DEBUG
-  tpWarning() << "Map::destructor this=" << this;
-#endif
   if(!d->preDeleteCalled)
     tpWarning() << "Error! Map subclasses must call preDelete in their destructor!";
   delete d;
@@ -744,14 +738,8 @@ void Map::removeLayer(Layer* layer)
 //##################################################################################################
 void Map::clearLayers()
 {
-#ifdef OMI_PREVIEW_INTERFACE_DEBUG
-  tpWarning() << "Map::clearLayers begin this=" << this;
-#endif
   while(!d->layers.empty())
     delete d->layers.at(d->layers.size()-1);
-#ifdef OMI_PREVIEW_INTERFACE_DEBUG
-  tpWarning() << "Map::clearLayers end this=" << this;
-#endif
 }
 
 //##################################################################################################
