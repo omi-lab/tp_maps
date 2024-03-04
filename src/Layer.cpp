@@ -45,7 +45,7 @@ Layer::Layer():
 Layer::~Layer()
 {  
 #ifdef OMI_PREVIEW_INTERFACE_DEBUG
-  tpWarning() << "Layer denstructor begin this=" << this;
+  tpWarning() << "Layer destructor begin this=" << this;
 #endif
   clearChildLayers();
 
@@ -56,7 +56,7 @@ Layer::~Layer()
 
   delete d;
 #ifdef OMI_PREVIEW_INTERFACE_DEBUG
-  tpWarning() << "Layer denstructor end this=" << this;
+  tpWarning() << "Layer destructor end this=" << this;
 #endif
 }
 
@@ -303,6 +303,9 @@ void Layer::callAsync(const std::function<void()>& callback)
     std::weak_ptr<int> alive = d->alive;
     d->map->callAsync([=]
     {
+#ifdef OMI_PREVIEW_INTERFACE_DEBUG
+      tpWarning() << "Layer::callAsync(1) this=" << this;
+#endif
       if(alive.lock())
       {
 #ifdef OMI_PREVIEW_INTERFACE_DEBUG
