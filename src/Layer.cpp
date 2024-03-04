@@ -36,11 +36,17 @@ struct Layer::Private
 Layer::Layer():
   d(new Private(this))
 {
+#ifdef OMI_PREVIEW_INTERFACE_DEBUG
+  tpWarning() << "Layer constructor this=" << this;
+#endif
 }
 
 //##################################################################################################
 Layer::~Layer()
 {  
+#ifdef OMI_PREVIEW_INTERFACE_DEBUG
+  tpWarning() << "Layer denstructor begin this=" << this;
+#endif
   clearChildLayers();
 
   if(d->parent)
@@ -49,6 +55,9 @@ Layer::~Layer()
     d->map->layerDestroyed(this);
 
   delete d;
+#ifdef OMI_PREVIEW_INTERFACE_DEBUG
+  tpWarning() << "Layer denstructor end this=" << this;
+#endif
 }
 
 //##################################################################################################
@@ -288,12 +297,23 @@ void Layer::callAsync(const std::function<void()>& callback)
 {
   if(d->map)
   {
+#ifdef OMI_PREVIEW_INTERFACE_DEBUG
+    tpWarning() << "Layer::callAsync begin this=" << this;
+#endif
     std::weak_ptr<int> alive = d->alive;
     d->map->callAsync([=]
     {
       if(alive.lock())
+      {
+#ifdef OMI_PREVIEW_INTERFACE_DEBUG
+        tpWarning() << "Layer::callback this=" << this;
+#endif
         callback();
+      }
     });
+#ifdef OMI_PREVIEW_INTERFACE_DEBUG
+    tpWarning() << "Layer::callAsync end this=" << this;
+#endif
   }
 }
 
