@@ -309,7 +309,7 @@ void Layer::callAsync(const std::function<void()>& callback)
       if(alive.lock())
       {
 #ifdef OMI_PREVIEW_INTERFACE_DEBUG
-        tpWarning() << "Layer::callback this=" << this;
+        tpWarning() << "Layer::callback this=" << this << " map=" << d->map;
 #endif
         callback();
       }
