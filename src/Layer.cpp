@@ -298,7 +298,7 @@ void Layer::callAsync(const std::function<void()>& callback)
   if(d->map)
   {
 #ifdef OMI_PREVIEW_INTERFACE_DEBUG
-    tpWarning() << "Layer::callAsync begin this=" << this;
+    tpWarning() << "Layer::callAsync begin this=" << this << " map=" << d->map;
 #endif
     std::weak_ptr<int> alive = d->alive;
     d->map->callAsync([=]
@@ -309,9 +309,12 @@ void Layer::callAsync(const std::function<void()>& callback)
       if(alive.lock())
       {
 #ifdef OMI_PREVIEW_INTERFACE_DEBUG
-        tpWarning() << "Layer::callback this=" << this << " map=" << d->map;
+        tpWarning() << "Layer::callback begin this=" << this << " map=" << d->map;
 #endif
         callback();
+#ifdef OMI_PREVIEW_INTERFACE_DEBUG
+        tpWarning() << "Layer::callback end this=" << this << " map=" << d->map;
+#endif
       }
     });
 #ifdef OMI_PREVIEW_INTERFACE_DEBUG
