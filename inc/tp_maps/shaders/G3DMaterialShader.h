@@ -5,6 +5,7 @@
 #include "tp_maps/subsystems/open_gl/OpenGL.h" // IWYU pragma: keep
 
 #include "tp_math_utils/Light.h"
+#include "tp_math_utils/materials/OpenGLMaterial.h"
 
 namespace tp_math_utils
 {
@@ -39,10 +40,7 @@ public:
   virtual void setMatrix(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p);
 
   //################################################################################################
-  void setMaterial(const tp_math_utils::Material& material);
-
-  //################################################################################################
-  virtual void setMaterial(const tp_math_utils::Material& material, const glm::mat3& uvMatrix);
+  virtual void setMaterial(const tp_math_utils::OpenGLMaterial& material, const glm::mat3& uvMatrix);
 
   //################################################################################################
   /*!

@@ -6,6 +6,7 @@
 #include "tp_maps/PickingResult.h"
 
 #include "tp_math_utils/Plane.h"
+#include "tp_math_utils/materials/OpenGLMaterial.h"
 
 #include "glm/gtx/norm.hpp" // IWYU pragma: keep
 
@@ -86,7 +87,10 @@ struct GizmoLayer::Private
     {
       auto& circle = geometry.emplace_back();
 
-      circle.material.albedo = color;
+      auto material = new tp_math_utils::OpenGLMaterial();
+      circle.material.extendedMaterials.push_back(material);
+
+      material->albedo = color;
 
       circle.triangleFan   = GL_TRIANGLE_FAN;
       circle.triangleStrip = GL_TRIANGLE_STRIP;
@@ -324,8 +328,11 @@ struct GizmoLayer::Private
   {
     auto& arrow = geometry.emplace_back();
 
-    arrow.material.albedo = color;
-    arrow.material.roughness = 0.0f;
+    auto material = new tp_math_utils::OpenGLMaterial();
+    arrow.material.extendedMaterials.push_back(material);
+
+    material->albedo = color;
+    material->roughness = 0.0f;
 
     arrow.triangleFan   = GL_TRIANGLE_FAN;
     arrow.triangleStrip = GL_TRIANGLE_STRIP;

@@ -5,8 +5,6 @@
 #include "tp_maps/Geometry3DPool.h"
 #include "tp_maps/subsystems/open_gl/OpenGL.h" // IWYU pragma: keep
 
-#include "tp_math_utils/Material.h"
-
 #include "glm/gtc/type_ptr.hpp"
 
 namespace tp_maps
@@ -436,34 +434,28 @@ void G3DMaterialShader::setMatrix(const glm::mat4& m, const glm::mat4& v, const 
 }
 
 //##################################################################################################
-void G3DMaterialShader::setMaterial(const tp_math_utils::Material& material)
-{
-  setMaterial(material, material.uvTransformation.uvMatrix());
-}
-
-//##################################################################################################
-void G3DMaterialShader::setMaterial(const tp_math_utils::Material& material, const glm::mat3& uvMatrix)
+void G3DMaterialShader::setMaterial(const tp_math_utils::OpenGLMaterial& material, const glm::mat3& uvMatrix)
 {
   auto exec = [&](const UniformLocations_lt& locations)
   {
-    glUniform1f (locations.    materialUseAmbientLocation, material.useAmbient                );
-    glUniform1f (locations.    materialUseDiffuseLocation, material.useDiffuse                );
-    glUniform1f (locations.      materialUseNdotLLocation, material.useNdotL                  );
-    glUniform1f (locations.materialUseAttenuationLocation, material.useAttenuation            );
-    glUniform1f (locations.     materialUseShadowLocation, material.useShadow                 );
-    glUniform1f (locations.  materialUseLightMaskLocation, material.useLightMask              );
-    glUniform1f (locations. materialUseReflectionLocation, material.useReflection             );
+    glUniform1f(locations.      materialUseAmbientLocation, material.useAmbient                );
+    glUniform1f(locations.      materialUseDiffuseLocation, material.useDiffuse                );
+    glUniform1f(locations.        materialUseNdotLLocation, material.useNdotL                  );
+    glUniform1f(locations.  materialUseAttenuationLocation, material.useAttenuation            );
+    glUniform1f(locations.       materialUseShadowLocation, material.useShadow                 );
+    glUniform1f(locations.    materialUseLightMaskLocation, material.useLightMask              );
+    glUniform1f(locations.   materialUseReflectionLocation, material.useReflection             );
 
-    glUniform1i (locations. materialShadowCatcherLocation, material.rayVisibilityShadowCatcher);
+    glUniform1i(locations.   materialShadowCatcherLocation, material.rayVisibilityShadowCatcher);
 
-    glUniform1f(locations.    materialAlbedoScaleLocation, material.albedoScale               );
-    glUniform1f(locations.    materialAlbedoBrightnessLocation, material.albedoBrightness     );
-    glUniform1f(locations.    materialAlbedoContrastLocation  , material.albedoContrast       );
-    glUniform1f(locations.    materialAlbedoGammaLocation     , material.albedoGamma          );
-    glUniform1f(locations.    materialAlbedoHueLocation       , material.albedoHue            );
-    glUniform1f(locations.    materialAlbedoSaturationLocation, material.albedoSaturation     );
-    glUniform1f(locations.    materialAlbedoValueLocation     , material.albedoValue          );
-    glUniform1f(locations.    materialAlbedoFactorLocation    , material.albedoFactor         );
+    glUniform1f(locations.     materialAlbedoScaleLocation, material.albedoScale               );
+    glUniform1f(locations.materialAlbedoBrightnessLocation, material.albedoBrightness          );
+    glUniform1f(locations.  materialAlbedoContrastLocation, material.albedoContrast            );
+    glUniform1f(locations.     materialAlbedoGammaLocation, material.albedoGamma               );
+    glUniform1f(locations.       materialAlbedoHueLocation, material.albedoHue                 );
+    glUniform1f(locations.materialAlbedoSaturationLocation, material.albedoSaturation          );
+    glUniform1f(locations.     materialAlbedoValueLocation, material.albedoValue               );
+    glUniform1f(locations.    materialAlbedoFactorLocation, material.albedoFactor              );
 
     glUniformMatrix3fv(locations.uvMatrixLocation, 1, GL_FALSE, glm::value_ptr(uvMatrix));
   };
@@ -768,8 +760,7 @@ bool G3DMaterialShader::initPass(RenderInfo& renderInfo,
 void G3DMaterialShader::setMaterial(RenderInfo& renderInfo,
                                     const ProcessedGeometry3D& processedGeometry3D)
 {
-  const auto& material = processedGeometry3D.alternativeMaterial->material;
-  glm::mat3 uvMatrix = processedGeometry3D.uvMatrix * material.uvTransformation.uvMatrix();
+  glm::mat3 uvMatrix = processedGeometry3D.uvMatrix * processedGeometry3D.alternativeMaterial->materialUVMatrix;
 
   setMaterial(processedGeometry3D.alternativeMaterial->material, uvMatrix);
 

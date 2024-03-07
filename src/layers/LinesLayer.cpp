@@ -4,6 +4,8 @@
 #include "tp_maps/shaders/LineShader.h"
 #include "tp_maps/picking_results/LinesPickingResult.h"
 
+#include "tp_math_utils/materials/OpenGLMaterial.h"
+
 namespace tp_maps
 {
 namespace
@@ -95,10 +97,16 @@ void LinesLayer::setLinesFromGeometry(const std::vector<tp_math_utils::Geometry3
 
   for(const auto& g : geometry)
   {
+    glm::vec3 albedo{0.0f, 0.0f, 0.0f};
+    tp_math_utils::OpenGLMaterial::view(g.material,[&](const tp_math_utils::OpenGLMaterial& m)
+    {
+      albedo = m.albedo;
+    });
+
     for(const auto& m : g.indexes)
     {
       auto& l = lines.emplace_back();
-      l.color = glm::vec4(g.material.albedo, 1.0f);
+      l.color = glm::vec4(albedo, 1.0f);
       l.mode = GL_LINES;
 
       if(!m.indexes.empty())

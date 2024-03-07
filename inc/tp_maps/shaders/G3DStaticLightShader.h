@@ -36,7 +36,7 @@ public:
   void setMatrix(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p) override;
 
   //################################################################################################
-  void setMaterial(const tp_math_utils::Material& material, const glm::mat3& uvMatrix) override;
+  void setMaterial(const tp_math_utils::OpenGLMaterial& material, const glm::mat3& uvMatrix) override;
 
   //################################################################################################
   /*!

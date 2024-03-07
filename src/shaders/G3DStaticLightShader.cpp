@@ -2,8 +2,6 @@
 #include "tp_maps/Map.h"
 #include "tp_maps/RenderInfo.h"
 
-#include "tp_math_utils/Material.h"
-
 #include "glm/gtc/type_ptr.hpp"
 
 namespace tp_maps
@@ -139,7 +137,7 @@ void G3DStaticLightShader::setMatrix(const glm::mat4& m, const glm::mat4& v, con
 }
 
 //##################################################################################################
-void G3DStaticLightShader::setMaterial(const tp_math_utils::Material& material, const glm::mat3& uvMatrix)
+void G3DStaticLightShader::setMaterial(const tp_math_utils::OpenGLMaterial& material, const glm::mat3& uvMatrix)
 {
   switch(currentShaderType())
   {

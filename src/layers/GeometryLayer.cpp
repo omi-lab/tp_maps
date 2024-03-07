@@ -14,7 +14,7 @@ namespace
 struct GeometryDetails_lt
 {
   std::vector<std::pair<GLenum, G3DMaterialShader::VertexBuffer*>> vertexBuffers;
-  tp_math_utils::Material material;
+  tp_math_utils::OpenGLMaterial material;
 };
 }
 //##################################################################################################
@@ -102,7 +102,7 @@ void GeometryLayer::render(RenderInfo& renderInfo)
     for(const auto& shape : d->geometry)
     {
       GeometryDetails_lt details;
-      details.material = shape.material;
+      shape.material.viewOpenGL([&](const auto& m){details.material = m;});
 
       std::vector<tp_triangulation::Polygon> srcData;
       tp_triangulation::Polygon polygon;
@@ -168,7 +168,7 @@ void GeometryLayer::render(RenderInfo& renderInfo)
   {
     for(const auto& details : d->processedGeometry)
     {
-      shader->setMaterial(details.material);
+      shader->setMaterial(details.material, glm::mat3(1.0f));
       shader->setBlankTextures();
       shader->setDiscardOpacity((renderInfo.pass == RenderPass::Transparency)?0.01f:0.80f);
       for(const std::pair<GLenum, G3DMaterialShader::VertexBuffer*>& buff : details.vertexBuffers)

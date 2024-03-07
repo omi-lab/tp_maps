@@ -18,7 +18,10 @@ struct ProcessedGeometry3D
 {
   TP_REF_COUNT_OBJECTS("ProcessedGeometry3D");
   std::vector<std::pair<GLenum, G3DMaterialShader::VertexBuffer*>> vertexBuffers;
-  tp_math_utils::Material material;
+  tp_math_utils::OpenGLMaterial material;
+  glm::mat3 materialUVMatrix{1.0f};
+  tp_utils::StringID materialName;
+
   glm::mat3 uvMatrix{1.0f};
 
   GLuint     rgbaTextureID{0}; //!< Albedo and alpha.
