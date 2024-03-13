@@ -237,6 +237,10 @@ protected:
   virtual void lightsChanged(LightingModelChanged lightingModelChanged);
 
   //################################################################################################
+  //! Called by the map when it is resized
+  virtual void mapResized(int w, int h);
+
+  //################################################################################################
   //! Calls update on the map
   void update(RenderFromStage renderFromStage=RenderFromStage::Full);
 

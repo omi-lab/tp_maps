@@ -277,6 +277,13 @@ void Layer::lightsChanged(LightingModelChanged lightingModelChanged)
 }
 
 //##################################################################################################
+void Layer::mapResized(int w, int h)
+{
+  for(auto layer : d->layers)
+    layer->mapResized(w, h);
+}
+
+//##################################################################################################
 void Layer::update(RenderFromStage renderFromStage)
 {
   if(d->map)

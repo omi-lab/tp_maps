@@ -347,6 +347,15 @@ struct Map::Private
       if(renderPass.postLayer)
         q->insertLayer(0, renderPass.postLayer);
   }
+
+  //################################################################################################
+  void callMapResized()
+  {
+    controller->mapResized(int(width), int(height));
+
+    for(auto layer : layers)
+      layer->mapResized(int(width), int(height));
+  }
 };
 
 //##################################################################################################
@@ -1350,7 +1359,7 @@ void Map::initializeGL()
   d->initialized = true;
   d->renderFromStage = RenderFromStage::Full;
 
-  d->controller->mapResized(int(d->width), int(d->height));
+  d->callMapResized();
 }
 
 //##################################################################################################
@@ -1837,7 +1846,7 @@ void Map::resizeGL(int w, int h)
   glViewport(0, 0, TPGLsizei(d->width), TPGLsizei(d->height));
 
   if(d->initialized)
-    d->controller->mapResized(w, h);
+    d->callMapResized();
 
   update();
 }
