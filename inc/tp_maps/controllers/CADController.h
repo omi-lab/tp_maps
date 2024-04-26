@@ -5,13 +5,11 @@
 
 #include "tp_utils/CallbackCollection.h"
 
-#ifdef near
-#undef near
-#endif
-
-#ifdef far
+#pragma push_macro("far")
 #undef far
-#endif
+#pragma push_macro("near")
+#undef near
+
 
 namespace tp_maps
 {
@@ -163,5 +161,8 @@ private:
 };
 
 }
+
+#pragma pop_macro("far")
+#pragma pop_macro("near")
 
 #endif
