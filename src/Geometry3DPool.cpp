@@ -524,11 +524,18 @@ void Geometry3DPool::subscribe(const tp_utils::StringID& name,
         const auto& t       = material.         transmissionTexture;
         const auto& tr      = material.transmissionRoughnessTexture;
 
-        if(rgba.isValid()) textureKeys.rgba   = TexturePoolKey(rgba   , rgba   , rgba   ,  rgba, 0, 1, 2, 3, TPPixel(uint8_t(material. albedo.x*255.0f), uint8_t(material. albedo.y*255.0f), uint8_t(material.albedo.z*255.0f)    , uint8_t(material.alpha*255.0f)                ), NChannels::RGBA);
-        else               textureKeys.rgba   = TexturePoolKey(rgb    , rgb    , rgb    ,     a, 0, 1, 2, 0, TPPixel(uint8_t(material. albedo.x*255.0f), uint8_t(material. albedo.y*255.0f), uint8_t(material.albedo.z*255.0f)    , uint8_t(material.alpha*255.0f)                ), NChannels::RGBA);
-        textureKeys.normals                   = TexturePoolKey(normals, normals, normals,    {}, 0, 1, 2, 0, TPPixel(128                               , 128                               , 255                                  , 255                                           ), NChannels::RGB );
-        if(rmttr.isValid())textureKeys.rmttr  = TexturePoolKey(rmttr  , rmttr  , rmttr  , rmttr, 0, 1, 2, 3, TPPixel(uint8_t(material.roughness*255.0f), uint8_t(material.metalness*255.0f), uint8_t(material.transmission*255.0f), uint8_t(material.transmissionRoughness*255.0f)), NChannels::RGBA);
-        else               textureKeys.rmttr  = TexturePoolKey(r      ,  m     ,   t    ,    tr, 0, 0, 0, 0, TPPixel(uint8_t(material.roughness*255.0f), uint8_t(material.metalness*255.0f), uint8_t(material.transmission*255.0f), uint8_t(material.transmissionRoughness*255.0f)), NChannels::RGBA);
+        auto fToUI8 = [](float f)
+        {
+          if(std::isnan(f) || std::isinf(f))
+            return uint8_t(0);
+          return uint8_t(std::clamp(f*255.0f, 0.0f, 255.0f));
+        };
+
+        if(rgba.isValid()) textureKeys.rgba   = TexturePoolKey(rgba   , rgba   , rgba   ,  rgba, 0, 1, 2, 3, TPPixel(fToUI8(material. albedo.x), fToUI8(material. albedo.y), fToUI8(material.albedo.z)    , fToUI8(material.alpha)                ), NChannels::RGBA);
+        else               textureKeys.rgba   = TexturePoolKey(rgb    , rgb    , rgb    ,     a, 0, 1, 2, 0, TPPixel(fToUI8(material. albedo.x), fToUI8(material. albedo.y), fToUI8(material.albedo.z)    , fToUI8(material.alpha)                ), NChannels::RGBA);
+        textureKeys.normals                   = TexturePoolKey(normals, normals, normals,    {}, 0, 1, 2, 0, TPPixel(128                       , 128                       , 255                          , 255                                   ), NChannels::RGB );
+        if(rmttr.isValid())textureKeys.rmttr  = TexturePoolKey(rmttr  , rmttr  , rmttr  , rmttr, 0, 1, 2, 3, TPPixel(fToUI8(material.roughness), fToUI8(material.metalness), fToUI8(material.transmission), fToUI8(material.transmissionRoughness)), NChannels::RGBA);
+        else               textureKeys.rmttr  = TexturePoolKey(r      ,  m     ,   t    ,    tr, 0, 0, 0, 0, TPPixel(fToUI8(material.roughness), fToUI8(material.metalness), fToUI8(material.transmission), fToUI8(material.transmissionRoughness)), NChannels::RGBA);
 
         textureSubscriptions.insert(textureKeys.rgba   );
         textureSubscriptions.insert(textureKeys.normals);
