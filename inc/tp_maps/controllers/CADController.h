@@ -5,11 +5,13 @@
 
 #include "tp_utils/CallbackCollection.h"
 
-#pragma push_macro("far")
-#undef far
-#pragma push_macro("near")
+#ifdef near
 #undef near
+#endif
 
+#ifdef far
+#undef far
+#endif
 
 namespace tp_maps
 {
@@ -35,6 +37,7 @@ CADControllerMode cadControllerModeFromString(const std::string& mode);
 //##################################################################################################
 class TP_MAPS_EXPORT CADController : public Controller
 {
+  TP_DQ;
 public:
   //################################################################################################
   CADController(Map* map, bool fullScreen);
@@ -153,16 +156,8 @@ protected:
 
   //################################################################################################
   void animate(double timestampMS) override;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }
-
-#pragma pop_macro("far")
-#pragma pop_macro("near")
 
 #endif
