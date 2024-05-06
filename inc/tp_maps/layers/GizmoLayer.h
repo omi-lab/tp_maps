@@ -8,6 +8,7 @@
 namespace tp_maps
 {
 
+//##################################################################################################
 enum class RotationRingStyle
 {
   Compass,
@@ -16,9 +17,19 @@ enum class RotationRingStyle
 };
 
 //##################################################################################################
+enum class GizmoScaleMode
+{
+  World,
+  Object,
+  Screen,
+  ScreenPX
+};
+
+//##################################################################################################
 class TP_MAPS_EXPORT GizmoLayer: public Layer
 {
   friend class HandleDetails;
+  TP_DQ;
 public:
   //################################################################################################
   GizmoLayer();
@@ -27,7 +38,13 @@ public:
   ~GizmoLayer() override;
 
   //################################################################################################
+  bool inInteraction() const;
+
+  //################################################################################################
   void setEnableRotation(bool x, bool y, bool z);
+
+  //################################################################################################
+  void setEnableRotationScreen(bool screen);
 
   //################################################################################################
   void setEnableTranslation(bool x, bool y, bool z);
@@ -43,6 +60,9 @@ public:
 
   //################################################################################################
   void setScaleColors(const glm::vec3& x, const glm::vec3& y, const glm::vec3& z);
+
+  //################################################################################################
+  void setSelectedColor(const glm::vec3& selectedColor);
 
   //################################################################################################
   void setScale(const glm::vec3& scale);
@@ -66,7 +86,19 @@ public:
   void setRotationRingStyle(RotationRingStyle rotationRingStyle);
 
   //################################################################################################
+  void setGizmoScaleMode(GizmoScaleMode gizmoScaleMode);
+
+  //################################################################################################
+  void setGizmoScale(float gizmoScale);
+
+  //################################################################################################
+  void setOnlyRenderSelectedAxis(bool onlyRenderSelectedAxis);
+
+  //################################################################################################
   tp_utils::CallbackCollection<void()> changed;
+
+  //################################################################################################
+  void setDefaultRenderPass(const RenderPass& defaultRenderPass) override;
 
 protected:
 
@@ -75,11 +107,6 @@ protected:
 
   //################################################################################################
   bool mouseEvent(const MouseEvent& event) override;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

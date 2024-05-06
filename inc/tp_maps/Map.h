@@ -252,6 +252,10 @@ public:
   void project(const glm::vec3& scenePoint, glm::vec2& screenPoint, const glm::mat4& matrix);
 
   //################################################################################################
+  //! Project 3D coord to 2D UI coord.
+  void project(const glm::vec3& scenePoint, glm::vec3& screenPoint, const glm::mat4& matrix);
+
+  //################################################################################################
   //! Same as project except the 2D coordinate will have its y coordinate in OpenGL coords.
   void projectGL(const glm::vec3& scenePoint, glm::vec2& screenPoint, const glm::mat4& matrix);
 

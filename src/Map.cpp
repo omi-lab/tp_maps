@@ -349,6 +349,15 @@ struct Map::Private
   }
 
   //################################################################################################
+  bool hasRenderPass(RenderPass::RenderPassType renderPassType)
+  {
+    for(const auto& renderPass : renderPasses)
+      if(renderPass.type == renderPassType)
+        return true;
+    return false;
+  }
+
+  //################################################################################################
   void callMapResized()
   {
     controller->mapResized(int(width), int(height));
@@ -374,6 +383,7 @@ Map::Map(bool enableDepthBuffer):
                                tp_maps::RenderPass::FinishDrawFBO ,
                                new tp_maps::PostGammaLayer()      ,
                                tp_maps::RenderPass::Text          ,
+                               tp_maps::RenderPass::GUI3D          ,
                                tp_maps::RenderPass::GUI
                              });
 }
@@ -885,6 +895,22 @@ void Map::project(const glm::vec3& scenePoint, glm::vec2& screenPoint, const glm
 }
 
 //##################################################################################################
+void Map::project(const glm::vec3& scenePoint, glm::vec3& screenPoint, const glm::mat4& matrix)
+{
+  glm::vec4 v = matrix * glm::vec4(scenePoint, 1.0f);
+
+  screenPoint = v;
+  if(std::fabs(v.w)>0.00001f)
+    screenPoint /= v.w;
+
+  screenPoint.x = (screenPoint.x+1.0f)/2.0f;
+  screenPoint.y = (screenPoint.y+1.0f)/2.0f;
+
+  screenPoint.x = screenPoint.x * float(d->width);
+  screenPoint.y = float(d->height) - (screenPoint.y * float(d->height));
+}
+
+//##################################################################################################
 void Map::projectGL(const glm::vec3& scenePoint, glm::vec2& screenPoint, const glm::mat4& matrix)
 {
   glm::vec4 v = matrix * glm::vec4(scenePoint, 1.0f);
@@ -974,7 +1000,8 @@ glm::vec3 Map::unProject(const glm::vec3& screenPoint, const glm::mat4& matrix)
   glm::vec4 tmp{screenPoint, 1.0f};
   tmp.x = tmp.x / float(d->width);
   tmp.y = (float(d->height) - tmp.y) / float(d->height);
-  tmp = tmp * 2.0f - 1.0f;
+  tmp.x = tmp.x * 2.0f - 1.0f;
+  tmp.y = tmp.y * 2.0f - 1.0f;
   glm::vec4 obj = inverse * tmp;
 
   return obj / obj.w;
@@ -1070,18 +1097,30 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
 
   //------------------------------------------------------------------------------------------------
   // Execute a picking render pass.
-  d->renderInfo.resetPicking();
-  d->renderInfo.pass = RenderPass::Picking;
-  d->renderInfo.hdr = HDR::No;
-  d->renderInfo.extendedFBO = ExtendedFBO::No;
-  d->renderInfo.pickingType = pickingType;
-  d->renderInfo.pos = pos;
 
-  glEnable(GL_DEPTH_TEST);
-  glDepthFunc(GL_LESS);
-  glDepthMask(true);
+  // 3D Geometry
+  {
+    d->renderInfo.resetPicking();
+    d->renderInfo.pass = RenderPass::Picking;
+    d->renderInfo.hdr = HDR::No;
+    d->renderInfo.extendedFBO = ExtendedFBO::No;
+    d->renderInfo.pickingType = pickingType;
+    d->renderInfo.pos = pos;
 
-  d->render();
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glDepthMask(true);
+
+    d->render();
+  }
+
+  // 3D GUI Geometry
+  if(d->hasRenderPass(RenderPass::GUI3D))
+  {
+    glClear(GL_DEPTH_BUFFER_BIT);
+    d->renderInfo.pass = RenderPass::PickingGUI3D;
+    d->render();
+  }
 
   //------------------------------------------------------------------------------------------------
   // Read the small patch from around the picking position and then free up the frame buffers.
@@ -1469,8 +1508,10 @@ size_t Map::skipRenderPasses()
         }
 
         case RenderPass::Text: //-------------------------------------------------------------------
+        case RenderPass::GUI3D: //------------------------------------------------------------------
         case RenderPass::GUI: //--------------------------------------------------------------------
         case RenderPass::Picking: //----------------------------------------------------------------
+        case RenderPass::PickingGUI3D: //-----------------------------------------------------------
         case RenderPass::Custom: //-----------------------------------------------------------------
         case RenderPass::Delegate: //---------------------------------------------------------------
         break;
@@ -1780,6 +1821,17 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
           break;
         }
 
+        case RenderPass::GUI3D: //------------------------------------------------------------------
+        {
+          DEBUG_scopedDebug("RenderPass::GUI3D", TPPixel(200, 152, 50));
+          glEnable(GL_DEPTH_TEST);
+          auto s = pixelScale();
+          glScissor(0, 0, GLsizei(float(width())*s), GLsizei(float(height())*s));
+          glDepthMask(true);
+          d->render();
+          break;
+        }
+
         case RenderPass::GUI: //--------------------------------------------------------------------
         {
           DEBUG_scopedDebug("RenderPass::GUI", TPPixel(200, 152, 50));
@@ -1794,6 +1846,7 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
         }
 
         case RenderPass::Picking: //----------------------------------------------------------------
+        case RenderPass::PickingGUI3D: //-----------------------------------------------------------
         {
           tpWarning() << "Error: Performing a picking render pass in paintGL does not make sense.";
           break;

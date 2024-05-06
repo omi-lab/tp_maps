@@ -1,4 +1,5 @@
 #include "tp_maps/Layer.h"
+#include "tp_maps/LayerPointer.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/DragDropEvent.h"
 
@@ -14,6 +15,8 @@ struct Layer::Private
   TP_NONCOPYABLE(Private);
 
   Layer* q;
+
+  std::vector<LayerPointer*> layerPointers;
 
   Map* map{nullptr};
   Layer* parent{nullptr};
@@ -41,6 +44,9 @@ Layer::Layer():
 //##################################################################################################
 Layer::~Layer()
 {  
+  for(LayerPointer* layerPointer : d->layerPointers)
+    layerPointer->m_layer = nullptr;
+
   clearChildLayers();
 
   if(d->parent)
@@ -115,6 +121,12 @@ void Layer::setVisible(bool visible)
     d->visible = visible;
     update();
   }
+}
+
+//##################################################################################################
+void Layer::setVisibleQuiet(bool visible)
+{
+  d->visible = visible;
 }
 
 //##################################################################################################
@@ -336,4 +348,17 @@ void Layer::clearMap()
   d->map = nullptr;
   d->parent = nullptr;
 }
+
+//##################################################################################################
+void Layer::addPointer(LayerPointer* layerPointer)
+{
+  d->layerPointers.push_back(layerPointer);
+}
+
+//##################################################################################################
+void Layer::removePointer(LayerPointer* layerPointer)
+{
+  tpRemoveOne(d->layerPointers, layerPointer);
+}
+
 }

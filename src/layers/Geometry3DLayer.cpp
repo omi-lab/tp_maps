@@ -11,6 +11,7 @@
 #include "tp_maps/shaders/G3DStaticLightShader.h"
 
 #include "tp_utils/TimeUtils.h"
+#include "tp_utils/DebugUtils.h"
 
 namespace tp_maps
 {
@@ -202,10 +203,19 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
 {
   TP_FUNCTION_TIME("Geometry3DLayer::render");
 
+  auto defaultRenderPassType = defaultRenderPass().type;
+
+  bool picking=false;
+  if(renderInfo.pass == RenderPass::Picking && defaultRenderPassType != RenderPass::GUI3D)
+    picking=true;
+
+  else if(renderInfo.pass == RenderPass::PickingGUI3D && defaultRenderPassType == RenderPass::GUI3D)
+    picking=true;
+
   if(renderInfo.pass != defaultRenderPass().type &&
      renderInfo.pass != RenderPass::Transparency &&
      renderInfo.pass != RenderPass::LightFBOs &&
-     renderInfo.pass != RenderPass::Picking)
+     !picking)
     return;
 
   Matrices m;
@@ -230,7 +240,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
   if(!shader->initPass(renderInfo, m, modelToWorldMatrix()))
     return;
 
-  if(renderInfo.pass == RenderPass::Picking)
+  if(picking)
   {
     d->geometry3DPool->viewProcessedGeometry(d->name,
                                              shader,

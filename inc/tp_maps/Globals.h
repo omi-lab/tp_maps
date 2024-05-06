@@ -99,6 +99,7 @@ TP_DECLARE_ID(             backgroundShaderSID,                "Background shade
 TP_DECLARE_ID(        backgroundImageShaderSID,          "Background image shader");
 TP_DECLARE_ID(      backgroundPatternShaderSID,        "Background pattern shader");
 TP_DECLARE_ID(                selectionPassSID,                   "Selection pass");
+TP_DECLARE_ID(                     selectedSID,                         "Selected");
 
 //##################################################################################################
 int staticInit();
@@ -178,8 +179,10 @@ struct RenderPass
     Transparency,      //!< Render transparent 3D geometry.
     FinishDrawFBO,     //!< Swap the draw into the read FBO and bind the default FBO.
     Text,              //!< Render text on top of scene.
+    GUI3D,             //!< Render UI on top of scene and text, similar to GUI but has a depth buffer.
     GUI,               //!< Render UI on top of scene and text.
     Picking,           //!< Picking render.
+    PickingGUI3D,      //!< Picking render for GUI3D geometry.
     Custom,            //!< A custom named render pass.
     Delegate,          //!< Delegate to the postLayer to populate render passes.
 
@@ -282,8 +285,10 @@ struct RenderPass
     case Transparency     : return "Transparency "     + getNameString();
     case FinishDrawFBO    : return "FinishDrawFBO "    + getNameString();
     case Text             : return "Text "             + getNameString();
+    case GUI3D            : return "GUI3D "            + getNameString();
     case GUI              : return "GUI "              + getNameString();
     case Picking          : return "Picking "          + getNameString();
+    case PickingGUI3D     : return "PickingGUI3D "     + getNameString();
     case Custom           : return "Custom "           + getNameString();
     case Delegate         : return "Delegate "         + getNameString();
     case Stage            : return "Stage "            + getNameString();

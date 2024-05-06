@@ -40,6 +40,9 @@ HEADERS += inc/tp_maps/Shader.h
 SOURCES += src/Layer.cpp
 HEADERS += inc/tp_maps/Layer.h
 
+SOURCES += src/LayerPointer.cpp
+HEADERS += inc/tp_maps/LayerPointer.h
+
 SOURCES += src/EventHandler.cpp
 HEADERS += inc/tp_maps/EventHandler.h
 

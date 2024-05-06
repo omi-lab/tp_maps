@@ -38,7 +38,7 @@ ShaderType RenderInfo::shaderType() const
   if(pass == RenderPass::LightFBOs)
     return ShaderType::Light;
 
-  if(pass == RenderPass::Picking)
+  if(pass == RenderPass::Picking || pass == RenderPass::PickingGUI3D)
     return ShaderType::Picking;
 
   if(extendedFBO == ExtendedFBO::Yes)
