@@ -50,6 +50,9 @@ public:
   void setEnableTranslation(bool x, bool y, bool z);
 
   //################################################################################################
+  void setEnablePlaneTranslation(bool x, bool y, bool z);
+
+  //################################################################################################
   void setEnableScale(bool x, bool y, bool z);
 
   //################################################################################################
@@ -57,6 +60,9 @@ public:
 
   //################################################################################################
   void setTranslationColors(const glm::vec3& x, const glm::vec3& y, const glm::vec3& z);
+
+  //################################################################################################
+  void setPlaneTranslationColors(const glm::vec3& x, const glm::vec3& y, const glm::vec3& z);
 
   //################################################################################################
   void setScaleColors(const glm::vec3& x, const glm::vec3& y, const glm::vec3& z);

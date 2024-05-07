@@ -10,6 +10,7 @@
 #include "tp_math_utils/materials/OpenGLMaterial.h"
 #include "tp_math_utils/ClosestPointsOnRays.h"
 #include "tp_math_utils/Ray.h"
+#include "tp_math_utils/Intersection.h"
 
 #include "glm/gtx/norm.hpp" // IWYU pragma: keep
 #include "glm/gtx/vector_angle.hpp" // IWYU pragma: keep
@@ -31,6 +32,9 @@ enum class Modify_lt
   TranslationX,
   TranslationY,
   TranslationZ,
+  PlaneTranslationX,
+  PlaneTranslationY,
+  PlaneTranslationZ,
   ScaleX,
   ScaleY,
   ScaleZ
@@ -52,6 +56,10 @@ struct GizmoLayer::Private
   Geometry3DLayer* translationYGeometryLayer{nullptr};
   Geometry3DLayer* translationZGeometryLayer{nullptr};
 
+  Geometry3DLayer* planeTranslationXGeometryLayer{nullptr};
+  Geometry3DLayer* planeTranslationYGeometryLayer{nullptr};
+  Geometry3DLayer* planeTranslationZGeometryLayer{nullptr};
+
   Geometry3DLayer* scaleXGeometryLayer{nullptr};
   Geometry3DLayer* scaleYGeometryLayer{nullptr};
   Geometry3DLayer* scaleZGeometryLayer{nullptr};
@@ -66,6 +74,10 @@ struct GizmoLayer::Private
   bool translationYGeometryLayerVisible{true};
   bool translationZGeometryLayerVisible{true};
 
+  bool planeTranslationXGeometryLayerVisible{false};
+  bool planeTranslationYGeometryLayerVisible{false};
+  bool planeTranslationZGeometryLayerVisible{false};
+
   bool scaleXGeometryLayerVisible{true};
   bool scaleYGeometryLayerVisible{true};
   bool scaleZGeometryLayerVisible{true};
@@ -79,6 +91,10 @@ struct GizmoLayer::Private
   glm::vec3 translationColorX{1,0,0};
   glm::vec3 translationColorY{0,1,0};
   glm::vec3 translationColorZ{0,0,1};
+
+  glm::vec3 planeTranslationColorX{1,0,0};
+  glm::vec3 planeTranslationColorY{0,1,0};
+  glm::vec3 planeTranslationColorZ{0,0,1};
 
   glm::vec3 scaleColorX{1,0,0};
   glm::vec3 scaleColorY{0,1,0};
@@ -111,6 +127,7 @@ struct GizmoLayer::Private
 
   bool updateRotationGeometry{true};
   bool updateTranslationGeometry{true};
+  bool updatePlaneTranslationGeometry{true};
   bool updateScaleGeometry{true};
 
   //################################################################################################
@@ -459,6 +476,51 @@ struct GizmoLayer::Private
   }
 
   //################################################################################################
+  void makePlane(std::vector<tp_math_utils::Geometry3D>& geometry, const std::function<glm::vec3(const glm::vec3&)>& transform, float size, const glm::vec3& color)
+  {
+    auto& plane = geometry.emplace_back();
+    setMaterial(plane, color);
+
+    plane.triangleFan   = GL_TRIANGLE_FAN;
+    plane.triangleStrip = GL_TRIANGLE_STRIP;
+    plane.triangles     = GL_TRIANGLES;
+
+    tp_math_utils::Vertex3D vert;
+
+    float padd=0.40f;
+
+    // Point
+    vert.vert = transform(glm::vec3(padd, padd, 0.0f) * size); plane.verts.push_back(vert);
+    vert.vert = transform(glm::vec3(padd, 1.0f, 0.0f) * size); plane.verts.push_back(vert);
+    vert.vert = transform(glm::vec3(1.0f, 1.0f, 0.0f) * size); plane.verts.push_back(vert);
+    vert.vert = transform(glm::vec3(1.0f, padd, 0.0f) * size); plane.verts.push_back(vert);
+
+
+    plane.indexes.resize(1);
+    auto& indexes = plane.indexes.at(0);
+    indexes.type = plane.triangles;
+    indexes.indexes.reserve(12);
+
+    indexes.indexes.push_back(0);
+    indexes.indexes.push_back(1);
+    indexes.indexes.push_back(2);
+
+    indexes.indexes.push_back(2);
+    indexes.indexes.push_back(3);
+    indexes.indexes.push_back(0);
+
+    indexes.indexes.push_back(0);
+    indexes.indexes.push_back(2);
+    indexes.indexes.push_back(1);
+
+    indexes.indexes.push_back(2);
+    indexes.indexes.push_back(0);
+    indexes.indexes.push_back(3);
+
+    plane.calculateFaceNormals();
+  }
+
+  //################################################################################################
   void generateTranslationGeometry()
   {
     std::vector<tp_math_utils::Geometry3D> translationXGeometry;
@@ -472,6 +534,22 @@ struct GizmoLayer::Private
     translationXGeometryLayer->setGeometry(translationXGeometry);
     translationYGeometryLayer->setGeometry(translationYGeometry);
     translationZGeometryLayer->setGeometry(translationZGeometry);
+  }
+
+  //################################################################################################
+  void generatePlaneTranslationGeometry()
+  {
+    std::vector<tp_math_utils::Geometry3D> planeTranslationXGeometry;
+    std::vector<tp_math_utils::Geometry3D> planeTranslationYGeometry;
+    std::vector<tp_math_utils::Geometry3D> planeTranslationZGeometry;
+
+    makePlane(planeTranslationXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, 0.5f, planeTranslationColorX);
+    makePlane(planeTranslationYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, 0.5f, planeTranslationColorY);
+    makePlane(planeTranslationZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, 0.5f, planeTranslationColorZ);
+
+    planeTranslationXGeometryLayer->setGeometry(planeTranslationXGeometry);
+    planeTranslationYGeometryLayer->setGeometry(planeTranslationYGeometry);
+    planeTranslationZGeometryLayer->setGeometry(planeTranslationZGeometry);
   }
 
   //################################################################################################
@@ -514,6 +592,10 @@ struct GizmoLayer::Private
     translationYGeometryLayer->setAlternativeMaterials({});
     translationZGeometryLayer->setAlternativeMaterials({});
 
+    planeTranslationXGeometryLayer->setAlternativeMaterials({});
+    planeTranslationYGeometryLayer->setAlternativeMaterials({});
+    planeTranslationZGeometryLayer->setAlternativeMaterials({});
+
     scaleXGeometryLayer      ->setAlternativeMaterials({});
     scaleYGeometryLayer      ->setAlternativeMaterials({});
     scaleZGeometryLayer      ->setAlternativeMaterials({});
@@ -527,21 +609,25 @@ struct GizmoLayer::Private
 
       switch(activeModification)
       {
-        case Modify_lt::None         :                                         break;
+        case Modify_lt::None              :                                         break;
 
-        case Modify_lt::RotateX      : useSelected(rotateXGeometryLayer     ); break;
-        case Modify_lt::RotateY      : useSelected(rotateYGeometryLayer     ); break;
-        case Modify_lt::RotateZ      : useSelected(rotateZGeometryLayer     ); break;
+        case Modify_lt::RotateX           : useSelected(rotateXGeometryLayer     ); break;
+        case Modify_lt::RotateY           : useSelected(rotateYGeometryLayer     ); break;
+        case Modify_lt::RotateZ           : useSelected(rotateZGeometryLayer     ); break;
 
-        case Modify_lt::RotateScreen : useSelected(rotateScreenGeometryLayer); break;
+        case Modify_lt::RotateScreen      : useSelected(rotateScreenGeometryLayer); break;
 
-        case Modify_lt::TranslationX : useSelected(translationXGeometryLayer); break;
-        case Modify_lt::TranslationY : useSelected(translationYGeometryLayer); break;
-        case Modify_lt::TranslationZ : useSelected(translationZGeometryLayer); break;
+        case Modify_lt::TranslationX      : useSelected(translationXGeometryLayer); break;
+        case Modify_lt::TranslationY      : useSelected(translationYGeometryLayer); break;
+        case Modify_lt::TranslationZ      : useSelected(translationZGeometryLayer); break;
 
-        case Modify_lt::ScaleX       : useSelected(scaleXGeometryLayer      ); break;
-        case Modify_lt::ScaleY       : useSelected(scaleYGeometryLayer      ); break;
-        case Modify_lt::ScaleZ       : useSelected(scaleZGeometryLayer      ); break;
+        case Modify_lt::PlaneTranslationX : useSelected(planeTranslationXGeometryLayer); break;
+        case Modify_lt::PlaneTranslationY : useSelected(planeTranslationYGeometryLayer); break;
+        case Modify_lt::PlaneTranslationZ : useSelected(planeTranslationZGeometryLayer); break;
+
+        case Modify_lt::ScaleX            : useSelected(scaleXGeometryLayer      ); break;
+        case Modify_lt::ScaleY            : useSelected(scaleYGeometryLayer      ); break;
+        case Modify_lt::ScaleZ            : useSelected(scaleZGeometryLayer      ); break;
       }
     }
   }
@@ -561,6 +647,10 @@ struct GizmoLayer::Private
       translationYGeometryLayer->setVisible(translationYGeometryLayerVisible);
       translationZGeometryLayer->setVisible(translationZGeometryLayerVisible);
 
+      planeTranslationXGeometryLayer->setVisible(planeTranslationXGeometryLayerVisible);
+      planeTranslationYGeometryLayer->setVisible(planeTranslationYGeometryLayerVisible);
+      planeTranslationZGeometryLayer->setVisible(planeTranslationZGeometryLayerVisible);
+
       scaleXGeometryLayer      ->setVisible(scaleXGeometryLayerVisible      );
       scaleYGeometryLayer      ->setVisible(scaleYGeometryLayerVisible      );
       scaleZGeometryLayer      ->setVisible(scaleZGeometryLayerVisible      );
@@ -576,6 +666,10 @@ struct GizmoLayer::Private
       translationXGeometryLayer->setVisible(translationXGeometryLayerVisible && activeModification == Modify_lt::TranslationX);
       translationYGeometryLayer->setVisible(translationYGeometryLayerVisible && activeModification == Modify_lt::TranslationY);
       translationZGeometryLayer->setVisible(translationZGeometryLayerVisible && activeModification == Modify_lt::TranslationZ);
+
+      planeTranslationXGeometryLayer->setVisible(translationXGeometryLayerVisible && activeModification == Modify_lt::PlaneTranslationX);
+      planeTranslationYGeometryLayer->setVisible(translationYGeometryLayerVisible && activeModification == Modify_lt::PlaneTranslationY);
+      planeTranslationZGeometryLayer->setVisible(translationZGeometryLayerVisible && activeModification == Modify_lt::PlaneTranslationZ);
 
       scaleXGeometryLayer      ->setVisible(scaleXGeometryLayerVisible       && activeModification == Modify_lt::ScaleX);
       scaleYGeometryLayer      ->setVisible(scaleYGeometryLayerVisible       && activeModification == Modify_lt::ScaleY);
@@ -612,6 +706,10 @@ GizmoLayer::GizmoLayer():
   createLayer(d->translationXGeometryLayer);
   createLayer(d->translationYGeometryLayer);
   createLayer(d->translationZGeometryLayer);
+
+  createLayer(d->planeTranslationXGeometryLayer);
+  createLayer(d->planeTranslationYGeometryLayer);
+  createLayer(d->planeTranslationZGeometryLayer);
 
   createLayer(d->scaleXGeometryLayer);
   createLayer(d->scaleYGeometryLayer);
@@ -656,6 +754,15 @@ void GizmoLayer::setEnableTranslation(bool x, bool y, bool z)
 }
 
 //##################################################################################################
+void GizmoLayer::setEnablePlaneTranslation(bool x, bool y, bool z)
+{
+  d->planeTranslationXGeometryLayerVisible = x;
+  d->planeTranslationYGeometryLayerVisible = y;
+  d->planeTranslationZGeometryLayerVisible = z;
+  d->updateVisibility();
+}
+
+//##################################################################################################
 void GizmoLayer::setEnableScale(bool x, bool y, bool z)
 {
   d->scaleXGeometryLayerVisible = x;
@@ -681,6 +788,16 @@ void GizmoLayer::setTranslationColors(const glm::vec3& x, const glm::vec3& y, co
   d->translationColorY = y;
   d->translationColorZ = z;
   d->updateTranslationGeometry = true;
+  update();
+}
+
+//##################################################################################################
+void GizmoLayer::setPlaneTranslationColors(const glm::vec3& x, const glm::vec3& y, const glm::vec3& z)
+{
+  d->planeTranslationColorX = x;
+  d->planeTranslationColorY = y;
+  d->planeTranslationColorZ = z;
+  d->updatePlaneTranslationGeometry = true;
   update();
 }
 
@@ -723,6 +840,10 @@ void GizmoLayer::setSelectedColor(const glm::vec3& selectedColor)
   updateMaterial(d->translationYGeometryLayer);
   updateMaterial(d->translationZGeometryLayer);
 
+  updateMaterial(d->planeTranslationXGeometryLayer);
+  updateMaterial(d->planeTranslationYGeometryLayer);
+  updateMaterial(d->planeTranslationZGeometryLayer);
+
   updateMaterial(d->scaleXGeometryLayer);
   updateMaterial(d->scaleYGeometryLayer);
   updateMaterial(d->scaleZGeometryLayer);
@@ -739,6 +860,7 @@ void GizmoLayer::setScale(const glm::vec3& scale)
     d->scale = scale;
     d->updateRotationGeometry = true;
     d->updateTranslationGeometry = true;
+    d->updatePlaneTranslationGeometry = true;
     d->updateScaleGeometry = true;
     update();
   }
@@ -821,6 +943,10 @@ void GizmoLayer::setDefaultRenderPass(const RenderPass& defaultRenderPass)
   d->translationYGeometryLayer->setDefaultRenderPass(defaultRenderPass);
   d->translationZGeometryLayer->setDefaultRenderPass(defaultRenderPass);
 
+  d->planeTranslationXGeometryLayer->setDefaultRenderPass(defaultRenderPass);
+  d->planeTranslationYGeometryLayer->setDefaultRenderPass(defaultRenderPass);
+  d->planeTranslationZGeometryLayer->setDefaultRenderPass(defaultRenderPass);
+
   d->scaleXGeometryLayer->setDefaultRenderPass(defaultRenderPass);
   d->scaleYGeometryLayer->setDefaultRenderPass(defaultRenderPass);
   d->scaleZGeometryLayer->setDefaultRenderPass(defaultRenderPass);
@@ -857,6 +983,12 @@ void GizmoLayer::render(RenderInfo& renderInfo)
     {
       d->updateTranslationGeometry = false;
       d->generateTranslationGeometry();
+    }
+
+    if(d->updatePlaneTranslationGeometry)
+    {
+      d->updatePlaneTranslationGeometry = false;
+      d->generatePlaneTranslationGeometry();
     }
 
     if(d->updateScaleGeometry)
@@ -932,6 +1064,10 @@ void GizmoLayer::render(RenderInfo& renderInfo)
         d->translationXGeometryLayer->setModelMatrix(mScale);
         d->translationYGeometryLayer->setModelMatrix(mScale);
         d->translationZGeometryLayer->setModelMatrix(mScale);
+
+        d->planeTranslationXGeometryLayer->setModelMatrix(mScale);
+        d->planeTranslationYGeometryLayer->setModelMatrix(mScale);
+        d->planeTranslationZGeometryLayer->setModelMatrix(mScale);
 
         d->scaleXGeometryLayer->setModelMatrix(mScale);
         d->scaleYGeometryLayer->setModelMatrix(mScale);
@@ -1016,6 +1152,24 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
           return true;
         }
 
+        if(result->layer == d->planeTranslationXGeometryLayer)
+        {
+          d->setActiveModification(Modify_lt::PlaneTranslationX);
+          return true;
+        }
+
+        if(result->layer == d->planeTranslationYGeometryLayer)
+        {
+          d->setActiveModification(Modify_lt::PlaneTranslationY);
+          return true;
+        }
+
+        if(result->layer == d->planeTranslationZGeometryLayer)
+        {
+          d->setActiveModification(Modify_lt::PlaneTranslationZ);
+          return true;
+        }
+
         if(result->layer == d->scaleXGeometryLayer)
         {
           d->setActiveModification(Modify_lt::ScaleX);
@@ -1081,7 +1235,7 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
         d->previousPos = event.pos;
       };
 
-      auto translation = [&](const glm::vec3& axis)
+      auto translationAlongAxis = [&](const glm::vec3& axis)
       {
         auto m = map()->controller()->matrix(coordinateSystem()) * modelToWorldMatrix();
 
@@ -1103,13 +1257,45 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
           return glm::vec3(P1);
         };
 
-       glm::vec3 pointOld = calculateClosestPointOnAxis(d->previousPos);
-       glm::vec3 pointNew = calculateClosestPointOnAxis(event.pos);
+        glm::vec3 pointOld = calculateClosestPointOnAxis(d->previousPos);
+        glm::vec3 pointNew = calculateClosestPointOnAxis(event.pos);
 
-       glm::vec3 translation = pointNew - pointOld;
+        glm::vec3 translation = pointNew - pointOld;
 
-       mat = d->originalModelMatrix;
-       mat = glm::translate(mat, translation);
+        mat = d->originalModelMatrix;
+        mat = glm::translate(mat, translation);
+      };
+
+      auto translationOnPlane = [&](const glm::vec3& axis)
+      {
+        auto m = map()->controller()->matrix(coordinateSystem()) * modelToWorldMatrix();
+
+        tp_math_utils::Plane plane({0.0f, 0.0f, 0.0f}, axis);
+
+        auto calculateClosestPointOnPlane = [&](const glm::ivec2& pos, glm::vec3& intersection)
+        {
+          glm::vec3 a{float(pos.x), float(pos.y), 0.0f};
+          glm::vec3 b{float(pos.x), float(pos.y), 1.0f};
+
+          a = map()->unProject(a, m);
+          b = map()->unProject(b, m);
+
+          return tp_math_utils::rayPlaneIntersection(tp_math_utils::Ray({a}, {b}), plane, intersection);
+        };
+
+        glm::vec3 pointOld;
+        glm::vec3 pointNew;
+
+        if(!calculateClosestPointOnPlane(d->previousPos, pointOld))
+          return;
+
+        if(!calculateClosestPointOnPlane(event.pos, pointNew))
+          return;
+
+        glm::vec3 translation = pointNew - pointOld;
+
+        mat = d->originalModelMatrix;
+        mat = glm::translate(mat, translation);
       };
 
       auto scale = [&](const glm::vec3& axis)
@@ -1134,17 +1320,17 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
           return glm::vec3(P1);
         };
 
-       glm::vec3 pointOld = calculateClosestPointOnAxis(d->previousPos);
-       glm::vec3 pointNew = calculateClosestPointOnAxis(event.pos);
+        glm::vec3 pointOld = calculateClosestPointOnAxis(d->previousPos);
+        glm::vec3 pointNew = calculateClosestPointOnAxis(event.pos);
 
-       float scale = glm::compAdd(pointNew) / glm::compAdd(pointOld);
+        float scale = glm::compAdd(pointNew) / glm::compAdd(pointOld);
 
-       float maxScale = 6.0f;
+        float maxScale = 6.0f;
 
-       scale = std::clamp(scale, 1.0f/maxScale, maxScale);
+        scale = std::clamp(scale, 1.0f/maxScale, maxScale);
 
-       mat = d->originalModelMatrix;
-       mat = glm::scale(mat, {scale, scale, scale});
+        mat = d->originalModelMatrix;
+        mat = glm::scale(mat, {scale, scale, scale});
       };
 
       switch(d->activeModification)
@@ -1153,9 +1339,12 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
         case Modify_lt::RotateY: rotate({0,1,0}); break;
         case Modify_lt::RotateZ: rotate({0,0,1}); break;
         case Modify_lt::RotateScreen: rotate(d->originalScreenRotateAxis); break;
-        case Modify_lt::TranslationX: translation({1,0,0}); break;
-        case Modify_lt::TranslationY: translation({0,1,0}); break;
-        case Modify_lt::TranslationZ: translation({0,0,1}); break;
+        case Modify_lt::TranslationX: translationAlongAxis({1,0,0}); break;
+        case Modify_lt::TranslationY: translationAlongAxis({0,1,0}); break;
+        case Modify_lt::TranslationZ: translationAlongAxis({0,0,1}); break;
+        case Modify_lt::PlaneTranslationX: translationOnPlane({1,0,0}); break;
+        case Modify_lt::PlaneTranslationY: translationOnPlane({0,1,0}); break;
+        case Modify_lt::PlaneTranslationZ: translationOnPlane({0,0,1}); break;
         case Modify_lt::ScaleX: scale({1,0,0}); break;
         case Modify_lt::ScaleY: scale({0,1,0}); break;
         case Modify_lt::ScaleZ: scale({0,0,1}); break;
