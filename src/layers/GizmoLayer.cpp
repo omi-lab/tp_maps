@@ -124,6 +124,7 @@ struct GizmoLayer::Private
   GizmoScaleMode gizmoScaleMode{GizmoScaleMode::Object};
   float gizmoScale{1.0f};
   bool onlyRenderSelectedAxis{false};
+  bool negativeStemlessTranslationArrows{false};
 
   bool updateRotationGeometry{true};
   bool updateTranslationGeometry{true};
@@ -162,7 +163,7 @@ struct GizmoLayer::Private
 
       switch(rotationRingStyle)
       {
-        case RotationRingStyle::Compass: //-----------------------------------------------------------
+        case RotationRingStyle::Compass: //---------------------------------------------------------
         {
           circle.indexes.resize(4);
           auto& top = circle.indexes.at(0);
@@ -213,9 +214,9 @@ struct GizmoLayer::Private
           break;
         }
 
-        case RotationRingStyle::ArrowsCW:   //--------------------------------------------------------
+        case RotationRingStyle::ArrowsCW:   //------------------------------------------------------
         [[fallthrough]];
-        case RotationRingStyle::ArrowsCCW: //---------------------------------------------------------
+        case RotationRingStyle::ArrowsCCW: //-------------------------------------------------------
         {
           size_t stemStart=0;
           size_t arrowStart=60;
@@ -470,6 +471,45 @@ struct GizmoLayer::Private
       indexes.indexes.push_back(0);
       indexes.indexes.push_back(i-1);
       indexes.indexes.push_back(i-4);
+    }
+
+    // Add the stemless arrow
+    if(negativeStemlessTranslationArrows)
+    {
+      // Point
+      int iP = int(arrow.verts.size());
+      vert.vert = transform(glm::vec3(0.0f, 0.0f, -coneEnd));
+      arrow.verts.push_back(vert);
+
+      // Middle
+      int iM = int(arrow.verts.size());
+      vert.vert = transform(glm::vec3(0.0f, 0.0f, -stemEnd));
+      arrow.verts.push_back(vert);
+
+
+      for(size_t a=0; a<=360; a+=10)
+      {
+        float x = std::sin(glm::radians(float(a)));
+        float y = std::cos(glm::radians(float(a)));
+
+        glm::vec2 v{x, y};
+
+        vert.vert = transform(glm::vec3(v*coneRadius, -stemEnd));
+        arrow.verts.push_back(vert);
+
+        int i = int(arrow.verts.size());
+
+        if(a==0)
+          continue;
+
+        indexes.indexes.push_back(iP);
+        indexes.indexes.push_back(i-2);
+        indexes.indexes.push_back(i-1);
+
+        indexes.indexes.push_back(iM);
+        indexes.indexes.push_back(i-1);
+        indexes.indexes.push_back(i-2);
+      }
     }
 
     arrow.calculateFaceNormals();
@@ -922,6 +962,15 @@ void GizmoLayer::setGizmoScale(float gizmoScale)
   d->gizmoScale = gizmoScale;
   update();
 }
+
+//##################################################################################################
+void GizmoLayer::setNegativeStemlessTranslationArrows(bool negativeStemlessTranslationArrows)
+{
+  d->negativeStemlessTranslationArrows = negativeStemlessTranslationArrows;
+  d->updateTranslationGeometry = true;
+  update();
+}
+
 
 //##################################################################################################
 void GizmoLayer::setOnlyRenderSelectedAxis(bool onlyRenderSelectedAxis)

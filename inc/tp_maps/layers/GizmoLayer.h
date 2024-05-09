@@ -98,6 +98,9 @@ public:
   void setGizmoScale(float gizmoScale);
 
   //################################################################################################
+  void setNegativeStemlessTranslationArrows(bool negativeStemlessTranslationArrows);
+
+  //################################################################################################
   void setOnlyRenderSelectedAxis(bool onlyRenderSelectedAxis);
 
   //################################################################################################
