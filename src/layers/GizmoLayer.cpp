@@ -11,6 +11,9 @@
 #include "tp_math_utils/ClosestPointsOnRays.h"
 #include "tp_math_utils/Ray.h"
 #include "tp_math_utils/Intersection.h"
+#include "tp_math_utils/JSONUtils.h"
+
+#include "tp_utils/JSONUtils.h"
 
 #include "glm/gtx/norm.hpp" // IWYU pragma: keep
 #include "glm/gtx/vector_angle.hpp" // IWYU pragma: keep
@@ -35,10 +38,270 @@ enum class Modify_lt
   PlaneTranslationX,
   PlaneTranslationY,
   PlaneTranslationZ,
+  PlaneTranslationScreen,
   ScaleX,
   ScaleY,
   ScaleZ
 };
+
+}
+
+//##################################################################################################
+std::vector<std::string> gizmoRingStyles()
+{
+  return {"Compass", "ArrowsCW", "ArrowsCCW"};
+}
+
+//##################################################################################################
+std::string gizmoRingStyleToString(GizmoRingStyle style)
+{
+  switch(style)
+  {
+    case GizmoRingStyle::Compass  : return "Compass"  ;
+    case GizmoRingStyle::ArrowsCW : return "ArrowsCW" ;
+    case GizmoRingStyle::ArrowsCCW: return "ArrowsCCW";
+  }
+
+  return "Compass";
+}
+
+//##################################################################################################
+GizmoRingStyle gizmoRingStyleFromString(const std::string& style)
+{
+  if(style == "Compass"  ) return GizmoRingStyle::Compass  ;
+  if(style == "ArrowsCW" ) return GizmoRingStyle::ArrowsCW ;
+  if(style == "ArrowsCCW") return GizmoRingStyle::ArrowsCCW;
+
+  return GizmoRingStyle::Compass;
+}
+
+//##################################################################################################
+void GizmoRingParameters::saveState(nlohmann::json& j) const
+{
+  j["color"] = tp_math_utils::vec3ToJSON(color);
+  j["selectedColor"] = tp_math_utils::vec3ToJSON(selectedColor);
+  j["enable"] = enable;
+  j["useSelectedColor"] = useSelectedColor;
+  j["style"] = gizmoRingStyleToString(style);
+}
+
+//##################################################################################################
+void GizmoRingParameters::loadState(const nlohmann::json& j)
+{
+  color = tp_math_utils::getJSONVec3(j, "color", {1.0f, 0.0f, 0.0f});
+  selectedColor = tp_math_utils::getJSONVec3(j, "selectedColor", {1.0f, 1.0f, 0.0f});
+  enable = TPJSONBool(j, "enable", true);
+  useSelectedColor = TPJSONBool(j, "useSelectedColor", false);
+  style = gizmoRingStyleFromString(TPJSONString(j, "style", "Compass"));
+}
+
+//##################################################################################################
+std::vector<std::string> gizmoArrowStyles()
+{
+  return {"None", "Stem", "Stemless"};
+}
+
+//##################################################################################################
+std::string gizmoArrowStyleToString(GizmoArrowStyle style)
+{
+  switch(style)
+  {
+    case GizmoArrowStyle::None    : return "None"    ;
+    case GizmoArrowStyle::Stem    : return "Stem"    ;
+    case GizmoArrowStyle::Stemless: return "Stemless";
+  }
+  return "None";
+}
+
+//##################################################################################################
+GizmoArrowStyle gizmoArrowStyleFromString(const std::string& style)
+{
+  if(style == "None"    ) return GizmoArrowStyle::None    ;
+  if(style == "Stem"    ) return GizmoArrowStyle::Stem    ;
+  if(style == "Stemless") return GizmoArrowStyle::Stemless;
+
+  return GizmoArrowStyle::None;
+}
+
+//##################################################################################################
+void GizmoArrowParameters::saveState(nlohmann::json& j) const
+{
+  j["color"] = tp_math_utils::vec3ToJSON(color);
+  j["selectedColor"] = tp_math_utils::vec3ToJSON(selectedColor);
+  j["enable"] = enable;
+  j["useSelectedColor"] = useSelectedColor;
+  j["stemStart"] = stemStart;
+  j["stemLength"] = stemLength;
+  j["stemRadius"] = stemRadius;
+  j["coneRadius"] = coneRadius;
+  j["coneLength"] = coneLength;
+  j["positiveArrowStyle"] = gizmoArrowStyleToString(positiveArrowStyle);
+  j["negativeArrowStyle"] = gizmoArrowStyleToString(negativeArrowStyle);
+}
+
+//##################################################################################################
+void GizmoArrowParameters::loadState(const nlohmann::json& j)
+{
+  color = tp_math_utils::getJSONVec3(j, "color", {1.0f, 0.0f, 0.0f});
+  selectedColor = tp_math_utils::getJSONVec3(j, "selectedColor", {1.0f, 1.0f, 0.0f});
+  enable = TPJSONBool(j, "enable", true);
+  useSelectedColor = TPJSONBool(j, "useSelectedColor", false);
+
+  stemStart  = TPJSONFloat(j, "stemStart" , 0.1f );
+  stemLength = TPJSONFloat(j, "stemLength", 0.7f );
+  stemRadius = TPJSONFloat(j, "stemRadius", 0.05f);
+  coneRadius = TPJSONFloat(j, "coneRadius", 0.1f );
+  coneLength = TPJSONFloat(j, "coneLength", 0.2f );
+
+  positiveArrowStyle = gizmoArrowStyleFromString(TPJSONString(j, "positiveArrowStyle", "Stem"));
+  negativeArrowStyle = gizmoArrowStyleFromString(TPJSONString(j, "negativeArrowStyle", "None"));
+}
+
+//##################################################################################################
+void GizmoPlaneParameters::saveState(nlohmann::json& j) const
+{
+  j["color"] = tp_math_utils::vec3ToJSON(color);
+  j["selectedColor"] = tp_math_utils::vec3ToJSON(selectedColor);
+  j["enable"] = enable;
+  j["useSelectedColor"] = useSelectedColor;
+  j["size"] = size;
+  j["radius"] = radius;
+  j["padding"] = padding;
+  j["center"] = center;
+}
+
+//##################################################################################################
+void GizmoPlaneParameters::loadState(const nlohmann::json& j)
+{
+  color = tp_math_utils::getJSONVec3(j, "color", {1.0f, 0.0f, 0.0f});
+  selectedColor = tp_math_utils::getJSONVec3(j, "selectedColor", {1.0f, 1.0f, 0.0f});
+  enable = TPJSONBool(j, "enable", true);
+  useSelectedColor = TPJSONBool(j, "useSelectedColor", false);
+
+  size    = TPJSONFloat(j, "size"   , 0.5f );
+  radius  = TPJSONFloat(j, "radius" , 0.3f );
+  padding = TPJSONFloat(j, "padding", 0.40f);
+
+  center = TPJSONBool(j, "center", false);
+}
+
+//##################################################################################################
+std::vector<std::string> gizmoScaleModes()
+{
+  return {"World", "Object", "Screen", "ScreenPX"};
+}
+
+//##################################################################################################
+std::string gizmoScaleModeToString(GizmoScaleMode mode)
+{
+  switch(mode)
+  {
+    case GizmoScaleMode::World   : return "World"   ;
+    case GizmoScaleMode::Object  : return "Object"  ;
+    case GizmoScaleMode::Screen  : return "Screen"  ;
+    case GizmoScaleMode::ScreenPX: return "ScreenPX";
+  }
+
+  return "Object";
+}
+
+//##################################################################################################
+GizmoScaleMode gizmoScaleModeFromString(const std::string& mode)
+{
+  if(mode == "World"   ) return GizmoScaleMode::World   ;
+  if(mode == "Object"  ) return GizmoScaleMode::Object  ;
+  if(mode == "Screen"  ) return GizmoScaleMode::Screen  ;
+  if(mode == "ScreenPX") return GizmoScaleMode::ScreenPX;
+
+  return GizmoScaleMode::Object;
+}
+
+//##################################################################################################
+std::vector<std::string> gizmoRenderPasses()
+{
+  return {"Normal", "GUI3D"};
+}
+
+//##################################################################################################
+std::string gizmoRenderPassToString(GizmoRenderPass renderPass)
+{
+  switch(renderPass)
+  {
+    case GizmoRenderPass::Normal: return "Normal";
+    case GizmoRenderPass::GUI3D : return "GUI3D" ;
+  }
+
+  return "Normal";
+}
+
+//##################################################################################################
+GizmoRenderPass gizmoRenderPassFromString(const std::string& renderPass)
+{
+  if(renderPass == "Normal") return GizmoRenderPass::Normal;
+  if(renderPass == "GUI3D" ) return GizmoRenderPass::GUI3D ;
+  return GizmoRenderPass::Normal;
+}
+
+//##################################################################################################
+void GizmoParameters::saveState(nlohmann::json& j) const
+{
+  j["gizmoRenderPass"] = gizmoRenderPassToString(gizmoRenderPass);
+  j["referenceLinesRenderPass"] = gizmoRenderPassToString(referenceLinesRenderPass);
+
+  j["gizmoScaleMode"] = gizmoScaleModeToString(gizmoScaleMode);
+  j["gizmoScale"] = gizmoScale;
+  j["onlyRenderSelectedAxis"] = onlyRenderSelectedAxis;
+
+  rotationX.saveState(j["rotationX"]);
+  rotationY.saveState(j["rotationY"]);
+  rotationZ.saveState(j["rotationZ"]);
+
+  rotationScreen.saveState(j["rotationScreen"]);
+
+  translationArrowX.saveState(j["translationArrowX"]);
+  translationArrowY.saveState(j["translationArrowY"]);
+  translationArrowZ.saveState(j["translationArrowZ"]);
+
+  translationPlaneX.saveState(j["translationPlaneX"]);
+  translationPlaneY.saveState(j["translationPlaneY"]);
+  translationPlaneZ.saveState(j["translationPlaneZ"]);
+
+  translationPlaneScreen.saveState(j["translationPlaneScreen"]);
+
+  scaleArrowX.saveState(j["scaleArrowX"]);
+  scaleArrowY.saveState(j["scaleArrowY"]);
+  scaleArrowZ.saveState(j["scaleArrowZ"]);
+}
+
+//##################################################################################################
+void GizmoParameters::loadState(const nlohmann::json& j)
+{
+  gizmoRenderPass = gizmoRenderPassFromString(TPJSONString(j, "gizmoRenderPass", "GUI3D"));
+  referenceLinesRenderPass = gizmoRenderPassFromString(TPJSONString(j, "referenceLinesRenderPass", "Normal"));
+
+  gizmoScaleMode = gizmoScaleModeFromString(TPJSONString(j, "gizmoScaleMode", "Object"));
+  gizmoScale = TPJSONFloat(j, "gizmoScale", 1.0f);
+  onlyRenderSelectedAxis = TPJSONBool(j, "onlyRenderSelectedAxis", false);
+
+  tp_utils::loadObjectFromJSON(j, "rotationX", rotationX);
+  tp_utils::loadObjectFromJSON(j, "rotationY", rotationY);
+  tp_utils::loadObjectFromJSON(j, "rotationZ", rotationZ);
+
+  tp_utils::loadObjectFromJSON(j, "rotationScreen", rotationScreen);
+
+  tp_utils::loadObjectFromJSON(j, "translationArrowX", translationArrowX);
+  tp_utils::loadObjectFromJSON(j, "translationArrowY", translationArrowY);
+  tp_utils::loadObjectFromJSON(j, "translationArrowZ", translationArrowZ);
+
+  tp_utils::loadObjectFromJSON(j, "translationPlaneX", translationPlaneX);
+  tp_utils::loadObjectFromJSON(j, "translationPlaneY", translationPlaneY);
+  tp_utils::loadObjectFromJSON(j, "translationPlaneZ", translationPlaneZ);
+
+  tp_utils::loadObjectFromJSON(j, "translationPlaneScreen", translationPlaneScreen);
+
+  tp_utils::loadObjectFromJSON(j, "scaleArrowX", scaleArrowX);
+  tp_utils::loadObjectFromJSON(j, "scaleArrowY", scaleArrowY);
+  tp_utils::loadObjectFromJSON(j, "scaleArrowZ", scaleArrowZ);
 }
 
 //##################################################################################################
@@ -46,62 +309,28 @@ struct GizmoLayer::Private
 {
   Q* q;
 
-  Geometry3DLayer* rotateXGeometryLayer{nullptr};
-  Geometry3DLayer* rotateYGeometryLayer{nullptr};
-  Geometry3DLayer* rotateZGeometryLayer{nullptr};
+  Geometry3DLayer* rotationXGeometryLayer{nullptr};
+  Geometry3DLayer* rotationYGeometryLayer{nullptr};
+  Geometry3DLayer* rotationZGeometryLayer{nullptr};
 
-  Geometry3DLayer* rotateScreenGeometryLayer{nullptr};
+  Geometry3DLayer* rotationScreenGeometryLayer{nullptr};
 
-  Geometry3DLayer* translationXGeometryLayer{nullptr};
-  Geometry3DLayer* translationYGeometryLayer{nullptr};
-  Geometry3DLayer* translationZGeometryLayer{nullptr};
+  Geometry3DLayer* translationArrowXGeometryLayer{nullptr};
+  Geometry3DLayer* translationArrowYGeometryLayer{nullptr};
+  Geometry3DLayer* translationArrowZGeometryLayer{nullptr};
 
-  Geometry3DLayer* planeTranslationXGeometryLayer{nullptr};
-  Geometry3DLayer* planeTranslationYGeometryLayer{nullptr};
-  Geometry3DLayer* planeTranslationZGeometryLayer{nullptr};
+  Geometry3DLayer* translationPlaneXGeometryLayer{nullptr};
+  Geometry3DLayer* translationPlaneYGeometryLayer{nullptr};
+  Geometry3DLayer* translationPlaneZGeometryLayer{nullptr};
 
-  Geometry3DLayer* scaleXGeometryLayer{nullptr};
-  Geometry3DLayer* scaleYGeometryLayer{nullptr};
-  Geometry3DLayer* scaleZGeometryLayer{nullptr};
+  Geometry3DLayer* translationPlaneScreenGeometryLayer{nullptr};
 
-  bool rotateXGeometryLayerVisible{true};
-  bool rotateYGeometryLayerVisible{true};
-  bool rotateZGeometryLayerVisible{true};
+  Geometry3DLayer* scaleArrowXGeometryLayer{nullptr};
+  Geometry3DLayer* scaleArrowYGeometryLayer{nullptr};
+  Geometry3DLayer* scaleArrowZGeometryLayer{nullptr};
 
-  bool rotateScreenGeometryLayerVisible{false};
+  GizmoParameters params;
 
-  bool translationXGeometryLayerVisible{true};
-  bool translationYGeometryLayerVisible{true};
-  bool translationZGeometryLayerVisible{true};
-
-  bool planeTranslationXGeometryLayerVisible{false};
-  bool planeTranslationYGeometryLayerVisible{false};
-  bool planeTranslationZGeometryLayerVisible{false};
-
-  bool scaleXGeometryLayerVisible{true};
-  bool scaleYGeometryLayerVisible{true};
-  bool scaleZGeometryLayerVisible{true};
-
-  RotationRingStyle rotationRingStyle{RotationRingStyle::Compass};
-
-  glm::vec3 rotationColorX{1,0,0};
-  glm::vec3 rotationColorY{0,1,0};
-  glm::vec3 rotationColorZ{0,0,1};
-
-  glm::vec3 translationColorX{1,0,0};
-  glm::vec3 translationColorY{0,1,0};
-  glm::vec3 translationColorZ{0,0,1};
-
-  glm::vec3 planeTranslationColorX{1,0,0};
-  glm::vec3 planeTranslationColorY{0,1,0};
-  glm::vec3 planeTranslationColorZ{0,0,1};
-
-  glm::vec3 scaleColorX{1,0,0};
-  glm::vec3 scaleColorY{0,1,0};
-  glm::vec3 scaleColorZ{0,0,1};
-
-  glm::vec3 selectedColor{1,1,0};
-  bool useSelectedColor{false};
   bool selectedColorSubscribed{false};
 
   Modify_lt activeModification{Modify_lt::None};
@@ -110,6 +339,7 @@ struct GizmoLayer::Private
   bool useIntersection{false};
   glm::mat4 originalModelMatrix;
   glm::mat4 originalModelToWorldMatrix;
+  glm::mat4 screenRelativeMatrix;
   glm::vec3 originalScreenRotateAxis{0.0f,0.0f, 1.0f};
 
   glm::vec3 scale{1.0f, 1.0f, 1.0f};
@@ -120,11 +350,6 @@ struct GizmoLayer::Private
   float spikeRadius{0.90f};
   float arrowInnerRadius{0.90f};
   float arrowOuterRadius{1.05f};
-
-  GizmoScaleMode gizmoScaleMode{GizmoScaleMode::Object};
-  float gizmoScale{1.0f};
-  bool onlyRenderSelectedAxis{false};
-  bool negativeStemlessTranslationArrows{false};
 
   bool updateRotationGeometry{true};
   bool updateTranslationGeometry{true};
@@ -152,18 +377,18 @@ struct GizmoLayer::Private
   //################################################################################################
   void generateRotationGeometry()
   {
-    auto makeCircle = [&](std::vector<tp_math_utils::Geometry3D>& geometry, const std::function<glm::vec3(const glm::vec3&)>& transform, const glm::vec3& color)
+    auto makeCircle = [&](std::vector<tp_math_utils::Geometry3D>& geometry, const std::function<glm::vec3(const glm::vec3&)>& transform, const GizmoRingParameters& params)
     {
       auto& circle = geometry.emplace_back();
-      setMaterial(circle, color);
+      setMaterial(circle, params.color);
 
       circle.triangleFan   = GL_TRIANGLE_FAN;
       circle.triangleStrip = GL_TRIANGLE_STRIP;
       circle.triangles     = GL_TRIANGLES;
 
-      switch(rotationRingStyle)
+      switch(params.style)
       {
-        case RotationRingStyle::Compass: //---------------------------------------------------------
+        case GizmoRingStyle::Compass: //---------------------------------------------------------
         {
           circle.indexes.resize(4);
           auto& top = circle.indexes.at(0);
@@ -214,9 +439,9 @@ struct GizmoLayer::Private
           break;
         }
 
-        case RotationRingStyle::ArrowsCW:   //------------------------------------------------------
+        case GizmoRingStyle::ArrowsCW:   //------------------------------------------------------
         [[fallthrough]];
-        case RotationRingStyle::ArrowsCCW: //-------------------------------------------------------
+        case GizmoRingStyle::ArrowsCCW: //-------------------------------------------------------
         {
           size_t stemStart=0;
           size_t arrowStart=60;
@@ -362,7 +587,7 @@ struct GizmoLayer::Private
               a+=5;
           }
 
-          if(rotationRingStyle == RotationRingStyle::ArrowsCCW)
+          if(params.style == GizmoRingStyle::ArrowsCCW)
           {
             glm::mat4 m{1.0f};
             m = glm::rotate(m, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -375,40 +600,42 @@ struct GizmoLayer::Private
       circle.calculateFaceNormals();
     };
 
-    std::vector<tp_math_utils::Geometry3D> rotateXGeometry;
-    std::vector<tp_math_utils::Geometry3D> rotateYGeometry;
-    std::vector<tp_math_utils::Geometry3D> rotateZGeometry;
+    std::vector<tp_math_utils::Geometry3D> rotationXGeometry;
+    std::vector<tp_math_utils::Geometry3D> rotationYGeometry;
+    std::vector<tp_math_utils::Geometry3D> rotationZGeometry;
 
-    std::vector<tp_math_utils::Geometry3D> rotateScreenGeometry;
+    std::vector<tp_math_utils::Geometry3D> rotationScreenGeometry;
 
-    makeCircle(rotateXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, rotationColorX);
-    makeCircle(rotateYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, rotationColorY);
-    makeCircle(rotateZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, rotationColorZ);
+    makeCircle(rotationXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, params.rotationX);
+    makeCircle(rotationYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, params.rotationY);
+    makeCircle(rotationZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.rotationZ);
 
-    makeCircle(rotateScreenGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale*1.1f;}, rotationColorZ);
+    makeCircle(rotationScreenGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale*1.1f;}, params.rotationScreen);
 
-    rotateXGeometryLayer->setGeometry(rotateXGeometry);
-    rotateYGeometryLayer->setGeometry(rotateYGeometry);
-    rotateZGeometryLayer->setGeometry(rotateZGeometry);
+    rotationXGeometryLayer->setGeometry(rotationXGeometry);
+    rotationYGeometryLayer->setGeometry(rotationYGeometry);
+    rotationZGeometryLayer->setGeometry(rotationZGeometry);
 
-    rotateScreenGeometryLayer->setGeometry(rotateScreenGeometry);
+    rotationScreenGeometryLayer->setGeometry(rotationScreenGeometry);
   }
 
+
+
   //################################################################################################
-  void makeArrow(std::vector<tp_math_utils::Geometry3D>& geometry, const std::function<glm::vec3(const glm::vec3&)>& transform, float stemLength, const glm::vec3& color)
+  void makeArrow(std::vector<tp_math_utils::Geometry3D>& geometry, const std::function<glm::vec3(const glm::vec3&)>& transform, const GizmoArrowParameters& params)
   {
     auto& arrow = geometry.emplace_back();
-    setMaterial(arrow, color);
+    setMaterial(arrow, params.color);
 
     arrow.triangleFan   = GL_TRIANGLE_FAN;
     arrow.triangleStrip = GL_TRIANGLE_STRIP;
     arrow.triangles     = GL_TRIANGLES;
 
-    float stemRadius = 0.05f;
-    float coneRadius = 0.1f;
-    float stemStart  = 0.1f;
-    float stemEnd    = stemStart + stemLength;
-    float coneEnd    = stemEnd + 0.2f;
+    float stemRadius = params.stemRadius;
+    float coneRadius = params.coneRadius;
+    float stemStart  = params.stemStart;
+    float stemEnd    = stemStart + params.stemLength;
+    float coneEnd    = stemEnd + params.coneLength;
 
     tp_math_utils::Vertex3D vert;
 
@@ -424,57 +651,60 @@ struct GizmoLayer::Private
     auto& indexes = arrow.indexes.at(0);
     indexes.type = arrow.triangles;
 
-    for(size_t a=0; a<=360; a+=10)
+    if(params.positiveArrowStyle == GizmoArrowStyle::Stem)
     {
-      float x = std::sin(glm::radians(float(a)));
-      float y = std::cos(glm::radians(float(a)));
+      for(size_t a=0; a<=360; a+=10)
+      {
+        float x = std::sin(glm::radians(float(a)));
+        float y = std::cos(glm::radians(float(a)));
 
-      glm::vec2 v{x, y};
+        glm::vec2 v{x, y};
 
-      vert.vert = transform(glm::vec3(v*stemRadius, stemStart));
-      arrow.verts.push_back(vert);
+        vert.vert = transform(glm::vec3(v*stemRadius, stemStart));
+        arrow.verts.push_back(vert);
 
-      vert.vert = transform(glm::vec3(v*stemRadius, stemEnd));
-      arrow.verts.push_back(vert);
+        vert.vert = transform(glm::vec3(v*stemRadius, stemEnd));
+        arrow.verts.push_back(vert);
 
-      vert.vert = transform(glm::vec3(v*coneRadius, stemEnd));
-      arrow.verts.push_back(vert);
+        vert.vert = transform(glm::vec3(v*coneRadius, stemEnd));
+        arrow.verts.push_back(vert);
 
-      int i = int(arrow.verts.size());
+        int i = int(arrow.verts.size());
 
-      if(a==0)
-        continue;
+        if(a==0)
+          continue;
 
-      indexes.indexes.push_back(1);
-      indexes.indexes.push_back(i-6);
-      indexes.indexes.push_back(i-3);
-
-
-      indexes.indexes.push_back(i-3);
-      indexes.indexes.push_back(i-6);
-      indexes.indexes.push_back(i-2);
-
-      indexes.indexes.push_back(i-5);
-      indexes.indexes.push_back(i-2);
-      indexes.indexes.push_back(i-6);
+        indexes.indexes.push_back(1);
+        indexes.indexes.push_back(i-6);
+        indexes.indexes.push_back(i-3);
 
 
-      indexes.indexes.push_back(i-2);
-      indexes.indexes.push_back(i-5);
-      indexes.indexes.push_back(i-1);
+        indexes.indexes.push_back(i-3);
+        indexes.indexes.push_back(i-6);
+        indexes.indexes.push_back(i-2);
 
-      indexes.indexes.push_back(i-4);
-      indexes.indexes.push_back(i-1);
-      indexes.indexes.push_back(i-5);
+        indexes.indexes.push_back(i-5);
+        indexes.indexes.push_back(i-2);
+        indexes.indexes.push_back(i-6);
 
 
-      indexes.indexes.push_back(0);
-      indexes.indexes.push_back(i-1);
-      indexes.indexes.push_back(i-4);
+        indexes.indexes.push_back(i-2);
+        indexes.indexes.push_back(i-5);
+        indexes.indexes.push_back(i-1);
+
+        indexes.indexes.push_back(i-4);
+        indexes.indexes.push_back(i-1);
+        indexes.indexes.push_back(i-5);
+
+
+        indexes.indexes.push_back(0);
+        indexes.indexes.push_back(i-1);
+        indexes.indexes.push_back(i-4);
+      }
     }
 
     // Add the stemless arrow
-    if(negativeStemlessTranslationArrows)
+    if(params.negativeArrowStyle == GizmoArrowStyle::Stemless)
     {
       // Point
       int iP = int(arrow.verts.size());
@@ -516,10 +746,24 @@ struct GizmoLayer::Private
   }
 
   //################################################################################################
-  void makePlane(std::vector<tp_math_utils::Geometry3D>& geometry, const std::function<glm::vec3(const glm::vec3&)>& transform, float size, const glm::vec3& color)
+  void makePlane(std::vector<tp_math_utils::Geometry3D>& geometry, const std::function<glm::vec3(const glm::vec3&)>& transform, const GizmoPlaneParameters& params)
   {
+    float min = 0.0f;
+    float max = 1.0f;
+
+    if(params.center)
+    {
+      min = -params.radius;
+      max = +params.radius;
+    }
+    else
+    {
+      min = params.padding;
+    }
+
+
     auto& plane = geometry.emplace_back();
-    setMaterial(plane, color);
+    setMaterial(plane, params.color);
 
     plane.triangleFan   = GL_TRIANGLE_FAN;
     plane.triangleStrip = GL_TRIANGLE_STRIP;
@@ -527,14 +771,10 @@ struct GizmoLayer::Private
 
     tp_math_utils::Vertex3D vert;
 
-    float padd=0.40f;
-
-    // Point
-    vert.vert = transform(glm::vec3(padd, padd, 0.0f) * size); plane.verts.push_back(vert);
-    vert.vert = transform(glm::vec3(padd, 1.0f, 0.0f) * size); plane.verts.push_back(vert);
-    vert.vert = transform(glm::vec3(1.0f, 1.0f, 0.0f) * size); plane.verts.push_back(vert);
-    vert.vert = transform(glm::vec3(1.0f, padd, 0.0f) * size); plane.verts.push_back(vert);
-
+    vert.vert = transform(glm::vec3(min, min, 0.0f) * params.size); plane.verts.push_back(vert);
+    vert.vert = transform(glm::vec3(min, max, 0.0f) * params.size); plane.verts.push_back(vert);
+    vert.vert = transform(glm::vec3(max, max, 0.0f) * params.size); plane.verts.push_back(vert);
+    vert.vert = transform(glm::vec3(max, min, 0.0f) * params.size); plane.verts.push_back(vert);
 
     plane.indexes.resize(1);
     auto& indexes = plane.indexes.at(0);
@@ -563,49 +803,55 @@ struct GizmoLayer::Private
   //################################################################################################
   void generateTranslationGeometry()
   {
-    std::vector<tp_math_utils::Geometry3D> translationXGeometry;
-    std::vector<tp_math_utils::Geometry3D> translationYGeometry;
-    std::vector<tp_math_utils::Geometry3D> translationZGeometry;
+    std::vector<tp_math_utils::Geometry3D> translationArrowXGeometry;
+    std::vector<tp_math_utils::Geometry3D> translationArrowYGeometry;
+    std::vector<tp_math_utils::Geometry3D> translationArrowZGeometry;
 
-    makeArrow(translationXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, 0.7f, translationColorX);
-    makeArrow(translationYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, 0.7f, translationColorY);
-    makeArrow(translationZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, 0.7f, translationColorZ);
+    makeArrow(translationArrowXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, params.translationArrowX);
+    makeArrow(translationArrowYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, params.translationArrowY);
+    makeArrow(translationArrowZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.translationArrowZ);
 
-    translationXGeometryLayer->setGeometry(translationXGeometry);
-    translationYGeometryLayer->setGeometry(translationYGeometry);
-    translationZGeometryLayer->setGeometry(translationZGeometry);
+    translationArrowXGeometryLayer->setGeometry(translationArrowXGeometry);
+    translationArrowYGeometryLayer->setGeometry(translationArrowYGeometry);
+    translationArrowZGeometryLayer->setGeometry(translationArrowZGeometry);
   }
 
   //################################################################################################
   void generatePlaneTranslationGeometry()
   {
-    std::vector<tp_math_utils::Geometry3D> planeTranslationXGeometry;
-    std::vector<tp_math_utils::Geometry3D> planeTranslationYGeometry;
-    std::vector<tp_math_utils::Geometry3D> planeTranslationZGeometry;
+    std::vector<tp_math_utils::Geometry3D> translationPlaneXGeometry;
+    std::vector<tp_math_utils::Geometry3D> translationPlaneYGeometry;
+    std::vector<tp_math_utils::Geometry3D> translationPlaneZGeometry;
 
-    makePlane(planeTranslationXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, 0.5f, planeTranslationColorX);
-    makePlane(planeTranslationYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, 0.5f, planeTranslationColorY);
-    makePlane(planeTranslationZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, 0.5f, planeTranslationColorZ);
+    std::vector<tp_math_utils::Geometry3D> translationPlaneScreenGeometry;
 
-    planeTranslationXGeometryLayer->setGeometry(planeTranslationXGeometry);
-    planeTranslationYGeometryLayer->setGeometry(planeTranslationYGeometry);
-    planeTranslationZGeometryLayer->setGeometry(planeTranslationZGeometry);
+    makePlane(translationPlaneXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, params.translationPlaneX);
+    makePlane(translationPlaneYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, params.translationPlaneY);
+    makePlane(translationPlaneZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.translationPlaneZ);
+
+    makePlane(translationPlaneScreenGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.translationPlaneScreen);
+
+    translationPlaneXGeometryLayer->setGeometry(translationPlaneXGeometry);
+    translationPlaneYGeometryLayer->setGeometry(translationPlaneYGeometry);
+    translationPlaneZGeometryLayer->setGeometry(translationPlaneZGeometry);
+
+    translationPlaneScreenGeometryLayer->setGeometry(translationPlaneScreenGeometry);
   }
 
   //################################################################################################
   void generateScaleGeometry()
   {
-    std::vector<tp_math_utils::Geometry3D> scaleXGeometry;
-    std::vector<tp_math_utils::Geometry3D> scaleYGeometry;
-    std::vector<tp_math_utils::Geometry3D> scaleZGeometry;
+    std::vector<tp_math_utils::Geometry3D> scaleArrowXGeometry;
+    std::vector<tp_math_utils::Geometry3D> scaleArrowYGeometry;
+    std::vector<tp_math_utils::Geometry3D> scaleArrowZGeometry;
 
-    makeArrow(scaleXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y) * scale + glm::vec3(coreSize.x, 0.0f, 0.0f);}, 0.3f, scaleColorX);
-    makeArrow(scaleYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x) * scale + glm::vec3(0.0f, coreSize.y, 0.0f);}, 0.3f, scaleColorY);
-    makeArrow(scaleZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z) * scale + glm::vec3(0.0f, 0.0f, coreSize.z);}, 0.3f, scaleColorZ);
+    makeArrow(scaleArrowXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y) * scale + glm::vec3(coreSize.x, 0.0f, 0.0f);}, params.scaleArrowX);
+    makeArrow(scaleArrowYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x) * scale + glm::vec3(0.0f, coreSize.y, 0.0f);}, params.scaleArrowY);
+    makeArrow(scaleArrowZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z) * scale + glm::vec3(0.0f, 0.0f, coreSize.z);}, params.scaleArrowZ);
 
-    scaleXGeometryLayer->setGeometry(scaleXGeometry);
-    scaleYGeometryLayer->setGeometry(scaleYGeometry);
-    scaleZGeometryLayer->setGeometry(scaleZGeometry);
+    scaleArrowXGeometryLayer->setGeometry(scaleArrowXGeometry);
+    scaleArrowYGeometryLayer->setGeometry(scaleArrowYGeometry);
+    scaleArrowZGeometryLayer->setGeometry(scaleArrowZGeometry);
   }
 
   //################################################################################################
@@ -622,98 +868,104 @@ struct GizmoLayer::Private
   //################################################################################################
   void updateColors()
   {
-    rotateXGeometryLayer     ->setAlternativeMaterials({});
-    rotateYGeometryLayer     ->setAlternativeMaterials({});
-    rotateZGeometryLayer     ->setAlternativeMaterials({});
+    rotationXGeometryLayer     ->setAlternativeMaterials({});
+    rotationYGeometryLayer     ->setAlternativeMaterials({});
+    rotationZGeometryLayer     ->setAlternativeMaterials({});
 
-    rotateScreenGeometryLayer->setAlternativeMaterials({});
+    rotationScreenGeometryLayer->setAlternativeMaterials({});
 
-    translationXGeometryLayer->setAlternativeMaterials({});
-    translationYGeometryLayer->setAlternativeMaterials({});
-    translationZGeometryLayer->setAlternativeMaterials({});
+    translationArrowXGeometryLayer->setAlternativeMaterials({});
+    translationArrowYGeometryLayer->setAlternativeMaterials({});
+    translationArrowZGeometryLayer->setAlternativeMaterials({});
 
-    planeTranslationXGeometryLayer->setAlternativeMaterials({});
-    planeTranslationYGeometryLayer->setAlternativeMaterials({});
-    planeTranslationZGeometryLayer->setAlternativeMaterials({});
+    translationPlaneXGeometryLayer->setAlternativeMaterials({});
+    translationPlaneYGeometryLayer->setAlternativeMaterials({});
+    translationPlaneZGeometryLayer->setAlternativeMaterials({});
 
-    scaleXGeometryLayer      ->setAlternativeMaterials({});
-    scaleYGeometryLayer      ->setAlternativeMaterials({});
-    scaleZGeometryLayer      ->setAlternativeMaterials({});
+    translationPlaneScreenGeometryLayer->setAlternativeMaterials({});
 
-    if(useSelectedColor)
+    scaleArrowXGeometryLayer      ->setAlternativeMaterials({});
+    scaleArrowYGeometryLayer      ->setAlternativeMaterials({});
+    scaleArrowZGeometryLayer      ->setAlternativeMaterials({});
+
+    auto useSelected = [&](const auto& params, Geometry3DLayer* layer)
     {
-      auto useSelected = [&](Geometry3DLayer* layer)
-      {
+      if(params.useSelectedColor)
         layer->setAlternativeMaterials({{defaultSID(), selectedSID()}});
-      };
+    };
 
-      switch(activeModification)
-      {
-        case Modify_lt::None              :                                         break;
+    switch(activeModification)
+    {
+      case Modify_lt::None                   :                                                   break;
 
-        case Modify_lt::RotateX           : useSelected(rotateXGeometryLayer     ); break;
-        case Modify_lt::RotateY           : useSelected(rotateYGeometryLayer     ); break;
-        case Modify_lt::RotateZ           : useSelected(rotateZGeometryLayer     ); break;
+      case Modify_lt::RotateX                : useSelected(params.rotationX             , rotationXGeometryLayer);              break;
+      case Modify_lt::RotateY                : useSelected(params.rotationY             , rotationYGeometryLayer);              break;
+      case Modify_lt::RotateZ                : useSelected(params.rotationZ             , rotationZGeometryLayer);              break;
 
-        case Modify_lt::RotateScreen      : useSelected(rotateScreenGeometryLayer); break;
+      case Modify_lt::RotateScreen           : useSelected(params.rotationScreen        , rotationScreenGeometryLayer);         break;
 
-        case Modify_lt::TranslationX      : useSelected(translationXGeometryLayer); break;
-        case Modify_lt::TranslationY      : useSelected(translationYGeometryLayer); break;
-        case Modify_lt::TranslationZ      : useSelected(translationZGeometryLayer); break;
+      case Modify_lt::TranslationX           : useSelected(params.translationArrowX     , translationArrowXGeometryLayer);      break;
+      case Modify_lt::TranslationY           : useSelected(params.translationArrowY     , translationArrowYGeometryLayer);      break;
+      case Modify_lt::TranslationZ           : useSelected(params.translationArrowZ     , translationArrowZGeometryLayer);      break;
 
-        case Modify_lt::PlaneTranslationX : useSelected(planeTranslationXGeometryLayer); break;
-        case Modify_lt::PlaneTranslationY : useSelected(planeTranslationYGeometryLayer); break;
-        case Modify_lt::PlaneTranslationZ : useSelected(planeTranslationZGeometryLayer); break;
+      case Modify_lt::PlaneTranslationX      : useSelected(params.translationPlaneX     , translationPlaneXGeometryLayer);      break;
+      case Modify_lt::PlaneTranslationY      : useSelected(params.translationPlaneY     , translationPlaneYGeometryLayer);      break;
+      case Modify_lt::PlaneTranslationZ      : useSelected(params.translationPlaneZ     , translationPlaneZGeometryLayer);      break;
 
-        case Modify_lt::ScaleX            : useSelected(scaleXGeometryLayer      ); break;
-        case Modify_lt::ScaleY            : useSelected(scaleYGeometryLayer      ); break;
-        case Modify_lt::ScaleZ            : useSelected(scaleZGeometryLayer      ); break;
-      }
+      case Modify_lt::PlaneTranslationScreen : useSelected(params.translationPlaneScreen, translationPlaneScreenGeometryLayer); break;
+
+      case Modify_lt::ScaleX                 : useSelected(params.scaleArrowX           , scaleArrowXGeometryLayer);            break;
+      case Modify_lt::ScaleY                 : useSelected(params.scaleArrowY           , scaleArrowYGeometryLayer);            break;
+      case Modify_lt::ScaleZ                 : useSelected(params.scaleArrowZ           , scaleArrowZGeometryLayer);            break;
     }
   }
 
   //################################################################################################
   void updateVisibility()
   {
-    if(!onlyRenderSelectedAxis || activeModification == Modify_lt::None)
+    if(!params.onlyRenderSelectedAxis || activeModification == Modify_lt::None)
     {
-      rotateXGeometryLayer     ->setVisible(rotateXGeometryLayerVisible     );
-      rotateYGeometryLayer     ->setVisible(rotateYGeometryLayerVisible     );
-      rotateZGeometryLayer     ->setVisible(rotateZGeometryLayerVisible     );
+      rotationXGeometryLayer->setVisible(params.rotationX.enable);
+      rotationYGeometryLayer->setVisible(params.rotationY.enable);
+      rotationZGeometryLayer->setVisible(params.rotationZ.enable);
 
-      rotateScreenGeometryLayer->setVisible(rotateScreenGeometryLayerVisible);
+      rotationScreenGeometryLayer->setVisible(params.rotationScreen.enable);
 
-      translationXGeometryLayer->setVisible(translationXGeometryLayerVisible);
-      translationYGeometryLayer->setVisible(translationYGeometryLayerVisible);
-      translationZGeometryLayer->setVisible(translationZGeometryLayerVisible);
+      translationArrowXGeometryLayer->setVisible(params.translationArrowX.enable);
+      translationArrowYGeometryLayer->setVisible(params.translationArrowY.enable);
+      translationArrowZGeometryLayer->setVisible(params.translationArrowZ.enable);
 
-      planeTranslationXGeometryLayer->setVisible(planeTranslationXGeometryLayerVisible);
-      planeTranslationYGeometryLayer->setVisible(planeTranslationYGeometryLayerVisible);
-      planeTranslationZGeometryLayer->setVisible(planeTranslationZGeometryLayerVisible);
+      translationPlaneXGeometryLayer->setVisible(params.translationPlaneX.enable);
+      translationPlaneYGeometryLayer->setVisible(params.translationPlaneY.enable);
+      translationPlaneZGeometryLayer->setVisible(params.translationPlaneZ.enable);
 
-      scaleXGeometryLayer      ->setVisible(scaleXGeometryLayerVisible      );
-      scaleYGeometryLayer      ->setVisible(scaleYGeometryLayerVisible      );
-      scaleZGeometryLayer      ->setVisible(scaleZGeometryLayerVisible      );
+      translationPlaneScreenGeometryLayer->setVisible(params.translationPlaneScreen.enable);
+
+      scaleArrowXGeometryLayer->setVisible(params.scaleArrowX.enable);
+      scaleArrowYGeometryLayer->setVisible(params.scaleArrowY.enable);
+      scaleArrowZGeometryLayer->setVisible(params.scaleArrowZ.enable);
     }
     else
     {
-      rotateXGeometryLayer     ->setVisible(rotateXGeometryLayerVisible      && activeModification == Modify_lt::RotateX);
-      rotateYGeometryLayer     ->setVisible(rotateYGeometryLayerVisible      && activeModification == Modify_lt::RotateY);
-      rotateZGeometryLayer     ->setVisible(rotateZGeometryLayerVisible      && activeModification == Modify_lt::RotateZ);
+      rotationXGeometryLayer->setVisible(params.rotationX.enable && activeModification == Modify_lt::RotateX);
+      rotationYGeometryLayer->setVisible(params.rotationY.enable && activeModification == Modify_lt::RotateY);
+      rotationZGeometryLayer->setVisible(params.rotationZ.enable && activeModification == Modify_lt::RotateZ);
 
-      rotateScreenGeometryLayer->setVisible(rotateScreenGeometryLayerVisible && activeModification == Modify_lt::RotateScreen);
+      rotationScreenGeometryLayer->setVisible(params.rotationScreen.enable && activeModification == Modify_lt::RotateScreen);
 
-      translationXGeometryLayer->setVisible(translationXGeometryLayerVisible && activeModification == Modify_lt::TranslationX);
-      translationYGeometryLayer->setVisible(translationYGeometryLayerVisible && activeModification == Modify_lt::TranslationY);
-      translationZGeometryLayer->setVisible(translationZGeometryLayerVisible && activeModification == Modify_lt::TranslationZ);
+      translationArrowXGeometryLayer->setVisible(params.translationArrowX.enable && activeModification == Modify_lt::TranslationX);
+      translationArrowYGeometryLayer->setVisible(params.translationArrowY.enable && activeModification == Modify_lt::TranslationY);
+      translationArrowZGeometryLayer->setVisible(params.translationArrowZ.enable && activeModification == Modify_lt::TranslationZ);
 
-      planeTranslationXGeometryLayer->setVisible(translationXGeometryLayerVisible && activeModification == Modify_lt::PlaneTranslationX);
-      planeTranslationYGeometryLayer->setVisible(translationYGeometryLayerVisible && activeModification == Modify_lt::PlaneTranslationY);
-      planeTranslationZGeometryLayer->setVisible(translationZGeometryLayerVisible && activeModification == Modify_lt::PlaneTranslationZ);
+      translationPlaneXGeometryLayer->setVisible(params.translationPlaneX.enable && activeModification == Modify_lt::PlaneTranslationX);
+      translationPlaneYGeometryLayer->setVisible(params.translationPlaneY.enable && activeModification == Modify_lt::PlaneTranslationY);
+      translationPlaneZGeometryLayer->setVisible(params.translationPlaneZ.enable && activeModification == Modify_lt::PlaneTranslationZ);
 
-      scaleXGeometryLayer      ->setVisible(scaleXGeometryLayerVisible       && activeModification == Modify_lt::ScaleX);
-      scaleYGeometryLayer      ->setVisible(scaleYGeometryLayerVisible       && activeModification == Modify_lt::ScaleY);
-      scaleZGeometryLayer      ->setVisible(scaleZGeometryLayerVisible       && activeModification == Modify_lt::ScaleZ);
+      translationPlaneScreenGeometryLayer->setVisible(params.translationPlaneScreen.enable && activeModification == Modify_lt::PlaneTranslationScreen);
+
+      scaleArrowXGeometryLayer->setVisible(params.scaleArrowX.enable && activeModification == Modify_lt::ScaleX);
+      scaleArrowYGeometryLayer->setVisible(params.scaleArrowY.enable && activeModification == Modify_lt::ScaleY);
+      scaleArrowZGeometryLayer->setVisible(params.scaleArrowZ.enable && activeModification == Modify_lt::ScaleZ);
     }
 
     q->update();
@@ -722,7 +974,48 @@ struct GizmoLayer::Private
   //################################################################################################
   glm::vec3 screenRotateAxis()
   {
-    return glm::normalize(tpProj(rotateScreenGeometryLayer->modelMatrix(), {0.0f, 0.0f, 1.0f}));
+    return glm::normalize(tpProj(screenRelativeMatrix, {0.0f, 0.0f, 1.0f}));
+  }
+
+
+  //################################################################################################
+  void updateSelectedColors()
+  {
+    auto updateMaterial = [&](Geometry3DLayer* layer, const auto& params)
+    {
+      if(selectedColorSubscribed)
+        layer->geometry3DPool()->unsubscribe(selectedSID());
+
+      layer->geometry3DPool()->subscribe(selectedSID(), [=]
+      {
+        std::vector<tp_math_utils::Geometry3D> geometry;
+        setMaterial(geometry.emplace_back(), params.selectedColor);
+        return geometry;
+      }, true, true);
+    };
+
+    updateMaterial(rotationXGeometryLayer, params.rotationX);
+    updateMaterial(rotationYGeometryLayer, params.rotationY);
+    updateMaterial(rotationZGeometryLayer, params.rotationZ);
+
+    updateMaterial(rotationScreenGeometryLayer, params.rotationScreen);
+
+    updateMaterial(translationArrowXGeometryLayer, params.translationArrowX);
+    updateMaterial(translationArrowYGeometryLayer, params.translationArrowY);
+    updateMaterial(translationArrowZGeometryLayer, params.translationArrowZ);
+
+    updateMaterial(translationPlaneXGeometryLayer, params.translationPlaneX);
+    updateMaterial(translationPlaneYGeometryLayer, params.translationPlaneY);
+    updateMaterial(translationPlaneZGeometryLayer, params.translationPlaneZ);
+
+    updateMaterial(translationPlaneScreenGeometryLayer, params.translationPlaneScreen);
+
+    updateMaterial(scaleArrowXGeometryLayer, params.scaleArrowX);
+    updateMaterial(scaleArrowYGeometryLayer, params.scaleArrowY);
+    updateMaterial(scaleArrowZGeometryLayer, params.scaleArrowZ);
+
+    selectedColorSubscribed = true;
+    updateColors();
   }
 };
 
@@ -737,23 +1030,25 @@ GizmoLayer::GizmoLayer():
     l->setShaderSelection(Geometry3DLayer::ShaderSelection::StaticLight);
   };
 
-  createLayer(d->rotateXGeometryLayer);
-  createLayer(d->rotateYGeometryLayer);
-  createLayer(d->rotateZGeometryLayer);
+  createLayer(d->rotationXGeometryLayer);
+  createLayer(d->rotationYGeometryLayer);
+  createLayer(d->rotationZGeometryLayer);
 
-  createLayer(d->rotateScreenGeometryLayer);
+  createLayer(d->rotationScreenGeometryLayer);
 
-  createLayer(d->translationXGeometryLayer);
-  createLayer(d->translationYGeometryLayer);
-  createLayer(d->translationZGeometryLayer);
+  createLayer(d->translationArrowXGeometryLayer);
+  createLayer(d->translationArrowYGeometryLayer);
+  createLayer(d->translationArrowZGeometryLayer);
 
-  createLayer(d->planeTranslationXGeometryLayer);
-  createLayer(d->planeTranslationYGeometryLayer);
-  createLayer(d->planeTranslationZGeometryLayer);
+  createLayer(d->translationPlaneXGeometryLayer);
+  createLayer(d->translationPlaneYGeometryLayer);
+  createLayer(d->translationPlaneZGeometryLayer);
 
-  createLayer(d->scaleXGeometryLayer);
-  createLayer(d->scaleYGeometryLayer);
-  createLayer(d->scaleZGeometryLayer);
+  createLayer(d->translationPlaneScreenGeometryLayer);
+
+  createLayer(d->scaleArrowXGeometryLayer);
+  createLayer(d->scaleArrowYGeometryLayer);
+  createLayer(d->scaleArrowZGeometryLayer);
 }
 
 //##################################################################################################
@@ -769,74 +1064,123 @@ bool GizmoLayer::inInteraction() const
 }
 
 //##################################################################################################
+void GizmoLayer::setParameters(const GizmoParameters& params)
+{
+  d->params = params;
+
+  d->updateRotationGeometry = true;
+  d->updateTranslationGeometry = true;
+  d->updatePlaneTranslationGeometry = true;
+  d->updateScaleGeometry = true;
+
+  switch(d->params.gizmoRenderPass)
+  {
+    case GizmoRenderPass::Normal: setDefaultRenderPass(RenderPass::Normal); break;
+    case GizmoRenderPass::GUI3D : setDefaultRenderPass(RenderPass::GUI3D ); break;
+  }
+
+  d->updateSelectedColors();
+  d->updateVisibility();
+}
+
+//##################################################################################################
+const GizmoParameters& GizmoLayer::parameters() const
+{
+  return d->params;
+}
+
+//##################################################################################################
 void GizmoLayer::setEnableRotation(bool x, bool y, bool z)
 {
-  d->rotateXGeometryLayerVisible = x;
-  d->rotateYGeometryLayerVisible = y;
-  d->rotateZGeometryLayerVisible = z;
+  d->params.rotationX.enable = x;
+  d->params.rotationY.enable = y;
+  d->params.rotationZ.enable = z;
   d->updateVisibility();
 }
 
 //##################################################################################################
 void GizmoLayer::setEnableRotationScreen(bool screen)
 {
-  d->rotateScreenGeometryLayerVisible = screen;
+  d->params.rotationScreen.enable = screen;
   d->updateVisibility();
 }
 
 //##################################################################################################
-void GizmoLayer::setEnableTranslation(bool x, bool y, bool z)
+void GizmoLayer::setEnableTranslationArrows(bool x, bool y, bool z)
 {
-  d->translationXGeometryLayerVisible = x;
-  d->translationYGeometryLayerVisible = y;
-  d->translationZGeometryLayerVisible = z;
+  d->params.translationArrowX.enable = x;
+  d->params.translationArrowY.enable = y;
+  d->params.translationArrowZ.enable = z;
   d->updateVisibility();
 }
 
 //##################################################################################################
-void GizmoLayer::setEnablePlaneTranslation(bool x, bool y, bool z)
+void GizmoLayer::setEnableTranslationPlanes(bool x, bool y, bool z)
 {
-  d->planeTranslationXGeometryLayerVisible = x;
-  d->planeTranslationYGeometryLayerVisible = y;
-  d->planeTranslationZGeometryLayerVisible = z;
+  d->params.translationPlaneX.enable = x;
+  d->params.translationPlaneY.enable = y;
+  d->params.translationPlaneZ.enable = z;
+  d->updateVisibility();
+}
+
+//##################################################################################################
+void GizmoLayer::setEnableTranslationPlanesScreenScreen(bool screen)
+{
+  d->params.translationPlaneScreen.enable = screen;
   d->updateVisibility();
 }
 
 //##################################################################################################
 void GizmoLayer::setEnableScale(bool x, bool y, bool z)
 {
-  d->scaleXGeometryLayerVisible = x;
-  d->scaleYGeometryLayerVisible = y;
-  d->scaleZGeometryLayerVisible = z;
+  d->params.scaleArrowX.enable = x;
+  d->params.scaleArrowY.enable = y;
+  d->params.scaleArrowZ.enable = z;
   d->updateVisibility();
 }
 
 //##################################################################################################
 void GizmoLayer::setRotationColors(const glm::vec3& x, const glm::vec3& y, const glm::vec3& z)
 {
-  d->rotationColorX = x;
-  d->rotationColorY = y;
-  d->rotationColorZ = z;
+  d->params.rotationX.color = x;
+  d->params.rotationY.color = y;
+  d->params.rotationZ.color = z;
   d->updateRotationGeometry = true;
   update();
 }
 
 //##################################################################################################
-void GizmoLayer::setTranslationColors(const glm::vec3& x, const glm::vec3& y, const glm::vec3& z)
+void GizmoLayer::setRotationScreenColor(const glm::vec3& color)
 {
-  d->translationColorX = x;
-  d->translationColorY = y;
-  d->translationColorZ = z;
+  d->params.rotationScreen.color = color;
+  d->updateRotationGeometry = true;
+  update();
+}
+
+//##################################################################################################
+void GizmoLayer::setTranslationArrowColors(const glm::vec3& x, const glm::vec3& y, const glm::vec3& z)
+{
+  d->params.translationArrowX.color = x;
+  d->params.translationArrowY.color = y;
+  d->params.translationArrowZ.color = z;
   d->updateTranslationGeometry = true;
   update();
 }
 
 //##################################################################################################
-void GizmoLayer::setPlaneTranslationColors(const glm::vec3& x, const glm::vec3& y, const glm::vec3& z)
+void GizmoLayer::setTranslationPlaneColors(const glm::vec3& x, const glm::vec3& y, const glm::vec3& z)
 {
-  d->planeTranslationColorX = x;
-  d->planeTranslationColorY = y;
-  d->planeTranslationColorZ = z;
+  d->params.translationPlaneX.color = x;
+  d->params.translationPlaneY.color = y;
+  d->params.translationPlaneZ.color = z;
+  d->updatePlaneTranslationGeometry = true;
+  update();
+}
+
+//##################################################################################################
+void GizmoLayer::setPlaneTranslationScreenColor(const glm::vec3& color)
+{
+  d->params.translationPlaneScreen.color = color;
   d->updatePlaneTranslationGeometry = true;
   update();
 }
@@ -844,9 +1188,9 @@ void GizmoLayer::setPlaneTranslationColors(const glm::vec3& x, const glm::vec3& 
 //##################################################################################################
 void GizmoLayer::setScaleColors(const glm::vec3& x, const glm::vec3& y, const glm::vec3& z)
 {
-  d->scaleColorX = x;
-  d->scaleColorY = y;
-  d->scaleColorZ = z;
+  d->params.scaleArrowX.color = x;
+  d->params.scaleArrowY.color = y;
+  d->params.scaleArrowZ.color = z;
   d->updateScaleGeometry = true;
   update();
 }
@@ -854,42 +1198,33 @@ void GizmoLayer::setScaleColors(const glm::vec3& x, const glm::vec3& y, const gl
 //##################################################################################################
 void GizmoLayer::setSelectedColor(const glm::vec3& selectedColor)
 {
-  d->selectedColor = selectedColor;
-  d->useSelectedColor = true;
-
-  auto updateMaterial = [&](Geometry3DLayer* layer)
+  auto updateMaterial = [&](auto& params)
   {
-    if(d->selectedColorSubscribed)
-      layer->geometry3DPool()->unsubscribe(selectedSID());
-
-    layer->geometry3DPool()->subscribe(selectedSID(), [=]
-    {
-      std::vector<tp_math_utils::Geometry3D> geometry;
-      d->setMaterial(geometry.emplace_back(), selectedColor);
-      return geometry;
-    }, true, true);
+    params.selectedColor = selectedColor;
+    params.useSelectedColor = true;
   };
 
-  updateMaterial(d->rotateXGeometryLayer);
-  updateMaterial(d->rotateYGeometryLayer);
-  updateMaterial(d->rotateZGeometryLayer);
+  updateMaterial(d->params.rotationX);
+  updateMaterial(d->params.rotationY);
+  updateMaterial(d->params.rotationZ);
 
-  updateMaterial(d->rotateScreenGeometryLayer);
+  updateMaterial(d->params.rotationScreen);
 
-  updateMaterial(d->translationXGeometryLayer);
-  updateMaterial(d->translationYGeometryLayer);
-  updateMaterial(d->translationZGeometryLayer);
+  updateMaterial(d->params.translationArrowX);
+  updateMaterial(d->params.translationArrowY);
+  updateMaterial(d->params.translationArrowZ);
 
-  updateMaterial(d->planeTranslationXGeometryLayer);
-  updateMaterial(d->planeTranslationYGeometryLayer);
-  updateMaterial(d->planeTranslationZGeometryLayer);
+  updateMaterial(d->params.translationPlaneX);
+  updateMaterial(d->params.translationPlaneY);
+  updateMaterial(d->params.translationPlaneZ);
 
-  updateMaterial(d->scaleXGeometryLayer);
-  updateMaterial(d->scaleYGeometryLayer);
-  updateMaterial(d->scaleZGeometryLayer);
+  updateMaterial(d->params.translationPlaneScreen);
 
-  d->selectedColorSubscribed = true;
-  d->updateColors();
+  updateMaterial(d->params.scaleArrowX);
+  updateMaterial(d->params.scaleArrowY);
+  updateMaterial(d->params.scaleArrowZ);
+
+  d->updateSelectedColors();
 }
 
 //##################################################################################################
@@ -942,9 +1277,12 @@ void GizmoLayer::setRingRadius(float outerRadius,
 }
 
 //##################################################################################################
-void GizmoLayer::setRotationRingStyle(RotationRingStyle rotationRingStyle)
+void GizmoLayer::setGizmoRingStyle(GizmoRingStyle gizmoRingStyle)
 {
-  d->rotationRingStyle = rotationRingStyle;
+  d->params.rotationX.style = gizmoRingStyle;
+  d->params.rotationY.style = gizmoRingStyle;
+  d->params.rotationZ.style = gizmoRingStyle;
+  d->params.rotationScreen.style = gizmoRingStyle;
   d->updateRotationGeometry = true;
   update();
 }
@@ -952,53 +1290,77 @@ void GizmoLayer::setRotationRingStyle(RotationRingStyle rotationRingStyle)
 //##################################################################################################
 void GizmoLayer::setGizmoScaleMode(GizmoScaleMode gizmoScaleMode)
 {
-  d->gizmoScaleMode = gizmoScaleMode;
+  d->params.gizmoScaleMode = gizmoScaleMode;
   update();
 }
 
 //##################################################################################################
 void GizmoLayer::setGizmoScale(float gizmoScale)
 {
-  d->gizmoScale = gizmoScale;
+  d->params.gizmoScale = gizmoScale;
   update();
 }
 
 //##################################################################################################
-void GizmoLayer::setNegativeStemlessTranslationArrows(bool negativeStemlessTranslationArrows)
+void GizmoLayer::setTranslationArrowParameters(const GizmoArrowParameters& x,
+                                               const GizmoArrowParameters& y,
+                                               const GizmoArrowParameters& z)
 {
-  d->negativeStemlessTranslationArrows = negativeStemlessTranslationArrows;
+  d->params.translationArrowX = z;
+  d->params.translationArrowY = y;
+  d->params.translationArrowZ = x;
+
   d->updateTranslationGeometry = true;
   update();
 }
 
+//##################################################################################################
+void GizmoLayer::setScaleArrowParameters(const GizmoArrowParameters& x,
+                                         const GizmoArrowParameters& y,
+                                         const GizmoArrowParameters& z)
+{
+  d->params.scaleArrowX = z;
+  d->params.scaleArrowY = y;
+  d->params.scaleArrowZ = x;
+
+  d->updateScaleGeometry = true;
+  update();
+}
 
 //##################################################################################################
 void GizmoLayer::setOnlyRenderSelectedAxis(bool onlyRenderSelectedAxis)
 {
-  d->onlyRenderSelectedAxis = onlyRenderSelectedAxis;
+  d->params.onlyRenderSelectedAxis = onlyRenderSelectedAxis;
   d->updateVisibility();
 }
 
 //##################################################################################################
 void GizmoLayer::setDefaultRenderPass(const RenderPass& defaultRenderPass)
 {
-  d->rotateXGeometryLayer->setDefaultRenderPass(defaultRenderPass);
-  d->rotateYGeometryLayer->setDefaultRenderPass(defaultRenderPass);
-  d->rotateZGeometryLayer->setDefaultRenderPass(defaultRenderPass);
+  if(defaultRenderPass.type == RenderPass::GUI3D)
+    d->params.gizmoRenderPass = GizmoRenderPass::GUI3D;
+  else
+    d->params.gizmoRenderPass = GizmoRenderPass::Normal;
 
-  d->rotateScreenGeometryLayer->setDefaultRenderPass(defaultRenderPass);
+  d->rotationXGeometryLayer->setDefaultRenderPass(defaultRenderPass);
+  d->rotationYGeometryLayer->setDefaultRenderPass(defaultRenderPass);
+  d->rotationZGeometryLayer->setDefaultRenderPass(defaultRenderPass);
 
-  d->translationXGeometryLayer->setDefaultRenderPass(defaultRenderPass);
-  d->translationYGeometryLayer->setDefaultRenderPass(defaultRenderPass);
-  d->translationZGeometryLayer->setDefaultRenderPass(defaultRenderPass);
+  d->rotationScreenGeometryLayer->setDefaultRenderPass(defaultRenderPass);
 
-  d->planeTranslationXGeometryLayer->setDefaultRenderPass(defaultRenderPass);
-  d->planeTranslationYGeometryLayer->setDefaultRenderPass(defaultRenderPass);
-  d->planeTranslationZGeometryLayer->setDefaultRenderPass(defaultRenderPass);
+  d->translationArrowXGeometryLayer->setDefaultRenderPass(defaultRenderPass);
+  d->translationArrowYGeometryLayer->setDefaultRenderPass(defaultRenderPass);
+  d->translationArrowZGeometryLayer->setDefaultRenderPass(defaultRenderPass);
 
-  d->scaleXGeometryLayer->setDefaultRenderPass(defaultRenderPass);
-  d->scaleYGeometryLayer->setDefaultRenderPass(defaultRenderPass);
-  d->scaleZGeometryLayer->setDefaultRenderPass(defaultRenderPass);
+  d->translationPlaneXGeometryLayer->setDefaultRenderPass(defaultRenderPass);
+  d->translationPlaneYGeometryLayer->setDefaultRenderPass(defaultRenderPass);
+  d->translationPlaneZGeometryLayer->setDefaultRenderPass(defaultRenderPass);
+
+  d->translationPlaneScreenGeometryLayer->setDefaultRenderPass(defaultRenderPass);
+
+  d->scaleArrowXGeometryLayer->setDefaultRenderPass(defaultRenderPass);
+  d->scaleArrowYGeometryLayer->setDefaultRenderPass(defaultRenderPass);
+  d->scaleArrowZGeometryLayer->setDefaultRenderPass(defaultRenderPass);
 
   Layer::setDefaultRenderPass(defaultRenderPass);
 }
@@ -1051,7 +1413,7 @@ void GizmoLayer::render(RenderInfo& renderInfo)
       glm::mat4 modelToWorld = modelToWorldMatrix();
 
       float s{1.0f};
-      switch(d->gizmoScaleMode)
+      switch(d->params.gizmoScaleMode)
       {
         case GizmoScaleMode::World:
 
@@ -1059,7 +1421,7 @@ void GizmoLayer::render(RenderInfo& renderInfo)
 
         case GizmoScaleMode::Object:
         {
-          s *= d->gizmoScale;
+          s *= d->params.gizmoScale;
           break;
         }
 
@@ -1075,7 +1437,7 @@ void GizmoLayer::render(RenderInfo& renderInfo)
           map()->project({0.0f, 0.0f, 0.0f}, screenPointO, m);
 
           glm::vec3 delta{0.707f, 0.707f, 0.0f};
-          delta = delta*d->gizmoScale;
+          delta = delta*d->params.gizmoScale;
 
           glm::vec3 screenPointB = screenPointO + delta;
 
@@ -1089,7 +1451,8 @@ void GizmoLayer::render(RenderInfo& renderInfo)
 
       glm::mat4 mScale = glm::scale(glm::mat4{1.0f}, glm::vec3{s,s,s});
 
-      if(d->rotateScreenGeometryLayer->visible())
+      if(d->rotationScreenGeometryLayer->visible() ||
+         d->translationPlaneScreenGeometryLayer->visible())
       {
         glm::vec3 axis{0,0,1};
         glm::vec3 forward;
@@ -1102,25 +1465,45 @@ void GizmoLayer::render(RenderInfo& renderInfo)
 
         glm::mat4 mRot = matrixToRotateAOntoB(axis, forward);
 
-        d->rotateScreenGeometryLayer->setModelMatrix(mScale * mRot);
+        d->screenRelativeMatrix = mScale * mRot;
+
+        if(d->rotationScreenGeometryLayer->visible())
+        {
+          d->rotationScreenGeometryLayer->setModelMatrix(d->screenRelativeMatrix);
+        }
+
+        if(d->translationPlaneScreenGeometryLayer->visible())
+        {
+          auto m = matrices.vp * modelToWorld * d->screenRelativeMatrix;
+          auto mInv = glm::inverse(m);
+
+          glm::vec3 a = tpProj(mInv, {0.0f, 0.0f, 0.0f});
+          glm::vec3 b = tpProj(mInv, {0.0f, 1.0f, 0.0f});
+          glm::vec3 vUp = glm::normalize(b-a);
+          glm::vec3 vModel = {0.707f, 0.707f, 0.0f};
+
+          glm::mat4 mAlignUp = matrixToRotateAOntoB(vModel, vUp);
+
+          d->translationPlaneScreenGeometryLayer->setModelMatrix(d->screenRelativeMatrix * mAlignUp);
+        }
       }
 
       {
-        d->rotateXGeometryLayer->setModelMatrix(mScale);
-        d->rotateYGeometryLayer->setModelMatrix(mScale);
-        d->rotateZGeometryLayer->setModelMatrix(mScale);
+        d->rotationXGeometryLayer->setModelMatrix(mScale);
+        d->rotationYGeometryLayer->setModelMatrix(mScale);
+        d->rotationZGeometryLayer->setModelMatrix(mScale);
 
-        d->translationXGeometryLayer->setModelMatrix(mScale);
-        d->translationYGeometryLayer->setModelMatrix(mScale);
-        d->translationZGeometryLayer->setModelMatrix(mScale);
+        d->translationArrowXGeometryLayer->setModelMatrix(mScale);
+        d->translationArrowYGeometryLayer->setModelMatrix(mScale);
+        d->translationArrowZGeometryLayer->setModelMatrix(mScale);
 
-        d->planeTranslationXGeometryLayer->setModelMatrix(mScale);
-        d->planeTranslationYGeometryLayer->setModelMatrix(mScale);
-        d->planeTranslationZGeometryLayer->setModelMatrix(mScale);
+        d->translationPlaneXGeometryLayer->setModelMatrix(mScale);
+        d->translationPlaneYGeometryLayer->setModelMatrix(mScale);
+        d->translationPlaneZGeometryLayer->setModelMatrix(mScale);
 
-        d->scaleXGeometryLayer->setModelMatrix(mScale);
-        d->scaleYGeometryLayer->setModelMatrix(mScale);
-        d->scaleZGeometryLayer->setModelMatrix(mScale);
+        d->scaleArrowXGeometryLayer->setModelMatrix(mScale);
+        d->scaleArrowYGeometryLayer->setModelMatrix(mScale);
+        d->scaleArrowZGeometryLayer->setModelMatrix(mScale);
       }
     }
   }
@@ -1154,28 +1537,28 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
         d->originalModelMatrix = modelMatrix();
         d->originalModelToWorldMatrix = modelToWorldMatrix();
 
-        if(result->layer == d->rotateXGeometryLayer)
+        if(result->layer == d->rotationXGeometryLayer)
         {
           d->useIntersection = intersectPlane({1,0,0}, d->intersectionPoint);
           d->setActiveModification(Modify_lt::RotateX);
           return true;
         }
 
-        if(result->layer == d->rotateYGeometryLayer)
+        if(result->layer == d->rotationYGeometryLayer)
         {
           d->useIntersection = intersectPlane({0,1,0}, d->intersectionPoint);
           d->setActiveModification(Modify_lt::RotateY);
           return true;
         }
 
-        if(result->layer == d->rotateZGeometryLayer)
+        if(result->layer == d->rotationZGeometryLayer)
         {
           d->useIntersection = intersectPlane({0,0,1}, d->intersectionPoint);
           d->setActiveModification(Modify_lt::RotateZ);
           return true;
         }
 
-        if(result->layer == d->rotateScreenGeometryLayer)
+        if(result->layer == d->rotationScreenGeometryLayer)
         {
           d->originalScreenRotateAxis = d->screenRotateAxis();
           d->useIntersection = intersectPlane(d->originalScreenRotateAxis, d->intersectionPoint);
@@ -1183,55 +1566,62 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
           return true;
         }
 
-        if(result->layer == d->translationXGeometryLayer)
+        if(result->layer == d->translationArrowXGeometryLayer)
         {
           d->setActiveModification(Modify_lt::TranslationX);
           return true;
         }
 
-        if(result->layer == d->translationYGeometryLayer)
+        if(result->layer == d->translationArrowYGeometryLayer)
         {
           d->setActiveModification(Modify_lt::TranslationY);
           return true;
         }
 
-        if(result->layer == d->translationZGeometryLayer)
+        if(result->layer == d->translationArrowZGeometryLayer)
         {
           d->setActiveModification(Modify_lt::TranslationZ);
           return true;
         }
 
-        if(result->layer == d->planeTranslationXGeometryLayer)
+        if(result->layer == d->translationPlaneXGeometryLayer)
         {
           d->setActiveModification(Modify_lt::PlaneTranslationX);
           return true;
         }
 
-        if(result->layer == d->planeTranslationYGeometryLayer)
+        if(result->layer == d->translationPlaneYGeometryLayer)
         {
           d->setActiveModification(Modify_lt::PlaneTranslationY);
           return true;
         }
 
-        if(result->layer == d->planeTranslationZGeometryLayer)
+        if(result->layer == d->translationPlaneZGeometryLayer)
         {
           d->setActiveModification(Modify_lt::PlaneTranslationZ);
           return true;
         }
 
-        if(result->layer == d->scaleXGeometryLayer)
+        if(result->layer == d->translationPlaneScreenGeometryLayer)
+        {
+          d->originalScreenRotateAxis = d->screenRotateAxis();
+          d->setActiveModification(Modify_lt::PlaneTranslationScreen);
+          return true;
+        }
+
+        if(result->layer == d->scaleArrowXGeometryLayer)
         {
           d->setActiveModification(Modify_lt::ScaleX);
           return true;
         }
 
-        if(result->layer == d->scaleYGeometryLayer)
+        if(result->layer == d->scaleArrowYGeometryLayer)
         {
           d->setActiveModification(Modify_lt::ScaleY);
           return true;
         }
 
-        if(result->layer == d->scaleZGeometryLayer)
+        if(result->layer == d->scaleArrowZGeometryLayer)
         {
           d->setActiveModification(Modify_lt::ScaleZ);
           return true;
@@ -1394,6 +1784,7 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
         case Modify_lt::PlaneTranslationX: translationOnPlane({1,0,0}); break;
         case Modify_lt::PlaneTranslationY: translationOnPlane({0,1,0}); break;
         case Modify_lt::PlaneTranslationZ: translationOnPlane({0,0,1}); break;
+        case Modify_lt::PlaneTranslationScreen: translationOnPlane(d->originalScreenRotateAxis); break;
         case Modify_lt::ScaleX: scale({1,0,0}); break;
         case Modify_lt::ScaleY: scale({0,1,0}); break;
         case Modify_lt::ScaleZ: scale({0,0,1}); break;
