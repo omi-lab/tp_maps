@@ -11,6 +11,7 @@ namespace tp_maps
 //! The base class for post processing shaders.
 class TP_MAPS_EXPORT FullScreenShader: public Shader
 {
+  TP_DQ;
 public:
   //################################################################################################
     FullScreenShader(Map* map, tp_maps::ShaderProfile shaderProfile);
@@ -67,11 +68,6 @@ protected:
 
   //################################################################################################
   void init() override;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

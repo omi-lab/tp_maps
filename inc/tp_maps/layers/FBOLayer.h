@@ -52,6 +52,7 @@ Layer allows you to present the contents of these FBOs on screen to aid in debug
 class TP_MAPS_EXPORT FBOLayer: public Layer
 {
   TP_REF_COUNT_OBJECTS("FBOLayer");
+  TP_DQ;
 public:
   //################################################################################################
   FBOLayer();
@@ -77,11 +78,6 @@ protected:
 
   //################################################################################################
   void invalidateBuffers() override;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

@@ -9,6 +9,7 @@ namespace tp_maps
 //##################################################################################################
 class TP_MAPS_EXPORT FPSController : public Controller
 {
+  TP_DQ;
 public:
   //################################################################################################
   FPSController(Map* map, bool fullScreen);
@@ -77,11 +78,6 @@ protected:
 
   //################################################################################################
   void animate(double timestampMS) override;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

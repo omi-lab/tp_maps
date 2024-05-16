@@ -10,6 +10,7 @@ namespace tp_maps
 //##################################################################################################
 class TP_MAPS_EXPORT FlatController : public Controller
 {
+  TP_DQ;
 public:
   //################################################################################################
   FlatController(Map* map);
@@ -100,11 +101,6 @@ protected:
 
   //################################################################################################
   virtual void translateInteractionStarted();
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

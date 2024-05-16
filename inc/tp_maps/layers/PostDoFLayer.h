@@ -17,6 +17,7 @@ namespace tp_maps
 //##################################################################################################
 class TP_MAPS_EXPORT PostDoFLayer: public PostLayer
 {
+  TP_DQ;
 public:
   //################################################################################################
   PostDoFLayer();
@@ -48,11 +49,6 @@ protected:
 
   //################################################################################################
   void invalidateBuffers() override;
-
-private:
-  struct Private;
-  friend struct Private;
-  Private* d;
 };
 
 }

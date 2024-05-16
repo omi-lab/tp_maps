@@ -10,6 +10,7 @@ namespace tp_maps
 //! Base class for layers that draw the current selection
 class TP_MAPS_EXPORT PostSelectionLayer: public PostLayer
 {
+  TP_DQ;
 public:
   //################################################################################################
   PostSelectionLayer(const RenderPass& customRenderPass, size_t stageMask=1, size_t stageUpdate=2);
@@ -34,11 +35,6 @@ protected:
 
   //################################################################################################
   void prepareForRenderPass(const tp_maps::RenderPass& renderPass) override;
-
-private:
-  struct Private;
-  friend struct Private;
-  Private* d;
 };
 
 }

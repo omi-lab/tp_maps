@@ -54,6 +54,7 @@ class TP_MAPS_EXPORT Map
   friend class FontRenderer;
   friend class EventHandler;
   TP_NONCOPYABLE(Map);
+  TP_DQ;
 
 public:
   //################################################################################################
@@ -505,10 +506,6 @@ private:
   //################################################################################################
   void updateEventHandlerCallbacks(size_t eventHandlerId,
                                    const std::function<void(EventHandlerCallbacks&)>& closure);
-
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 }
 #endif

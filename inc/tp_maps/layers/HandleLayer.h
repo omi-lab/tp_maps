@@ -58,6 +58,7 @@ the plane that the handles are moved on.
 class TP_MAPS_EXPORT HandleLayer: public Layer
 {
   friend class HandleDetails;
+  TP_DQ;
 public:
   //################################################################################################
   /*!
@@ -95,11 +96,6 @@ protected:
 
   //################################################################################################
   void moveHandle(HandleDetails* handle, const glm::vec3& newPosition);
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

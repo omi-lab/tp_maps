@@ -12,6 +12,7 @@ class Map;
 class TP_MAPS_EXPORT Errors
 {
   TP_NONCOPYABLE(Errors);
+  TP_DQ;
 public:
   //################################################################################################
   Errors(Map* map);
@@ -35,11 +36,6 @@ public:
   //################################################################################################
   //! Prints error and returns true if there is an FBO error detected.
   static bool printFBOError(OpenGLFBO& buffer, const std::string& description);
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

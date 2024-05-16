@@ -9,6 +9,7 @@ namespace tp_maps
 //##################################################################################################
 class TP_MAPS_EXPORT GraphController : public Controller
 {
+  TP_DQ;
 public:
   //################################################################################################
   GraphController(Map* map);
@@ -76,11 +77,6 @@ protected:
 
   //################################################################################################
   virtual void translateInteractionStarted();
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

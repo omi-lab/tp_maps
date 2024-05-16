@@ -14,6 +14,7 @@ class Map;
 class TP_MAPS_EXPORT OpenGLBuffers
 {
   TP_NONCOPYABLE(OpenGLBuffers);
+  TP_DQ;
 public:
   //################################################################################################
   OpenGLBuffers(Map* map);
@@ -55,11 +56,6 @@ public:
 
   //################################################################################################
   std::unordered_map<std::string, OpenGLFBO*> storedBuffers() const;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

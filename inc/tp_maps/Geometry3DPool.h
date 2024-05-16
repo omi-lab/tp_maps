@@ -39,6 +39,7 @@ class TP_MAPS_EXPORT Geometry3DPool
 {
   TP_REF_COUNT_OBJECTS("Geometry3DPool");
   TP_NONCOPYABLE(Geometry3DPool);
+  TP_DQ;
 public:
   //################################################################################################
   Geometry3DPool(Map* map, TexturePool* texturePool=nullptr);
@@ -95,11 +96,6 @@ public:
 
   //################################################################################################
   tp_utils::CallbackCollection<void()> changed;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

@@ -23,6 +23,7 @@ class TP_MAPS_EXPORT Controller
 {
   friend class Map;
   TP_NONCOPYABLE(Controller);
+  TP_DQ;
 public:
   //################################################################################################
   //! Construct a Controller for map
@@ -152,10 +153,6 @@ protected:
 private:
   std::unordered_set<Button> m_hasMouseFocusFor; //!< Set when the controller accepts focus for a mouse press event.
   std::unordered_set<int32_t> m_hasKeyFocusFor;  //!< Set when the controller accepts focus for a key press event.
-
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

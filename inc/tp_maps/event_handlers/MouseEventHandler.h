@@ -11,6 +11,7 @@ namespace tp_maps
 //##################################################################################################
 class TP_MAPS_EXPORT MouseEventHandler
 {
+  TP_DQ;
 public:
   //################################################################################################
   MouseEventHandler(Map* map);
@@ -23,11 +24,6 @@ public:
 
   //################################################################################################
   std::function<void(const MouseEvent&)> postMouseEvent;
-
-private:
-  struct Private;
-  friend struct Private;
-  Private* d;
 };
 }
 

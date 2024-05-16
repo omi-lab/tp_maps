@@ -14,6 +14,7 @@ class FontRenderer;
 class TP_MAPS_EXPORT LightsLayer: public Layer
 {
   TP_REF_COUNT_OBJECTS("LightsLayer");
+  TP_DQ;
 public:
   //################################################################################################
   LightsLayer(bool editLights);
@@ -64,11 +65,6 @@ protected:
 
   //################################################################################################
   void lightsChanged(LightingModelChanged lightingModelChanged) override;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

@@ -14,6 +14,7 @@ class G3DImageShader;
 class TP_MAPS_EXPORT ImageLayer: public Layer
 {
   TP_REF_COUNT_OBJECTS("ImageLayer");
+  TP_DQ;
 public:
   //################################################################################################
   /*!
@@ -53,11 +54,6 @@ protected:
 
   //################################################################################################
   void invalidateBuffers() override;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

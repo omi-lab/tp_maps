@@ -25,6 +25,7 @@ class TP_MAPS_EXPORT FontRenderer
 {
   friend class PreparedString;
   TP_NONCOPYABLE(FontRenderer);
+  TP_DQ;
 public:
   //################################################################################################
   FontRenderer(Map* map, const std::shared_ptr<Font>& font);
@@ -78,11 +79,6 @@ protected:
 
   //################################################################################################
   void removePreparedString(PreparedString* preparedString);
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

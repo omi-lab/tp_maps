@@ -18,6 +18,7 @@ class Texture;
 class TP_MAPS_EXPORT PointsLayer: public Layer
 {
   TP_REF_COUNT_OBJECTS("PointsLayer");
+  TP_DQ;
 public:
   //################################################################################################
   /*!
@@ -46,11 +47,6 @@ protected:
 
   //################################################################################################
   void invalidateBuffers() override;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

@@ -9,6 +9,7 @@ namespace tp_maps
 //##################################################################################################
 class TP_MAPS_EXPORT FrustumLayer: public Layer
 {
+  TP_DQ;
 public:
   //################################################################################################
   FrustumLayer();
@@ -52,11 +53,6 @@ protected:
 
   //################################################################################################
   void invalidateBuffers() override;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }
