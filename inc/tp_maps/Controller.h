@@ -92,7 +92,7 @@ public:
 
   \returns The state of the controller serialized to a byte array
   */
-  virtual nlohmann::json saveState() const;
+  virtual void saveState(nlohmann::json& j) const;
 
   //################################################################################################
   //! Load the state of the controller

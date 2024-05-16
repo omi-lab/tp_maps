@@ -170,15 +170,11 @@ void FPSController::setNearAndFar(float near, float far)
 }
 
 //##################################################################################################
-nlohmann::json FPSController::saveState() const
+void FPSController::saveState(nlohmann::json& j) const
 {
-  nlohmann::json j;
-
   j["View angle"]     = d->viewAngle;
   j["Rotation angle"] = d->rotationAngle;
   j["Camera origin"]    = tp_math_utils::vec3ToJSON(d->cameraOrigin);
-
-  return j;
 }
 
 //##################################################################################################

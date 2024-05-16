@@ -28,7 +28,7 @@ struct FBOWindow
   glm::vec2      size   {0.20f, 0.20f};          //!< The size of the window.
 
   //################################################################################################
-  nlohmann::json saveState() const;
+  void saveState(nlohmann::json& j) const;
 
   //################################################################################################
   void loadState(const nlohmann::json& j);
@@ -66,7 +66,7 @@ public:
   const std::vector<FBOWindow>& windows() const;
 
   //################################################################################################
-  nlohmann::json saveState() const;
+  void saveState(nlohmann::json& j) const;
 
   //################################################################################################
   void loadState(const nlohmann::json& j);

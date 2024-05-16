@@ -127,7 +127,7 @@ public:
   void setOrientation(const glm::vec3& forward, const glm::vec3& up);
 
   //################################################################################################
-  nlohmann::json saveState() const override;
+  void saveState(nlohmann::json& j) const override;
 
   //################################################################################################
   void loadState(const nlohmann::json& j) override;
