@@ -323,7 +323,6 @@ struct Geometry3DPool::Private
 
     invalidateBuffersCallback.connect(m_map->invalidateBuffersCallbacks);
     texturePoolChanged.connect(texturePool->changed);
-    texturePoolChanged();
   }
 
   //################################################################################################
@@ -341,7 +340,6 @@ struct Geometry3DPool::Private
 
     invalidateBuffersCallback.connect(m_layer->invalidateBuffersCallbacks);
     texturePoolChanged.connect(texturePool->changed);
-    texturePoolChanged();
   }
 
   //################################################################################################
@@ -435,14 +433,14 @@ struct Geometry3DPool::Private
 Geometry3DPool::Geometry3DPool(Map* map, TexturePool* texturePool):
   d(new Private(this, map, texturePool))
 {
-
+  d->texturePoolChanged();
 }
 
 //##################################################################################################
 Geometry3DPool::Geometry3DPool(Layer* layer, TexturePool* texturePool):
   d(new Private(this, layer, texturePool))
 {
-
+  d->texturePoolChanged();
 }
 
 //##################################################################################################
