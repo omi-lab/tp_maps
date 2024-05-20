@@ -1,5 +1,6 @@
 #include "tp_maps/layers/GizmoLayer.h"
 #include "tp_maps/layers/Geometry3DLayer.h"
+#include "tp_maps/layers/LinesLayer.h"
 #include "tp_maps/Controller.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/MouseEvent.h"
@@ -41,7 +42,8 @@ enum class Modify_lt
   PlaneTranslationScreen,
   ScaleX,
   ScaleY,
-  ScaleZ
+  ScaleZ,
+  ScaleScreen
 };
 
 }
@@ -328,6 +330,18 @@ struct GizmoLayer::Private
   Geometry3DLayer* scaleArrowXGeometryLayer{nullptr};
   Geometry3DLayer* scaleArrowYGeometryLayer{nullptr};
   Geometry3DLayer* scaleArrowZGeometryLayer{nullptr};
+
+  Geometry3DLayer* scaleArrowScreenGeometryLayer{nullptr};
+
+  LinesLayer* translationArrowXLinesLayer{nullptr};
+  LinesLayer* translationArrowYLinesLayer{nullptr};
+  LinesLayer* translationArrowZLinesLayer{nullptr};
+
+  LinesLayer* translationPlaneXLinesLayer{nullptr};
+  LinesLayer* translationPlaneYLinesLayer{nullptr};
+  LinesLayer* translationPlaneZLinesLayer{nullptr};
+
+  LinesLayer* translationPlaneScreenLinesLayer{nullptr};
 
   GizmoParameters params;
 
@@ -801,41 +815,153 @@ struct GizmoLayer::Private
   }
 
   //################################################################################################
+  void makeReferenceLines(std::vector<Lines>& lines, const std::function<glm::vec3(const glm::vec3&)>& transform, const GizmoLineParameters& params)
+  {
+    lines.resize(3);
+
+    {
+      auto& l = lines.at(0);
+      l.color = params.colorA;
+      l.mode = GL_LINES;
+
+      float len=params.radius;
+
+      l.lines.push_back(transform(glm::vec3(0.0f, 0.0f, -len)));
+      l.lines.push_back(transform(glm::vec3(0.0f, 0.0f, +len)));
+    }
+
+    size_t nLines=40;
+    float lineSpacing=1.0f;
+    size_t nSlices=4;
+
+    {
+      auto& lB = lines.at(1);
+      lB.color = params.colorB;
+      lB.mode = GL_LINES;
+
+      auto& lC = lines.at(2);
+      lC.color = params.colorC;
+      lC.mode = GL_LINES;
+
+      float len=params.radius;
+
+      lB.lines.push_back(transform(glm::vec3(0.0f, -len, 0.0f)));
+      lB.lines.push_back(transform(glm::vec3(0.0f, +len, 0.0f)));
+
+      lB.lines.push_back(transform(glm::vec3(-len, 0.0f, 0.0f)));
+      lB.lines.push_back(transform(glm::vec3(+len, 0.0f, 0.0f)));
+
+      for(size_t n=1; n<nLines; n++)
+      {
+        float f=float(n)*lineSpacing;
+
+        lB.lines.push_back(transform(glm::vec3(+f, -len, 0.0f)));
+        lB.lines.push_back(transform(glm::vec3(+f, +len, 0.0f)));
+
+        lB.lines.push_back(transform(glm::vec3(-f, -len, 0.0f)));
+        lB.lines.push_back(transform(glm::vec3(-f, +len, 0.0f)));
+
+        lB.lines.push_back(transform(glm::vec3(-len, +f, 0.0f)));
+        lB.lines.push_back(transform(glm::vec3(+len, +f, 0.0f)));
+
+        lB.lines.push_back(transform(glm::vec3(-len, -f, 0.0f)));
+        lB.lines.push_back(transform(glm::vec3(+len, -f, 0.0f)));
+
+        for(size_t i=1; i<nSlices; i++)
+        {
+          float g = f-(float(i) / float(nSlices) * lineSpacing);
+
+          lC.lines.push_back(transform(glm::vec3(+g, -len, 0.0f)));
+          lC.lines.push_back(transform(glm::vec3(+g, +len, 0.0f)));
+
+          lC.lines.push_back(transform(glm::vec3(-g, -len, 0.0f)));
+          lC.lines.push_back(transform(glm::vec3(-g, +len, 0.0f)));
+
+          lC.lines.push_back(transform(glm::vec3(-len, +g, 0.0f)));
+          lC.lines.push_back(transform(glm::vec3(+len, +g, 0.0f)));
+
+          lC.lines.push_back(transform(glm::vec3(-len, -g, 0.0f)));
+          lC.lines.push_back(transform(glm::vec3(+len, -g, 0.0f)));
+        }
+      }
+    }
+
+  }
+
+  //################################################################################################
   void generateTranslationGeometry()
   {
-    std::vector<tp_math_utils::Geometry3D> translationArrowXGeometry;
-    std::vector<tp_math_utils::Geometry3D> translationArrowYGeometry;
-    std::vector<tp_math_utils::Geometry3D> translationArrowZGeometry;
+    {
+      std::vector<tp_math_utils::Geometry3D> translationArrowXGeometry;
+      std::vector<tp_math_utils::Geometry3D> translationArrowYGeometry;
+      std::vector<tp_math_utils::Geometry3D> translationArrowZGeometry;
 
-    makeArrow(translationArrowXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, params.translationArrowX);
-    makeArrow(translationArrowYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, params.translationArrowY);
-    makeArrow(translationArrowZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.translationArrowZ);
+      makeArrow(translationArrowXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, params.translationArrowX);
+      makeArrow(translationArrowYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, params.translationArrowY);
+      makeArrow(translationArrowZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.translationArrowZ);
 
-    translationArrowXGeometryLayer->setGeometry(translationArrowXGeometry);
-    translationArrowYGeometryLayer->setGeometry(translationArrowYGeometry);
-    translationArrowZGeometryLayer->setGeometry(translationArrowZGeometry);
+      translationArrowXGeometryLayer->setGeometry(translationArrowXGeometry);
+      translationArrowYGeometryLayer->setGeometry(translationArrowYGeometry);
+      translationArrowZGeometryLayer->setGeometry(translationArrowZGeometry);
+    }
+
+    {
+      std::vector<Lines> translationArrowXLines;
+      std::vector<Lines> translationArrowYLines;
+      std::vector<Lines> translationArrowZLines;
+
+      makeReferenceLines(translationArrowXLines, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, params.translationArrowXLines);
+      makeReferenceLines(translationArrowYLines, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, params.translationArrowYLines);
+      makeReferenceLines(translationArrowZLines, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.translationArrowZLines);
+
+      translationArrowXLinesLayer->setLines(translationArrowXLines);
+      translationArrowYLinesLayer->setLines(translationArrowYLines);
+      translationArrowZLinesLayer->setLines(translationArrowZLines);
+    }
   }
 
   //################################################################################################
   void generatePlaneTranslationGeometry()
   {
-    std::vector<tp_math_utils::Geometry3D> translationPlaneXGeometry;
-    std::vector<tp_math_utils::Geometry3D> translationPlaneYGeometry;
-    std::vector<tp_math_utils::Geometry3D> translationPlaneZGeometry;
+    {
+      std::vector<tp_math_utils::Geometry3D> translationPlaneXGeometry;
+      std::vector<tp_math_utils::Geometry3D> translationPlaneYGeometry;
+      std::vector<tp_math_utils::Geometry3D> translationPlaneZGeometry;
 
-    std::vector<tp_math_utils::Geometry3D> translationPlaneScreenGeometry;
+      std::vector<tp_math_utils::Geometry3D> translationPlaneScreenGeometry;
 
-    makePlane(translationPlaneXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, params.translationPlaneX);
-    makePlane(translationPlaneYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, params.translationPlaneY);
-    makePlane(translationPlaneZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.translationPlaneZ);
+      makePlane(translationPlaneXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, params.translationPlaneX);
+      makePlane(translationPlaneYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, params.translationPlaneY);
+      makePlane(translationPlaneZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.translationPlaneZ);
 
-    makePlane(translationPlaneScreenGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.translationPlaneScreen);
+      makePlane(translationPlaneScreenGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.translationPlaneScreen);
 
-    translationPlaneXGeometryLayer->setGeometry(translationPlaneXGeometry);
-    translationPlaneYGeometryLayer->setGeometry(translationPlaneYGeometry);
-    translationPlaneZGeometryLayer->setGeometry(translationPlaneZGeometry);
+      translationPlaneXGeometryLayer->setGeometry(translationPlaneXGeometry);
+      translationPlaneYGeometryLayer->setGeometry(translationPlaneYGeometry);
+      translationPlaneZGeometryLayer->setGeometry(translationPlaneZGeometry);
 
-    translationPlaneScreenGeometryLayer->setGeometry(translationPlaneScreenGeometry);
+      translationPlaneScreenGeometryLayer->setGeometry(translationPlaneScreenGeometry);
+    }
+
+    {
+      std::vector<Lines> translationPlaneXLines;
+      std::vector<Lines> translationPlaneYLines;
+      std::vector<Lines> translationPlaneZLines;
+
+      std::vector<Lines> translationPlaneScreenLines;
+
+      makeReferenceLines(translationPlaneXLines, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, params.translationPlaneXLines);
+      makeReferenceLines(translationPlaneYLines, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, params.translationPlaneYLines);
+      makeReferenceLines(translationPlaneZLines, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.translationPlaneZLines);
+
+      makeReferenceLines(translationPlaneScreenLines, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.translationPlaneScreenLines);
+
+      translationPlaneXLinesLayer->setLines(translationPlaneXLines);
+      translationPlaneYLinesLayer->setLines(translationPlaneYLines);
+      translationPlaneZLinesLayer->setLines(translationPlaneZLines);
+
+      translationPlaneScreenLinesLayer->setLines(translationPlaneScreenLines);
+    }
   }
 
   //################################################################################################
@@ -845,13 +971,19 @@ struct GizmoLayer::Private
     std::vector<tp_math_utils::Geometry3D> scaleArrowYGeometry;
     std::vector<tp_math_utils::Geometry3D> scaleArrowZGeometry;
 
+    std::vector<tp_math_utils::Geometry3D> scaleArrowScreenGeometry;
+
     makeArrow(scaleArrowXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y) * scale + glm::vec3(coreSize.x, 0.0f, 0.0f);}, params.scaleArrowX);
     makeArrow(scaleArrowYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x) * scale + glm::vec3(0.0f, coreSize.y, 0.0f);}, params.scaleArrowY);
     makeArrow(scaleArrowZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z) * scale + glm::vec3(0.0f, 0.0f, coreSize.z);}, params.scaleArrowZ);
 
+    makeArrow(scaleArrowScreenGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x) * scale + glm::vec3(0.0f, 0.0f, coreSize.z);}, params.scaleArrowZ);
+
     scaleArrowXGeometryLayer->setGeometry(scaleArrowXGeometry);
     scaleArrowYGeometryLayer->setGeometry(scaleArrowYGeometry);
     scaleArrowZGeometryLayer->setGeometry(scaleArrowZGeometry);
+
+    scaleArrowScreenGeometryLayer->setGeometry(scaleArrowScreenGeometry);
   }
 
   //################################################################################################
@@ -868,9 +1000,9 @@ struct GizmoLayer::Private
   //################################################################################################
   void updateColors()
   {
-    rotationXGeometryLayer     ->setAlternativeMaterials({});
-    rotationYGeometryLayer     ->setAlternativeMaterials({});
-    rotationZGeometryLayer     ->setAlternativeMaterials({});
+    rotationXGeometryLayer->setAlternativeMaterials({});
+    rotationYGeometryLayer->setAlternativeMaterials({});
+    rotationZGeometryLayer->setAlternativeMaterials({});
 
     rotationScreenGeometryLayer->setAlternativeMaterials({});
 
@@ -884,9 +1016,11 @@ struct GizmoLayer::Private
 
     translationPlaneScreenGeometryLayer->setAlternativeMaterials({});
 
-    scaleArrowXGeometryLayer      ->setAlternativeMaterials({});
-    scaleArrowYGeometryLayer      ->setAlternativeMaterials({});
-    scaleArrowZGeometryLayer      ->setAlternativeMaterials({});
+    scaleArrowXGeometryLayer->setAlternativeMaterials({});
+    scaleArrowYGeometryLayer->setAlternativeMaterials({});
+    scaleArrowZGeometryLayer->setAlternativeMaterials({});
+
+    scaleArrowScreenGeometryLayer->setAlternativeMaterials({});
 
     auto useSelected = [&](const auto& params, Geometry3DLayer* layer)
     {
@@ -917,6 +1051,8 @@ struct GizmoLayer::Private
       case Modify_lt::ScaleX                 : useSelected(params.scaleArrowX           , scaleArrowXGeometryLayer);            break;
       case Modify_lt::ScaleY                 : useSelected(params.scaleArrowY           , scaleArrowYGeometryLayer);            break;
       case Modify_lt::ScaleZ                 : useSelected(params.scaleArrowZ           , scaleArrowZGeometryLayer);            break;
+
+      case Modify_lt::ScaleScreen            : useSelected(params.scaleArrowScreen      , scaleArrowScreenGeometryLayer);       break;
     }
   }
 
@@ -944,6 +1080,8 @@ struct GizmoLayer::Private
       scaleArrowXGeometryLayer->setVisible(params.scaleArrowX.enable);
       scaleArrowYGeometryLayer->setVisible(params.scaleArrowY.enable);
       scaleArrowZGeometryLayer->setVisible(params.scaleArrowZ.enable);
+
+      scaleArrowScreenGeometryLayer->setVisible(params.scaleArrowScreen.enable);
     }
     else
     {
@@ -966,6 +1104,20 @@ struct GizmoLayer::Private
       scaleArrowXGeometryLayer->setVisible(params.scaleArrowX.enable && activeModification == Modify_lt::ScaleX);
       scaleArrowYGeometryLayer->setVisible(params.scaleArrowY.enable && activeModification == Modify_lt::ScaleY);
       scaleArrowZGeometryLayer->setVisible(params.scaleArrowZ.enable && activeModification == Modify_lt::ScaleZ);
+
+      scaleArrowScreenGeometryLayer->setVisible(params.scaleArrowScreen.enable && activeModification == Modify_lt::ScaleScreen);
+    }
+
+    {
+      translationArrowXLinesLayer->setVisible(params.translationArrowXLines.enable && activeModification == Modify_lt::TranslationX);
+      translationArrowYLinesLayer->setVisible(params.translationArrowYLines.enable && activeModification == Modify_lt::TranslationY);
+      translationArrowZLinesLayer->setVisible(params.translationArrowZLines.enable && activeModification == Modify_lt::TranslationZ);
+
+      translationPlaneXLinesLayer->setVisible(params.translationPlaneXLines.enable && activeModification == Modify_lt::PlaneTranslationX);
+      translationPlaneYLinesLayer->setVisible(params.translationPlaneYLines.enable && activeModification == Modify_lt::PlaneTranslationY);
+      translationPlaneZLinesLayer->setVisible(params.translationPlaneZLines.enable && activeModification == Modify_lt::PlaneTranslationZ);
+
+      translationPlaneScreenLinesLayer->setVisible(params.translationPlaneScreenLines.enable && activeModification == Modify_lt::PlaneTranslationScreen);
     }
 
     q->update();
@@ -975,6 +1127,12 @@ struct GizmoLayer::Private
   glm::vec3 screenRotateAxis()
   {
     return glm::normalize(tpProj(screenRelativeMatrix, {0.0f, 0.0f, 1.0f}));
+  }
+
+  //################################################################################################
+  glm::vec3 screenScaleAxis()
+  {
+    return glm::normalize(tpProj(screenRelativeMatrix, {1.0f, 0.0f, 0.0f}));
   }
 
 
@@ -1014,8 +1172,24 @@ struct GizmoLayer::Private
     updateMaterial(scaleArrowYGeometryLayer, params.scaleArrowY);
     updateMaterial(scaleArrowZGeometryLayer, params.scaleArrowZ);
 
+    updateMaterial(scaleArrowScreenGeometryLayer, params.scaleArrowScreen);
+
     selectedColorSubscribed = true;
     updateColors();
+  }
+
+  //################################################################################################
+  void setReferenceLinesRenderPass(const RenderPass& defaultRenderPass)
+  {
+    translationArrowXLinesLayer->setDefaultRenderPass(defaultRenderPass);
+    translationArrowYLinesLayer->setDefaultRenderPass(defaultRenderPass);
+    translationArrowZLinesLayer->setDefaultRenderPass(defaultRenderPass);
+
+    translationPlaneXLinesLayer->setDefaultRenderPass(defaultRenderPass);
+    translationPlaneYLinesLayer->setDefaultRenderPass(defaultRenderPass);
+    translationPlaneZLinesLayer->setDefaultRenderPass(defaultRenderPass);
+
+    translationPlaneScreenLinesLayer->setDefaultRenderPass(defaultRenderPass);
   }
 };
 
@@ -1023,32 +1197,51 @@ struct GizmoLayer::Private
 GizmoLayer::GizmoLayer():
   d(new Private(this))
 {
-  auto createLayer = [&](auto& l)
+  auto createGeometryLayer = [&](auto& l)
   {
     l = new Geometry3DLayer();
     addChildLayer(l);
     l->setShaderSelection(Geometry3DLayer::ShaderSelection::StaticLight);
   };
 
-  createLayer(d->rotationXGeometryLayer);
-  createLayer(d->rotationYGeometryLayer);
-  createLayer(d->rotationZGeometryLayer);
+  createGeometryLayer(d->rotationXGeometryLayer);
+  createGeometryLayer(d->rotationYGeometryLayer);
+  createGeometryLayer(d->rotationZGeometryLayer);
 
-  createLayer(d->rotationScreenGeometryLayer);
+  createGeometryLayer(d->rotationScreenGeometryLayer);
 
-  createLayer(d->translationArrowXGeometryLayer);
-  createLayer(d->translationArrowYGeometryLayer);
-  createLayer(d->translationArrowZGeometryLayer);
+  createGeometryLayer(d->translationArrowXGeometryLayer);
+  createGeometryLayer(d->translationArrowYGeometryLayer);
+  createGeometryLayer(d->translationArrowZGeometryLayer);
 
-  createLayer(d->translationPlaneXGeometryLayer);
-  createLayer(d->translationPlaneYGeometryLayer);
-  createLayer(d->translationPlaneZGeometryLayer);
+  createGeometryLayer(d->translationPlaneXGeometryLayer);
+  createGeometryLayer(d->translationPlaneYGeometryLayer);
+  createGeometryLayer(d->translationPlaneZGeometryLayer);
 
-  createLayer(d->translationPlaneScreenGeometryLayer);
+  createGeometryLayer(d->translationPlaneScreenGeometryLayer);
 
-  createLayer(d->scaleArrowXGeometryLayer);
-  createLayer(d->scaleArrowYGeometryLayer);
-  createLayer(d->scaleArrowZGeometryLayer);
+  createGeometryLayer(d->scaleArrowXGeometryLayer);
+  createGeometryLayer(d->scaleArrowYGeometryLayer);
+  createGeometryLayer(d->scaleArrowZGeometryLayer);
+
+  createGeometryLayer(d->scaleArrowScreenGeometryLayer);
+
+
+  auto createLinesLayer = [&](auto& l)
+  {
+    l = new LinesLayer();
+    addChildLayer(l);
+  };
+
+  createLinesLayer(d->translationArrowXLinesLayer);
+  createLinesLayer(d->translationArrowYLinesLayer);
+  createLinesLayer(d->translationArrowZLinesLayer);
+
+  createLinesLayer(d->translationPlaneXLinesLayer);
+  createLinesLayer(d->translationPlaneYLinesLayer);
+  createLinesLayer(d->translationPlaneZLinesLayer);
+
+  createLinesLayer(d->translationPlaneScreenLinesLayer);
 }
 
 //##################################################################################################
@@ -1077,6 +1270,12 @@ void GizmoLayer::setParameters(const GizmoParameters& params)
   {
     case GizmoRenderPass::Normal: setDefaultRenderPass(RenderPass::Normal); break;
     case GizmoRenderPass::GUI3D : setDefaultRenderPass(RenderPass::GUI3D ); break;
+  }
+
+  switch(d->params.referenceLinesRenderPass)
+  {
+    case GizmoRenderPass::Normal: d->setReferenceLinesRenderPass(RenderPass::Normal); break;
+    case GizmoRenderPass::GUI3D : d->setReferenceLinesRenderPass(RenderPass::GUI3D ); break;
   }
 
   d->updateSelectedColors();
@@ -1362,6 +1561,8 @@ void GizmoLayer::setDefaultRenderPass(const RenderPass& defaultRenderPass)
   d->scaleArrowYGeometryLayer->setDefaultRenderPass(defaultRenderPass);
   d->scaleArrowZGeometryLayer->setDefaultRenderPass(defaultRenderPass);
 
+  d->scaleArrowScreenGeometryLayer->setDefaultRenderPass(defaultRenderPass);
+
   Layer::setDefaultRenderPass(defaultRenderPass);
 }
 
@@ -1452,7 +1653,8 @@ void GizmoLayer::render(RenderInfo& renderInfo)
       glm::mat4 mScale = glm::scale(glm::mat4{1.0f}, glm::vec3{s,s,s});
 
       if(d->rotationScreenGeometryLayer->visible() ||
-         d->translationPlaneScreenGeometryLayer->visible())
+         d->translationPlaneScreenGeometryLayer->visible() ||
+         d->scaleArrowScreenGeometryLayer->visible())
       {
         glm::vec3 axis{0,0,1};
         glm::vec3 forward;
@@ -1472,7 +1674,7 @@ void GizmoLayer::render(RenderInfo& renderInfo)
           d->rotationScreenGeometryLayer->setModelMatrix(d->screenRelativeMatrix);
         }
 
-        if(d->translationPlaneScreenGeometryLayer->visible())
+        if(d->translationPlaneScreenGeometryLayer->visible() )
         {
           auto m = matrices.vp * modelToWorld * d->screenRelativeMatrix;
           auto mInv = glm::inverse(m);
@@ -1485,6 +1687,26 @@ void GizmoLayer::render(RenderInfo& renderInfo)
           glm::mat4 mAlignUp = matrixToRotateAOntoB(vModel, vUp);
 
           d->translationPlaneScreenGeometryLayer->setModelMatrix(d->screenRelativeMatrix * mAlignUp);
+
+          d->translationPlaneScreenLinesLayer->setModelMatrix(d->screenRelativeMatrix * mAlignUp);
+
+          d->scaleArrowScreenGeometryLayer->setModelMatrix(d->screenRelativeMatrix * mAlignUp);
+        }
+
+        if(d->translationPlaneScreenGeometryLayer->visible() ||
+           d->scaleArrowScreenGeometryLayer->visible())
+        {
+          auto m = matrices.vp * modelToWorld * d->screenRelativeMatrix;
+          auto mInv = glm::inverse(m);
+
+          glm::vec3 a = tpProj(mInv, {0.0f, 0.0f, 0.0f});
+          glm::vec3 b = tpProj(mInv, {0.0f, 1.0f, 0.0f});
+          glm::vec3 vUp = glm::normalize(b-a);
+          glm::vec3 vModel = {1.0f, 0.0f, 0.0f};
+
+          glm::mat4 mAlignUp = matrixToRotateAOntoB(vModel, vUp);
+
+          d->scaleArrowScreenGeometryLayer->setModelMatrix(d->screenRelativeMatrix * mAlignUp);
         }
       }
 
@@ -1504,6 +1726,14 @@ void GizmoLayer::render(RenderInfo& renderInfo)
         d->scaleArrowXGeometryLayer->setModelMatrix(mScale);
         d->scaleArrowYGeometryLayer->setModelMatrix(mScale);
         d->scaleArrowZGeometryLayer->setModelMatrix(mScale);
+
+        d->translationArrowXLinesLayer->setModelMatrix(mScale);
+        d->translationArrowYLinesLayer->setModelMatrix(mScale);
+        d->translationArrowZLinesLayer->setModelMatrix(mScale);
+
+        d->translationPlaneXLinesLayer->setModelMatrix(mScale);
+        d->translationPlaneYLinesLayer->setModelMatrix(mScale);
+        d->translationPlaneZLinesLayer->setModelMatrix(mScale);
       }
     }
   }
@@ -1624,6 +1854,13 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
         if(result->layer == d->scaleArrowZGeometryLayer)
         {
           d->setActiveModification(Modify_lt::ScaleZ);
+          return true;
+        }
+
+        if(result->layer == d->scaleArrowScreenGeometryLayer)
+        {
+          d->originalScreenRotateAxis = d->screenScaleAxis();
+          d->setActiveModification(Modify_lt::ScaleScreen);
           return true;
         }
       }
@@ -1788,6 +2025,7 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
         case Modify_lt::ScaleX: scale({1,0,0}); break;
         case Modify_lt::ScaleY: scale({0,1,0}); break;
         case Modify_lt::ScaleZ: scale({0,0,1}); break;
+        case Modify_lt::ScaleScreen: scale(d->originalScreenRotateAxis); break;
         case Modify_lt::None: break;
       }
 

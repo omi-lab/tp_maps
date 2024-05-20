@@ -216,6 +216,17 @@ std::string gizmoRenderPassToString(GizmoRenderPass renderPass);
 GizmoRenderPass gizmoRenderPassFromString(const std::string& renderPass);
 
 //##################################################################################################
+struct GizmoLineParameters
+{
+  glm::vec4 colorA{0.9f, 0.9f, 0.9f, 1.0f};
+  glm::vec4 colorB{0.6f, 0.6f, 0.6f, 0.6f};
+  glm::vec4 colorC{0.3f, 0.3f, 0.3f, 0.3f};
+  bool enable{true};
+
+  float radius{100.0f};
+};
+
+//##################################################################################################
 struct GizmoParameters
 {
   GizmoRenderPass gizmoRenderPass{GizmoRenderPass::GUI3D};
@@ -244,6 +255,18 @@ struct GizmoParameters
   GizmoArrowParameters scaleArrowX{GizmoArrowParameters::initScale({1.0f, 0.0f, 0.0f}, true)};
   GizmoArrowParameters scaleArrowY{GizmoArrowParameters::initScale({0.0f, 1.0f, 0.0f}, true)};
   GizmoArrowParameters scaleArrowZ{GizmoArrowParameters::initScale({0.0f, 0.0f, 1.0f}, true)};
+
+  GizmoArrowParameters scaleArrowScreen{GizmoArrowParameters::initScale({0.5f, 0.5f, 0.5f}, true)};
+
+  GizmoLineParameters translationArrowXLines;
+  GizmoLineParameters translationArrowYLines;
+  GizmoLineParameters translationArrowZLines;
+
+  GizmoLineParameters translationPlaneXLines;
+  GizmoLineParameters translationPlaneYLines;
+  GizmoLineParameters translationPlaneZLines;
+
+  GizmoLineParameters translationPlaneScreenLines;
 
   //################################################################################################
   void disableRotation()
