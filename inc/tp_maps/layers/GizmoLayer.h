@@ -1,7 +1,7 @@
 #ifndef tp_maps_GizmoLayer_h
 #define tp_maps_GizmoLayer_h
 
-#include "tp_maps/Layer.h"
+#include "tp_maps/layers/Geometry3DLayer.h"
 
 #include "tp_utils/CallbackCollection.h"
 
@@ -37,6 +37,13 @@ struct GizmoRingParameters
 
   GizmoRingStyle style{GizmoRingStyle::Compass};
 
+  float ringHeight{0.01f};
+  float outerRadius{1.00f};
+  float innerRadius{0.95f};
+  float spikeRadius{0.90f};
+  float arrowInnerRadius{0.90f};
+  float arrowOuterRadius{1.05f};
+
   //################################################################################################
   [[nodiscard]] static GizmoRingParameters init(const glm::vec3& color, bool enable)
   {
@@ -55,6 +62,13 @@ struct GizmoRingParameters
   }
 
   //################################################################################################
+  void setRingRadius(float outerRadius,
+                     float innerRadius,
+                     float spikeRadius,
+                     float arrowInnerRadius,
+                     float arrowOuterRadius);
+
+  //################################################################################################
   void saveState(nlohmann::json& j) const;
 
   //################################################################################################
@@ -66,7 +80,8 @@ enum class GizmoArrowStyle
 {
   None,
   Stem,
-  Stemless
+  Stemless,
+  ClubStem
 };
 
 //##################################################################################################
@@ -91,6 +106,8 @@ struct GizmoArrowParameters
   float stemRadius = 0.05f;
   float coneRadius = 0.1f;
   float coneLength = 0.2f;
+
+  size_t strideDegrees{10};
 
   GizmoArrowStyle positiveArrowStyle{GizmoArrowStyle::Stem};
   GizmoArrowStyle negativeArrowStyle{GizmoArrowStyle::None};
@@ -231,6 +248,7 @@ struct GizmoParameters
 {
   GizmoRenderPass gizmoRenderPass{GizmoRenderPass::GUI3D};
   GizmoRenderPass referenceLinesRenderPass{GizmoRenderPass::Normal};
+  Geometry3DLayer::ShaderSelection shaderSelection{Geometry3DLayer::ShaderSelection::StaticLight};
 
   GizmoScaleMode gizmoScaleMode{GizmoScaleMode::Object};
   float gizmoScale{1.0f};
@@ -256,7 +274,7 @@ struct GizmoParameters
   GizmoArrowParameters scaleArrowY{GizmoArrowParameters::initScale({0.0f, 1.0f, 0.0f}, true)};
   GizmoArrowParameters scaleArrowZ{GizmoArrowParameters::initScale({0.0f, 0.0f, 1.0f}, true)};
 
-  GizmoArrowParameters scaleArrowScreen{GizmoArrowParameters::initScale({0.5f, 0.5f, 0.5f}, true)};
+  GizmoArrowParameters scaleArrowScreen{GizmoArrowParameters::initScale({0.5f, 0.5f, 0.5f}, false)};
 
   GizmoLineParameters translationArrowXLines;
   GizmoLineParameters translationArrowYLines;
@@ -347,6 +365,9 @@ public:
   void setEnableScale(bool x, bool y, bool z);
 
   //################################################################################################
+  void setEnableScaleScreen(bool screen);
+
+  //################################################################################################
   void setRotationColors(const glm::vec3& x, const glm::vec3& y, const glm::vec3& z);
 
   //################################################################################################
@@ -368,11 +389,10 @@ public:
   void setSelectedColor(const glm::vec3& selectedColor);
 
   //################################################################################################
-  void setScale(const glm::vec3& scale);
+  void setShaderSelection(Geometry3DLayer::ShaderSelection shaderSelection);
 
   //################################################################################################
-  //! This is the radius from the center of the gizmo that the scale arrows start.
-  void setCoreSize(const glm::vec3& coreSize);
+  void setScale(const glm::vec3& scale);
 
   //################################################################################################
   //! The thickness of rings
@@ -395,6 +415,14 @@ public:
   void setGizmoScale(float gizmoScale);
 
   //################################################################################################
+  void setRotationRingParameters(const GizmoRingParameters& x,
+                                 const GizmoRingParameters& y,
+                                 const GizmoRingParameters& z);
+
+  //################################################################################################
+  void setRotationRingScreenParameters(const GizmoRingParameters& screen);
+
+  //################################################################################################
   void setTranslationArrowParameters(const GizmoArrowParameters& x,
                                      const GizmoArrowParameters& y,
                                      const GizmoArrowParameters& z);
@@ -403,6 +431,9 @@ public:
   void setScaleArrowParameters(const GizmoArrowParameters& x,
                                const GizmoArrowParameters& y,
                                const GizmoArrowParameters& z);
+
+  //################################################################################################
+  void setScaleArrowScreenParameters(const GizmoArrowParameters& screen);
 
   //################################################################################################
   void setOnlyRenderSelectedAxis(bool onlyRenderSelectedAxis);

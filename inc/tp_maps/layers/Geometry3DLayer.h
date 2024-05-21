@@ -64,6 +64,15 @@ public:
   };
 
   //################################################################################################
+  static std::vector<std::string> shaderSelections();
+
+  //################################################################################################
+  static std::string shaderSelectionToString(ShaderSelection shaderSelection);
+
+  //################################################################################################
+  static ShaderSelection shaderSelectionFromString(const std::string& shaderSelection);
+
+  //################################################################################################
   void setShaderSelection(ShaderSelection shaderSelection);
 
   //################################################################################################

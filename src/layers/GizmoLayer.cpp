@@ -78,6 +78,20 @@ GizmoRingStyle gizmoRingStyleFromString(const std::string& style)
 }
 
 //##################################################################################################
+void GizmoRingParameters::setRingRadius(float outerRadius,
+                                        float innerRadius,
+                                        float spikeRadius,
+                                        float arrowInnerRadius,
+                                        float arrowOuterRadius)
+{
+  this->outerRadius = outerRadius;
+  this->innerRadius = innerRadius;
+  this->spikeRadius = spikeRadius;
+  this->arrowInnerRadius = arrowInnerRadius;
+  this->arrowOuterRadius = arrowOuterRadius;
+}
+
+//##################################################################################################
 void GizmoRingParameters::saveState(nlohmann::json& j) const
 {
   j["color"] = tp_math_utils::vec3ToJSON(color);
@@ -85,6 +99,13 @@ void GizmoRingParameters::saveState(nlohmann::json& j) const
   j["enable"] = enable;
   j["useSelectedColor"] = useSelectedColor;
   j["style"] = gizmoRingStyleToString(style);
+
+  j["ringHeight"]       = ringHeight;
+  j["outerRadius"]      = outerRadius;
+  j["innerRadius"]      = innerRadius;
+  j["spikeRadius"]      = spikeRadius;
+  j["arrowInnerRadius"] = arrowInnerRadius;
+  j["arrowOuterRadius"] = arrowOuterRadius;
 }
 
 //##################################################################################################
@@ -95,12 +116,19 @@ void GizmoRingParameters::loadState(const nlohmann::json& j)
   enable = TPJSONBool(j, "enable", true);
   useSelectedColor = TPJSONBool(j, "useSelectedColor", false);
   style = gizmoRingStyleFromString(TPJSONString(j, "style", "Compass"));
+
+  ringHeight       = TPJSONFloat(j, "ringHeight"      , 0.01f);
+  outerRadius      = TPJSONFloat(j, "outerRadius"     , 1.00f);
+  innerRadius      = TPJSONFloat(j, "innerRadius"     , 0.95f);
+  spikeRadius      = TPJSONFloat(j, "spikeRadius"     , 0.90f);
+  arrowInnerRadius = TPJSONFloat(j, "arrowInnerRadius", 0.90f);
+  arrowOuterRadius = TPJSONFloat(j, "arrowOuterRadius", 1.05f);
 }
 
 //##################################################################################################
 std::vector<std::string> gizmoArrowStyles()
 {
-  return {"None", "Stem", "Stemless"};
+  return {"None", "Stem", "Stemless", "ClubStem"};
 }
 
 //##################################################################################################
@@ -111,6 +139,7 @@ std::string gizmoArrowStyleToString(GizmoArrowStyle style)
     case GizmoArrowStyle::None    : return "None"    ;
     case GizmoArrowStyle::Stem    : return "Stem"    ;
     case GizmoArrowStyle::Stemless: return "Stemless";
+    case GizmoArrowStyle::ClubStem: return "ClubStem";
   }
   return "None";
 }
@@ -121,6 +150,7 @@ GizmoArrowStyle gizmoArrowStyleFromString(const std::string& style)
   if(style == "None"    ) return GizmoArrowStyle::None    ;
   if(style == "Stem"    ) return GizmoArrowStyle::Stem    ;
   if(style == "Stemless") return GizmoArrowStyle::Stemless;
+  if(style == "ClubStem") return GizmoArrowStyle::ClubStem;
 
   return GizmoArrowStyle::None;
 }
@@ -137,6 +167,7 @@ void GizmoArrowParameters::saveState(nlohmann::json& j) const
   j["stemRadius"] = stemRadius;
   j["coneRadius"] = coneRadius;
   j["coneLength"] = coneLength;
+  j["strideDegrees"] = strideDegrees;
   j["positiveArrowStyle"] = gizmoArrowStyleToString(positiveArrowStyle);
   j["negativeArrowStyle"] = gizmoArrowStyleToString(negativeArrowStyle);
 }
@@ -154,6 +185,8 @@ void GizmoArrowParameters::loadState(const nlohmann::json& j)
   stemRadius = TPJSONFloat(j, "stemRadius", 0.05f);
   coneRadius = TPJSONFloat(j, "coneRadius", 0.1f );
   coneLength = TPJSONFloat(j, "coneLength", 0.2f );
+
+  strideDegrees = TPJSONSizeT(j, "strideDegrees", 10);
 
   positiveArrowStyle = gizmoArrowStyleFromString(TPJSONString(j, "positiveArrowStyle", "Stem"));
   negativeArrowStyle = gizmoArrowStyleFromString(TPJSONString(j, "negativeArrowStyle", "None"));
@@ -249,6 +282,7 @@ void GizmoParameters::saveState(nlohmann::json& j) const
 {
   j["gizmoRenderPass"] = gizmoRenderPassToString(gizmoRenderPass);
   j["referenceLinesRenderPass"] = gizmoRenderPassToString(referenceLinesRenderPass);
+  j["shaderSelection"] = Geometry3DLayer::shaderSelectionToString(shaderSelection);
 
   j["gizmoScaleMode"] = gizmoScaleModeToString(gizmoScaleMode);
   j["gizmoScale"] = gizmoScale;
@@ -273,6 +307,8 @@ void GizmoParameters::saveState(nlohmann::json& j) const
   scaleArrowX.saveState(j["scaleArrowX"]);
   scaleArrowY.saveState(j["scaleArrowY"]);
   scaleArrowZ.saveState(j["scaleArrowZ"]);
+
+  scaleArrowScreen.saveState(j["scaleArrowScreen"]);
 }
 
 //##################################################################################################
@@ -280,6 +316,7 @@ void GizmoParameters::loadState(const nlohmann::json& j)
 {
   gizmoRenderPass = gizmoRenderPassFromString(TPJSONString(j, "gizmoRenderPass", "GUI3D"));
   referenceLinesRenderPass = gizmoRenderPassFromString(TPJSONString(j, "referenceLinesRenderPass", "Normal"));
+  shaderSelection = Geometry3DLayer::shaderSelectionFromString(TPJSONString(j, "shaderSelection", "StaticLight"));
 
   gizmoScaleMode = gizmoScaleModeFromString(TPJSONString(j, "gizmoScaleMode", "Object"));
   gizmoScale = TPJSONFloat(j, "gizmoScale", 1.0f);
@@ -304,6 +341,8 @@ void GizmoParameters::loadState(const nlohmann::json& j)
   tp_utils::loadObjectFromJSON(j, "scaleArrowX", scaleArrowX);
   tp_utils::loadObjectFromJSON(j, "scaleArrowY", scaleArrowY);
   tp_utils::loadObjectFromJSON(j, "scaleArrowZ", scaleArrowZ);
+
+  tp_utils::loadObjectFromJSON(j, "scaleArrowScreen", scaleArrowScreen);
 }
 
 //##################################################################################################
@@ -354,16 +393,9 @@ struct GizmoLayer::Private
   glm::mat4 originalModelMatrix;
   glm::mat4 originalModelToWorldMatrix;
   glm::mat4 screenRelativeMatrix;
-  glm::vec3 originalScreenRotateAxis{0.0f,0.0f, 1.0f};
+  glm::vec3 originalScreenRelativeAxis{0.0f,0.0f, 1.0f};
 
   glm::vec3 scale{1.0f, 1.0f, 1.0f};
-  glm::vec3 coreSize{1.0f, 1.0f, 1.0f};
-  float ringHeight{0.01f};
-  float outerRadius{1.00f};
-  float innerRadius{0.95f};
-  float spikeRadius{0.90f};
-  float arrowInnerRadius{0.90f};
-  float arrowOuterRadius{1.05f};
 
   bool updateRotationGeometry{true};
   bool updateTranslationGeometry{true};
@@ -424,16 +456,16 @@ struct GizmoLayer::Private
 
             tp_math_utils::Vertex3D vert;
 
-            vert.vert = transform(glm::vec3(v*outerRadius, ringHeight));
+            vert.vert = transform(glm::vec3(v*params.outerRadius, params.ringHeight));
             circle.verts.push_back(vert);
-            vert.vert = transform(glm::vec3(v*outerRadius, -ringHeight));
+            vert.vert = transform(glm::vec3(v*params.outerRadius, -params.ringHeight));
             circle.verts.push_back(vert);
 
-            auto iRad = (a%20)?innerRadius:spikeRadius;
+            auto iRad = (a%20)?params.innerRadius:params.spikeRadius;
 
-            vert.vert = transform(glm::vec3(v*iRad, ringHeight));
+            vert.vert = transform(glm::vec3(v*iRad, params.ringHeight));
             circle.verts.push_back(vert);
-            vert.vert = transform(glm::vec3(v*iRad, -ringHeight));
+            vert.vert = transform(glm::vec3(v*iRad, -params.ringHeight));
             circle.verts.push_back(vert);
 
             int i = int(circle.verts.size());
@@ -461,7 +493,7 @@ struct GizmoLayer::Private
           size_t arrowStart=60;
           size_t arrowEnd=80;
 
-          float midRadius = (outerRadius + innerRadius) / 2.0f;
+          float midRadius = (params.outerRadius + params.innerRadius) / 2.0f;
 
           //Used to hold spare triangles.
           circle.indexes.emplace_back().type = circle.triangles;
@@ -499,9 +531,9 @@ struct GizmoLayer::Private
 
             if(aa == arrowEnd)
             {
-              vert.vert = transform(glm::vec3(v*midRadius, ringHeight));
+              vert.vert = transform(glm::vec3(v*midRadius, params.ringHeight));
               circle.verts.push_back(vert);
-              vert.vert = transform(glm::vec3(v*midRadius, -ringHeight));
+              vert.vert = transform(glm::vec3(v*midRadius, -params.ringHeight));
               circle.verts.push_back(vert);
 
               {
@@ -537,14 +569,14 @@ struct GizmoLayer::Private
             }
             else
             {
-              vert.vert = transform(glm::vec3(v*outerRadius, ringHeight));
+              vert.vert = transform(glm::vec3(v*params.outerRadius, params.ringHeight));
               circle.verts.push_back(vert);
-              vert.vert = transform(glm::vec3(v*outerRadius, -ringHeight));
+              vert.vert = transform(glm::vec3(v*params.outerRadius, -params.ringHeight));
               circle.verts.push_back(vert);
 
-              vert.vert = transform(glm::vec3(v*innerRadius, ringHeight));
+              vert.vert = transform(glm::vec3(v*params.innerRadius, params.ringHeight));
               circle.verts.push_back(vert);
-              vert.vert = transform(glm::vec3(v*innerRadius, -ringHeight));
+              vert.vert = transform(glm::vec3(v*params.innerRadius, -params.ringHeight));
               circle.verts.push_back(vert);
 
               {
@@ -571,14 +603,14 @@ struct GizmoLayer::Private
 
               if(aa==arrowStart)
               {
-                vert.vert = transform(glm::vec3(v*arrowOuterRadius, ringHeight));
+                vert.vert = transform(glm::vec3(v*params.arrowOuterRadius, params.ringHeight));
                 circle.verts.push_back(vert);
-                vert.vert = transform(glm::vec3(v*arrowOuterRadius, -ringHeight));
+                vert.vert = transform(glm::vec3(v*params.arrowOuterRadius, -params.ringHeight));
                 circle.verts.push_back(vert);
 
-                vert.vert = transform(glm::vec3(v*arrowInnerRadius, ringHeight));
+                vert.vert = transform(glm::vec3(v*params.arrowInnerRadius, params.ringHeight));
                 circle.verts.push_back(vert);
-                vert.vert = transform(glm::vec3(v*arrowInnerRadius, -ringHeight));
+                vert.vert = transform(glm::vec3(v*params.arrowInnerRadius, -params.ringHeight));
                 circle.verts.push_back(vert);
 
                 int i = int(circle.verts.size());
@@ -624,7 +656,7 @@ struct GizmoLayer::Private
     makeCircle(rotationYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, params.rotationY);
     makeCircle(rotationZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.rotationZ);
 
-    makeCircle(rotationScreenGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale*1.1f;}, params.rotationScreen);
+    makeCircle(rotationScreenGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.rotationScreen);
 
     rotationXGeometryLayer->setGeometry(rotationXGeometry);
     rotationYGeometryLayer->setGeometry(rotationYGeometry);
@@ -633,17 +665,35 @@ struct GizmoLayer::Private
     rotationScreenGeometryLayer->setGeometry(rotationScreenGeometry);
   }
 
-
+  //################################################################################################
+  std::function<glm::vec3(const glm::vec3&)> rotate(const std::function<glm::vec3(const glm::vec3&)>& transform, float degrees)
+  {
+    glm::mat3 m = glm::rotate(glm::radians(degrees), glm::vec3(0.0f, 1.0f, 0.0f));
+    return [=](const glm::vec3& v)
+    {
+      return transform(m*v);
+    };
+  }
 
   //################################################################################################
-  void makeArrow(std::vector<tp_math_utils::Geometry3D>& geometry, const std::function<glm::vec3(const glm::vec3&)>& transform, const GizmoArrowParameters& params)
+  tp_math_utils::Geometry3D& addMesh(std::vector<tp_math_utils::Geometry3D>& geometry, const glm::vec3& color)
   {
-    auto& arrow = geometry.emplace_back();
-    setMaterial(arrow, params.color);
+    auto& mesh = geometry.emplace_back();
+    setMaterial(mesh, color);
 
-    arrow.triangleFan   = GL_TRIANGLE_FAN;
-    arrow.triangleStrip = GL_TRIANGLE_STRIP;
-    arrow.triangles     = GL_TRIANGLES;
+    mesh.triangleFan   = GL_TRIANGLE_FAN;
+    mesh.triangleStrip = GL_TRIANGLE_STRIP;
+    mesh.triangles     = GL_TRIANGLES;
+
+    return mesh;
+  }
+
+  //################################################################################################
+  void makeArrowWithStem(std::vector<tp_math_utils::Geometry3D>& geometry,
+                         const std::function<glm::vec3(const glm::vec3&)>& transform,
+                         const GizmoArrowParameters& params)
+  {
+    auto& arrow = addMesh(geometry, params.color);
 
     float stemRadius = params.stemRadius;
     float coneRadius = params.coneRadius;
@@ -665,98 +715,252 @@ struct GizmoLayer::Private
     auto& indexes = arrow.indexes.at(0);
     indexes.type = arrow.triangles;
 
-    if(params.positiveArrowStyle == GizmoArrowStyle::Stem)
+    for(size_t a=0; a<=360; a+=10)
     {
-      for(size_t a=0; a<=360; a+=10)
-      {
-        float x = std::sin(glm::radians(float(a)));
-        float y = std::cos(glm::radians(float(a)));
+      float x = std::sin(glm::radians(float(a)));
+      float y = std::cos(glm::radians(float(a)));
 
-        glm::vec2 v{x, y};
+      glm::vec2 v{x, y};
 
-        vert.vert = transform(glm::vec3(v*stemRadius, stemStart));
-        arrow.verts.push_back(vert);
-
-        vert.vert = transform(glm::vec3(v*stemRadius, stemEnd));
-        arrow.verts.push_back(vert);
-
-        vert.vert = transform(glm::vec3(v*coneRadius, stemEnd));
-        arrow.verts.push_back(vert);
-
-        int i = int(arrow.verts.size());
-
-        if(a==0)
-          continue;
-
-        indexes.indexes.push_back(1);
-        indexes.indexes.push_back(i-6);
-        indexes.indexes.push_back(i-3);
-
-
-        indexes.indexes.push_back(i-3);
-        indexes.indexes.push_back(i-6);
-        indexes.indexes.push_back(i-2);
-
-        indexes.indexes.push_back(i-5);
-        indexes.indexes.push_back(i-2);
-        indexes.indexes.push_back(i-6);
-
-
-        indexes.indexes.push_back(i-2);
-        indexes.indexes.push_back(i-5);
-        indexes.indexes.push_back(i-1);
-
-        indexes.indexes.push_back(i-4);
-        indexes.indexes.push_back(i-1);
-        indexes.indexes.push_back(i-5);
-
-
-        indexes.indexes.push_back(0);
-        indexes.indexes.push_back(i-1);
-        indexes.indexes.push_back(i-4);
-      }
-    }
-
-    // Add the stemless arrow
-    if(params.negativeArrowStyle == GizmoArrowStyle::Stemless)
-    {
-      // Point
-      int iP = int(arrow.verts.size());
-      vert.vert = transform(glm::vec3(0.0f, 0.0f, -coneEnd));
+      vert.vert = transform(glm::vec3(v*stemRadius, stemStart));
       arrow.verts.push_back(vert);
 
-      // Middle
-      int iM = int(arrow.verts.size());
-      vert.vert = transform(glm::vec3(0.0f, 0.0f, -stemEnd));
+      vert.vert = transform(glm::vec3(v*stemRadius, stemEnd));
       arrow.verts.push_back(vert);
 
+      vert.vert = transform(glm::vec3(v*coneRadius, stemEnd));
+      arrow.verts.push_back(vert);
 
-      for(size_t a=0; a<=360; a+=10)
-      {
-        float x = std::sin(glm::radians(float(a)));
-        float y = std::cos(glm::radians(float(a)));
+      int i = int(arrow.verts.size());
 
-        glm::vec2 v{x, y};
+      if(a==0)
+        continue;
 
-        vert.vert = transform(glm::vec3(v*coneRadius, -stemEnd));
-        arrow.verts.push_back(vert);
+      indexes.indexes.push_back(1);
+      indexes.indexes.push_back(i-6);
+      indexes.indexes.push_back(i-3);
 
-        int i = int(arrow.verts.size());
 
-        if(a==0)
-          continue;
+      indexes.indexes.push_back(i-3);
+      indexes.indexes.push_back(i-6);
+      indexes.indexes.push_back(i-2);
 
-        indexes.indexes.push_back(iP);
-        indexes.indexes.push_back(i-2);
-        indexes.indexes.push_back(i-1);
+      indexes.indexes.push_back(i-5);
+      indexes.indexes.push_back(i-2);
+      indexes.indexes.push_back(i-6);
 
-        indexes.indexes.push_back(iM);
-        indexes.indexes.push_back(i-1);
-        indexes.indexes.push_back(i-2);
-      }
+
+      indexes.indexes.push_back(i-2);
+      indexes.indexes.push_back(i-5);
+      indexes.indexes.push_back(i-1);
+
+      indexes.indexes.push_back(i-4);
+      indexes.indexes.push_back(i-1);
+      indexes.indexes.push_back(i-5);
+
+
+      indexes.indexes.push_back(0);
+      indexes.indexes.push_back(i-1);
+      indexes.indexes.push_back(i-4);
     }
 
     arrow.calculateFaceNormals();
+  }
+
+  //################################################################################################
+  void makeArrowWithoutStem(std::vector<tp_math_utils::Geometry3D>& geometry,
+                            const std::function<glm::vec3(const glm::vec3&)>& transform,
+                            const GizmoArrowParameters& params)
+  {
+    auto& arrow = addMesh(geometry, params.color);
+
+    //float stemRadius = params.stemRadius;
+    float coneRadius = params.coneRadius;
+    float stemStart  = params.stemStart;
+    float stemEnd    = stemStart + params.stemLength;
+    float coneEnd    = stemEnd + params.coneLength;
+
+    tp_math_utils::Vertex3D vert;
+
+    // Point
+    vert.vert = transform(glm::vec3(0.0f, 0.0f, coneEnd));
+    arrow.verts.push_back(vert);
+
+    // Origin
+    vert.vert = transform(glm::vec3(0.0f, 0.0f, stemStart));
+    arrow.verts.push_back(vert);
+
+    arrow.indexes.resize(1);
+    auto& indexes = arrow.indexes.at(0);
+    indexes.type = arrow.triangles;
+
+    // Point
+    int iP = int(arrow.verts.size());
+    vert.vert = transform(glm::vec3(0.0f, 0.0f, coneEnd));
+    arrow.verts.push_back(vert);
+
+    // Middle
+    int iM = int(arrow.verts.size());
+    vert.vert = transform(glm::vec3(0.0f, 0.0f, stemEnd));
+    arrow.verts.push_back(vert);
+
+
+    for(size_t a=0; a<=360; a+=10)
+    {
+      float x = std::sin(glm::radians(float(a)));
+      float y = std::cos(glm::radians(float(a)));
+
+      glm::vec2 v{x, y};
+
+      vert.vert = transform(glm::vec3(v*coneRadius, stemEnd));
+      arrow.verts.push_back(vert);
+
+      int i = int(arrow.verts.size());
+
+      if(a==0)
+        continue;
+
+      indexes.indexes.push_back(iP);
+      indexes.indexes.push_back(i-1);
+      indexes.indexes.push_back(i-2);
+
+      indexes.indexes.push_back(iM);
+      indexes.indexes.push_back(i-2);
+      indexes.indexes.push_back(i-1);
+    }
+
+    arrow.calculateFaceNormals();
+  }
+
+  //################################################################################################
+  void makeCubeArrowWithStem(std::vector<tp_math_utils::Geometry3D>& geometry,
+                             const std::function<glm::vec3(const glm::vec3&)>& transform,
+                             const GizmoArrowParameters& params)
+  {
+    auto& arrow = addMesh(geometry, params.color);
+
+    float stemRadius = params.stemRadius;
+    float coneRadius = params.coneRadius;
+    float stemStart  = params.stemStart;
+    float stemEnd    = stemStart + params.stemLength;
+    float coneEnd    = stemEnd + params.coneLength;
+
+    tp_math_utils::Vertex3D vert;
+
+    // Point
+    vert.vert = transform(glm::vec3(0.0f, 0.0f, coneEnd));
+    arrow.verts.push_back(vert);
+
+    // Origin
+    vert.vert = transform(glm::vec3(0.0f, 0.0f, stemStart));
+    arrow.verts.push_back(vert);
+
+    arrow.indexes.resize(1);
+    auto& indexes = arrow.indexes.at(0);
+    indexes.type = arrow.triangles;
+
+    for(size_t a=0; a<=360; a+=90)
+    {
+      float x = std::sin(glm::radians(float(a)));
+      float y = std::cos(glm::radians(float(a)));
+
+      glm::vec2 v{x, y};
+
+      vert.vert = transform(glm::vec3(v*stemRadius, stemStart));
+      arrow.verts.push_back(vert);
+
+      vert.vert = transform(glm::vec3(v*stemRadius, stemEnd));
+      arrow.verts.push_back(vert);
+
+      vert.vert = transform(glm::vec3(v*coneRadius, stemEnd));
+      arrow.verts.push_back(vert);
+
+      vert.vert = transform(glm::vec3(v*coneRadius, coneEnd));
+      arrow.verts.push_back(vert);
+
+      int i = int(arrow.verts.size());
+
+      if(a==0)
+        continue;
+
+      indexes.indexes.push_back(1);
+      indexes.indexes.push_back(i-8);
+      indexes.indexes.push_back(i-4);
+
+
+      indexes.indexes.push_back(i-4);
+      indexes.indexes.push_back(i-8);
+      indexes.indexes.push_back(i-3);
+
+      indexes.indexes.push_back(i-7);
+      indexes.indexes.push_back(i-3);
+      indexes.indexes.push_back(i-8);
+
+
+      indexes.indexes.push_back(i-3);
+      indexes.indexes.push_back(i-7);
+      indexes.indexes.push_back(i-2);
+
+      indexes.indexes.push_back(i-6);
+      indexes.indexes.push_back(i-2);
+      indexes.indexes.push_back(i-7);
+
+
+      indexes.indexes.push_back(i-1);
+      indexes.indexes.push_back(i-2);
+      indexes.indexes.push_back(i-6);
+
+      indexes.indexes.push_back(i-6);
+      indexes.indexes.push_back(i-5);
+      indexes.indexes.push_back(i-1);
+
+
+      indexes.indexes.push_back(0);
+      indexes.indexes.push_back(i-1);
+      indexes.indexes.push_back(i-5);
+    }
+
+    arrow.calculateFaceNormals();
+  }
+
+  //################################################################################################
+  void makeArrow(std::vector<tp_math_utils::Geometry3D>& geometry, const std::function<glm::vec3(const glm::vec3&)>& transform, const GizmoArrowParameters& params)
+  {
+    switch(params.positiveArrowStyle)
+    {
+      case GizmoArrowStyle::None:
+      break;
+
+      case GizmoArrowStyle::Stem:
+      makeArrowWithStem(geometry, transform, params);
+      break;
+
+      case GizmoArrowStyle::Stemless:
+      makeArrowWithoutStem(geometry, transform, params);
+      break;
+
+      case GizmoArrowStyle::ClubStem:
+      makeCubeArrowWithStem(geometry, transform, params);
+      break;
+    }
+
+    switch(params.negativeArrowStyle)
+    {
+      case GizmoArrowStyle::None:
+      break;
+
+      case GizmoArrowStyle::Stem:
+      makeArrowWithStem(geometry, rotate(transform, 180.0f), params);
+      break;
+
+      case GizmoArrowStyle::Stemless:
+      makeArrowWithoutStem(geometry, rotate(transform, 180.0f), params);
+      break;
+
+      case GizmoArrowStyle::ClubStem:
+      makeCubeArrowWithStem(geometry, rotate(transform, 180.0f), params);
+      break;
+    }
   }
 
   //################################################################################################
@@ -973,11 +1177,11 @@ struct GizmoLayer::Private
 
     std::vector<tp_math_utils::Geometry3D> scaleArrowScreenGeometry;
 
-    makeArrow(scaleArrowXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y) * scale + glm::vec3(coreSize.x, 0.0f, 0.0f);}, params.scaleArrowX);
-    makeArrow(scaleArrowYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x) * scale + glm::vec3(0.0f, coreSize.y, 0.0f);}, params.scaleArrowY);
-    makeArrow(scaleArrowZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z) * scale + glm::vec3(0.0f, 0.0f, coreSize.z);}, params.scaleArrowZ);
+    makeArrow(scaleArrowXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y) * scale;}, params.scaleArrowX);
+    makeArrow(scaleArrowYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x) * scale;}, params.scaleArrowY);
+    makeArrow(scaleArrowZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z) * scale;}, params.scaleArrowZ);
 
-    makeArrow(scaleArrowScreenGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x) * scale + glm::vec3(0.0f, 0.0f, coreSize.z);}, params.scaleArrowZ);
+    makeArrow(scaleArrowScreenGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x) * scale;}, params.scaleArrowScreen);
 
     scaleArrowXGeometryLayer->setGeometry(scaleArrowXGeometry);
     scaleArrowYGeometryLayer->setGeometry(scaleArrowYGeometry);
@@ -1191,6 +1395,32 @@ struct GizmoLayer::Private
 
     translationPlaneScreenLinesLayer->setDefaultRenderPass(defaultRenderPass);
   }
+
+  //################################################################################################
+  void updateShaderSelection()
+  {
+    rotationXGeometryLayer->setShaderSelection(params.shaderSelection);
+    rotationYGeometryLayer->setShaderSelection(params.shaderSelection);
+    rotationZGeometryLayer->setShaderSelection(params.shaderSelection);
+
+    rotationScreenGeometryLayer->setShaderSelection(params.shaderSelection);
+
+    translationArrowXGeometryLayer->setShaderSelection(params.shaderSelection);
+    translationArrowYGeometryLayer->setShaderSelection(params.shaderSelection);
+    translationArrowZGeometryLayer->setShaderSelection(params.shaderSelection);
+
+    translationPlaneXGeometryLayer->setShaderSelection(params.shaderSelection);
+    translationPlaneYGeometryLayer->setShaderSelection(params.shaderSelection);
+    translationPlaneZGeometryLayer->setShaderSelection(params.shaderSelection);
+
+    translationPlaneScreenGeometryLayer->setShaderSelection(params.shaderSelection);
+
+    scaleArrowXGeometryLayer->setShaderSelection(params.shaderSelection);
+    scaleArrowYGeometryLayer->setShaderSelection(params.shaderSelection);
+    scaleArrowZGeometryLayer->setShaderSelection(params.shaderSelection);
+
+    scaleArrowScreenGeometryLayer->setShaderSelection(params.shaderSelection);
+  }
 };
 
 //##################################################################################################
@@ -1278,6 +1508,7 @@ void GizmoLayer::setParameters(const GizmoParameters& params)
     case GizmoRenderPass::GUI3D : d->setReferenceLinesRenderPass(RenderPass::GUI3D ); break;
   }
 
+  d->updateShaderSelection();
   d->updateSelectedColors();
   d->updateVisibility();
 }
@@ -1335,6 +1566,13 @@ void GizmoLayer::setEnableScale(bool x, bool y, bool z)
   d->params.scaleArrowX.enable = x;
   d->params.scaleArrowY.enable = y;
   d->params.scaleArrowZ.enable = z;
+  d->updateVisibility();
+}
+
+//##################################################################################################
+void GizmoLayer::setEnableScaleScreen(bool screen)
+{
+  d->params.scaleArrowScreen.enable = screen;
   d->updateVisibility();
 }
 
@@ -1423,7 +1661,16 @@ void GizmoLayer::setSelectedColor(const glm::vec3& selectedColor)
   updateMaterial(d->params.scaleArrowY);
   updateMaterial(d->params.scaleArrowZ);
 
+  updateMaterial(d->params.scaleArrowScreen);
+
   d->updateSelectedColors();
+}
+
+//##################################################################################################
+void GizmoLayer::setShaderSelection(Geometry3DLayer::ShaderSelection shaderSelection)
+{
+  d->params.shaderSelection = shaderSelection;
+  d->updateShaderSelection();
 }
 
 //##################################################################################################
@@ -1441,20 +1688,12 @@ void GizmoLayer::setScale(const glm::vec3& scale)
 }
 
 //##################################################################################################
-void GizmoLayer::setCoreSize(const glm::vec3& coreSize)
-{
-  if(glm::distance2(d->coreSize, coreSize) > 0.0001f)
-  {
-    d->coreSize = coreSize;
-    d->updateScaleGeometry = true;
-    update();
-  }
-}
-
-//##################################################################################################
 void GizmoLayer::setRingHeight(float ringHeight)
 {
-  d->ringHeight = ringHeight;
+  d->params.rotationX.ringHeight = ringHeight;
+  d->params.rotationY.ringHeight = ringHeight;
+  d->params.rotationZ.ringHeight = ringHeight;
+  d->params.rotationScreen.ringHeight = ringHeight;
   d->updateRotationGeometry = true;
   update();
 }
@@ -1466,11 +1705,10 @@ void GizmoLayer::setRingRadius(float outerRadius,
                                float arrowInnerRadius,
                                float arrowOuterRadius)
 {
-  d->outerRadius = outerRadius;
-  d->innerRadius = innerRadius;
-  d->spikeRadius = spikeRadius;
-  d->arrowInnerRadius = arrowInnerRadius;
-  d->arrowOuterRadius = arrowOuterRadius;
+  d->params.rotationX.setRingRadius(outerRadius, innerRadius, spikeRadius, arrowInnerRadius, arrowOuterRadius);
+  d->params.rotationY.setRingRadius(outerRadius, innerRadius, spikeRadius, arrowInnerRadius, arrowOuterRadius);
+  d->params.rotationZ.setRingRadius(outerRadius, innerRadius, spikeRadius, arrowInnerRadius, arrowOuterRadius);
+  d->params.rotationScreen.setRingRadius(outerRadius, innerRadius, spikeRadius, arrowInnerRadius, arrowOuterRadius);
   d->updateRotationGeometry = true;
   update();
 }
@@ -1501,6 +1739,28 @@ void GizmoLayer::setGizmoScale(float gizmoScale)
 }
 
 //##################################################################################################
+void GizmoLayer::setRotationRingParameters(const GizmoRingParameters& x,
+                                           const GizmoRingParameters& y,
+                                           const GizmoRingParameters& z)
+{
+  d->params.rotationX = z;
+  d->params.rotationY = y;
+  d->params.rotationZ = x;
+
+  d->updateRotationGeometry = true;
+  update();
+}
+
+//##################################################################################################
+void GizmoLayer::setRotationRingScreenParameters(const GizmoRingParameters& screen)
+{
+  d->params.rotationScreen = screen;
+
+  d->updateRotationGeometry = true;
+  update();
+}
+
+//##################################################################################################
 void GizmoLayer::setTranslationArrowParameters(const GizmoArrowParameters& x,
                                                const GizmoArrowParameters& y,
                                                const GizmoArrowParameters& z)
@@ -1521,6 +1781,15 @@ void GizmoLayer::setScaleArrowParameters(const GizmoArrowParameters& x,
   d->params.scaleArrowX = z;
   d->params.scaleArrowY = y;
   d->params.scaleArrowZ = x;
+
+  d->updateScaleGeometry = true;
+  update();
+}
+
+//##################################################################################################
+void GizmoLayer::setScaleArrowScreenParameters(const GizmoArrowParameters& screen)
+{
+  d->params.scaleArrowScreen = screen;
 
   d->updateScaleGeometry = true;
   update();
@@ -1790,8 +2059,8 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
 
         if(result->layer == d->rotationScreenGeometryLayer)
         {
-          d->originalScreenRotateAxis = d->screenRotateAxis();
-          d->useIntersection = intersectPlane(d->originalScreenRotateAxis, d->intersectionPoint);
+          d->originalScreenRelativeAxis = d->screenRotateAxis();
+          d->useIntersection = intersectPlane(d->originalScreenRelativeAxis, d->intersectionPoint);
           d->setActiveModification(Modify_lt::RotateScreen);
           return true;
         }
@@ -1834,7 +2103,7 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
 
         if(result->layer == d->translationPlaneScreenGeometryLayer)
         {
-          d->originalScreenRotateAxis = d->screenRotateAxis();
+          d->originalScreenRelativeAxis = d->screenRotateAxis();
           d->setActiveModification(Modify_lt::PlaneTranslationScreen);
           return true;
         }
@@ -1859,7 +2128,7 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
 
         if(result->layer == d->scaleArrowScreenGeometryLayer)
         {
-          d->originalScreenRotateAxis = d->screenScaleAxis();
+          d->originalScreenRelativeAxis = d->screenScaleAxis();
           d->setActiveModification(Modify_lt::ScaleScreen);
           return true;
         }
@@ -2014,18 +2283,18 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
         case Modify_lt::RotateX: rotate({1,0,0}); break;
         case Modify_lt::RotateY: rotate({0,1,0}); break;
         case Modify_lt::RotateZ: rotate({0,0,1}); break;
-        case Modify_lt::RotateScreen: rotate(d->originalScreenRotateAxis); break;
+        case Modify_lt::RotateScreen: rotate(d->originalScreenRelativeAxis); break;
         case Modify_lt::TranslationX: translationAlongAxis({1,0,0}); break;
         case Modify_lt::TranslationY: translationAlongAxis({0,1,0}); break;
         case Modify_lt::TranslationZ: translationAlongAxis({0,0,1}); break;
         case Modify_lt::PlaneTranslationX: translationOnPlane({1,0,0}); break;
         case Modify_lt::PlaneTranslationY: translationOnPlane({0,1,0}); break;
         case Modify_lt::PlaneTranslationZ: translationOnPlane({0,0,1}); break;
-        case Modify_lt::PlaneTranslationScreen: translationOnPlane(d->originalScreenRotateAxis); break;
+        case Modify_lt::PlaneTranslationScreen: translationOnPlane(d->originalScreenRelativeAxis); break;
         case Modify_lt::ScaleX: scale({1,0,0}); break;
         case Modify_lt::ScaleY: scale({0,1,0}); break;
         case Modify_lt::ScaleZ: scale({0,0,1}); break;
-        case Modify_lt::ScaleScreen: scale(d->originalScreenRotateAxis); break;
+        case Modify_lt::ScaleScreen: scale(d->originalScreenRelativeAxis); break;
         case Modify_lt::None: break;
       }
 
