@@ -159,15 +159,11 @@ void GraphController::setDistanceY(double distanceY)
 }
 
 //##################################################################################################
-nlohmann::json GraphController::saveState() const
+void GraphController::saveState(nlohmann::json& j) const
 {
-  nlohmann::json j;
-
   j["Focal point"]    = tp_math_utils::vec3ToJSON(d->focalPoint);
   j["DistanceX"]      = d->distanceX;
   j["DistanceY"]      = d->distanceY;
-
-  return j;
 }
 
 //##################################################################################################

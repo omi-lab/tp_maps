@@ -28,7 +28,7 @@ struct FBOWindow
   glm::vec2      size   {0.20f, 0.20f};          //!< The size of the window.
 
   //################################################################################################
-  nlohmann::json saveState() const;
+  void saveState(nlohmann::json& j) const;
 
   //################################################################################################
   void loadState(const nlohmann::json& j);
@@ -52,6 +52,7 @@ Layer allows you to present the contents of these FBOs on screen to aid in debug
 class TP_MAPS_EXPORT FBOLayer: public Layer
 {
   TP_REF_COUNT_OBJECTS("FBOLayer");
+  TP_DQ;
 public:
   //################################################################################################
   FBOLayer();
@@ -66,7 +67,7 @@ public:
   const std::vector<FBOWindow>& windows() const;
 
   //################################################################################################
-  nlohmann::json saveState() const;
+  void saveState(nlohmann::json& j) const;
 
   //################################################################################################
   void loadState(const nlohmann::json& j);
@@ -77,11 +78,6 @@ protected:
 
   //################################################################################################
   void invalidateBuffers() override;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

@@ -210,16 +210,12 @@ void FlatController::assignMouseButtons(Button rotateButton, Button translateBut
 }
 
 //##################################################################################################
-nlohmann::json FlatController::saveState() const
+void FlatController::saveState(nlohmann::json& j) const
 {
-  nlohmann::json j;
-
   j["View angle"]     = d->viewAngle;
   j["Rotation angle"] = d->rotationAngle;
   j["Focal point"]    = tp_math_utils::vec3ToJSON(d->focalPoint);
   j["Distance"]       = d->distance;
-
-  return j;
 }
 
 //##################################################################################################

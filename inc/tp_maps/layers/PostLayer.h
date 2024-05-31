@@ -14,8 +14,9 @@ class PostShader;
 //##################################################################################################
 class TP_MAPS_EXPORT PostLayer: public Layer
 {
-  TP_REF_COUNT_OBJECTS("PostLayer");
   friend class Map;
+  TP_REF_COUNT_OBJECTS("PostLayer");
+  TP_DQ;
 public:
   //################################################################################################
   PostLayer(const RenderPass& customRenderPass);
@@ -93,11 +94,6 @@ protected:
 
   //################################################################################################
   virtual PostShader* makeShader()=0;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

@@ -22,6 +22,7 @@ class TexturePoolKey;
 //##################################################################################################
 class TP_MAPS_EXPORT TexturePool
 {
+  TP_DQ;
 public:
   //################################################################################################
   TexturePool(Map* map);
@@ -77,11 +78,6 @@ public:
 
   //################################################################################################
   tp_utils::CallbackCollection<void()> changed;
-
-private:
-  struct Private;
-  friend struct Private;
-  Private* d;
 };
 
 }

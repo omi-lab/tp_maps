@@ -10,9 +10,9 @@ FixedController::FixedController(Map* map):
 }
 
 //##################################################################################################
-nlohmann::json FixedController::saveState() const
+void FixedController::saveState(nlohmann::json& j) const
 {
-  return nlohmann::json();
+  TP_UNUSED(j);
 }
 
 //##################################################################################################

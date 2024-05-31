@@ -1,30 +1,29 @@
-#ifndef tp_maps_MouseEventHandler_h
-#define tp_maps_MouseEventHandler_h
+#ifndef tp_maps_LayerPointer_h
+#define tp_maps_LayerPointer_h
 
-#include "tp_maps/EventHandler.h"
-
-#include <memory>
+#include "tp_maps/Globals.h"
 
 namespace tp_maps
 {
+class Layer;
 
 //##################################################################################################
-class TP_MAPS_EXPORT MouseEventHandler
+class TP_MAPS_EXPORT LayerPointer
 {
-  TP_DQ;
+  friend class Layer;
+  TP_NONCOPYABLE(LayerPointer);
+  Layer* m_layer{nullptr};
 public:
   //################################################################################################
-  MouseEventHandler(Map* map);
+  LayerPointer(Layer* layer);
 
   //################################################################################################
-  ~MouseEventHandler();
+  ~LayerPointer();
 
   //################################################################################################
-  size_t press(const MouseEvent& event);
-
-  //################################################################################################
-  std::function<void(const MouseEvent&)> postMouseEvent;
+  Layer* layer();
 };
+
 }
 
 #endif

@@ -11,6 +11,7 @@ namespace tp_maps
 //##################################################################################################
 class TP_MAPS_EXPORT GeometryLayer: public Layer
 {
+  TP_DQ;
 public:
   //################################################################################################
   GeometryLayer();
@@ -30,11 +31,6 @@ protected:
 
   //################################################################################################
   void invalidateBuffers() override;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

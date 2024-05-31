@@ -19,6 +19,7 @@ class Transformation;
 namespace tp_maps
 {
 class Map;
+class LayerPointer;
 class RenderInfo;
 struct KeyEvent;
 struct DragDropEvent;
@@ -34,7 +35,9 @@ user events.
 class TP_MAPS_EXPORT Layer
 {
   friend class Map;
+  friend class LayerPointer;
   TP_NONCOPYABLE(Layer);
+  TP_DQ;
 public:
   //################################################################################################
   //! Construct the layer.
@@ -126,6 +129,7 @@ public:
   \param visible: the new visibility for the layer
   */
   virtual void setVisible(bool visible);
+  void setVisibleQuiet(bool visible);
 
   //################################################################################################
   //! The render pass that this layer should do most of its rendering in.
@@ -139,7 +143,7 @@ public:
 
   //################################################################################################
   //! Set the render pass that this layer should do most of its rendering in.
-  void setDefaultRenderPass(const RenderPass& defaultRenderPass);
+  virtual void setDefaultRenderPass(const RenderPass& defaultRenderPass);
 
   //################################################################################################
   //! Called when buffers become invalid.
@@ -263,12 +267,14 @@ private:
   //! Called by the Map.
   void clearMap();
 
-  std::unordered_set<Button> m_hasMouseFocusFor; //!< Set when this layer accepts focus for a mouse press event.
-  std::unordered_set<int32_t> m_hasKeyFocusFor;  //!< Set when this layer accepts focus for a key press event.
+  //################################################################################################
+  void addPointer(LayerPointer* layerPointer);
 
-  struct Private;
-  Private* d;
-  friend struct Private;
+  //################################################################################################
+  void removePointer(LayerPointer* layerPointer);
+
+  std::unordered_set<Button> m_hasMouseFocusFor; //!< Set when this layer accepts focus for a mouse press event.
+  std::unordered_set<int32_t> m_hasKeyFocusFor;  //!< Set when this layer accepts focus for a key press event
 };
 
 }

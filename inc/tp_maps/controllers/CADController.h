@@ -37,6 +37,7 @@ CADControllerMode cadControllerModeFromString(const std::string& mode);
 //##################################################################################################
 class TP_MAPS_EXPORT CADController : public Controller
 {
+  TP_DQ;
 public:
   //################################################################################################
   CADController(Map* map, bool fullScreen);
@@ -126,7 +127,7 @@ public:
   void setOrientation(const glm::vec3& forward, const glm::vec3& up);
 
   //################################################################################################
-  nlohmann::json saveState() const override;
+  void saveState(nlohmann::json& j) const override;
 
   //################################################################################################
   void loadState(const nlohmann::json& j) override;
@@ -155,11 +156,6 @@ protected:
 
   //################################################################################################
   void animate(double timestampMS) override;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

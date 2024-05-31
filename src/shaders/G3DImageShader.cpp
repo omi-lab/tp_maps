@@ -94,7 +94,7 @@ void G3DImageShader::setMaterial(RenderInfo& renderInfo,
 {
   TP_UNUSED(renderInfo);
 
-  setTexture(processedGeometry3D.rgbaTextureID);
+  setTexture(processedGeometry3D.alternativeMaterial->rgbaTextureID);
 }
 
 //##################################################################################################

@@ -44,6 +44,7 @@ TP_DEFINE_ID(             backgroundShaderSID,                "Background shader
 TP_DEFINE_ID(        backgroundImageShaderSID,          "Background image shader");
 TP_DEFINE_ID(      backgroundPatternShaderSID,        "Background pattern shader");
 TP_DEFINE_ID(                selectionPassSID,                   "Selection pass");
+TP_DEFINE_ID(                     selectedSID,                         "Selected");
 
 //##################################################################################################
 int tp_rc();

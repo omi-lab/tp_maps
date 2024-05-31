@@ -9,6 +9,7 @@ namespace tp_maps
 //##################################################################################################
 class TP_MAPS_EXPORT FPSController : public Controller
 {
+  TP_DQ;
 public:
   //################################################################################################
   FPSController(Map* map, bool fullScreen);
@@ -54,7 +55,7 @@ public:
   void setNearAndFar(float near, float far);
 
   //################################################################################################
-  nlohmann::json saveState() const override;
+  void saveState(nlohmann::json& j) const override;
 
   //################################################################################################
   void loadState(const nlohmann::json& j) override;
@@ -77,11 +78,6 @@ protected:
 
   //################################################################################################
   void animate(double timestampMS) override;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

@@ -10,6 +10,7 @@ class FontRenderer;
 //##################################################################################################
 class TP_MAPS_EXPORT RulerLayer: public Layer
 {
+  TP_DQ;
 public:
   //################################################################################################
   RulerLayer(float scale=1.0f);
@@ -32,11 +33,6 @@ protected:
 
   //################################################################################################
   void invalidateBuffers() override;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

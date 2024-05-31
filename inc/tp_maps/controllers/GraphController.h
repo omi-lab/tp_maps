@@ -9,6 +9,7 @@ namespace tp_maps
 //##################################################################################################
 class TP_MAPS_EXPORT GraphController : public Controller
 {
+  TP_DQ;
 public:
   //################################################################################################
   GraphController(Map* map);
@@ -50,7 +51,7 @@ public:
   void setDistanceY(double distanceY);
 
   //################################################################################################
-  nlohmann::json saveState() const override;
+  void saveState(nlohmann::json& j) const override;
 
   //################################################################################################
   void loadState(const nlohmann::json& j) override;
@@ -76,11 +77,6 @@ protected:
 
   //################################################################################################
   virtual void translateInteractionStarted();
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

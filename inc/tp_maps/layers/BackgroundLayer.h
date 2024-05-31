@@ -13,6 +13,7 @@ class TexturePool;
 class TP_MAPS_EXPORT BackgroundLayer: public Layer
 {
   TP_REF_COUNT_OBJECTS("BackgroundLayer");
+  TP_DQ;
 public:
   //################################################################################################
   BackgroundLayer(TexturePool* texturePool);
@@ -63,11 +64,6 @@ public:
 protected:
   //################################################################################################
   void render(RenderInfo& renderInfo) override;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

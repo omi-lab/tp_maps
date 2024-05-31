@@ -385,10 +385,8 @@ void CADController::setOrientation(const glm::vec3& forward, const glm::vec3& up
 }
 
 //##################################################################################################
-nlohmann::json CADController::saveState() const
+void CADController::saveState(nlohmann::json& j) const
 {
-  nlohmann::json j;
-
   j["mouseSpeedModifier"]    = d->mouseSpeedModifier;
   j["keyboardSpeedModifier"] = d->keyboardSpeedModifier;
   j["View angle"]            = d->viewAngle;
@@ -400,8 +398,6 @@ nlohmann::json CADController::saveState() const
   j["near"]                  = d->near;
   j["far"]                   = d->far;
   j["fov"]                   = d->fov;
-
-  return j;
 }
 
 //##################################################################################################

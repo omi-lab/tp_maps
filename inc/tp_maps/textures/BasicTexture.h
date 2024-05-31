@@ -15,6 +15,7 @@ namespace tp_maps
 class TP_MAPS_EXPORT BasicTexture : public Texture
 {
   TP_REF_COUNT_OBJECTS("BasicTexture");
+  TP_DQ;
 public:
   //################################################################################################
   BasicTexture(Map* map,
@@ -59,11 +60,6 @@ public:
 
   //################################################################################################
   glm::vec2 imageDims() const override;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

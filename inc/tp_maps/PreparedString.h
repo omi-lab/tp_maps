@@ -26,6 +26,8 @@ struct TP_MAPS_EXPORT PreparedStringConfig
 //##################################################################################################
 class TP_MAPS_EXPORT PreparedString
 {
+  friend class FontRenderer;
+  TP_DQ;
 public:
   TP_NONCOPYABLE(PreparedString);
 
@@ -70,12 +72,6 @@ protected:
   result the font geometry should be recreated next time fontGeometry is called.
   */
   virtual void regenerateBuffers();
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
-  friend class FontRenderer;
 };
 
 }

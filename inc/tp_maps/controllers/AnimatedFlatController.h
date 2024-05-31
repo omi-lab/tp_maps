@@ -9,6 +9,7 @@ namespace tp_maps
 //##################################################################################################
 class TP_MAPS_EXPORT AnimatedFlatController : public FlatController
 {
+  TP_DQ;
 public:
   //################################################################################################
   AnimatedFlatController(Map* map);
@@ -43,11 +44,6 @@ protected:
 
   //################################################################################################
   void translateInteractionStarted() override;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

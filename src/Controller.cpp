@@ -125,9 +125,9 @@ void Controller::disableScissor()
 }
 
 //##################################################################################################
-nlohmann::json Controller::saveState() const
+void Controller::saveState(nlohmann::json& j) const
 {
-  return nlohmann::json();
+  TP_UNUSED(j);
 }
 
 //##################################################################################################

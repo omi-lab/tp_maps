@@ -24,6 +24,7 @@ struct TP_MAPS_EXPORT Lines
 //##################################################################################################
 class TP_MAPS_EXPORT LinesLayer: public Layer
 {
+  TP_DQ;
 public:
   //################################################################################################
   LinesLayer();
@@ -67,11 +68,6 @@ protected:
 
   //################################################################################################
   void invalidateBuffers() override;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

@@ -10,6 +10,7 @@ class FontRenderer;
 //##################################################################################################
 class TP_MAPS_EXPORT GridLayer: public Layer
 {
+  TP_DQ;
 public:
   //################################################################################################
   GridLayer(float scale = 1.0f, const glm::vec3& gridColor = {0.05f, 0.05f, 0.9f});
@@ -76,11 +77,6 @@ protected:
 
   //################################################################################################
   void invalidateBuffers() override;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

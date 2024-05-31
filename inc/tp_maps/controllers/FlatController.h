@@ -10,6 +10,7 @@ namespace tp_maps
 //##################################################################################################
 class TP_MAPS_EXPORT FlatController : public Controller
 {
+  TP_DQ;
 public:
   //################################################################################################
   FlatController(Map* map);
@@ -74,7 +75,7 @@ public:
   void assignMouseButtons(Button rotateButton, Button translateButton);
 
   //################################################################################################
-  nlohmann::json saveState() const override;
+  void saveState(nlohmann::json& j) const override;
 
   //################################################################################################
   void loadState(const nlohmann::json& j) override;
@@ -100,11 +101,6 @@ protected:
 
   //################################################################################################
   virtual void translateInteractionStarted();
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

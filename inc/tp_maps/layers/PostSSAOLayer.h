@@ -11,6 +11,7 @@ namespace tp_maps
 //##################################################################################################
 class TP_MAPS_EXPORT PostSSAOLayer: public PostLayer
 {
+  TP_DQ;
 public:
   //################################################################################################
   PostSSAOLayer();
@@ -30,11 +31,6 @@ protected:
 
   //################################################################################################
   void addRenderPasses(std::vector<RenderPass>& renderPasses) override;
-
-private:
-  struct Private;
-  friend struct Private;
-  Private* d;
 };
 
 }

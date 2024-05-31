@@ -21,6 +21,7 @@ class Geometry3DPool;
 class TP_MAPS_EXPORT Geometry3DLayer: public Layer
 {
   TP_REF_COUNT_OBJECTS("Geometry3DLayer");
+  TP_DQ;
 public:
   //################################################################################################
   Geometry3DLayer(Geometry3DPool* geometry3DPool=nullptr);
@@ -63,6 +64,15 @@ public:
   };
 
   //################################################################################################
+  static std::vector<std::string> shaderSelections();
+
+  //################################################################################################
+  static std::string shaderSelectionToString(ShaderSelection shaderSelection);
+
+  //################################################################################################
+  static ShaderSelection shaderSelectionFromString(const std::string& shaderSelection);
+
+  //################################################################################################
   void setShaderSelection(ShaderSelection shaderSelection);
 
   //################################################################################################
@@ -88,11 +98,6 @@ public:
 protected:
   //################################################################################################
   void render(RenderInfo& renderInfo) override;
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }

@@ -26,6 +26,7 @@ struct TP_MAPS_EXPORT EventHandlerCallbacks
 class EventHandler
 {
   TP_NONCOPYABLE(EventHandler);
+  TP_DQ;
 public:
   //################################################################################################
   EventHandler(Map* map, int priority, Button hasMouseFocusFor=Button::NoButton);
@@ -41,11 +42,6 @@ public:
 
   //################################################################################################
   void updateCallbacks(const std::function<void(EventHandlerCallbacks&)>& closure);
-
-private:
-  struct Private;
-  friend struct Private;
-  Private* d;
 };
 
 }

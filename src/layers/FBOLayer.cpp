@@ -15,16 +15,12 @@ namespace tp_maps
 {
 
 //##################################################################################################
-nlohmann::json FBOWindow::saveState() const
+void FBOWindow::saveState(nlohmann::json& j) const
 {
-  nlohmann::json j;
-
   j["fboName"] = fboName;
   j["source"] = fboLayerSourceToString(source);
   j["origin"] = tp_math_utils::vec2ToJSON(origin);
-  j["size"  ] = tp_math_utils::vec2ToJSON(size  );
-
-  return j;
+  j["size"  ] = tp_math_utils::vec2ToJSON(size);
 }
 
 //##################################################################################################
@@ -142,17 +138,16 @@ const std::vector<FBOWindow>& FBOLayer::windows() const
 }
 
 //##################################################################################################
-nlohmann::json FBOLayer::saveState() const
+void FBOLayer::saveState(nlohmann::json& j) const
 {
-  nlohmann::json j;
-
   auto& windowsJ = j["windows"];
   windowsJ = nlohmann::json::array();
   windowsJ.get_ptr<nlohmann::json::array_t*>()->reserve(d->windows.size());
   for(const auto& window : d->windows)
-    windowsJ.push_back(window.saveState());
-
-  return j;
+  {
+    windowsJ.emplace_back();
+    window.saveState(windowsJ.back());
+  }
 }
 
 //##################################################################################################

@@ -11,6 +11,7 @@
 #include "tp_maps/shaders/G3DStaticLightShader.h"
 
 #include "tp_utils/TimeUtils.h"
+#include "tp_utils/DebugUtils.h"
 
 namespace tp_maps
 {
@@ -154,6 +155,47 @@ void Geometry3DLayer::viewGeometry(const std::function<void(const std::vector<tp
 {
   d->geometry3DPool->viewGeometry(d->name, d->alternativeMaterials, closure);
 }
+////################################################################################################
+//enum class ShaderSelection
+//{
+//  Material,   //!< Render the 3D geometry as a shaded material using the G3DMaterialShader.
+//  Image,      //!< Render the 3D geometry as flat unshaded images using the G3DImageShader.
+//  XYZ,        //!< Write the frag xyz coords in world coords to the output buffer using the G3DXYZShader.
+//  Depth,      //!< Write the depth buffer to the output buffer.
+//  StaticLight //!< Render the 3D geometry as a shaded material ignoring lights and shadows.
+//};
+
+//##################################################################################################
+std::vector<std::string> Geometry3DLayer::shaderSelections()
+{
+  return {"Material", "Image", "XYZ", "Depth", "StaticLight"};
+}
+
+//##################################################################################################
+std::string Geometry3DLayer::shaderSelectionToString(ShaderSelection shaderSelection)
+{
+  switch(shaderSelection)
+  {
+    case Geometry3DLayer::ShaderSelection::Material   : return "Material"   ;
+    case Geometry3DLayer::ShaderSelection::Image      : return "Image"      ;
+    case Geometry3DLayer::ShaderSelection::XYZ        : return "XYZ"        ;
+    case Geometry3DLayer::ShaderSelection::Depth      : return "Depth"      ;
+    case Geometry3DLayer::ShaderSelection::StaticLight: return "StaticLight";
+  }
+  return "Material";
+}
+
+//##################################################################################################
+Geometry3DLayer::ShaderSelection Geometry3DLayer::shaderSelectionFromString(const std::string& shaderSelection)
+{
+  if(shaderSelection == "Material"   ) return Geometry3DLayer::ShaderSelection::Material   ;
+  if(shaderSelection == "Image"      ) return Geometry3DLayer::ShaderSelection::Image      ;
+  if(shaderSelection == "XYZ"        ) return Geometry3DLayer::ShaderSelection::XYZ        ;
+  if(shaderSelection == "Depth"      ) return Geometry3DLayer::ShaderSelection::Depth      ;
+  if(shaderSelection == "StaticLight") return Geometry3DLayer::ShaderSelection::StaticLight;
+
+  return Geometry3DLayer::ShaderSelection::Material;
+}
 
 //##################################################################################################
 void Geometry3DLayer::setShaderSelection(ShaderSelection shaderSelection)
@@ -202,10 +244,19 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
 {
   TP_FUNCTION_TIME("Geometry3DLayer::render");
 
+  auto defaultRenderPassType = defaultRenderPass().type;
+
+  bool picking=false;
+  if(renderInfo.pass == RenderPass::Picking && defaultRenderPassType != RenderPass::GUI3D)
+    picking=true;
+
+  else if(renderInfo.pass == RenderPass::PickingGUI3D && defaultRenderPassType == RenderPass::GUI3D)
+    picking=true;
+
   if(renderInfo.pass != defaultRenderPass().type &&
      renderInfo.pass != RenderPass::Transparency &&
      renderInfo.pass != RenderPass::LightFBOs &&
-     renderInfo.pass != RenderPass::Picking)
+     !picking)
     return;
 
   Matrices m;
@@ -215,13 +266,21 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
     m = map()->controller()->matrices(coordinateSystem());
 
   Geometry3DShader* shader{nullptr};
-  switch(d->shaderSelection)
+
+  if(picking)
   {
-  case ShaderSelection::Material    : shader = map()->getShader<G3DMaterialShader>   (); break;
-  case ShaderSelection::Image       : shader = map()->getShader<G3DImageShader>      (); break;
-  case ShaderSelection::XYZ         : shader = map()->getShader<G3DXYZShader>        (); break;
-  case ShaderSelection::Depth       : shader = map()->getShader<G3DDepthShader>      (); break;
-  case ShaderSelection::StaticLight : shader = map()->getShader<G3DStaticLightShader>(); break;
+    shader = map()->getShader<G3DMaterialShader>   ();
+  }
+  else
+  {
+    switch(d->shaderSelection)
+    {
+      case ShaderSelection::Material    : shader = map()->getShader<G3DMaterialShader>   (); break;
+      case ShaderSelection::Image       : shader = map()->getShader<G3DImageShader>      (); break;
+      case ShaderSelection::XYZ         : shader = map()->getShader<G3DXYZShader>        (); break;
+      case ShaderSelection::Depth       : shader = map()->getShader<G3DDepthShader>      (); break;
+      case ShaderSelection::StaticLight : shader = map()->getShader<G3DStaticLightShader>(); break;
+    }
   }
 
   if(!shader || shader->error())
@@ -230,7 +289,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
   if(!shader->initPass(renderInfo, m, modelToWorldMatrix()))
     return;
 
-  if(renderInfo.pass == RenderPass::Picking)
+  if(picking)
   {
     d->geometry3DPool->viewProcessedGeometry(d->name,
                                              shader,

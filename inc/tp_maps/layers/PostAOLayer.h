@@ -10,6 +10,7 @@ namespace tp_maps
 //##################################################################################################
 class TP_MAPS_EXPORT PostAOLayer: public PostLayer
 {
+  TP_DQ;
 public:
   //################################################################################################
   PostAOLayer();
@@ -35,11 +36,6 @@ protected:
 
   //################################################################################################
   void invalidateBuffers() override;
-
-private:
-  struct Private;
-  friend struct Private;
-  Private* d;
 };
 
 }

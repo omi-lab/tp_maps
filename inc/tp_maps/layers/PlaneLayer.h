@@ -14,6 +14,7 @@ namespace tp_maps
 //##################################################################################################
 class TP_MAPS_EXPORT PlaneLayer: public LinesLayer
 {
+  TP_DQ;
 public:
   //################################################################################################
   PlaneLayer();
@@ -32,11 +33,6 @@ public:
 
   //################################################################################################
   void setColor(const glm::vec4& color);
-
-private:
-  struct Private;
-  Private* d;
-  friend struct Private;
 };
 
 }
