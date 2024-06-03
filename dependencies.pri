@@ -1,6 +1,6 @@
 DEPENDENCIES += tp_image_utils
 DEPENDENCIES += tp_triangulation
-DEPENDENCIES += tp_rc
+# DEPENDENCIES += tp_rc
 DEPENDENCIES += tp_utils
 
 INCLUDEPATHS += tp_maps/inc/
