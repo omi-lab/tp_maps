@@ -191,6 +191,9 @@ HEADERS += inc/tp_maps/shaders/G3DMaterialShader.h
 SOURCES += src/shaders/G3DStaticLightShader.cpp
 HEADERS += inc/tp_maps/shaders/G3DStaticLightShader.h
 
+SOURCES += src/shaders/G3DFlatColorShader.cpp
+HEADERS += inc/tp_maps/shaders/G3DFlatColorShader.h
+
 
 # Post Shaders
 SOURCES += src/shaders/PostShader.cpp

@@ -25,6 +25,8 @@
         <file preprocess="shader" alias="MergeAmbientOcclusionShader.frag">resources/shaders/MergeAmbientOcclusionShader.frag</file>
         <file preprocess="shader" alias="G3DImageShader.frag">resources/shaders/G3DImageShader.frag</file>
         <file preprocess="shader" alias="G3DImageShader.vert">resources/shaders/G3DImageShader.vert</file>
+        <file preprocess="shader" alias="G3DFlatColorShader.frag">resources/shaders/G3DFlatColorShader.frag</file>
+        <file preprocess="shader" alias="G3DFlatColorShader.vert">resources/shaders/G3DFlatColorShader.vert</file>
         <file preprocess="shader" alias="G3DDepthShader.frag">resources/shaders/G3DDepthShader.frag</file>
         <file preprocess="shader" alias="G3DXYZShader.vert">resources/shaders/G3DXYZShader.vert</file>
         <file preprocess="shader" alias="G3DXYZShader.frag">resources/shaders/G3DXYZShader.frag</file>

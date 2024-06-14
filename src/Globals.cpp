@@ -13,6 +13,7 @@ TP_DEFINE_ID(                       screenSID,                           "Screen
 TP_DEFINE_ID(                   gizmoLayerSID,                      "Gizmo layer");
 TP_DEFINE_ID(                   lineShaderSID,                      "Line shader");
 TP_DEFINE_ID(                  imageShaderSID,                     "Image shader");
+TP_DEFINE_ID(              flatColorShaderSID,                "Flat color shader");
 TP_DEFINE_ID(                image3DShaderSID,                  "Image 3D shader");
 TP_DEFINE_ID(                    xyzShaderSID,                       "XYZ shader");
 TP_DEFINE_ID(            pointSpriteShaderSID,              "Point sprite shader");

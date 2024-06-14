@@ -13,19 +13,21 @@ namespace tp_maps
 //##################################################################################################
 void CircleSectorParameters::saveState(nlohmann::json& j) const
 {
-  j["fillColor"     ] = tp_math_utils::vec4ToJSON(fillColor     );
-  j["borderColor"   ] = tp_math_utils::vec4ToJSON(borderColor   );
-  j["startLineColor"] = tp_math_utils::vec4ToJSON(startLineColor);
-  j["endLineColor"  ] = tp_math_utils::vec4ToJSON(endLineColor  );
+  j["activeFillColor"  ] = tp_math_utils::vec4ToJSON(activeFillColor  );
+  j["inactiveFillColor"] = tp_math_utils::vec4ToJSON(inactiveFillColor);
+  j["borderColor"      ] = tp_math_utils::vec4ToJSON(borderColor      );
+  j["startLineColor"   ] = tp_math_utils::vec4ToJSON(startLineColor   );
+  j["endLineColor"     ] = tp_math_utils::vec4ToJSON(endLineColor     );
 }
 
 //##################################################################################################
 void CircleSectorParameters::loadState(const nlohmann::json& j)
 {
-  fillColor      = tp_math_utils::getJSONVec4(j, "fillColor"     , {1.0f, 0.0f, 0.0f, 1.0f});
-  borderColor    = tp_math_utils::getJSONVec4(j, "borderColor"   , {1.0f, 0.0f, 0.0f, 1.0f});
-  startLineColor = tp_math_utils::getJSONVec4(j, "startLineColor", {1.0f, 0.0f, 0.0f, 1.0f});
-  endLineColor   = tp_math_utils::getJSONVec4(j, "endLineColor"  , {1.0f, 0.0f, 0.0f, 1.0f});
+  activeFillColor   = tp_math_utils::getJSONVec4(j, "activeFillColor"  , {1.0f, 0.0f, 0.0f, 1.0f});
+  inactiveFillColor = tp_math_utils::getJSONVec4(j, "inactiveFillColor", {1.0f, 0.0f, 0.0f, 1.0f});
+  borderColor       = tp_math_utils::getJSONVec4(j, "borderColor"      , {1.0f, 0.0f, 0.0f, 1.0f});
+  startLineColor    = tp_math_utils::getJSONVec4(j, "startLineColor"   , {1.0f, 0.0f, 0.0f, 1.0f});
+  endLineColor      = tp_math_utils::getJSONVec4(j, "endLineColor"     , {1.0f, 0.0f, 0.0f, 1.0f});
 }
 
 //##################################################################################################
@@ -105,7 +107,7 @@ void CircleSectorLayer::render(RenderInfo& renderInfo)
     d->updateGeometry = false;
 
     std::vector<Lines> lines;
-    lines.resize(3);
+    lines.resize(4);
 
     std::vector<tp_math_utils::Geometry> geometry;
     geometry.resize(2);
@@ -122,20 +124,47 @@ void CircleSectorLayer::render(RenderInfo& renderInfo)
 
     if(angleFabs>0.001f)
     {
-      auto& l = lines.at(0);
-      auto& g = geometry.at(0);
+      Lines* l{nullptr};
+      tp_math_utils::Geometry* g{nullptr};
 
-      l.color = d->params.borderColor;
-      l.mode = GL_LINE_LOOP;
+      auto configureArea = [&](size_t i, size_t n, const glm::vec4& borderColor, const glm::vec4& fillColor, bool drawOutline)
+      {
+        assert(i<geometry.size());
 
-      g.material.findOrAddOpenGL()->albedo = d->params.fillColor;
+        if(drawOutline)
+        {
+          l = &lines.at(i);
+          l->lines.reserve(n);
+          l->color = borderColor;
+          l->mode = GL_LINE_LOOP;
+        }
+        else
+          l=nullptr;
 
-      l.lines.reserve(angleInt+2);
+        g = &geometry.at(i);
+        g->geometry.reserve(n);
+        g->material.findOrAddOpenGL()->albedo = fillColor;
+        g->material.findOrAddOpenGL()->alpha = fillColor.w;
+      };
+
+      auto configureLine = [&](size_t i, const glm::vec4& borderColor)
+      {
+        assert(i<lines.size());
+        l = &lines.at(i);
+        l->lines.reserve(2);
+        l->color = borderColor;
+        l->mode = GL_LINES;
+
+        g=nullptr;
+      };
 
       auto addPoint = [&](float x, float y)
       {
-        l.lines.emplace_back(x, y, 0.0f);
-        g.geometry.emplace_back(x, y);
+        if(l)
+          l->lines.emplace_back(x, y, 0.0f);
+
+        if(g)
+          g->geometry.emplace_back(x, y);
       };
 
       auto addAngle = [&](float a)
@@ -144,12 +173,43 @@ void CircleSectorLayer::render(RenderInfo& renderInfo)
         addPoint(std::cos(r), std::sin(r));
       };
 
-      addPoint(0.0f, 0.0f);
+      if(angleFabs>0.001f)
+      {
+        configureArea(0, angleInt+2, d->params.borderColor, d->params.activeFillColor, d->params.drawActiveOutline);
 
-      for(size_t i=0; i<angleInt; i++)
-        addAngle(float(i));
+        addPoint(0.0f, 0.0f);
 
-      addAngle(angleFabs);
+        for(size_t i=0; i<angleInt; i++)
+          addAngle(float(i));
+
+        addAngle(angleFabs);
+      }
+
+      if(angleFabs<359.999f)
+      {
+        configureArea(1, (360-angleInt)+2, d->params.borderColor, d->params.inactiveFillColor, d->params.drawInactiveOutline);
+
+        addPoint(0.0f, 0.0f);
+
+        addAngle(angleFabs);
+
+        for(size_t i=angleInt+1; i<=360; i++)
+          addAngle(float(i));
+      }
+
+      if(d->params.drawStartLine)
+      {
+        configureLine(2, d->params.startLineColor);
+        addPoint(0.0f, 0.0f);
+        addAngle(0.0f);
+      }
+
+      if(d->params.drawEndLine)
+      {
+        configureLine(3, d->params.endLineColor);
+        addPoint(0.0f, 0.0f);
+        addAngle(angleFabs);
+      }
     }
 
     d->linesLayer->setLines(lines);

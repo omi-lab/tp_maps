@@ -69,6 +69,7 @@ TP_DECLARE_ID(                       screenSID,                           "Scree
 TP_DECLARE_ID(                   gizmoLayerSID,                      "Gizmo layer");
 TP_DECLARE_ID(                   lineShaderSID,                      "Line shader");
 TP_DECLARE_ID(                  imageShaderSID,                     "Image shader");
+TP_DECLARE_ID(              flatColorShaderSID,                "Flat color shader");
 TP_DECLARE_ID(                image3DShaderSID,                  "Image 3D shader");
 TP_DECLARE_ID(                    xyzShaderSID,                       "XYZ shader");
 TP_DECLARE_ID(            pointSpriteShaderSID,              "Point sprite shader");

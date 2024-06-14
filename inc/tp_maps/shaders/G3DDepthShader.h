@@ -1,5 +1,5 @@
-#ifndef tp_maps_DepthShader_h
-#define tp_maps_DepthShader_h
+#ifndef tp_maps_G3DDepthShader_h
+#define tp_maps_G3DDepthShader_h
 
 #include "tp_maps/shaders/G3DImageShader.h"
 

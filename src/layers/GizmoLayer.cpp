@@ -16,7 +16,6 @@
 #include "tp_math_utils/JSONUtils.h"
 
 #include "tp_utils/JSONUtils.h"
-#include "tp_utils/DebugUtils.h"
 
 #include "glm/gtx/norm.hpp" // IWYU pragma: keep
 #include "glm/gtx/vector_angle.hpp" // IWYU pragma: keep
@@ -395,6 +394,7 @@ struct GizmoLayer::Private
   glm::ivec2 previousPos;
   glm::vec3 intersectionPoint;
   glm::vec3 intersectionVector;
+  glm::vec3 newIntersectionVector;
   bool useIntersection{false};
   glm::mat4 originalModelMatrix;
   glm::mat4 originalModelToWorldMatrix;
@@ -1937,20 +1937,24 @@ void GizmoLayer::render(RenderInfo& renderInfo)
 
       glm::mat4 mScale = glm::scale(glm::mat4{1.0f}, glm::vec3{s,s,s});
 
+      glm::vec3 screenRelativeForward{0,0,1};
+      glm::vec3 screenRelativeUp{0,1,0};
+
       if(d->rotationScreenGeometryLayer->visible() ||
          d->translationPlaneScreenGeometryLayer->visible() ||
          d->scaleArrowScreenGeometryLayer->visible())
       {
         glm::vec3 axis{0,0,1};
-        glm::vec3 forward;
         {
           glm::mat4 vpInv = glm::inverse(matrices.vp*modelToWorld);
           glm::vec3 a = tpProj(vpInv, {0.0f, 0.0f, 0.0f});
           glm::vec3 b = tpProj(vpInv, {0.0f, 0.0f, 1.0f});
-          forward = glm::normalize(b-a);
+          screenRelativeForward = glm::normalize(b-a);
         }
 
-        glm::mat4 mRot = matrixToRotateAOntoB(axis, forward);
+        glm::mat4 mRot = matrixToRotateAOntoB(axis, screenRelativeForward);
+
+        screenRelativeUp = glm::mat3(mRot) * glm::vec3(1.0f, 0.0f, 0.0f);
 
         d->screenRelativeMatrix = mScale * mRot;
 
@@ -2023,21 +2027,32 @@ void GizmoLayer::render(RenderInfo& renderInfo)
         if(d->activeModification == Modify_lt::RotateX)
         {
           glm::mat4 mRotateToPlane = matrixToRotateAOntoB({0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f});
-          glm::mat4 mRotateAroundAxis  = matrixToRotateAOntoB({0.0f, 0.0f, -1.0f}, d->intersectionVector);
-          d->rotationSectorLayer->setModelMatrix(mScale * mRotateAroundAxis * mRotateToPlane);
+          glm::mat4 mRotateAroundAxis = matrixToRotateAOntoB({0.0f, 0.0f, -1.0f}, d->intersectionVector);
+          glm::mat4 mRotateRemoveDelta = matrixToRotateAOntoB(d->newIntersectionVector, d->intersectionVector);
+          d->rotationSectorLayer->setModelMatrix(mScale * mRotateRemoveDelta * mRotateAroundAxis * mRotateToPlane);
           d->rotationSectorLayer->setVisibleQuiet(true);
         }
         else if(d->activeModification == Modify_lt::RotateY)
         {
           glm::mat4 mRotateToPlane = matrixToRotateAOntoB({0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f});
           glm::mat4 mRotateAroundAxis  = matrixToRotateAOntoB({1.0f, 0.0f, 0.0f}, d->intersectionVector);
-          d->rotationSectorLayer->setModelMatrix(mScale * mRotateAroundAxis * mRotateToPlane);
+          glm::mat4 mRotateRemoveDelta = matrixToRotateAOntoB(d->newIntersectionVector, d->intersectionVector);
+          d->rotationSectorLayer->setModelMatrix(mScale * mRotateRemoveDelta * mRotateAroundAxis * mRotateToPlane);
           d->rotationSectorLayer->setVisibleQuiet(true);
         }
         else if(d->activeModification == Modify_lt::RotateZ)
         {
           glm::mat4 mRotateAroundAxis  = matrixToRotateAOntoB({1.0f, 0.0f, 0.0f}, d->intersectionVector);
-          d->rotationSectorLayer->setModelMatrix(mScale * mRotateAroundAxis);
+          glm::mat4 mRotateRemoveDelta = matrixToRotateAOntoB(d->newIntersectionVector, d->intersectionVector);
+          d->rotationSectorLayer->setModelMatrix(mScale * mRotateRemoveDelta * mRotateAroundAxis);
+          d->rotationSectorLayer->setVisibleQuiet(true);
+        }
+        else if(d->activeModification == Modify_lt::RotateScreen)
+        {
+          glm::mat4 mRotateToPlane = matrixToRotateAOntoB({0.0f, 0.0f, 1.0f}, screenRelativeForward);
+          glm::mat4 mRotateAroundAxis = matrixToRotateAOntoB(screenRelativeUp, d->intersectionVector);
+          glm::mat4 mRotateRemoveDelta = matrixToRotateAOntoB(d->newIntersectionVector, d->intersectionVector);
+          d->rotationSectorLayer->setModelMatrix(mScale * mRotateAroundAxis * mRotateRemoveDelta * mRotateToPlane);
           d->rotationSectorLayer->setVisibleQuiet(true);
         }
         else
@@ -2108,6 +2123,7 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
         {
           d->originalScreenRelativeAxis = d->screenRotateAxis();
           d->useIntersection = intersectPlane(d->originalScreenRelativeAxis, d->intersectionPoint);
+          d->intersectionVector = glm::normalize(d->intersectionPoint);
           d->setActiveModification(Modify_lt::RotateScreen);
           return true;
         }
@@ -2210,6 +2226,7 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
           glm::vec3 intersectionPoint;
           if(intersectPlane(axis, intersectionPoint))
           {
+            d->newIntersectionVector = glm::normalize(intersectionPoint);
             mat = d->originalModelMatrix;
             auto a = glm::normalize(d->intersectionPoint);
             auto b = glm::normalize(intersectionPoint);
@@ -2223,7 +2240,7 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
           angle = float((std::abs(delta.y)>std::abs(delta.x))?delta.y:delta.x) / 3.0f;
         }
 
-        d->rotationSectorLayer->setAngleDegrees(angle);
+        d->rotationSectorLayer->setAngleDegrees(-angle);
         mat = glm::rotate(mat, glm::radians(angle), axis);
         d->previousPos = event.pos;
       };
