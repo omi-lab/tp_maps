@@ -26,6 +26,7 @@ struct GeometryLayer::Private
   GeometryLayer* q;
 
   std::vector<tp_math_utils::Geometry> geometry;
+  bool drawBackFaces{false};
 
   //Processed geometry ready for rendering
   std::vector<GeometryDetails_lt> processedGeometry;
@@ -83,6 +84,20 @@ void GeometryLayer::setGeometry(const std::vector<tp_math_utils::Geometry>& geom
 }
 
 //##################################################################################################
+bool GeometryLayer::drawBackFaces() const
+{
+  return d->drawBackFaces;
+}
+
+//##################################################################################################
+void GeometryLayer::setDrawBackFaces(bool drawBackFaces)
+{
+  d->drawBackFaces = drawBackFaces;
+  d->updateVertexBuffer = true;
+  update();
+}
+
+//##################################################################################################
 void GeometryLayer::render(RenderInfo& renderInfo)
 {
   if(renderInfo.pass != defaultRenderPass().type &&
@@ -120,7 +135,10 @@ void GeometryLayer::render(RenderInfo& renderInfo)
         {
           std::vector<GLuint> indexes;
           std::vector<G3DMaterialShader::Vertex> verts;
+
+          indexes.reserve(d->drawBackFaces?c.vertices.size()*2:c.vertices.size());
           verts.reserve(c.vertices.size());
+
           for(size_t n=0; n<c.vertices.size(); n++)
           {
             const auto& v = c.vertices.at(n);
@@ -130,6 +148,11 @@ void GeometryLayer::render(RenderInfo& renderInfo)
             //                                        vertex                     tbnq                  texture
             verts.push_back(Geometry3DShader::Vertex(glm::vec3(vv) / vv.w, {0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}));
           }
+
+          if(indexes.size()>0 && d->drawBackFaces)
+            for(size_t i=indexes.size()-1; i<indexes.size(); i--)
+              indexes.push_back(indexes.at(i));
+
 
           std::pair<GLenum, G3DMaterialShader::VertexBuffer*> p;
           p.first = GLenum(i.first);

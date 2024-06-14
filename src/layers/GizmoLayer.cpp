@@ -1,6 +1,7 @@
 #include "tp_maps/layers/GizmoLayer.h"
 #include "tp_maps/layers/Geometry3DLayer.h"
 #include "tp_maps/layers/LinesLayer.h"
+#include "tp_maps/layers/CircleSectorLayer.h"
 #include "tp_maps/Controller.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/MouseEvent.h"
@@ -15,6 +16,7 @@
 #include "tp_math_utils/JSONUtils.h"
 
 #include "tp_utils/JSONUtils.h"
+#include "tp_utils/DebugUtils.h"
 
 #include "glm/gtx/norm.hpp" // IWYU pragma: keep
 #include "glm/gtx/vector_angle.hpp" // IWYU pragma: keep
@@ -26,6 +28,7 @@ namespace tp_maps
 
 namespace
 {
+//##################################################################################################
 enum class Modify_lt
 {
   None,
@@ -382,6 +385,8 @@ struct GizmoLayer::Private
 
   LinesLayer* translationPlaneScreenLinesLayer{nullptr};
 
+  CircleSectorLayer* rotationSectorLayer{nullptr};
+
   GizmoParameters params;
 
   bool selectedColorSubscribed{false};
@@ -389,6 +394,7 @@ struct GizmoLayer::Private
   Modify_lt activeModification{Modify_lt::None};
   glm::ivec2 previousPos;
   glm::vec3 intersectionPoint;
+  glm::vec3 intersectionVector;
   bool useIntersection{false};
   glm::mat4 originalModelMatrix;
   glm::mat4 originalModelToWorldMatrix;
@@ -1472,6 +1478,16 @@ GizmoLayer::GizmoLayer():
   createLinesLayer(d->translationPlaneZLinesLayer);
 
   createLinesLayer(d->translationPlaneScreenLinesLayer);
+
+
+  auto createSectorLayer = [&](auto& l)
+  {
+    l = new CircleSectorLayer();
+    l->setDefaultRenderPass(RenderPass::GUI);
+    addChildLayer(l);
+  };
+
+  createSectorLayer(d->rotationSectorLayer);
 }
 
 //##################################################################################################
@@ -1743,9 +1759,9 @@ void GizmoLayer::setRotationRingParameters(const GizmoRingParameters& x,
                                            const GizmoRingParameters& y,
                                            const GizmoRingParameters& z)
 {
-  d->params.rotationX = z;
+  d->params.rotationX = x;
   d->params.rotationY = y;
-  d->params.rotationZ = x;
+  d->params.rotationZ = z;
 
   d->updateRotationGeometry = true;
   update();
@@ -1765,9 +1781,9 @@ void GizmoLayer::setTranslationArrowParameters(const GizmoArrowParameters& x,
                                                const GizmoArrowParameters& y,
                                                const GizmoArrowParameters& z)
 {
-  d->params.translationArrowX = z;
+  d->params.translationArrowX = x;
   d->params.translationArrowY = y;
-  d->params.translationArrowZ = x;
+  d->params.translationArrowZ = z;
 
   d->updateTranslationGeometry = true;
   update();
@@ -1778,9 +1794,9 @@ void GizmoLayer::setScaleArrowParameters(const GizmoArrowParameters& x,
                                          const GizmoArrowParameters& y,
                                          const GizmoArrowParameters& z)
 {
-  d->params.scaleArrowX = z;
+  d->params.scaleArrowX = x;
   d->params.scaleArrowY = y;
-  d->params.scaleArrowZ = x;
+  d->params.scaleArrowZ = z;
 
   d->updateScaleGeometry = true;
   update();
@@ -2003,6 +2019,31 @@ void GizmoLayer::render(RenderInfo& renderInfo)
         d->translationPlaneXLinesLayer->setModelMatrix(mScale);
         d->translationPlaneYLinesLayer->setModelMatrix(mScale);
         d->translationPlaneZLinesLayer->setModelMatrix(mScale);
+
+        if(d->activeModification == Modify_lt::RotateX)
+        {
+          glm::mat4 mRotateToPlane = matrixToRotateAOntoB({0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f});
+          glm::mat4 mRotateAroundAxis  = matrixToRotateAOntoB({0.0f, 0.0f, -1.0f}, d->intersectionVector);
+          d->rotationSectorLayer->setModelMatrix(mScale * mRotateAroundAxis * mRotateToPlane);
+          d->rotationSectorLayer->setVisibleQuiet(true);
+        }
+        else if(d->activeModification == Modify_lt::RotateY)
+        {
+          glm::mat4 mRotateToPlane = matrixToRotateAOntoB({0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f});
+          glm::mat4 mRotateAroundAxis  = matrixToRotateAOntoB({1.0f, 0.0f, 0.0f}, d->intersectionVector);
+          d->rotationSectorLayer->setModelMatrix(mScale * mRotateAroundAxis * mRotateToPlane);
+          d->rotationSectorLayer->setVisibleQuiet(true);
+        }
+        else if(d->activeModification == Modify_lt::RotateZ)
+        {
+          glm::mat4 mRotateAroundAxis  = matrixToRotateAOntoB({1.0f, 0.0f, 0.0f}, d->intersectionVector);
+          d->rotationSectorLayer->setModelMatrix(mScale * mRotateAroundAxis);
+          d->rotationSectorLayer->setVisibleQuiet(true);
+        }
+        else
+        {
+          d->rotationSectorLayer->setVisibleQuiet(false);
+        }
       }
     }
   }
@@ -2039,6 +2080,8 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
         if(result->layer == d->rotationXGeometryLayer)
         {
           d->useIntersection = intersectPlane({1,0,0}, d->intersectionPoint);
+          d->intersectionVector = glm::normalize(d->intersectionPoint);
+          d->rotationSectorLayer->setAngleDegrees(0.0f);
           d->setActiveModification(Modify_lt::RotateX);
           return true;
         }
@@ -2046,6 +2089,8 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
         if(result->layer == d->rotationYGeometryLayer)
         {
           d->useIntersection = intersectPlane({0,1,0}, d->intersectionPoint);
+          d->intersectionVector = glm::normalize(d->intersectionPoint);
+          d->rotationSectorLayer->setAngleDegrees(0.0f);
           d->setActiveModification(Modify_lt::RotateY);
           return true;
         }
@@ -2053,6 +2098,8 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
         if(result->layer == d->rotationZGeometryLayer)
         {
           d->useIntersection = intersectPlane({0,0,1}, d->intersectionPoint);
+          d->intersectionVector = glm::normalize(d->intersectionPoint);
+          d->rotationSectorLayer->setAngleDegrees(0.0f);
           d->setActiveModification(Modify_lt::RotateZ);
           return true;
         }
@@ -2176,6 +2223,7 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
           angle = float((std::abs(delta.y)>std::abs(delta.x))?delta.y:delta.x) / 3.0f;
         }
 
+        d->rotationSectorLayer->setAngleDegrees(angle);
         mat = glm::rotate(mat, glm::radians(angle), axis);
         d->previousPos = event.pos;
       };

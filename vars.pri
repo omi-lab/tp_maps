@@ -296,6 +296,9 @@ HEADERS += inc/tp_maps/layers/GizmoLayer.h
 SOURCES += src/layers/BackgroundLayer.cpp
 HEADERS += inc/tp_maps/layers/BackgroundLayer.h
 
+SOURCES += src/layers/CircleSectorLayer.cpp
+HEADERS += inc/tp_maps/layers/CircleSectorLayer.h
+
 
 #-- Post Processing Layers -------------------------------------------------------------------------
 
