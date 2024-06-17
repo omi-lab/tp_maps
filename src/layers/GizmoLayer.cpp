@@ -61,9 +61,12 @@ std::string gizmoRingStyleToString(GizmoRingStyle style)
 {
   switch(style)
   {
-    case GizmoRingStyle::Compass  : return "Compass"  ;
-    case GizmoRingStyle::ArrowsCW : return "ArrowsCW" ;
-    case GizmoRingStyle::ArrowsCCW: return "ArrowsCCW";
+    case GizmoRingStyle::Compass       : return "Compass"      ;
+    case GizmoRingStyle::QuaterCompass : return "QuaterCompass";
+    case GizmoRingStyle::ArrowsCW      : return "ArrowsCW"     ;
+    case GizmoRingStyle::ArrowsCCW     : return "ArrowsCCW"    ;
+    case GizmoRingStyle::Torus         : return "Torus"        ;
+    case GizmoRingStyle::QuaterTorus   : return "QuaterTorus"  ;
   }
 
   return "Compass";
@@ -72,9 +75,12 @@ std::string gizmoRingStyleToString(GizmoRingStyle style)
 //##################################################################################################
 GizmoRingStyle gizmoRingStyleFromString(const std::string& style)
 {
-  if(style == "Compass"  ) return GizmoRingStyle::Compass  ;
-  if(style == "ArrowsCW" ) return GizmoRingStyle::ArrowsCW ;
-  if(style == "ArrowsCCW") return GizmoRingStyle::ArrowsCCW;
+  if(style == "Compass"      ) return GizmoRingStyle::Compass      ;
+  if(style == "QuaterCompass") return GizmoRingStyle::QuaterCompass;
+  if(style == "ArrowsCW"     ) return GizmoRingStyle::ArrowsCW     ;
+  if(style == "ArrowsCCW"    ) return GizmoRingStyle::ArrowsCCW    ;
+  if(style == "Torus"        ) return GizmoRingStyle::Torus        ;
+  if(style == "QuaterTorus"  ) return GizmoRingStyle::QuaterTorus  ;
 
   return GizmoRingStyle::Compass;
 }
@@ -289,6 +295,8 @@ void GizmoParameters::saveState(nlohmann::json& j) const
   j["gizmoScaleMode"] = gizmoScaleModeToString(gizmoScaleMode);
   j["gizmoScale"] = gizmoScale;
   j["onlyRenderSelectedAxis"] = onlyRenderSelectedAxis;
+  j["hideAllWhenSelected"] = hideAllWhenSelected;
+  j["rotateToClosestQuadrant"] = rotateToClosestQuadrant;
 
   rotationX.saveState(j["rotationX"]);
   rotationY.saveState(j["rotationY"]);
@@ -323,6 +331,8 @@ void GizmoParameters::loadState(const nlohmann::json& j)
   gizmoScaleMode = gizmoScaleModeFromString(TPJSONString(j, "gizmoScaleMode", "Object"));
   gizmoScale = TPJSONFloat(j, "gizmoScale", 1.0f);
   onlyRenderSelectedAxis = TPJSONBool(j, "onlyRenderSelectedAxis", false);
+  hideAllWhenSelected = TPJSONBool(j, "hideAllWhenSelected", false);
+  rotateToClosestQuadrant = TPJSONBool(j, "rotateToClosestQuadrant", false);
 
   tp_utils::loadObjectFromJSON(j, "rotationX", rotationX);
   tp_utils::loadObjectFromJSON(j, "rotationY", rotationY);
@@ -423,7 +433,7 @@ struct GizmoLayer::Private
 
     mesh.material.name = defaultSID();
     material->albedo = color;
-    material->roughness = 0.0f;
+    material->roughness = 1.0f;
   }
 
   //################################################################################################
@@ -440,8 +450,11 @@ struct GizmoLayer::Private
 
       switch(params.style)
       {
-        case GizmoRingStyle::Compass: //---------------------------------------------------------
+        case GizmoRingStyle::Compass: //------------------------------------------------------------
+        case GizmoRingStyle::QuaterCompass: //------------------------------------------------------
         {
+          size_t aMax = (params.style==GizmoRingStyle::QuaterCompass)?90:360;
+
           circle.indexes.resize(4);
           auto& top = circle.indexes.at(0);
           auto& btm = circle.indexes.at(1);
@@ -453,7 +466,7 @@ struct GizmoLayer::Private
           out.type = circle.triangleStrip;
           mid.type = circle.triangleStrip;
 
-          for(size_t a=0; a<=360; a+=6)
+          for(size_t a=0; a<=aMax; a+=6)
           {
             float x = std::sin(glm::radians(float(a)));
             float y = std::cos(glm::radians(float(a)));
@@ -491,9 +504,9 @@ struct GizmoLayer::Private
           break;
         }
 
-        case GizmoRingStyle::ArrowsCW:   //------------------------------------------------------
+        case GizmoRingStyle::ArrowsCW:   //---------------------------------------------------------
         [[fallthrough]];
-        case GizmoRingStyle::ArrowsCCW: //-------------------------------------------------------
+        case GizmoRingStyle::ArrowsCCW: //----------------------------------------------------------
         {
           size_t stemStart=0;
           size_t arrowStart=60;
@@ -647,9 +660,72 @@ struct GizmoLayer::Private
           }
           break;
         }
+
+        case GizmoRingStyle::Torus: //--------------------------------------------------------------
+        case GizmoRingStyle::QuaterTorus: //--------------------------------------------------------
+        {
+          size_t aMax = (params.style==GizmoRingStyle::QuaterTorus)?90:360;
+
+          const size_t bMax=10;
+          constexpr float bStep=glm::radians(360.0f/float(bMax));
+
+          circle.indexes.resize(1);
+          auto& indexes = circle.indexes.at(0);
+          indexes.indexes.reserve(aMax*bMax);
+
+          indexes.type = circle.triangles;
+
+          tp_math_utils::Vertex3D vert;
+
+          auto addRingOfVerts = [&](size_t a)
+          {
+            float x = std::sin(glm::radians(float(a)));
+            float y = std::cos(glm::radians(float(a)));
+
+            glm::vec2 v{x, y};
+
+            for(size_t b=0; b<bMax; b++)
+            {
+              float bF = bStep * float(b);
+              float bX = std::sin(bF) * params.ringHeight;
+              float bY = std::cos(bF) * params.ringHeight;
+
+              vert.vert = transform(glm::vec3(v*(params.outerRadius+bX), bY));
+              circle.verts.push_back(vert);
+            }
+          };
+
+          addRingOfVerts(0);
+
+          const size_t strideA=6;
+          size_t iRing=0;
+          for(size_t a=strideA; a<=aMax; a+=strideA, iRing++)
+          {
+            addRingOfVerts(a);
+
+            size_t iFirst = iRing*bMax;
+            auto addQuad = [&](size_t i1, size_t i2)
+            {
+              indexes.indexes.push_back(iFirst+i1);
+              indexes.indexes.push_back(iFirst+i2+bMax);
+              indexes.indexes.push_back(iFirst+i2);
+
+              indexes.indexes.push_back(iFirst+i1);
+              indexes.indexes.push_back(iFirst+i1+bMax);
+              indexes.indexes.push_back(iFirst+i2+bMax);
+            };
+
+            for(size_t b=1; b<bMax; b++)
+              addQuad(b-1, b);
+
+            addQuad(bMax-1, 0);
+          }
+          break;
+        }
+
       }
 
-      circle.calculateFaceNormals();
+      circle.calculateVertexNormals();
     };
 
     std::vector<tp_math_utils::Geometry3D> rotationXGeometry;
@@ -1269,7 +1345,7 @@ struct GizmoLayer::Private
   //################################################################################################
   void updateVisibility()
   {
-    if(!params.onlyRenderSelectedAxis || activeModification == Modify_lt::None)
+    if((!params.hideAllWhenSelected && !params.onlyRenderSelectedAxis) || activeModification == Modify_lt::None)
     {
       rotationXGeometryLayer->setVisible(params.rotationX.enable);
       rotationYGeometryLayer->setVisible(params.rotationY.enable);
@@ -1292,6 +1368,30 @@ struct GizmoLayer::Private
       scaleArrowZGeometryLayer->setVisible(params.scaleArrowZ.enable);
 
       scaleArrowScreenGeometryLayer->setVisible(params.scaleArrowScreen.enable);
+    }
+    else if(activeModification != Modify_lt::None && params.hideAllWhenSelected)
+    {
+      rotationXGeometryLayer->setVisible(false);
+      rotationYGeometryLayer->setVisible(false);
+      rotationZGeometryLayer->setVisible(false);
+
+      rotationScreenGeometryLayer->setVisible(false);
+
+      translationArrowXGeometryLayer->setVisible(false);
+      translationArrowYGeometryLayer->setVisible(false);
+      translationArrowZGeometryLayer->setVisible(false);
+
+      translationPlaneXGeometryLayer->setVisible(false);
+      translationPlaneYGeometryLayer->setVisible(false);
+      translationPlaneZGeometryLayer->setVisible(false);
+
+      translationPlaneScreenGeometryLayer->setVisible(false);
+
+      scaleArrowXGeometryLayer->setVisible(false);
+      scaleArrowYGeometryLayer->setVisible(false);
+      scaleArrowZGeometryLayer->setVisible(false);
+
+      scaleArrowScreenGeometryLayer->setVisible(false);
     }
     else
     {
@@ -1819,6 +1919,20 @@ void GizmoLayer::setOnlyRenderSelectedAxis(bool onlyRenderSelectedAxis)
 }
 
 //##################################################################################################
+void GizmoLayer::setHideAllWhenSelected(bool hideAllWhenSelected)
+{
+  d->params.hideAllWhenSelected = hideAllWhenSelected;
+  d->updateVisibility();
+}
+
+//##################################################################################################
+void GizmoLayer::setRotateToClosestQuadrant(bool rotateToClosestQuadrant)
+{
+  d->params.rotateToClosestQuadrant = rotateToClosestQuadrant;
+  d->updateVisibility();
+}
+
+//##################################################################################################
 void GizmoLayer::setDefaultRenderPass(const RenderPass& defaultRenderPass)
 {
   if(defaultRenderPass.type == RenderPass::GUI3D)
@@ -1938,18 +2052,34 @@ void GizmoLayer::render(RenderInfo& renderInfo)
       glm::mat4 mScale = glm::scale(glm::mat4{1.0f}, glm::vec3{s,s,s});
 
       glm::vec3 screenRelativeForward{0,0,1};
+      glm::vec3 screenRelativeDirection{0,0,1};
       glm::vec3 screenRelativeUp{0,1,0};
 
-      if(d->rotationScreenGeometryLayer->visible() ||
+
+
+      if(d->rotationScreenGeometryLayer->visible()         ||
          d->translationPlaneScreenGeometryLayer->visible() ||
-         d->scaleArrowScreenGeometryLayer->visible())
+         d->scaleArrowScreenGeometryLayer->visible()       ||
+         d->params.rotateToClosestQuadrant)
       {
         glm::vec3 axis{0,0,1};
         {
-          glm::mat4 vpInv = glm::inverse(matrices.vp*modelToWorld);
-          glm::vec3 a = tpProj(vpInv, {0.0f, 0.0f, 0.0f});
-          glm::vec3 b = tpProj(vpInv, {0.0f, 0.0f, 1.0f});
-          screenRelativeForward = glm::normalize(b-a);
+          glm::mat4 mvp = matrices.vp*modelToWorld;
+          glm::mat4 mvpInv = glm::inverse(mvp);
+
+          {
+            glm::vec3 a = tpProj(mvpInv, {0.0f, 0.0f, 0.0f});
+            glm::vec3 b = tpProj(mvpInv, {0.0f, 0.0f, 1.0f});
+            screenRelativeForward = glm::normalize(b-a);
+          }
+
+          {
+            glm::vec4 screen = mvp * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+            glm::vec2 s = screen/screen.w;
+            glm::vec3 a = tpProj(mvpInv, {s.x, s.y, 0.0f});
+            glm::vec3 b = tpProj(mvpInv, {s.x, s.y, 1.0f});
+            screenRelativeDirection = glm::normalize(b-a);
+          }
         }
 
         glm::mat4 mRot = matrixToRotateAOntoB(axis, screenRelativeForward);
@@ -2000,13 +2130,46 @@ void GizmoLayer::render(RenderInfo& renderInfo)
       }
 
       {
-        d->rotationXGeometryLayer->setModelMatrix(mScale);
-        d->rotationYGeometryLayer->setModelMatrix(mScale);
-        d->rotationZGeometryLayer->setModelMatrix(mScale);
+        auto applyTransformation = [&](Geometry3DLayer* layer, const glm::vec3& midAxis, const glm::vec3& axis, size_t iMax)
+        {
+          if(d->params.rotateToClosestQuadrant)
+          {
+            float stepDegrees = float(360 / iMax);
+            size_t bestIndex=0;
+            {
+              glm::vec3 a = midAxis;
+              float bestDistance = glm::distance2(screenRelativeDirection, a);
 
-        d->translationArrowXGeometryLayer->setModelMatrix(mScale);
-        d->translationArrowYGeometryLayer->setModelMatrix(mScale);
-        d->translationArrowZGeometryLayer->setModelMatrix(mScale);
+              glm::mat3 m=glm::rotate(glm::radians(stepDegrees), axis);
+              for(size_t i=1; i<iMax; i++)
+              {
+                a = m*a;
+                if(auto distance = glm::distance2(screenRelativeDirection, a); distance>bestDistance)
+                {
+                  bestDistance = distance;
+                  bestIndex = i;
+                }
+              }
+            }
+
+            if(bestIndex>0)
+            {
+              glm::mat4 mRot=glm::rotate(glm::radians(stepDegrees * float(bestIndex)), axis);
+              layer->setModelMatrix(mScale*mRot);
+              return;
+            }
+          }
+
+          layer->setModelMatrix(mScale);
+        };
+
+        applyTransformation(d->rotationXGeometryLayer, {0.000f, 0.707f, 0.707f}, {1.0f, 0.0f, 0.0f}, 4);
+        applyTransformation(d->rotationYGeometryLayer, {0.707f, 0.000f, 0.707f}, {0.0f, 1.0f, 0.0f}, 4);
+        applyTransformation(d->rotationZGeometryLayer, {0.707f, 0.707f, 0.000f}, {0.0f, 0.0f, 1.0f}, 4);
+
+        applyTransformation(d->translationArrowXGeometryLayer, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, 2);
+        applyTransformation(d->translationArrowYGeometryLayer, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, 2);
+        applyTransformation(d->translationArrowZGeometryLayer, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, 2);
 
         d->translationPlaneXGeometryLayer->setModelMatrix(mScale);
         d->translationPlaneYGeometryLayer->setModelMatrix(mScale);
@@ -2218,8 +2381,12 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
 
       auto mat = modelMatrix();
 
+      GizmoChangeType changeType{GizmoChangeType::Rotation};
+
       auto rotate = [&](const glm::vec3& axis)
       {
+        changeType = GizmoChangeType::Rotation;
+
         float angle=0.0f;
         if(d->useIntersection)
         {
@@ -2247,6 +2414,8 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
 
       auto translationAlongAxis = [&](const glm::vec3& axis)
       {
+        changeType = GizmoChangeType::Translation;
+
         auto m = map()->controller()->matrix(coordinateSystem()) * modelToWorldMatrix();
 
         tp_math_utils::DRay rayAxis({0.0, 0.0, 0.0}, {axis});
@@ -2278,6 +2447,8 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
 
       auto translationOnPlane = [&](const glm::vec3& axis)
       {
+        changeType = GizmoChangeType::Translation;
+
         auto m = map()->controller()->matrix(coordinateSystem()) * modelToWorldMatrix();
 
         tp_math_utils::Plane plane({0.0f, 0.0f, 0.0f}, axis);
@@ -2310,6 +2481,8 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
 
       auto scale = [&](const glm::vec3& axis)
       {
+        changeType = GizmoChangeType::Scale;
+
         auto m = map()->controller()->matrix(coordinateSystem()) * modelToWorldMatrix();
 
         tp_math_utils::DRay rayAxis({0.0, 0.0, 0.0}, {axis});
@@ -2378,7 +2551,7 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
       mat[2] *= lZ;
 
       setModelMatrix(mat);
-      changed();
+      changed(changeType);
 
       return true;
     }

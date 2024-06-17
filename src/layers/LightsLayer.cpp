@@ -178,8 +178,9 @@ void LightsLayer::render(RenderInfo& renderInfo)
         d->gizmoLayers.push_back(gizmoLayer);
         addChildLayer(gizmoLayer);
 
-        gizmoLayer->changed.addCallback([&, i]
+        gizmoLayer->changed.addCallback([&, i](GizmoChangeType changeType)
         {
+          TP_UNUSED(changeType);
           auto lights = map()->lights();
           if(i<lights.size() && i<d->gizmoLayers.size())
           {

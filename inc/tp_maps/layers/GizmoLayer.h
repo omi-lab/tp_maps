@@ -11,11 +11,22 @@ namespace tp_maps
 {
 
 //##################################################################################################
+enum class GizmoChangeType
+{
+  Rotation,
+  Scale,
+  Translation
+};
+
+//##################################################################################################
 enum class GizmoRingStyle
 {
   Compass,
+  QuaterCompass,
   ArrowsCW,
-  ArrowsCCW
+  ArrowsCCW,
+  Torus,
+  QuaterTorus
 };
 
 //##################################################################################################
@@ -253,6 +264,8 @@ struct GizmoParameters
   GizmoScaleMode gizmoScaleMode{GizmoScaleMode::Object};
   float gizmoScale{1.0f};
   bool onlyRenderSelectedAxis{false};
+  bool hideAllWhenSelected{false};
+  bool rotateToClosestQuadrant{false};
 
   GizmoRingParameters rotationX{GizmoRingParameters::init({1.0f, 0.0f, 0.0f}, true)};
   GizmoRingParameters rotationY{GizmoRingParameters::init({0.0f, 1.0f, 0.0f}, true)};
@@ -438,7 +451,13 @@ public:
   void setOnlyRenderSelectedAxis(bool onlyRenderSelectedAxis);
 
   //################################################################################################
-  tp_utils::CallbackCollection<void()> changed;
+  void setHideAllWhenSelected(bool hideAllWhenSelected);
+
+  //################################################################################################
+  void setRotateToClosestQuadrant(bool rotateToClosestQuadrant);
+
+  //################################################################################################
+  tp_utils::CallbackCollection<void(GizmoChangeType)> changed;
 
   //################################################################################################
   void setDefaultRenderPass(const RenderPass& defaultRenderPass) override;
