@@ -1152,13 +1152,7 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
   {
     unsigned char* p = pixels.data() + (((point.y*9)+point.x)*4);
 
-    uint32_t r = p[0];
-    uint32_t g = p[1];
-    uint32_t b = p[2];
-
-    uint32_t value = r;
-    value |= (g<<8);
-    value |= (b<<16);
+    uint32_t value = RenderInfo::pickingIDFromColor(p[0], p[1], p[2]);
 
     if(value>0)
     {

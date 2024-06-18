@@ -89,6 +89,9 @@ public:
   glm::vec4 pickingIDMat(const PickingDetails& details);
 
   //################################################################################################
+  static uint32_t pickingIDFromColor(uint32_t r, uint32_t g, uint32_t b);
+
+  //################################################################################################
   //! Call this at the start of the picking pass
   void resetPicking();
 

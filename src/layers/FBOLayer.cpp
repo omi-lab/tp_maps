@@ -3,6 +3,7 @@
 #include "tp_maps/shaders/G3DDepthImageShader.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/RenderInfo.h"
+#include "tp_maps/PickingResult.h"
 #include "tp_maps/subsystems/open_gl/OpenGLBuffers.h" // IWYU pragma: keep
 
 #include "tp_math_utils/JSONUtils.h"
@@ -37,10 +38,10 @@ std::string fboLayerSourceToString(FBOLayerSource fboLayerSource)
 {
   switch(fboLayerSource)
   {
-  case FBOLayerSource::Color    : return "Color";
-  case FBOLayerSource::Depth    : return "Depth";
-  case FBOLayerSource::Normals  : return "Normals";
-  case FBOLayerSource::Specular : return "Specular";
+    case FBOLayerSource::Color    : return "Color";
+    case FBOLayerSource::Depth    : return "Depth";
+    case FBOLayerSource::Normals  : return "Normals";
+    case FBOLayerSource::Specular : return "Specular";
   }
 
   return "Color";
@@ -78,6 +79,13 @@ struct FBOLayer::Private
 
   std::vector<FBOWindow> windows;
 
+#ifdef TP_POLL_PICKING
+  bool pollPicking{true};
+#else
+  bool pollPicking{false};
+#endif
+  double updateAfterTimestampMS{0.0};
+
   std::vector<G3DImageShader::VertexBuffer*> vertexBuffers;
   bool updateVertexBuffer{true};
 
@@ -100,10 +108,10 @@ struct FBOLayer::Private
   {
     switch(window.source)
     {
-    case FBOLayerSource::Color   : return q->map()->getShader<G3DImageShader>();
-    case FBOLayerSource::Depth   : return q->map()->getShader<G3DDepthImageShader>();
-    case FBOLayerSource::Normals : return q->map()->getShader<G3DImageShader>();
-    case FBOLayerSource::Specular: return q->map()->getShader<G3DImageShader>();
+      case FBOLayerSource::Color   : return q->map()->getShader<G3DImageShader>();
+      case FBOLayerSource::Depth   : return q->map()->getShader<G3DDepthImageShader>();
+      case FBOLayerSource::Normals : return q->map()->getShader<G3DImageShader>();
+      case FBOLayerSource::Specular: return q->map()->getShader<G3DImageShader>();
     }
     return q->map()->getShader<G3DImageShader>();
   }
@@ -135,6 +143,18 @@ void FBOLayer::setWindows(const std::vector<FBOWindow>& windows)
 const std::vector<FBOWindow>& FBOLayer::windows() const
 {
   return d->windows;
+}
+
+//##################################################################################################
+void FBOLayer::setPollPicking(bool pollPicking)
+{
+  d->pollPicking = pollPicking;
+}
+
+//##################################################################################################
+bool FBOLayer::pollPicking() const
+{
+  return d->pollPicking;
 }
 
 //##################################################################################################
@@ -220,29 +240,29 @@ void FBOLayer::render(RenderInfo& renderInfo)
     GLuint textureID{0};
     switch(window.source)
     {
-    case FBOLayerSource::Color:
-    {
-      textureID = fbo->textureID;
-      break;
-    }
+      case FBOLayerSource::Color:
+      {
+        textureID = fbo->textureID;
+        break;
+      }
 
-    case FBOLayerSource::Depth:
-    {
-      textureID = fbo->depthID;
-      break;
-    }
+      case FBOLayerSource::Depth:
+      {
+        textureID = fbo->depthID;
+        break;
+      }
 
-    case FBOLayerSource::Normals:
-    {
-      textureID = fbo->normalsID;
-      break;
-    }
+      case FBOLayerSource::Normals:
+      {
+        textureID = fbo->normalsID;
+        break;
+      }
 
-    case FBOLayerSource::Specular:
-    {
-      textureID = fbo->specularID;
-      break;
-    }
+      case FBOLayerSource::Specular:
+      {
+        textureID = fbo->specularID;
+        break;
+      }
     }
 
     G3DImageShader* shader = d->findShader(window);
@@ -273,6 +293,19 @@ void FBOLayer::invalidateBuffers()
   d->deleteVertexBuffers();
   d->updateVertexBuffer=true;
   Layer::invalidateBuffers();
+}
+
+//##################################################################################################
+void FBOLayer::animate(double timestampMS)
+{
+  if(visible() && d->pollPicking && d->updateAfterTimestampMS<timestampMS)
+  {
+    d->updateAfterTimestampMS = timestampMS + 100;
+    tp_maps::PickingResult* pickingResult = map()->performPicking("Poll", {10,10});
+    TP_CLEANUP([&]{delete pickingResult;});
+  }
+
+  Layer::animate(timestampMS);
 }
 
 }
