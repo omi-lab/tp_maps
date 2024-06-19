@@ -70,10 +70,16 @@ public:
   ~HandleLayer() override;  
 
   //################################################################################################
+  void setPlane(const tp_math_utils::Plane& plane);
+
+  //################################################################################################
   float zOffset() const;
 
   //################################################################################################
   void setZOffset(float zOffset);
+
+  //################################################################################################
+  void setAddRemove(bool doubleClickToAdd, bool doubleClickToRemove);
 
   //################################################################################################
   const std::vector<HandleDetails*>& handles() const;
@@ -82,7 +88,15 @@ public:
   void clearHandles();
 
   //################################################################################################
-  void setHandleMovedCallback(const std::function<void(void)>& handleMovedCallback);
+  tp_utils::CallbackCollection<void(const HandleDetails*)> handleMoved;
+
+  //################################################################################################
+  //! A drag is about to start.
+  tp_utils::CallbackCollection<void(const HandleDetails*)> dragStart;
+
+  //################################################################################################
+  //! A handle is about to be deleted.
+  tp_utils::CallbackCollection<void(const HandleDetails*)> handleDeleted;
 
 protected:
   //################################################################################################

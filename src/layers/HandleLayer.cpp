@@ -59,8 +59,6 @@ struct HandleLayer::Private
 
   int currentHandle{-1};
 
-  std::function<void(void)> handleMovedCallback;
-
   bool doubleClickToAdd{true};
   bool doubleClickToRemove{true};
 
@@ -160,6 +158,12 @@ HandleLayer::~HandleLayer()
 }
 
 //##################################################################################################
+void HandleLayer::setPlane(const tp_math_utils::Plane& plane)
+{
+  d->plane = plane;
+}
+
+//##################################################################################################
 float HandleLayer::zOffset() const
 {
   return d->zOffset;
@@ -169,6 +173,13 @@ float HandleLayer::zOffset() const
 void HandleLayer::setZOffset(float zOffset)
 {
   d->zOffset = zOffset;
+}
+
+//##################################################################################################
+void HandleLayer::setAddRemove(bool doubleClickToAdd, bool doubleClickToRemove)
+{
+  d->doubleClickToAdd = doubleClickToAdd;
+  d->doubleClickToRemove = doubleClickToRemove;
 }
 
 //##################################################################################################
@@ -182,12 +193,6 @@ void HandleLayer::clearHandles()
 {
   while(!d->handles.empty())
     delete d->handles.at(0);
-}
-
-//##################################################################################################
-void HandleLayer::setHandleMovedCallback(const std::function<void(void)>& handleMovedCallback)
-{
-  d->handleMovedCallback = handleMovedCallback;
 }
 
 //##################################################################################################
@@ -307,6 +312,7 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
         if(d->handles.at(i) == pickingResult->handle)
         {
           d->currentHandle = int(i);
+          dragStart(pickingResult->handle);
           return true;
         }
       }
@@ -446,10 +452,8 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
 
       if(pickingResult && pickingResult->layer == this && d->handles.size()>3)
       {
+        handleDeleted(pickingResult->handle);
         delete pickingResult->handle;
-
-        if(d->handleMovedCallback)
-          d->handleMovedCallback();
       }
     }
 
@@ -479,8 +483,7 @@ void HandleLayer::moveHandle(HandleDetails* handle, const glm::vec3& newPosition
   else
     handle->position = newPosition;
 
-  if(d->handleMovedCallback)
-    d->handleMovedCallback();
+  handleMoved(handle);
 
   d->updateVertexBuffer=true;
   update();
