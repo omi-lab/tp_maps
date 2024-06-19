@@ -100,6 +100,14 @@ void GizmoRingParameters::setRingRadius(float outerRadius,
 }
 
 //##################################################################################################
+GizmoRingParameters GizmoRingParameters::pickingParameters(float factor) const
+{
+  GizmoRingParameters pickingParameters = *this;
+  pickingParameters.ringHeight *= factor;
+  return pickingParameters;
+}
+
+//##################################################################################################
 void GizmoRingParameters::saveState(nlohmann::json& j) const
 {
   j["color"] = tp_math_utils::vec3ToJSON(color);
@@ -178,6 +186,15 @@ void GizmoArrowParameters::saveState(nlohmann::json& j) const
   j["strideDegrees"] = strideDegrees;
   j["positiveArrowStyle"] = gizmoArrowStyleToString(positiveArrowStyle);
   j["negativeArrowStyle"] = gizmoArrowStyleToString(negativeArrowStyle);
+}
+
+//##################################################################################################
+GizmoArrowParameters GizmoArrowParameters::pickingParameters(float factor) const
+{
+  GizmoArrowParameters pickingParameters = *this;
+  pickingParameters.stemRadius *= factor;
+  pickingParameters.coneRadius *= factor;
+  return pickingParameters;
 }
 
 //##################################################################################################
@@ -294,6 +311,7 @@ void GizmoParameters::saveState(nlohmann::json& j) const
 
   j["gizmoScaleMode"] = gizmoScaleModeToString(gizmoScaleMode);
   j["gizmoScale"] = gizmoScale;
+  j["pickingScale"] = pickingScale;
   j["onlyRenderSelectedAxis"] = onlyRenderSelectedAxis;
   j["hideAllWhenSelected"] = hideAllWhenSelected;
   j["rotateToClosestQuadrant"] = rotateToClosestQuadrant;
@@ -330,6 +348,7 @@ void GizmoParameters::loadState(const nlohmann::json& j)
 
   gizmoScaleMode = gizmoScaleModeFromString(TPJSONString(j, "gizmoScaleMode", "Object"));
   gizmoScale = TPJSONFloat(j, "gizmoScale", 1.0f);
+  pickingScale = TPJSONFloat(j, "pickingScale", 1.6f);
   onlyRenderSelectedAxis = TPJSONBool(j, "onlyRenderSelectedAxis", false);
   hideAllWhenSelected = TPJSONBool(j, "hideAllWhenSelected", false);
   rotateToClosestQuadrant = TPJSONBool(j, "rotateToClosestQuadrant", false);
@@ -734,17 +753,33 @@ struct GizmoLayer::Private
 
     std::vector<tp_math_utils::Geometry3D> rotationScreenGeometry;
 
-    makeCircle(rotationXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, params.rotationX);
-    makeCircle(rotationYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, params.rotationY);
-    makeCircle(rotationZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.rotationZ);
+    std::vector<tp_math_utils::Geometry3D> rotationXPickingGeometry;
+    std::vector<tp_math_utils::Geometry3D> rotationYPickingGeometry;
+    std::vector<tp_math_utils::Geometry3D> rotationZPickingGeometry;
 
-    makeCircle(rotationScreenGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.rotationScreen);
+    std::vector<tp_math_utils::Geometry3D> rotationScreenPickingGeometry;
 
-    rotationXGeometryLayer->setGeometry(rotationXGeometry);
-    rotationYGeometryLayer->setGeometry(rotationYGeometry);
-    rotationZGeometryLayer->setGeometry(rotationZGeometry);
+    {
+      makeCircle(rotationXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, params.rotationX);
+      makeCircle(rotationYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, params.rotationY);
+      makeCircle(rotationZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.rotationZ);
 
-    rotationScreenGeometryLayer->setGeometry(rotationScreenGeometry);
+      makeCircle(rotationScreenGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.rotationScreen);
+    }
+
+    {
+      makeCircle(rotationXPickingGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, params.rotationX.pickingParameters(params.pickingScale));
+      makeCircle(rotationYPickingGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, params.rotationY.pickingParameters(params.pickingScale));
+      makeCircle(rotationZPickingGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.rotationZ.pickingParameters(params.pickingScale));
+
+      makeCircle(rotationScreenPickingGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.rotationScreen.pickingParameters(1.6f));
+    }
+
+    rotationXGeometryLayer->setGeometry(rotationXGeometry, rotationXPickingGeometry);
+    rotationYGeometryLayer->setGeometry(rotationYGeometry, rotationYPickingGeometry);
+    rotationZGeometryLayer->setGeometry(rotationZGeometry, rotationZPickingGeometry);
+
+    rotationScreenGeometryLayer->setGeometry(rotationScreenGeometry, rotationScreenPickingGeometry);
   }
 
   //################################################################################################
@@ -1182,13 +1217,21 @@ struct GizmoLayer::Private
       std::vector<tp_math_utils::Geometry3D> translationArrowYGeometry;
       std::vector<tp_math_utils::Geometry3D> translationArrowZGeometry;
 
+      std::vector<tp_math_utils::Geometry3D> translationArrowXPickingGeometry;
+      std::vector<tp_math_utils::Geometry3D> translationArrowYPickingGeometry;
+      std::vector<tp_math_utils::Geometry3D> translationArrowZPickingGeometry;
+
       makeArrow(translationArrowXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, params.translationArrowX);
       makeArrow(translationArrowYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, params.translationArrowY);
       makeArrow(translationArrowZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.translationArrowZ);
 
-      translationArrowXGeometryLayer->setGeometry(translationArrowXGeometry);
-      translationArrowYGeometryLayer->setGeometry(translationArrowYGeometry);
-      translationArrowZGeometryLayer->setGeometry(translationArrowZGeometry);
+      makeArrow(translationArrowXPickingGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y)*scale;}, params.translationArrowX.pickingParameters(params.pickingScale));
+      makeArrow(translationArrowYPickingGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x)*scale;}, params.translationArrowY.pickingParameters(params.pickingScale));
+      makeArrow(translationArrowZPickingGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z)*scale;}, params.translationArrowZ.pickingParameters(params.pickingScale));
+
+      translationArrowXGeometryLayer->setGeometry(translationArrowXGeometry, translationArrowXPickingGeometry);
+      translationArrowYGeometryLayer->setGeometry(translationArrowYGeometry, translationArrowYPickingGeometry);
+      translationArrowZGeometryLayer->setGeometry(translationArrowZGeometry, translationArrowZPickingGeometry);
     }
 
     {
@@ -1259,17 +1302,33 @@ struct GizmoLayer::Private
 
     std::vector<tp_math_utils::Geometry3D> scaleArrowScreenGeometry;
 
-    makeArrow(scaleArrowXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y) * scale;}, params.scaleArrowX);
-    makeArrow(scaleArrowYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x) * scale;}, params.scaleArrowY);
-    makeArrow(scaleArrowZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z) * scale;}, params.scaleArrowZ);
+    std::vector<tp_math_utils::Geometry3D> scaleArrowXPickingGeometry;
+    std::vector<tp_math_utils::Geometry3D> scaleArrowYPickingGeometry;
+    std::vector<tp_math_utils::Geometry3D> scaleArrowZPickingGeometry;
 
-    makeArrow(scaleArrowScreenGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x) * scale;}, params.scaleArrowScreen);
+    std::vector<tp_math_utils::Geometry3D> scaleArrowScreenPickingGeometry;
 
-    scaleArrowXGeometryLayer->setGeometry(scaleArrowXGeometry);
-    scaleArrowYGeometryLayer->setGeometry(scaleArrowYGeometry);
-    scaleArrowZGeometryLayer->setGeometry(scaleArrowZGeometry);
+    {
+      makeArrow(scaleArrowXGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y) * scale;}, params.scaleArrowX);
+      makeArrow(scaleArrowYGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x) * scale;}, params.scaleArrowY);
+      makeArrow(scaleArrowZGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z) * scale;}, params.scaleArrowZ);
 
-    scaleArrowScreenGeometryLayer->setGeometry(scaleArrowScreenGeometry);
+      makeArrow(scaleArrowScreenGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x) * scale;}, params.scaleArrowScreen);
+    }
+
+    {
+      makeArrow(scaleArrowXPickingGeometry, [&](const auto& c){return glm::vec3(c.z, c.x, c.y) * scale;}, params.scaleArrowX.pickingParameters(params.pickingScale));
+      makeArrow(scaleArrowYPickingGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x) * scale;}, params.scaleArrowY.pickingParameters(params.pickingScale));
+      makeArrow(scaleArrowZPickingGeometry, [&](const auto& c){return glm::vec3(c.x, c.y, c.z) * scale;}, params.scaleArrowZ.pickingParameters(params.pickingScale));
+
+      makeArrow(scaleArrowScreenPickingGeometry, [&](const auto& c){return glm::vec3(c.y, c.z, c.x) * scale;}, params.scaleArrowScreen.pickingParameters(params.pickingScale));
+    }
+
+    scaleArrowXGeometryLayer->setGeometry(scaleArrowXGeometry, scaleArrowXPickingGeometry);
+    scaleArrowYGeometryLayer->setGeometry(scaleArrowYGeometry, scaleArrowYPickingGeometry);
+    scaleArrowZGeometryLayer->setGeometry(scaleArrowZGeometry, scaleArrowZPickingGeometry);
+
+    scaleArrowScreenGeometryLayer->setGeometry(scaleArrowScreenGeometry, scaleArrowScreenPickingGeometry);
   }
 
   //################################################################################################
@@ -1533,34 +1592,38 @@ struct GizmoLayer::Private
 GizmoLayer::GizmoLayer():
   d(new Private(this))
 {
-  auto createGeometryLayer = [&](auto& l)
+  auto createGeometryLayer = [&](auto& l, bool pickingScale)
   {
     l = new Geometry3DLayer();
+
+    if(pickingScale)
+      l->setPickingName("Picking");
+
     addChildLayer(l);
     l->setShaderSelection(Geometry3DLayer::ShaderSelection::StaticLight);
   };
 
-  createGeometryLayer(d->rotationXGeometryLayer);
-  createGeometryLayer(d->rotationYGeometryLayer);
-  createGeometryLayer(d->rotationZGeometryLayer);
+  createGeometryLayer(d->rotationXGeometryLayer, true);
+  createGeometryLayer(d->rotationYGeometryLayer, true);
+  createGeometryLayer(d->rotationZGeometryLayer, true);
 
-  createGeometryLayer(d->rotationScreenGeometryLayer);
+  createGeometryLayer(d->rotationScreenGeometryLayer, true);
 
-  createGeometryLayer(d->translationArrowXGeometryLayer);
-  createGeometryLayer(d->translationArrowYGeometryLayer);
-  createGeometryLayer(d->translationArrowZGeometryLayer);
+  createGeometryLayer(d->translationArrowXGeometryLayer, true);
+  createGeometryLayer(d->translationArrowYGeometryLayer, true);
+  createGeometryLayer(d->translationArrowZGeometryLayer, true);
 
-  createGeometryLayer(d->translationPlaneXGeometryLayer);
-  createGeometryLayer(d->translationPlaneYGeometryLayer);
-  createGeometryLayer(d->translationPlaneZGeometryLayer);
+  createGeometryLayer(d->translationPlaneXGeometryLayer, false);
+  createGeometryLayer(d->translationPlaneYGeometryLayer, false);
+  createGeometryLayer(d->translationPlaneZGeometryLayer, false);
 
-  createGeometryLayer(d->translationPlaneScreenGeometryLayer);
+  createGeometryLayer(d->translationPlaneScreenGeometryLayer, false);
 
-  createGeometryLayer(d->scaleArrowXGeometryLayer);
-  createGeometryLayer(d->scaleArrowYGeometryLayer);
-  createGeometryLayer(d->scaleArrowZGeometryLayer);
+  createGeometryLayer(d->scaleArrowXGeometryLayer, true);
+  createGeometryLayer(d->scaleArrowYGeometryLayer, true);
+  createGeometryLayer(d->scaleArrowZGeometryLayer, true);
 
-  createGeometryLayer(d->scaleArrowScreenGeometryLayer);
+  createGeometryLayer(d->scaleArrowScreenGeometryLayer, true);
 
 
   auto createLinesLayer = [&](auto& l)

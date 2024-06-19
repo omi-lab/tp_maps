@@ -11,7 +11,6 @@
 #include "tp_maps/shaders/G3DStaticLightShader.h"
 
 #include "tp_utils/TimeUtils.h"
-#include "tp_utils/DebugUtils.h"
 
 namespace tp_maps
 {
@@ -25,6 +24,7 @@ struct Geometry3DLayer::Private
   Geometry3DLayer* q;
 
   tp_utils::StringID name{defaultSID()};
+  tp_utils::StringID pickingName{defaultSID()};
   bool geometrySet{false};
 
   std::vector<tp_utils::StringID> subscribedTextures;
@@ -76,6 +76,9 @@ struct Geometry3DLayer::Private
     {
       geometrySet=false;
       geometry3DPool->unsubscribe(name);
+      if(pickingName!=name)
+        geometry3DPool->unsubscribe(pickingName);
+
     }
   }
 };
@@ -97,6 +100,7 @@ Geometry3DLayer::~Geometry3DLayer()
 void Geometry3DLayer::setName(const tp_utils::StringID& name)
 {
   d->name = name;
+  d->pickingName = name;
   update();
 }
 
@@ -104,6 +108,19 @@ void Geometry3DLayer::setName(const tp_utils::StringID& name)
 const tp_utils::StringID& Geometry3DLayer::name() const
 {
   return d->name;
+}
+
+//##################################################################################################
+void Geometry3DLayer::setPickingName(const tp_utils::StringID& pickingName)
+{
+  d->pickingName = pickingName;
+  update();
+}
+
+//##################################################################################################
+const tp_utils::StringID& Geometry3DLayer::pickingName() const
+{
+  return d->pickingName;
 }
 
 //##################################################################################################
@@ -144,6 +161,17 @@ void Geometry3DLayer::setGeometry(const std::vector<tp_math_utils::Geometry3D>& 
   d->geometry3DPool->subscribe(d->name, [&]{return geometry;}, true);
 }
 
+//##################################################################################################
+void Geometry3DLayer::setGeometry(const std::vector<tp_math_utils::Geometry3D>& geometry, const std::vector<tp_math_utils::Geometry3D>& pickingGeometry)
+{
+  TP_FUNCTION_TIME("Geometry3DLayer::setGeometry");
+  d->checkClearGeometry();
+  d->geometrySet = true;
+  d->geometry3DPool->subscribe(d->name, [&]{return geometry;}, true);
+  if(d->pickingName != d->name)
+    d->geometry3DPool->subscribe(d->pickingName, [&]{return pickingGeometry;}, true);
+}
+
 //################################################################################################
 void Geometry3DLayer::viewGeometry(const std::function<void(const std::vector<tp_math_utils::Geometry3D>&)>& closure) const
 {
@@ -155,15 +183,6 @@ void Geometry3DLayer::viewGeometry(const std::function<void(const std::vector<tp
 {
   d->geometry3DPool->viewGeometry(d->name, d->alternativeMaterials, closure);
 }
-////################################################################################################
-//enum class ShaderSelection
-//{
-//  Material,   //!< Render the 3D geometry as a shaded material using the G3DMaterialShader.
-//  Image,      //!< Render the 3D geometry as flat unshaded images using the G3DImageShader.
-//  XYZ,        //!< Write the frag xyz coords in world coords to the output buffer using the G3DXYZShader.
-//  Depth,      //!< Write the depth buffer to the output buffer.
-//  StaticLight //!< Render the 3D geometry as a shaded material ignoring lights and shadows.
-//};
 
 //##################################################################################################
 std::vector<std::string> Geometry3DLayer::shaderSelections()
@@ -291,7 +310,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
 
   if(picking)
   {
-    d->geometry3DPool->viewProcessedGeometry(d->name,
+    d->geometry3DPool->viewProcessedGeometry(d->pickingName,
                                              shader,
                                              d->alternativeMaterials,
                                              d->uvMatricies,

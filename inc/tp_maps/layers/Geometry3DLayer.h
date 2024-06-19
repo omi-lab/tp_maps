@@ -36,6 +36,12 @@ public:
   const tp_utils::StringID& name() const;
 
   //################################################################################################
+  void setPickingName(const tp_utils::StringID& pickingName);
+
+  //################################################################################################
+  const tp_utils::StringID& pickingName() const;
+
+  //################################################################################################
   TexturePool* texturePool() const;
 
   //################################################################################################
@@ -46,6 +52,9 @@ public:
 
   //################################################################################################
   void setGeometry(const std::vector<tp_math_utils::Geometry3D>& geometry);
+
+  //################################################################################################
+  void setGeometry(const std::vector<tp_math_utils::Geometry3D>& geometry, const std::vector<tp_math_utils::Geometry3D>& pickingGeometry);
 
   //################################################################################################
   void viewGeometry(const std::function<void(const std::vector<tp_math_utils::Geometry3D>&)>& closure) const;

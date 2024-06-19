@@ -80,6 +80,10 @@ struct GizmoRingParameters
                      float arrowOuterRadius);
 
   //################################################################################################
+  //! Make the ring fatter to make picking easier
+  GizmoRingParameters pickingParameters(float factor) const;
+
+  //################################################################################################
   void saveState(nlohmann::json& j) const;
 
   //################################################################################################
@@ -155,6 +159,10 @@ struct GizmoArrowParameters
     p.color = color;
     return p;
   }
+
+  //################################################################################################
+  //! Make the arrow fatter to make picking easier
+  GizmoArrowParameters pickingParameters(float factor) const;
 
   //################################################################################################
   void saveState(nlohmann::json& j) const;
@@ -263,6 +271,7 @@ struct GizmoParameters
 
   GizmoScaleMode gizmoScaleMode{GizmoScaleMode::Object};
   float gizmoScale{1.0f};
+  float pickingScale{1.9f};
   bool onlyRenderSelectedAxis{false};
   bool hideAllWhenSelected{false};
   bool rotateToClosestQuadrant{false};
