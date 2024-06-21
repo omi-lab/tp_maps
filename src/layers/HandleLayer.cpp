@@ -49,6 +49,8 @@ struct HandleLayer::Private
   //The raw data passed to this class
   std::vector<HandleDetails*> handles;
 
+  std::function<bool(HandleDetails*, const glm::ivec2&, const glm::mat4&, glm::vec3&)> calculateHandlePositionCallback;
+
   //Processed geometry ready for rendering
   bool updateVertexBuffer{true};
   PointSpriteShader::VertexBuffer* vertexBuffer{nullptr};
@@ -193,6 +195,19 @@ void HandleLayer::clearHandles()
 {
   while(!d->handles.empty())
     delete d->handles.at(0);
+}
+
+//##################################################################################################
+void HandleLayer::updateHandles()
+{
+  d->updateVertexBuffer = true;
+  update();
+}
+
+//##################################################################################################
+void HandleLayer::setCalculateHandlePositionCallback(const std::function<bool(HandleDetails*, const glm::ivec2&, const glm::mat4&, glm::vec3&)>& calculateHandlePositionCallback)
+{
+  d->calculateHandlePositionCallback = calculateHandlePositionCallback;
 }
 
 //##################################################################################################
@@ -354,7 +369,15 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
     if(d->currentHandle>=0 && d->currentHandle<int(d->handles.size()))
     {
       glm::vec3 newPosition;
-      if(map()->unProject(event.pos, newPosition, d->plane, m))
+      if(d->calculateHandlePositionCallback)
+      {
+        if(d->calculateHandlePositionCallback(d->handles[size_t(d->currentHandle)], event.pos, m, newPosition))
+        {
+          moveHandle(d->handles[size_t(d->currentHandle)], newPosition);
+          return true;
+        }
+      }
+      else if(map()->unProject(event.pos, newPosition, d->plane, m))
       {
         moveHandle(d->handles[size_t(d->currentHandle)], newPosition);
         return true;

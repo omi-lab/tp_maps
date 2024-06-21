@@ -59,7 +59,7 @@ struct LinesLayer::Private
 LinesLayer::LinesLayer():
   d(new Private(this))
 {
-
+  setExcludeFromPicking(true);
 }
 
 //##################################################################################################

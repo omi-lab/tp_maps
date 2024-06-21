@@ -88,6 +88,12 @@ public:
   void clearHandles();
 
   //################################################################################################
+  void updateHandles();
+
+  //################################################################################################
+  void setCalculateHandlePositionCallback(const std::function<bool(HandleDetails*, const glm::ivec2&, const glm::mat4&, glm::vec3&)>& calculateHandlePositionCallback);
+
+  //################################################################################################
   tp_utils::CallbackCollection<void(const HandleDetails*)> handleMoved;
 
   //################################################################################################

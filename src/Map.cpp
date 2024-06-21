@@ -315,25 +315,33 @@ struct Map::Private
   {
     controller->updateMatrices();
 
-    for(auto l : layers)
+    auto render = [&](auto test)
     {
-      if(l->visible())
+      for(auto l : layers)
       {
-        try
+        if(test(l))
         {
-          l->render(renderInfo);
-        }
-        catch (const std::exception& ex)
-        {
-          tpWarning() << "Exception caught in Map::Private::render!";
-          tpWarning() << "Exception: " << ex.what();
-        }
-        catch (...)
-        {
-          tpWarning() << "Exception caught in Map::Private::render!";
+          try
+          {
+            l->render(renderInfo);
+          }
+          catch (const std::exception& ex)
+          {
+            tpWarning() << "Exception caught in Map::Private::render!";
+            tpWarning() << "Exception: " << ex.what();
+          }
+          catch (...)
+          {
+            tpWarning() << "Exception caught in Map::Private::render!";
+          }
         }
       }
-    }
+    };
+
+    if(renderInfo.isPickingRender())
+      render([](auto l){return l->visible() && !l->excludeFromPicking();});
+    else
+      render([](auto l){return l->visible();});
   }
 
   //################################################################################################

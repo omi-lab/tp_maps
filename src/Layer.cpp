@@ -25,6 +25,7 @@ struct Layer::Private
   tp_utils::StringID coordinateSystem{defaultSID()};
   RenderPass defaultRenderPass{RenderPass::Normal};
   bool visible{true};
+  bool excludeFromPicking{false};
   std::shared_ptr<int> alive{std::make_shared<int>()};
 
   //################################################################################################
@@ -130,6 +131,18 @@ void Layer::setVisibleQuiet(bool visible)
 }
 
 //##################################################################################################
+bool Layer::excludeFromPicking() const
+{
+  return d->excludeFromPicking;
+}
+
+//##################################################################################################
+void Layer::setExcludeFromPicking(bool excludeFromPicking)
+{
+  d->excludeFromPicking = excludeFromPicking;
+}
+
+//##################################################################################################
 const RenderPass& Layer::defaultRenderPass() const
 {
   return d->defaultRenderPass;
@@ -193,9 +206,18 @@ void Layer::render(RenderInfo& renderInfo)
 {
   TP_FUNCTION_TIME("Layer::render");
 
-  for(auto l : d->layers)
-    if(l->visible())
-      l->render(renderInfo);
+  if(renderInfo.isPickingRender())
+  {
+    for(auto l : d->layers)
+      if(l->visible() && !l->excludeFromPicking())
+        l->render(renderInfo);
+  }
+  else
+  {
+    for(auto l : d->layers)
+      if(l->visible())
+        l->render(renderInfo);
+  }
 }
 
 //##################################################################################################

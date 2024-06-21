@@ -132,6 +132,12 @@ public:
   void setVisibleQuiet(bool visible);
 
   //################################################################################################
+  bool excludeFromPicking() const;
+
+  //################################################################################################
+  void setExcludeFromPicking(bool excludeFromPicking);
+
+  //################################################################################################
   //! The render pass that this layer should do most of its rendering in.
   /*!
   Layers may use this to select a render pass to do their main drawing in. Many layers will need to
