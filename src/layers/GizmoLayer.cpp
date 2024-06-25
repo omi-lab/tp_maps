@@ -424,10 +424,12 @@ struct GizmoLayer::Private
   glm::vec3 intersectionPoint;
   glm::vec3 intersectionVector;
   glm::vec3 newIntersectionVector;
+  glm::vec3 screenRotateUpVectorOnPlane;
   bool useIntersection{false};
   glm::mat4 originalModelMatrix;
   glm::mat4 originalModelToWorldMatrix;
   glm::mat4 screenRelativeMatrix;
+  glm::mat4 screenRelativeRotationMatrix;
   glm::vec3 originalScreenRelativeAxis{0.0f,0.0f, 1.0f};
 
   glm::vec3 scale{1.0f, 1.0f, 1.0f};
@@ -2114,7 +2116,6 @@ void GizmoLayer::render(RenderInfo& renderInfo)
 
       glm::mat4 mScale = glm::scale(glm::mat4{1.0f}, glm::vec3{s,s,s});
 
-      glm::vec3 screenRelativeForward{0,0,1};
       glm::vec3 screenRelativeDirection{0,0,1};
       glm::vec3 screenRelativeUp{0,1,0};
 
@@ -2131,12 +2132,6 @@ void GizmoLayer::render(RenderInfo& renderInfo)
           glm::mat4 mvpInv = glm::inverse(mvp);
 
           {
-            glm::vec3 a = tpProj(mvpInv, {0.0f, 0.0f, 0.0f});
-            glm::vec3 b = tpProj(mvpInv, {0.0f, 0.0f, 1.0f});
-            screenRelativeForward = glm::normalize(b-a);
-          }
-
-          {
             glm::vec4 screen = mvp * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
             glm::vec2 s = screen/screen.w;
             glm::vec3 a = tpProj(mvpInv, {s.x, s.y, 0.0f});
@@ -2145,18 +2140,19 @@ void GizmoLayer::render(RenderInfo& renderInfo)
           }
         }
 
-        glm::mat4 mRot = matrixToRotateAOntoB(axis, screenRelativeForward);
+        glm::mat4 mRot = matrixToRotateAOntoB(axis, screenRelativeDirection);
 
         screenRelativeUp = glm::mat3(mRot) * glm::vec3(1.0f, 0.0f, 0.0f);
 
         d->screenRelativeMatrix = mScale * mRot;
+        d->screenRelativeRotationMatrix = mRot;
 
         if(d->rotationScreenGeometryLayer->visible())
         {
           d->rotationScreenGeometryLayer->setModelMatrix(d->screenRelativeMatrix);
         }
 
-        if(d->translationPlaneScreenGeometryLayer->visible() )
+        if(d->translationPlaneScreenGeometryLayer->visible())
         {
           auto m = matrices.vp * modelToWorld * d->screenRelativeMatrix;
           auto mInv = glm::inverse(m);
@@ -2275,10 +2271,10 @@ void GizmoLayer::render(RenderInfo& renderInfo)
         }
         else if(d->activeModification == Modify_lt::RotateScreen)
         {
-          glm::mat4 mRotateToPlane = matrixToRotateAOntoB({0.0f, 0.0f, 1.0f}, screenRelativeForward);
-          glm::mat4 mRotateAroundAxis = matrixToRotateAOntoB(screenRelativeUp, d->intersectionVector);
+          glm::mat4 mRotateToPlane = d->screenRelativeRotationMatrix;
+          glm::mat4 mRotateAroundAxis = matrixToRotateAOntoB(d->screenRotateUpVectorOnPlane, d->intersectionVector);
           glm::mat4 mRotateRemoveDelta = matrixToRotateAOntoB(d->newIntersectionVector, d->intersectionVector);
-          d->rotationSectorLayer->setModelMatrix(mScale * mRotateAroundAxis * mRotateRemoveDelta * mRotateToPlane);
+          d->rotationSectorLayer->setModelMatrix(mScale * mRotateRemoveDelta * mRotateAroundAxis * mRotateToPlane);
           d->rotationSectorLayer->setVisibleQuiet(true);
         }
         else
@@ -2300,6 +2296,24 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
     auto m = map()->controller()->matrix(coordinateSystem()) * d->originalModelToWorldMatrix;
     tp_math_utils::Plane plane(glm::vec3(0,0,0), axis);
     return map()->unProject(event.pos, intersectionPoint, plane, m);
+  };
+
+  auto setScreenRotateUpVectorOnPlane = [&]()
+  {
+    glm::vec2 screenPoint{0.0f,0.0f};
+    {
+      auto m = map()->controller()->matrix(coordinateSystem()) * d->rotationScreenGeometryLayer->modelToWorldMatrix();
+      map()->project({1.0f, 0.0f, 0.0f}, screenPoint, m);
+    }
+
+    glm::vec3 upPointOnPlane{1.0f, 0.0f, 0.0f};
+    {
+      auto m = map()->controller()->matrix(coordinateSystem()) * d->originalModelToWorldMatrix;
+      tp_math_utils::Plane plane(glm::vec3(0,0,0), d->originalScreenRelativeAxis);
+      map()->unProject(screenPoint, upPointOnPlane, plane, m);
+    }
+
+    d->screenRotateUpVectorOnPlane = glm::normalize(upPointOnPlane);
   };
 
   switch(event.type)
@@ -2348,8 +2362,11 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
         if(result->layer == d->rotationScreenGeometryLayer)
         {
           d->originalScreenRelativeAxis = d->screenRotateAxis();
+
           d->useIntersection = intersectPlane(d->originalScreenRelativeAxis, d->intersectionPoint);
           d->intersectionVector = glm::normalize(d->intersectionPoint);
+          setScreenRotateUpVectorOnPlane();
+          d->rotationSectorLayer->setAngleDegrees(0.0f);
           d->setActiveModification(Modify_lt::RotateScreen);
           return true;
         }
