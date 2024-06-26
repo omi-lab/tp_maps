@@ -187,8 +187,10 @@ RenderMode RenderModeManager::renderMode() const
 //##################################################################################################
 size_t RenderModeManager::shadowSamples() const
 {
+#ifdef TP_LINUX
 #warning implement
 #warning make this return 0 for picking or just use 0 for picking renders.
+#endif
   return d->shadowSamples;
 }
 
