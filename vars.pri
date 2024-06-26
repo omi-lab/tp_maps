@@ -70,6 +70,9 @@ HEADERS += inc/tp_maps/Geometry3DPool.h
 SOURCES += src/SwapRowOrder.cpp
 HEADERS += inc/tp_maps/SwapRowOrder.h
 
+SOURCES += src/RenderModeManager.cpp
+HEADERS += inc/tp_maps/RenderModeManager.h
+
 
 #-- Subsystems -------------------------------------------------------------------------------------
 HEADERS += inc/tp_maps/subsystems/Subsystem.h

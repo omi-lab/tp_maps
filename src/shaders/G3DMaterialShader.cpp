@@ -3,6 +3,7 @@
 #include "tp_maps/textures/BasicTexture.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/Geometry3DPool.h"
+#include "tp_maps/RenderModeManager.h"
 #include "tp_maps/subsystems/open_gl/OpenGL.h" // IWYU pragma: keep
 
 #include "glm/gtc/type_ptr.hpp"
@@ -372,8 +373,7 @@ void G3DMaterialShader::setLights(const std::vector<tp_math_utils::Light>& light
       glUniform2fv(locations.txlSizeLocation, 1, &txlSize.x);
     }
 
-    tp_maps::RenderMode renderMode = map()->renderMode();
-    setShadowSamples(map()->shadowSamples(renderMode));
+    setShadowSamples(map()->renderModeManger().shadowSamples());
   };
 
   if(currentShaderType() == ShaderType::Render)

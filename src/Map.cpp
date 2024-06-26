@@ -11,6 +11,7 @@
 #include "tp_maps/DragDropEvent.h"
 #include "tp_maps/FontRenderer.h"
 #include "tp_maps/SwapRowOrder.h"
+#include "tp_maps/RenderModeManager.h"
 #include "tp_maps/event_handlers/MouseEventHandler.h"
 #include "tp_maps/subsystems/open_gl/OpenGLBuffers.h"
 
@@ -217,9 +218,6 @@ struct Map::Private
   std::vector<tp_math_utils::Light> lights;
   std::vector<OpenGLFBO> lightBuffers;
   size_t lightTextureSize{1024};
-  size_t shadowSamplesFull{0};
-  size_t shadowSamplesIntermediate{0};
-  size_t shadowSamplesFast{0};
 
   tp_utils::ElapsedTimer renderTimer;
 
@@ -239,11 +237,11 @@ struct Map::Private
   bool initialized{false};
   bool preDeleteCalled{false};
 
+  RenderModeManager* renderModeManager{nullptr};
+
 #ifdef TP_ENABLE_PROFILING
   std::shared_ptr<tp_utils::Profiler> profiler{nullptr};
 #endif
-
-  RenderMode renderMode{RenderMode::Intermediate};
 
   //################################################################################################
   Private(Map* q_):
@@ -380,6 +378,9 @@ Map::Map(bool enableDepthBuffer):
   d(new Private(this))
 {
   TP_UNUSED(enableDepthBuffer);
+
+  d->renderModeManager = new RenderModeManager(this);
+
   d->controller = new FlatController(this);
 
   d->setRenderPassesInternal({
@@ -408,6 +409,9 @@ Map::~Map()
 void Map::preDelete()
 {
   d->deleteShaders();
+
+  delete d->renderModeManager;
+  d->renderModeManager = nullptr;
 
   delete d->controller;
   d->controller=nullptr;
@@ -519,15 +523,9 @@ bool Map::initialized() const
 }
 
 //##################################################################################################
-void Map::setRenderMode(RenderMode renderMode)
+RenderModeManager& Map::renderModeManger() const
 {
-  d->renderMode = renderMode;
-}
-
-//##################################################################################################
-RenderMode Map::renderMode() const
-{
-  return d->renderMode;
+  return *d->renderModeManager;
 }
 
 //##################################################################################################
@@ -803,50 +801,6 @@ void Map::setMaxSamples(size_t maxSamples)
 size_t Map::maxSamples() const
 {
   return d->buffers.maxSamples();
-}
-
-//##################################################################################################
-void Map::setShadowSamples(RenderMode renderMode, size_t shadowSamples)
-{
-  switch(renderMode) {
-    case RenderMode::Full:
-    {
-      if(d->shadowSamplesFull != shadowSamples)
-      {
-        d->shadowSamplesFull = shadowSamples;
-        d->deleteShaders();
-      }
-    }
-    break;
-
-    case RenderMode::Intermediate:
-    {
-      if(d->shadowSamplesIntermediate != shadowSamples)
-      {
-        d->shadowSamplesIntermediate = shadowSamples;
-        d->deleteShaders();
-      }
-    }
-    break;
-
-    case RenderMode::Fast:
-    {
-      if(d->shadowSamplesFast != shadowSamples)
-        d->shadowSamplesFast = shadowSamples;
-    }
-    break;
-  }
-}
-
-//##################################################################################################
-size_t Map::shadowSamples(RenderMode renderMode) const
-{
-  if(renderMode == RenderMode::Full)
-    return d->shadowSamplesFull;
-  else if(renderMode == RenderMode::Intermediate)
-    return d->shadowSamplesIntermediate;
-  else // renderMode == RenderMode::Fast
-    return d->shadowSamplesFast;
 }
 
 //##################################################################################################
@@ -1540,6 +1494,7 @@ size_t Map::skipRenderPasses()
 //##################################################################################################
 void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
 {
+  PRINT_FUNCTION_NAME("Map::executeRenderPasses");
   PRF_SCOPED_RANGE(d->profiler.get(), "executeRenderPasses", {255,255,255});
 
   for(; rp<d->computedRenderPasses.size(); rp++)
@@ -1883,11 +1838,12 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
     }
   }
 
-  if(d->renderMode == RenderMode::Fast)
-  {
-    // switch off soft shadows for fast render
-    setShadowSamples(RenderMode::Fast, 0);
-  }
+#warning why
+//  if(d->renderModeManager->renderMode() == RenderMode::Fast)
+//  {
+//    // switch off soft shadows for fast render
+//    setShadowSamples(RenderMode::Fast, 0);
+//  }
 }
 
 //##################################################################################################
@@ -1909,14 +1865,26 @@ void Map::resizeGL(int w, int h)
 //##################################################################################################
 bool Map::mouseEvent(const MouseEvent& event)
 {
+  tpDebug() << "----------------------------------------";
+  tpEnablePrintFunctionNames(true);
+  TP_CLEANUP([]
+  {
+    tpEnablePrintFunctionNames(false);
+    tpDebug() << "========================================";
+  });
+
+
+
   // If a layer or the controller has focus from a previous press event pass the release to it first.
   if(event.type == MouseEventType::Release || event.type == MouseEventType::Move)
   {
+    tpDebug() << "d->eventHandlers " << d->eventHandlers.size();
     for(size_t i=d->eventHandlers.size()-1; i<d->eventHandlers.size(); i--)
     {
       std::shared_ptr<EventHandler_lt> eventHandler=d->eventHandlers.at(i);
       if(auto i = eventHandler->m_hasMouseFocusFor.find(event.button); i!=eventHandler->m_hasMouseFocusFor.end())
       {
+        tpDebug() << "eventHandler A";
         if(event.type == MouseEventType::Release)
           eventHandler->m_hasMouseFocusFor.erase(i);
 
@@ -1951,6 +1919,7 @@ bool Map::mouseEvent(const MouseEvent& event)
   for(size_t i=d->eventHandlers.size()-1; i<d->eventHandlers.size(); i--)
   {
     std::shared_ptr<EventHandler_lt> eventHandler=d->eventHandlers.at(i);
+    tpDebug() << "eventHandler B";
     if(eventHandler->callbacks.mouseEvent(event))
     {
       if(event.type == MouseEventType::Press || event.type == MouseEventType::DragStart)

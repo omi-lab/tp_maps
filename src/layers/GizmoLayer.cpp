@@ -53,7 +53,7 @@ enum class Modify_lt
 //##################################################################################################
 std::vector<std::string> gizmoRingStyles()
 {
-  return {"Compass", "ArrowsCW", "ArrowsCCW"};
+  return {"Compass", "QuaterCompass", "ArrowsCW", "ArrowsCCW", "Torus", "QuaterTorus"};
 }
 
 //##################################################################################################

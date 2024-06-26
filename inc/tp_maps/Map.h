@@ -39,6 +39,7 @@ class PickingResult;
 class FontRenderer;
 class PostLayer;
 class EventHandler;
+class RenderModeManager;
 struct MouseEvent;
 struct DragDropEvent;
 struct KeyEvent;
@@ -101,10 +102,7 @@ public:
   bool initialized() const;
 
   //################################################################################################
-  void setRenderMode(RenderMode renderMode);
-
-  //################################################################################################
-  RenderMode renderMode() const;
+  RenderModeManager& renderModeManger() const;
 
   //################################################################################################
   const OpenGLBuffers& buffers() const;
@@ -195,18 +193,6 @@ public:
 
   //################################################################################################
   size_t maxSamples() const;
-
-  //################################################################################################
-  void setShadowSamples(RenderMode renderMode, size_t shadowSamples);
-
-  //################################################################################################
-  //! The number of adjacent samples to take from a shadow texture
-  /*!
-  The actual number of samples that is made is as follows:
-
-  samples = (shadowSamples+1) * (shadowSamples+1) * nLights;
-  */
-  size_t shadowSamples(RenderMode renderMode) const;
 
   //################################################################################################
   //! Enable high dynamic range rendering buffers.
