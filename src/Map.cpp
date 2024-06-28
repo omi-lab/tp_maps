@@ -1837,15 +1837,6 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
                      " rp: " << rp;
     }
   }
-
-#ifdef TP_LINUX
-#warning why
-#endif
-//  if(d->renderModeManager->renderMode() == RenderMode::Fast)
-//  {
-//    // switch off soft shadows for fast render
-//    setShadowSamples(RenderMode::Fast, 0);
-//  }
 }
 
 //##################################################################################################

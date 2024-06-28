@@ -80,17 +80,16 @@ struct RenderModeManager::Private
     {
       q->setRenderMode(RenderMode::Intermediate);
       if(renderMode != defaultRenderMode)
+      {
         nextModeAfter = now + switchToFullDelay;
-      else
-        checkConnect(false);
-
+        checkConnect(true);
+      }
       return;
     }
 
     if(renderMode == RenderMode::Intermediate)
     {
-      q->setRenderMode(RenderMode::Fast);
-      checkConnect(false);
+      q->setRenderMode(RenderMode::Full);
       return;
     }
 
@@ -112,56 +111,12 @@ RenderModeManager::~RenderModeManager()
   delete d;
 }
 
-
-
 //##################################################################################################
-void RenderModeManager::setShadowSamples(RenderMode renderMode, size_t shadowSamples)
+void RenderModeManager::setDefaultRenderMode(RenderMode defaultRenderMode)
 {
-//#warning this seems inefficient
-//  switch(renderMode)
-//  {
-//    case RenderMode::Full:
-//    {
-//      if(d->shadowSamplesFull != shadowSamples)
-//      {
-//        d->shadowSamplesFull = shadowSamples;
-//        d->deleteShaders();
-//      }
-//    }
-//    break;
-
-//    case RenderMode::Intermediate:
-//    {
-//      if(d->shadowSamplesIntermediate != shadowSamples)
-//      {
-//        d->shadowSamplesIntermediate = shadowSamples;
-//        d->deleteShaders();
-//      }
-//    }
-//    break;
-
-//    case RenderMode::Fast:
-//    {
-//      if(d->shadowSamplesFast != shadowSamples)
-//        d->shadowSamplesFast = shadowSamples;
-//    }
-//    break;
-//  }
+  d->defaultRenderMode = defaultRenderMode;
+  d->checkConnect(true);
 }
-
-//##################################################################################################
-size_t RenderModeManager::shadowSamples(RenderMode renderMode) const
-{
-//#warning possibly move this into the manager
-//  if(renderMode == RenderMode::Full)
-//    return d->shadowSamplesFull;
-//  else if(renderMode == RenderMode::Intermediate)
-//    return d->shadowSamplesIntermediate;
-//  else // renderMode == RenderMode::Fast
-//    return d->shadowSamplesFast;
-  return 0;
-}
-
 
 //##################################################################################################
 void RenderModeManager::setRenderMode(RenderMode renderMode)
@@ -176,6 +131,8 @@ void RenderModeManager::setRenderMode(RenderMode renderMode)
     case RenderMode::Intermediate : d->shadowSamples = d->shadowSamplesIntermediate; break;
     case RenderMode::Full         : d->shadowSamples = d->shadowSamplesFull        ; break;
   }
+
+  d->map->update();
 }
 
 //##################################################################################################
@@ -185,12 +142,32 @@ RenderMode RenderModeManager::renderMode() const
 }
 
 //##################################################################################################
+void RenderModeManager::setShadowSamples(RenderMode renderMode, size_t shadowSamples)
+{
+  switch(renderMode)
+  {
+    case RenderMode::Full:         d->shadowSamplesFull         = shadowSamples; break;
+    case RenderMode::Intermediate: d->shadowSamplesIntermediate = shadowSamples; break;
+    case RenderMode::Fast:         d->shadowSamplesFast         = shadowSamples; break;
+  }
+}
+
+//##################################################################################################
+size_t RenderModeManager::shadowSamples(RenderMode renderMode) const
+{
+  switch(renderMode)
+  {
+    case RenderMode::Full:         return d->shadowSamplesFull;
+    case RenderMode::Intermediate: return d->shadowSamplesIntermediate;
+    case RenderMode::Fast:         return d->shadowSamplesFast;
+  }
+
+  return d->shadowSamples;
+}
+
+//##################################################################################################
 size_t RenderModeManager::shadowSamples() const
 {
-#ifdef TP_LINUX
-#warning implement
-#warning make this return 0 for picking or just use 0 for picking renders.
-#endif
   return d->shadowSamples;
 }
 
