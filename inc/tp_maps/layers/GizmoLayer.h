@@ -348,6 +348,35 @@ struct GizmoParameters
 };
 
 //##################################################################################################
+enum class GizmoInteractionType
+{
+  None,
+  RotateX,
+  RotateY,
+  RotateZ,
+  RotateScreen,
+  TranslationX,
+  TranslationY,
+  TranslationZ,
+  PlaneTranslationX,
+  PlaneTranslationY,
+  PlaneTranslationZ,
+  PlaneTranslationScreen,
+  ScaleX,
+  ScaleY,
+  ScaleZ,
+  ScaleScreen
+};
+
+//##################################################################################################
+struct GizmoInteractionStatus
+{
+  GizmoInteractionType activeModification{GizmoInteractionType::None};
+  glm::ivec2 pos{0,0};
+  float deltaDegrees{0.0f};
+};
+
+//##################################################################################################
 class TP_MAPS_EXPORT GizmoLayer: public Layer
 {
   TP_DQ;
@@ -359,7 +388,7 @@ public:
   ~GizmoLayer() override;
 
   //################################################################################################
-  bool inInteraction() const;
+  const GizmoInteractionStatus& interactionStatus() const;
 
   //################################################################################################
   void setParameters(const GizmoParameters& params);
@@ -467,6 +496,9 @@ public:
 
   //################################################################################################
   tp_utils::CallbackCollection<void(GizmoChangeType)> changed;
+
+  //################################################################################################
+  tp_utils::CallbackCollection<void(const GizmoInteractionStatus&)> interactionStatusChanged;
 
   //################################################################################################
   void setDefaultRenderPass(const RenderPass& defaultRenderPass) override;

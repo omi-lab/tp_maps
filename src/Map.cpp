@@ -1867,26 +1867,14 @@ void Map::resizeGL(int w, int h)
 //##################################################################################################
 bool Map::mouseEvent(const MouseEvent& event)
 {
-  tpDebug() << "----------------------------------------";
-  tpEnablePrintFunctionNames(true);
-  TP_CLEANUP([]
-  {
-    tpEnablePrintFunctionNames(false);
-    tpDebug() << "========================================";
-  });
-
-
-
   // If a layer or the controller has focus from a previous press event pass the release to it first.
   if(event.type == MouseEventType::Release || event.type == MouseEventType::Move)
   {
-    tpDebug() << "d->eventHandlers " << d->eventHandlers.size();
     for(size_t i=d->eventHandlers.size()-1; i<d->eventHandlers.size(); i--)
     {
       std::shared_ptr<EventHandler_lt> eventHandler=d->eventHandlers.at(i);
       if(auto i = eventHandler->m_hasMouseFocusFor.find(event.button); i!=eventHandler->m_hasMouseFocusFor.end())
       {
-        tpDebug() << "eventHandler A";
         if(event.type == MouseEventType::Release)
           eventHandler->m_hasMouseFocusFor.erase(i);
 
@@ -1921,7 +1909,6 @@ bool Map::mouseEvent(const MouseEvent& event)
   for(size_t i=d->eventHandlers.size()-1; i<d->eventHandlers.size(); i--)
   {
     std::shared_ptr<EventHandler_lt> eventHandler=d->eventHandlers.at(i);
-    tpDebug() << "eventHandler B";
     if(eventHandler->callbacks.mouseEvent(event))
     {
       if(event.type == MouseEventType::Press || event.type == MouseEventType::DragStart)

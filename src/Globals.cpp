@@ -21,6 +21,7 @@ TP_DEFINE_ID(               materialShaderSID,                  "Material shader
 TP_DEFINE_ID(            staticLightShaderSID,              "Static light shader");
 TP_DEFINE_ID(               yuvImageShaderSID,                 "YUV image shader");
 TP_DEFINE_ID(             depthImageShaderSID,               "Depth image shader");
+TP_DEFINE_ID(                pickingShaderSID,                   "Picking shader");
 TP_DEFINE_ID(           depthImage3DShaderSID,            "Depth image 3D shader");
 TP_DEFINE_ID(                  depthShaderSID,                     "Depth shader");
 TP_DEFINE_ID(                   fontShaderSID,                      "Font shader");

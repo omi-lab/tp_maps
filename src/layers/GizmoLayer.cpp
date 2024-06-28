@@ -25,31 +25,6 @@
 namespace tp_maps
 {
 
-namespace
-{
-//##################################################################################################
-enum class Modify_lt
-{
-  None,
-  RotateX,
-  RotateY,
-  RotateZ,
-  RotateScreen,
-  TranslationX,
-  TranslationY,
-  TranslationZ,
-  PlaneTranslationX,
-  PlaneTranslationY,
-  PlaneTranslationZ,
-  PlaneTranslationScreen,
-  ScaleX,
-  ScaleY,
-  ScaleZ,
-  ScaleScreen
-};
-
-}
-
 //##################################################################################################
 std::vector<std::string> gizmoRingStyles()
 {
@@ -419,7 +394,7 @@ struct GizmoLayer::Private
 
   bool selectedColorSubscribed{false};
 
-  Modify_lt activeModification{Modify_lt::None};
+  GizmoInteractionStatus interactionStatus;
   glm::ivec2 previousPos;
   glm::vec3 intersectionPoint;
   glm::vec3 intersectionVector;
@@ -1334,14 +1309,23 @@ struct GizmoLayer::Private
   }
 
   //################################################################################################
-  void setActiveModification(Modify_lt activeModification)
+  void setActiveModification(GizmoInteractionType activeModification)
   {
-    if(this->activeModification == activeModification)
+    if(this->interactionStatus.activeModification == activeModification)
       return;
 
-    this->activeModification = activeModification;
+    this->interactionStatus = {};
+    this->interactionStatus.activeModification = activeModification;
     updateVisibility();
     updateColors();
+    q->interactionStatusChanged(interactionStatus);
+  }
+
+  //################################################################################################
+  void updateActiveModification(const std::function<void(GizmoInteractionStatus&)>& closure)
+  {
+    closure(interactionStatus);
+    q->interactionStatusChanged(interactionStatus);
   }
 
   //################################################################################################
@@ -1375,38 +1359,38 @@ struct GizmoLayer::Private
         layer->setAlternativeMaterials({{defaultSID(), selectedSID()}});
     };
 
-    switch(activeModification)
+    switch(interactionStatus.activeModification)
     {
-      case Modify_lt::None                   :                                                   break;
+      case GizmoInteractionType::None                   :                                                   break;
 
-      case Modify_lt::RotateX                : useSelected(params.rotationX             , rotationXGeometryLayer);              break;
-      case Modify_lt::RotateY                : useSelected(params.rotationY             , rotationYGeometryLayer);              break;
-      case Modify_lt::RotateZ                : useSelected(params.rotationZ             , rotationZGeometryLayer);              break;
+      case GizmoInteractionType::RotateX                : useSelected(params.rotationX             , rotationXGeometryLayer);              break;
+      case GizmoInteractionType::RotateY                : useSelected(params.rotationY             , rotationYGeometryLayer);              break;
+      case GizmoInteractionType::RotateZ                : useSelected(params.rotationZ             , rotationZGeometryLayer);              break;
 
-      case Modify_lt::RotateScreen           : useSelected(params.rotationScreen        , rotationScreenGeometryLayer);         break;
+      case GizmoInteractionType::RotateScreen           : useSelected(params.rotationScreen        , rotationScreenGeometryLayer);         break;
 
-      case Modify_lt::TranslationX           : useSelected(params.translationArrowX     , translationArrowXGeometryLayer);      break;
-      case Modify_lt::TranslationY           : useSelected(params.translationArrowY     , translationArrowYGeometryLayer);      break;
-      case Modify_lt::TranslationZ           : useSelected(params.translationArrowZ     , translationArrowZGeometryLayer);      break;
+      case GizmoInteractionType::TranslationX           : useSelected(params.translationArrowX     , translationArrowXGeometryLayer);      break;
+      case GizmoInteractionType::TranslationY           : useSelected(params.translationArrowY     , translationArrowYGeometryLayer);      break;
+      case GizmoInteractionType::TranslationZ           : useSelected(params.translationArrowZ     , translationArrowZGeometryLayer);      break;
 
-      case Modify_lt::PlaneTranslationX      : useSelected(params.translationPlaneX     , translationPlaneXGeometryLayer);      break;
-      case Modify_lt::PlaneTranslationY      : useSelected(params.translationPlaneY     , translationPlaneYGeometryLayer);      break;
-      case Modify_lt::PlaneTranslationZ      : useSelected(params.translationPlaneZ     , translationPlaneZGeometryLayer);      break;
+      case GizmoInteractionType::PlaneTranslationX      : useSelected(params.translationPlaneX     , translationPlaneXGeometryLayer);      break;
+      case GizmoInteractionType::PlaneTranslationY      : useSelected(params.translationPlaneY     , translationPlaneYGeometryLayer);      break;
+      case GizmoInteractionType::PlaneTranslationZ      : useSelected(params.translationPlaneZ     , translationPlaneZGeometryLayer);      break;
 
-      case Modify_lt::PlaneTranslationScreen : useSelected(params.translationPlaneScreen, translationPlaneScreenGeometryLayer); break;
+      case GizmoInteractionType::PlaneTranslationScreen : useSelected(params.translationPlaneScreen, translationPlaneScreenGeometryLayer); break;
 
-      case Modify_lt::ScaleX                 : useSelected(params.scaleArrowX           , scaleArrowXGeometryLayer);            break;
-      case Modify_lt::ScaleY                 : useSelected(params.scaleArrowY           , scaleArrowYGeometryLayer);            break;
-      case Modify_lt::ScaleZ                 : useSelected(params.scaleArrowZ           , scaleArrowZGeometryLayer);            break;
+      case GizmoInteractionType::ScaleX                 : useSelected(params.scaleArrowX           , scaleArrowXGeometryLayer);            break;
+      case GizmoInteractionType::ScaleY                 : useSelected(params.scaleArrowY           , scaleArrowYGeometryLayer);            break;
+      case GizmoInteractionType::ScaleZ                 : useSelected(params.scaleArrowZ           , scaleArrowZGeometryLayer);            break;
 
-      case Modify_lt::ScaleScreen            : useSelected(params.scaleArrowScreen      , scaleArrowScreenGeometryLayer);       break;
+      case GizmoInteractionType::ScaleScreen            : useSelected(params.scaleArrowScreen      , scaleArrowScreenGeometryLayer);       break;
     }
   }
 
   //################################################################################################
   void updateVisibility()
   {
-    if((!params.hideAllWhenSelected && !params.onlyRenderSelectedAxis) || activeModification == Modify_lt::None)
+    if((!params.hideAllWhenSelected && !params.onlyRenderSelectedAxis) || interactionStatus.activeModification == GizmoInteractionType::None)
     {
       rotationXGeometryLayer->setVisible(params.rotationX.enable);
       rotationYGeometryLayer->setVisible(params.rotationY.enable);
@@ -1430,7 +1414,7 @@ struct GizmoLayer::Private
 
       scaleArrowScreenGeometryLayer->setVisible(params.scaleArrowScreen.enable);
     }
-    else if(activeModification != Modify_lt::None && params.hideAllWhenSelected)
+    else if(interactionStatus.activeModification != GizmoInteractionType::None && params.hideAllWhenSelected)
     {
       rotationXGeometryLayer->setVisible(false);
       rotationYGeometryLayer->setVisible(false);
@@ -1456,39 +1440,39 @@ struct GizmoLayer::Private
     }
     else
     {
-      rotationXGeometryLayer->setVisible(params.rotationX.enable && activeModification == Modify_lt::RotateX);
-      rotationYGeometryLayer->setVisible(params.rotationY.enable && activeModification == Modify_lt::RotateY);
-      rotationZGeometryLayer->setVisible(params.rotationZ.enable && activeModification == Modify_lt::RotateZ);
+      rotationXGeometryLayer->setVisible(params.rotationX.enable && interactionStatus.activeModification == GizmoInteractionType::RotateX);
+      rotationYGeometryLayer->setVisible(params.rotationY.enable && interactionStatus.activeModification == GizmoInteractionType::RotateY);
+      rotationZGeometryLayer->setVisible(params.rotationZ.enable && interactionStatus.activeModification == GizmoInteractionType::RotateZ);
 
-      rotationScreenGeometryLayer->setVisible(params.rotationScreen.enable && activeModification == Modify_lt::RotateScreen);
+      rotationScreenGeometryLayer->setVisible(params.rotationScreen.enable && interactionStatus.activeModification == GizmoInteractionType::RotateScreen);
 
-      translationArrowXGeometryLayer->setVisible(params.translationArrowX.enable && activeModification == Modify_lt::TranslationX);
-      translationArrowYGeometryLayer->setVisible(params.translationArrowY.enable && activeModification == Modify_lt::TranslationY);
-      translationArrowZGeometryLayer->setVisible(params.translationArrowZ.enable && activeModification == Modify_lt::TranslationZ);
+      translationArrowXGeometryLayer->setVisible(params.translationArrowX.enable && interactionStatus.activeModification == GizmoInteractionType::TranslationX);
+      translationArrowYGeometryLayer->setVisible(params.translationArrowY.enable && interactionStatus.activeModification == GizmoInteractionType::TranslationY);
+      translationArrowZGeometryLayer->setVisible(params.translationArrowZ.enable && interactionStatus.activeModification == GizmoInteractionType::TranslationZ);
 
-      translationPlaneXGeometryLayer->setVisible(params.translationPlaneX.enable && activeModification == Modify_lt::PlaneTranslationX);
-      translationPlaneYGeometryLayer->setVisible(params.translationPlaneY.enable && activeModification == Modify_lt::PlaneTranslationY);
-      translationPlaneZGeometryLayer->setVisible(params.translationPlaneZ.enable && activeModification == Modify_lt::PlaneTranslationZ);
+      translationPlaneXGeometryLayer->setVisible(params.translationPlaneX.enable && interactionStatus.activeModification == GizmoInteractionType::PlaneTranslationX);
+      translationPlaneYGeometryLayer->setVisible(params.translationPlaneY.enable && interactionStatus.activeModification == GizmoInteractionType::PlaneTranslationY);
+      translationPlaneZGeometryLayer->setVisible(params.translationPlaneZ.enable && interactionStatus.activeModification == GizmoInteractionType::PlaneTranslationZ);
 
-      translationPlaneScreenGeometryLayer->setVisible(params.translationPlaneScreen.enable && activeModification == Modify_lt::PlaneTranslationScreen);
+      translationPlaneScreenGeometryLayer->setVisible(params.translationPlaneScreen.enable && interactionStatus.activeModification == GizmoInteractionType::PlaneTranslationScreen);
 
-      scaleArrowXGeometryLayer->setVisible(params.scaleArrowX.enable && activeModification == Modify_lt::ScaleX);
-      scaleArrowYGeometryLayer->setVisible(params.scaleArrowY.enable && activeModification == Modify_lt::ScaleY);
-      scaleArrowZGeometryLayer->setVisible(params.scaleArrowZ.enable && activeModification == Modify_lt::ScaleZ);
+      scaleArrowXGeometryLayer->setVisible(params.scaleArrowX.enable && interactionStatus.activeModification == GizmoInteractionType::ScaleX);
+      scaleArrowYGeometryLayer->setVisible(params.scaleArrowY.enable && interactionStatus.activeModification == GizmoInteractionType::ScaleY);
+      scaleArrowZGeometryLayer->setVisible(params.scaleArrowZ.enable && interactionStatus.activeModification == GizmoInteractionType::ScaleZ);
 
-      scaleArrowScreenGeometryLayer->setVisible(params.scaleArrowScreen.enable && activeModification == Modify_lt::ScaleScreen);
+      scaleArrowScreenGeometryLayer->setVisible(params.scaleArrowScreen.enable && interactionStatus.activeModification == GizmoInteractionType::ScaleScreen);
     }
 
     {
-      translationArrowXLinesLayer->setVisible(params.translationArrowXLines.enable && activeModification == Modify_lt::TranslationX);
-      translationArrowYLinesLayer->setVisible(params.translationArrowYLines.enable && activeModification == Modify_lt::TranslationY);
-      translationArrowZLinesLayer->setVisible(params.translationArrowZLines.enable && activeModification == Modify_lt::TranslationZ);
+      translationArrowXLinesLayer->setVisible(params.translationArrowXLines.enable && interactionStatus.activeModification == GizmoInteractionType::TranslationX);
+      translationArrowYLinesLayer->setVisible(params.translationArrowYLines.enable && interactionStatus.activeModification == GizmoInteractionType::TranslationY);
+      translationArrowZLinesLayer->setVisible(params.translationArrowZLines.enable && interactionStatus.activeModification == GizmoInteractionType::TranslationZ);
 
-      translationPlaneXLinesLayer->setVisible(params.translationPlaneXLines.enable && activeModification == Modify_lt::PlaneTranslationX);
-      translationPlaneYLinesLayer->setVisible(params.translationPlaneYLines.enable && activeModification == Modify_lt::PlaneTranslationY);
-      translationPlaneZLinesLayer->setVisible(params.translationPlaneZLines.enable && activeModification == Modify_lt::PlaneTranslationZ);
+      translationPlaneXLinesLayer->setVisible(params.translationPlaneXLines.enable && interactionStatus.activeModification == GizmoInteractionType::PlaneTranslationX);
+      translationPlaneYLinesLayer->setVisible(params.translationPlaneYLines.enable && interactionStatus.activeModification == GizmoInteractionType::PlaneTranslationY);
+      translationPlaneZLinesLayer->setVisible(params.translationPlaneZLines.enable && interactionStatus.activeModification == GizmoInteractionType::PlaneTranslationZ);
 
-      translationPlaneScreenLinesLayer->setVisible(params.translationPlaneScreenLines.enable && activeModification == Modify_lt::PlaneTranslationScreen);
+      translationPlaneScreenLinesLayer->setVisible(params.translationPlaneScreenLines.enable && interactionStatus.activeModification == GizmoInteractionType::PlaneTranslationScreen);
     }
 
     q->update();
@@ -1662,9 +1646,9 @@ GizmoLayer::~GizmoLayer()
 }
 
 //##################################################################################################
-bool GizmoLayer::inInteraction() const
+const GizmoInteractionStatus& GizmoLayer::interactionStatus() const
 {
-  return d->activeModification != Modify_lt::None;
+  return d->interactionStatus;
 }
 
 //##################################################################################################
@@ -2246,7 +2230,7 @@ void GizmoLayer::render(RenderInfo& renderInfo)
         d->translationPlaneYLinesLayer->setModelMatrix(mScale);
         d->translationPlaneZLinesLayer->setModelMatrix(mScale);
 
-        if(d->activeModification == Modify_lt::RotateX)
+        if(d->interactionStatus.activeModification == GizmoInteractionType::RotateX)
         {
           glm::mat4 mRotateToPlane = matrixToRotateAOntoB({0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f});
           glm::mat4 mRotateAroundAxis = matrixToRotateAOntoB({0.0f, 0.0f, -1.0f}, d->intersectionVector);
@@ -2254,7 +2238,7 @@ void GizmoLayer::render(RenderInfo& renderInfo)
           d->rotationSectorLayer->setModelMatrix(mScale * mRotateRemoveDelta * mRotateAroundAxis * mRotateToPlane);
           d->rotationSectorLayer->setVisibleQuiet(true);
         }
-        else if(d->activeModification == Modify_lt::RotateY)
+        else if(d->interactionStatus.activeModification == GizmoInteractionType::RotateY)
         {
           glm::mat4 mRotateToPlane = matrixToRotateAOntoB({0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f});
           glm::mat4 mRotateAroundAxis  = matrixToRotateAOntoB({1.0f, 0.0f, 0.0f}, d->intersectionVector);
@@ -2262,14 +2246,14 @@ void GizmoLayer::render(RenderInfo& renderInfo)
           d->rotationSectorLayer->setModelMatrix(mScale * mRotateRemoveDelta * mRotateAroundAxis * mRotateToPlane);
           d->rotationSectorLayer->setVisibleQuiet(true);
         }
-        else if(d->activeModification == Modify_lt::RotateZ)
+        else if(d->interactionStatus.activeModification == GizmoInteractionType::RotateZ)
         {
           glm::mat4 mRotateAroundAxis  = matrixToRotateAOntoB({1.0f, 0.0f, 0.0f}, d->intersectionVector);
           glm::mat4 mRotateRemoveDelta = matrixToRotateAOntoB(d->newIntersectionVector, d->intersectionVector);
           d->rotationSectorLayer->setModelMatrix(mScale * mRotateRemoveDelta * mRotateAroundAxis);
           d->rotationSectorLayer->setVisibleQuiet(true);
         }
-        else if(d->activeModification == Modify_lt::RotateScreen)
+        else if(d->interactionStatus.activeModification == GizmoInteractionType::RotateScreen)
         {
           glm::mat4 mRotateToPlane = d->screenRelativeRotationMatrix;
           glm::mat4 mRotateAroundAxis = matrixToRotateAOntoB(d->screenRotateUpVectorOnPlane, d->intersectionVector);
@@ -2337,7 +2321,7 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
           d->useIntersection = intersectPlane({1,0,0}, d->intersectionPoint);
           d->intersectionVector = glm::normalize(d->intersectionPoint);
           d->rotationSectorLayer->setAngleDegrees(0.0f);
-          d->setActiveModification(Modify_lt::RotateX);
+          d->setActiveModification(GizmoInteractionType::RotateX);
           return true;
         }
 
@@ -2346,7 +2330,7 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
           d->useIntersection = intersectPlane({0,1,0}, d->intersectionPoint);
           d->intersectionVector = glm::normalize(d->intersectionPoint);
           d->rotationSectorLayer->setAngleDegrees(0.0f);
-          d->setActiveModification(Modify_lt::RotateY);
+          d->setActiveModification(GizmoInteractionType::RotateY);
           return true;
         }
 
@@ -2355,7 +2339,7 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
           d->useIntersection = intersectPlane({0,0,1}, d->intersectionPoint);
           d->intersectionVector = glm::normalize(d->intersectionPoint);
           d->rotationSectorLayer->setAngleDegrees(0.0f);
-          d->setActiveModification(Modify_lt::RotateZ);
+          d->setActiveModification(GizmoInteractionType::RotateZ);
           return true;
         }
 
@@ -2367,75 +2351,75 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
           d->intersectionVector = glm::normalize(d->intersectionPoint);
           setScreenRotateUpVectorOnPlane();
           d->rotationSectorLayer->setAngleDegrees(0.0f);
-          d->setActiveModification(Modify_lt::RotateScreen);
+          d->setActiveModification(GizmoInteractionType::RotateScreen);
           return true;
         }
 
         if(result->layer == d->translationArrowXGeometryLayer)
         {
-          d->setActiveModification(Modify_lt::TranslationX);
+          d->setActiveModification(GizmoInteractionType::TranslationX);
           return true;
         }
 
         if(result->layer == d->translationArrowYGeometryLayer)
         {
-          d->setActiveModification(Modify_lt::TranslationY);
+          d->setActiveModification(GizmoInteractionType::TranslationY);
           return true;
         }
 
         if(result->layer == d->translationArrowZGeometryLayer)
         {
-          d->setActiveModification(Modify_lt::TranslationZ);
+          d->setActiveModification(GizmoInteractionType::TranslationZ);
           return true;
         }
 
         if(result->layer == d->translationPlaneXGeometryLayer)
         {
-          d->setActiveModification(Modify_lt::PlaneTranslationX);
+          d->setActiveModification(GizmoInteractionType::PlaneTranslationX);
           return true;
         }
 
         if(result->layer == d->translationPlaneYGeometryLayer)
         {
-          d->setActiveModification(Modify_lt::PlaneTranslationY);
+          d->setActiveModification(GizmoInteractionType::PlaneTranslationY);
           return true;
         }
 
         if(result->layer == d->translationPlaneZGeometryLayer)
         {
-          d->setActiveModification(Modify_lt::PlaneTranslationZ);
+          d->setActiveModification(GizmoInteractionType::PlaneTranslationZ);
           return true;
         }
 
         if(result->layer == d->translationPlaneScreenGeometryLayer)
         {
           d->originalScreenRelativeAxis = d->screenRotateAxis();
-          d->setActiveModification(Modify_lt::PlaneTranslationScreen);
+          d->setActiveModification(GizmoInteractionType::PlaneTranslationScreen);
           return true;
         }
 
         if(result->layer == d->scaleArrowXGeometryLayer)
         {
-          d->setActiveModification(Modify_lt::ScaleX);
+          d->setActiveModification(GizmoInteractionType::ScaleX);
           return true;
         }
 
         if(result->layer == d->scaleArrowYGeometryLayer)
         {
-          d->setActiveModification(Modify_lt::ScaleY);
+          d->setActiveModification(GizmoInteractionType::ScaleY);
           return true;
         }
 
         if(result->layer == d->scaleArrowZGeometryLayer)
         {
-          d->setActiveModification(Modify_lt::ScaleZ);
+          d->setActiveModification(GizmoInteractionType::ScaleZ);
           return true;
         }
 
         if(result->layer == d->scaleArrowScreenGeometryLayer)
         {
           d->originalScreenRelativeAxis = d->screenScaleAxis();
-          d->setActiveModification(Modify_lt::ScaleScreen);
+          d->setActiveModification(GizmoInteractionType::ScaleScreen);
           return true;
         }
       }
@@ -2444,9 +2428,9 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
 
     case MouseEventType::Release:
     {
-      if(d->activeModification != Modify_lt::None)
+      if(d->interactionStatus.activeModification != GizmoInteractionType::None)
       {
-        d->setActiveModification(Modify_lt::None);
+        d->setActiveModification(GizmoInteractionType::None);
         return true;
       }
       break;
@@ -2454,7 +2438,7 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
 
     case MouseEventType::Move:
     {
-      if(d->activeModification == Modify_lt::None)
+      if(d->interactionStatus.activeModification == GizmoInteractionType::None)
         break;
 
       glm::ivec2 delta = event.pos - d->previousPos;
@@ -2486,6 +2470,12 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
         {
           angle = float((std::abs(delta.y)>std::abs(delta.x))?delta.y:delta.x) / 3.0f;
         }
+
+        d->updateActiveModification([&](GizmoInteractionStatus& interactionStatus)
+        {
+          interactionStatus.pos = event.pos;
+          interactionStatus.deltaDegrees = angle;
+        });
 
         d->rotationSectorLayer->setAngleDegrees(-angle);
         mat = glm::rotate(mat, glm::radians(angle), axis);
@@ -2596,24 +2586,24 @@ bool GizmoLayer::mouseEvent(const MouseEvent& event)
         mat = glm::scale(mat, {scale, scale, scale});
       };
 
-      switch(d->activeModification)
+      switch(d->interactionStatus.activeModification)
       {
-        case Modify_lt::RotateX: rotate({1,0,0}); break;
-        case Modify_lt::RotateY: rotate({0,1,0}); break;
-        case Modify_lt::RotateZ: rotate({0,0,1}); break;
-        case Modify_lt::RotateScreen: rotate(d->originalScreenRelativeAxis); break;
-        case Modify_lt::TranslationX: translationAlongAxis({1,0,0}); break;
-        case Modify_lt::TranslationY: translationAlongAxis({0,1,0}); break;
-        case Modify_lt::TranslationZ: translationAlongAxis({0,0,1}); break;
-        case Modify_lt::PlaneTranslationX: translationOnPlane({1,0,0}); break;
-        case Modify_lt::PlaneTranslationY: translationOnPlane({0,1,0}); break;
-        case Modify_lt::PlaneTranslationZ: translationOnPlane({0,0,1}); break;
-        case Modify_lt::PlaneTranslationScreen: translationOnPlane(d->originalScreenRelativeAxis); break;
-        case Modify_lt::ScaleX: scale({1,0,0}); break;
-        case Modify_lt::ScaleY: scale({0,1,0}); break;
-        case Modify_lt::ScaleZ: scale({0,0,1}); break;
-        case Modify_lt::ScaleScreen: scale(d->originalScreenRelativeAxis); break;
-        case Modify_lt::None: break;
+        case GizmoInteractionType::RotateX: rotate({1,0,0}); break;
+        case GizmoInteractionType::RotateY: rotate({0,1,0}); break;
+        case GizmoInteractionType::RotateZ: rotate({0,0,1}); break;
+        case GizmoInteractionType::RotateScreen: rotate(d->originalScreenRelativeAxis); break;
+        case GizmoInteractionType::TranslationX: translationAlongAxis({1,0,0}); break;
+        case GizmoInteractionType::TranslationY: translationAlongAxis({0,1,0}); break;
+        case GizmoInteractionType::TranslationZ: translationAlongAxis({0,0,1}); break;
+        case GizmoInteractionType::PlaneTranslationX: translationOnPlane({1,0,0}); break;
+        case GizmoInteractionType::PlaneTranslationY: translationOnPlane({0,1,0}); break;
+        case GizmoInteractionType::PlaneTranslationZ: translationOnPlane({0,0,1}); break;
+        case GizmoInteractionType::PlaneTranslationScreen: translationOnPlane(d->originalScreenRelativeAxis); break;
+        case GizmoInteractionType::ScaleX: scale({1,0,0}); break;
+        case GizmoInteractionType::ScaleY: scale({0,1,0}); break;
+        case GizmoInteractionType::ScaleZ: scale({0,0,1}); break;
+        case GizmoInteractionType::ScaleScreen: scale(d->originalScreenRelativeAxis); break;
+        case GizmoInteractionType::None: break;
       }
 
       float lX = glm::length(glm::vec3(mat[0]));

@@ -40,6 +40,7 @@
         <file preprocess="shader" alias="G3DStaticLightShader.render.vert">resources/shaders/G3DStaticLightShader.render.vert</file>
         <file preprocess="shader" alias="G3DYUVImageShader.frag">resources/shaders/G3DYUVImageShader.frag</file>
         <file preprocess="shader" alias="G3DDepthImageShader.frag">resources/shaders/G3DDepthImageShader.frag</file>
+        <file preprocess="shader" alias="G3DPickingShader.frag">resources/shaders/G3DPickingShader.frag</file>
         <file preprocess="shader" alias="PostSSAOShader.frag">resources/shaders/PostSSAOShader.frag</file>
         <file preprocess="shader" alias="PostSSRShader.frag">resources/shaders/PostSSRShader.frag</file>
         <file preprocess="shader" alias="PostGammaShader.frag">resources/shaders/PostGammaShader.frag</file>

@@ -1,6 +1,7 @@
 #include "tp_maps/layers/FBOLayer.h"
 #include "tp_maps/shaders/G3DImageShader.h"
 #include "tp_maps/shaders/G3DDepthImageShader.h"
+#include "tp_maps/shaders/G3DPickingShader.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/RenderInfo.h"
 #include "tp_maps/PickingResult.h"
@@ -14,6 +15,45 @@
 
 namespace tp_maps
 {
+
+//##################################################################################################
+std::string fboLayerSourceToString(FBOLayerSource fboLayerSource)
+{
+  switch(fboLayerSource)
+  {
+    case FBOLayerSource::Color    : return "Color";
+    case FBOLayerSource::Depth    : return "Depth";
+    case FBOLayerSource::Normals  : return "Normals";
+    case FBOLayerSource::Specular : return "Specular";
+    case FBOLayerSource::Picking  : return "Picking";
+  }
+
+  return "Color";
+}
+
+//##################################################################################################
+FBOLayerSource fboLayerSourceFromString(const std::string& fboLayerSource)
+{
+  if(fboLayerSource == "Color"   ) return FBOLayerSource::Color;
+  if(fboLayerSource == "Depth"   ) return FBOLayerSource::Depth;
+  if(fboLayerSource == "Normals" ) return FBOLayerSource::Normals;
+  if(fboLayerSource == "Specular") return FBOLayerSource::Specular;
+  if(fboLayerSource == "Picking" ) return FBOLayerSource::Picking;
+  return FBOLayerSource::Color;
+}
+
+//##################################################################################################
+std::vector<std::string> fboLayerSources()
+{
+  return
+  {
+    "Color"   ,
+    "Depth"   ,
+    "Normals" ,
+    "Specular",
+    "Picking"
+  };
+}
 
 //##################################################################################################
 void FBOWindow::saveState(nlohmann::json& j) const
@@ -34,42 +74,6 @@ void FBOWindow::loadState(const nlohmann::json& j)
 }
 
 //##################################################################################################
-std::string fboLayerSourceToString(FBOLayerSource fboLayerSource)
-{
-  switch(fboLayerSource)
-  {
-    case FBOLayerSource::Color    : return "Color";
-    case FBOLayerSource::Depth    : return "Depth";
-    case FBOLayerSource::Normals  : return "Normals";
-    case FBOLayerSource::Specular : return "Specular";
-  }
-
-  return "Color";
-}
-
-//##################################################################################################
-FBOLayerSource fboLayerSourceFromString(const std::string& fboLayerSource)
-{
-  if(fboLayerSource == "Color"   ) return FBOLayerSource::Color;
-  if(fboLayerSource == "Depth"   ) return FBOLayerSource::Depth;
-  if(fboLayerSource == "Normals" ) return FBOLayerSource::Normals;
-  if(fboLayerSource == "Specular") return FBOLayerSource::Specular;
-  return FBOLayerSource::Color;
-}
-
-//##################################################################################################
-std::vector<std::string> fboLayerSources()
-{
-  return
-  {
-    "Color"   ,
-    "Depth"   ,
-    "Normals" ,
-    "Specular",
-  };
-}
-
-//##################################################################################################
 struct FBOLayer::Private
 {
   TP_REF_COUNT_OBJECTS("tp_maps::FBOLayer::Private");
@@ -79,11 +83,8 @@ struct FBOLayer::Private
 
   std::vector<FBOWindow> windows;
 
-#ifdef TP_POLL_PICKING
-  bool pollPicking{true};
-#else
   bool pollPicking{false};
-#endif
+  bool actuallyPollPicking{false};
   double updateAfterTimestampMS{0.0};
 
   std::vector<G3DImageShader::VertexBuffer*> vertexBuffers;
@@ -94,6 +95,23 @@ struct FBOLayer::Private
     q(q_)
   {
 
+  }
+
+  //################################################################################################
+  void updatePollPicking()
+  {
+    actuallyPollPicking = false;
+    if(!pollPicking)
+      return;
+
+    for(const auto& window : windows)
+    {
+      if(window.fboName == "renderToImage")
+      {
+        actuallyPollPicking = true;
+        break;
+      }
+    }
   }
 
   //################################################################################################
@@ -112,6 +130,7 @@ struct FBOLayer::Private
       case FBOLayerSource::Depth   : return q->map()->getShader<G3DDepthImageShader>();
       case FBOLayerSource::Normals : return q->map()->getShader<G3DImageShader>();
       case FBOLayerSource::Specular: return q->map()->getShader<G3DImageShader>();
+      case FBOLayerSource::Picking : return q->map()->getShader<G3DPickingShader>();
     }
     return q->map()->getShader<G3DImageShader>();
   }
@@ -136,6 +155,7 @@ void FBOLayer::setWindows(const std::vector<FBOWindow>& windows)
 {
   d->windows = windows;
   d->updateVertexBuffer = true;
+  d->updatePollPicking();
   update();
 }
 
@@ -149,6 +169,7 @@ const std::vector<FBOWindow>& FBOLayer::windows() const
 void FBOLayer::setPollPicking(bool pollPicking)
 {
   d->pollPicking = pollPicking;
+  d->updatePollPicking();
 }
 
 //##################################################################################################
@@ -160,6 +181,8 @@ bool FBOLayer::pollPicking() const
 //##################################################################################################
 void FBOLayer::saveState(nlohmann::json& j) const
 {
+  j["pollPicking"] = d->pollPicking;
+
   auto& windowsJ = j["windows"];
   windowsJ = nlohmann::json::array();
   windowsJ.get_ptr<nlohmann::json::array_t*>()->reserve(d->windows.size());
@@ -173,6 +196,7 @@ void FBOLayer::saveState(nlohmann::json& j) const
 //##################################################################################################
 void FBOLayer::loadState(const nlohmann::json& j)
 {
+  d->pollPicking = TPJSONBool(j, "pollPicking", false);
   d->windows.clear();
   if(const auto i=j.find("windows"); i!=j.end() && i->is_array())
   {
@@ -180,6 +204,7 @@ void FBOLayer::loadState(const nlohmann::json& j)
     for(const auto& jj : *i)
       d->windows.emplace_back().loadState(jj);
   }
+  d->updatePollPicking();
 }
 
 //##################################################################################################
@@ -263,6 +288,12 @@ void FBOLayer::render(RenderInfo& renderInfo)
         textureID = fbo->specularID;
         break;
       }
+
+      case FBOLayerSource::Picking:
+      {
+        textureID = fbo->textureID;
+        break;
+      }
     }
 
     G3DImageShader* shader = d->findShader(window);
@@ -298,7 +329,7 @@ void FBOLayer::invalidateBuffers()
 //##################################################################################################
 void FBOLayer::animate(double timestampMS)
 {
-  if(visible() && d->pollPicking && d->updateAfterTimestampMS<timestampMS)
+  if(visible() && d->actuallyPollPicking && d->updateAfterTimestampMS<timestampMS)
   {
     d->updateAfterTimestampMS = timestampMS + 100;
     tp_maps::PickingResult* pickingResult = map()->performPicking("Poll", {10,10});

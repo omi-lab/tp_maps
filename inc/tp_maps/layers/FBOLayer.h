@@ -16,8 +16,18 @@ enum class FBOLayerSource
   Color,
   Depth,
   Normals,
-  Specular
+  Specular,
+  Picking
 };
+
+//##################################################################################################
+std::string fboLayerSourceToString(FBOLayerSource fboLayerSource);
+
+//##################################################################################################
+FBOLayerSource fboLayerSourceFromString(const std::string& fboLayerSource);
+
+//##################################################################################################
+std::vector<std::string> fboLayerSources();
 
 //##################################################################################################
 struct FBOWindow
@@ -33,15 +43,6 @@ struct FBOWindow
   //################################################################################################
   void loadState(const nlohmann::json& j);
 };
-
-//##################################################################################################
-std::string fboLayerSourceToString(FBOLayerSource fboLayerSource);
-
-//##################################################################################################
-FBOLayerSource fboLayerSourceFromString(const std::string& fboLayerSource);
-
-//##################################################################################################
-std::vector<std::string> fboLayerSources();
 
 //##################################################################################################
 //! Display the contens of an FBO on screen.
