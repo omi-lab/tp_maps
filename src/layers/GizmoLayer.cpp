@@ -702,13 +702,13 @@ struct GizmoLayer::Private
             size_t iFirst = iRing*bMax;
             auto addQuad = [&](size_t i1, size_t i2)
             {
-              indexes.indexes.push_back(iFirst+i1);
-              indexes.indexes.push_back(iFirst+i2+bMax);
-              indexes.indexes.push_back(iFirst+i2);
+              indexes.indexes.push_back(int(iFirst+i1));
+              indexes.indexes.push_back(int(iFirst+i2+bMax));
+              indexes.indexes.push_back(int(iFirst+i2));
 
-              indexes.indexes.push_back(iFirst+i1);
-              indexes.indexes.push_back(iFirst+i1+bMax);
-              indexes.indexes.push_back(iFirst+i2+bMax);
+              indexes.indexes.push_back(int(iFirst+i1));
+              indexes.indexes.push_back(int(iFirst+i1+bMax));
+              indexes.indexes.push_back(int(iFirst+i2+bMax));
             };
 
             for(size_t b=1; b<bMax; b++)

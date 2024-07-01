@@ -116,7 +116,7 @@ void CircleSectorLayer::render(RenderInfo& renderInfo)
 
     float angleFabs = std::fabs(d->angleDegrees);
 
-    size_t angleInt = angleFabs;
+    size_t angleInt = size_t(angleFabs);
 
     if(angleInt>0)
       if((angleFabs-float(angleInt)) < 0.01f)
