@@ -73,6 +73,9 @@ HEADERS += inc/tp_maps/SwapRowOrder.h
 SOURCES += src/RenderModeManager.cpp
 HEADERS += inc/tp_maps/RenderModeManager.h
 
+SOURCES += src/Subview.cpp
+HEADERS += inc/tp_maps/Subview.h
+
 
 #-- Subsystems -------------------------------------------------------------------------------------
 HEADERS += inc/tp_maps/subsystems/Subsystem.h

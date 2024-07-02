@@ -167,6 +167,7 @@ struct RenderPass
   //################################################################################################
   enum RenderPassType : size_t
   {
+    RenderSubview,     //!< Run a full render for the subview specified by name.
     PreRender,         //!< Executed at the start of a render to update models.
     LightFBOs,         //!< Render depth maps from the point of view of lights to FBOs.
     PrepareDrawFBO,    //!< Prepare the initial draw FBO ready for drawing to (read FBO is not ready).
@@ -276,25 +277,28 @@ struct RenderPass
   {
     switch(type)
     {
-    case PreRender        : return "PreRender "        + getNameString();
-    case LightFBOs        : return "LightFBOs "        + getNameString();
-    case PrepareDrawFBO   : return "PrepareDrawFBO "   + getNameString();
-    case SwapToFBO        : return "SwapToFBO "        + getNameString();
-    case SwapToFBONoClear : return "SwapToFBONoClear " + getNameString();
-    case BlitFromFBO      : return "BlitFromFBO "      + getNameString();
-    case Background       : return "Background "       + getNameString();
-    case Normal           : return "Normal "           + getNameString();
-    case Transparency     : return "Transparency "     + getNameString();
-    case FinishDrawFBO    : return "FinishDrawFBO "    + getNameString();
-    case Text             : return "Text "             + getNameString();
-    case GUI3D            : return "GUI3D "            + getNameString();
-    case GUI              : return "GUI "              + getNameString();
-    case Picking          : return "Picking "          + getNameString();
-    case PickingGUI3D     : return "PickingGUI3D "     + getNameString();
-    case Custom           : return "Custom "           + getNameString();
-    case Delegate         : return "Delegate "         + getNameString();
-    case Stage            : return "Stage "            + getNameString();
+      case RenderSubview    : return "RenderSubview "    + getNameString();
+      case PreRender        : return "PreRender "        + getNameString();
+      case LightFBOs        : return "LightFBOs "        + getNameString();
+      case PrepareDrawFBO   : return "PrepareDrawFBO "   + getNameString();
+      case SwapToFBO        : return "SwapToFBO "        + getNameString();
+      case SwapToFBONoClear : return "SwapToFBONoClear " + getNameString();
+      case BlitFromFBO      : return "BlitFromFBO "      + getNameString();
+      case Background       : return "Background "       + getNameString();
+      case Normal           : return "Normal "           + getNameString();
+      case Transparency     : return "Transparency "     + getNameString();
+      case FinishDrawFBO    : return "FinishDrawFBO "    + getNameString();
+      case Text             : return "Text "             + getNameString();
+      case GUI3D            : return "GUI3D "            + getNameString();
+      case GUI              : return "GUI "              + getNameString();
+      case Picking          : return "Picking "          + getNameString();
+      case PickingGUI3D     : return "PickingGUI3D "     + getNameString();
+      case Custom           : return "Custom "           + getNameString();
+      case Delegate         : return "Delegate "         + getNameString();
+      case Stage            : return "Stage "            + getNameString();
     }
+
+    return "";
   }
 };
 

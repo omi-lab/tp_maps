@@ -1,5 +1,6 @@
 ﻿#include "tp_maps/Map.h"
 #include "tp_maps/Errors.h"
+#include "tp_maps/Subview.h"
 #include "tp_maps/Shader.h"
 #include "tp_maps/Layer.h"
 #include "tp_maps/layers/PostGammaLayer.h"
@@ -177,6 +178,10 @@ struct Map::Private
   Errors errors;
   OpenGLBuffers buffers;
 
+  Subview defaultSubview{defaultSID()};
+  std::vector<Subview*> subviews;
+  Subview* currentSubview{&defaultSubview};
+
   Controller* controller{nullptr};
   std::vector<Layer*> layers;
   std::unordered_map<tp_utils::StringID, Shader*> shaders;
@@ -192,9 +197,6 @@ struct Map::Private
   std::vector<RenderPass> computedRenderPasses;
 
   RenderFromStage renderFromStage{RenderFromStage::Full};
-
-  //  // Callback that get called to prepare and cleanup custom render passes.
-  //  CustomPassCallbacks_lt customCallbacks[int(RenderPass::CustomEnd) - int(RenderPass::Custom1)];
 
   RenderInfo renderInfo;
 
@@ -520,6 +522,32 @@ bool Map::visible() const
 bool Map::initialized() const
 {
   return d->initialized;
+}
+
+//##################################################################################################
+Subview* Map::currentSubview() const
+{
+  return d->currentSubview;
+}
+
+//##################################################################################################
+void Map::setCurrentSubview(Subview* subview)
+{
+  d->currentSubview = subview;
+}
+
+//##################################################################################################
+void Map::addSubview(Subview* subview)
+{
+  d->subviews.push_back(subview);
+}
+
+//##################################################################################################
+void Map::deleteSubview(Subview* subview)
+{
+  d->currentSubview = &d->defaultSubview;
+  tpRemoveOne(d->subviews, subview);
+  delete subview;
 }
 
 //##################################################################################################
@@ -1426,6 +1454,7 @@ size_t Map::skipRenderPasses()
 #ifdef TP_FBO_SUPPORTED
       switch(renderPass.type)
       {
+        case RenderPass::RenderSubview: //----------------------------------------------------------
         case RenderPass::PreRender: //--------------------------------------------------------------
         case RenderPass::LightFBOs: //--------------------------------------------------------------
         break;
@@ -1511,6 +1540,9 @@ void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
       d->renderInfo.pass = renderPass;
       switch(renderPass.type)
       {
+        case RenderPass::RenderSubview: //----------------------------------------------------------
+        break;
+
         case RenderPass::PreRender: //--------------------------------------------------------------
         break;
 
