@@ -109,10 +109,16 @@ public:
   void setCurrentSubview(Subview* subview);
 
   //################################################################################################
+  void setCurrentSubview(const tp_utils::StringID& name);
+
+  //################################################################################################
   void addSubview(Subview* subview);
 
   //################################################################################################
   void deleteSubview(Subview* subview);
+
+  //################################################################################################
+  void deleteAllSubviews();
 
   //################################################################################################
   RenderModeManager& renderModeManger() const;
@@ -468,10 +474,10 @@ protected:
   void invalidateBuffers();
 
   //################################################################################################
-  size_t skipRenderPasses();
+  size_t skipRenderPasses(Subview* subview);
 
   //################################################################################################
-  void executeRenderPasses(size_t rp, GLint& originalFrameBuffer);
+  void executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameBuffer);
 
 private:
   //################################################################################################

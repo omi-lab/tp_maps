@@ -178,7 +178,7 @@ struct Map::Private
   Errors errors;
   OpenGLBuffers buffers;
 
-  Subview defaultSubview{defaultSID()};
+  Subview defaultSubview{q, defaultSID()};
   std::vector<Subview*> subviews;
   Subview* currentSubview{&defaultSubview};
 
@@ -191,10 +191,6 @@ struct Map::Private
 
   size_t nextEventHandlerId{0};
   std::vector<std::shared_ptr<EventHandler_lt>> eventHandlers;
-
-  std::vector<RenderPass> renderPasses;
-
-  std::vector<RenderPass> computedRenderPasses;
 
   RenderFromStage renderFromStage{RenderFromStage::Full};
 
@@ -345,27 +341,6 @@ struct Map::Private
   }
 
   //################################################################################################
-  void setRenderPassesInternal(const std::vector<RenderPass>& renderPasses)
-  {
-    for(const auto& renderPass : this->renderPasses)
-      delete renderPass.postLayer;
-
-    this->renderPasses = renderPasses;
-    for(const auto& renderPass : this->renderPasses)
-      if(renderPass.postLayer)
-        q->insertLayer(0, renderPass.postLayer);
-  }
-
-  //################################################################################################
-  bool hasRenderPass(RenderPass::RenderPassType renderPassType)
-  {
-    for(const auto& renderPass : renderPasses)
-      if(renderPass.type == renderPassType)
-        return true;
-    return false;
-  }
-
-  //################################################################################################
   void callMapResized()
   {
     controller->mapResized(int(width), int(height));
@@ -385,18 +360,18 @@ Map::Map(bool enableDepthBuffer):
 
   d->controller = new FlatController(this);
 
-  d->setRenderPassesInternal({
-                               tp_maps::RenderPass::LightFBOs     ,
-                               tp_maps::RenderPass::PrepareDrawFBO,
-                               tp_maps::RenderPass::Background    ,
-                               tp_maps::RenderPass::Normal        ,
-                               tp_maps::RenderPass::Transparency  ,
-                               tp_maps::RenderPass::FinishDrawFBO ,
-                               new tp_maps::PostGammaLayer()      ,
-                               tp_maps::RenderPass::Text          ,
-                               tp_maps::RenderPass::GUI3D          ,
-                               tp_maps::RenderPass::GUI
-                             });
+  d->currentSubview->setRenderPassesInternal({
+                                               tp_maps::RenderPass::LightFBOs     ,
+                                               tp_maps::RenderPass::PrepareDrawFBO,
+                                               tp_maps::RenderPass::Background    ,
+                                               tp_maps::RenderPass::Normal        ,
+                                               tp_maps::RenderPass::Transparency  ,
+                                               tp_maps::RenderPass::FinishDrawFBO ,
+                                               new tp_maps::PostGammaLayer()      ,
+                                               tp_maps::RenderPass::Text          ,
+                                               tp_maps::RenderPass::GUI3D          ,
+                                               tp_maps::RenderPass::GUI
+                                             });
 }
 
 //##################################################################################################
@@ -417,6 +392,8 @@ void Map::preDelete()
 
   delete d->controller;
   d->controller=nullptr;
+
+  deleteAllSubviews();
 
   clearLayers();
 
@@ -537,6 +514,23 @@ void Map::setCurrentSubview(Subview* subview)
 }
 
 //##################################################################################################
+void Map::setCurrentSubview(const tp_utils::StringID& name)
+{
+  if(name == defaultSID())
+    d->currentSubview = &d->defaultSubview;
+  else
+  {
+    for(auto subView : d->subviews)
+    {
+      if(subView->m_name == name)
+      {
+
+      }
+    }
+  }
+}
+
+//##################################################################################################
 void Map::addSubview(Subview* subview)
 {
   d->subviews.push_back(subview);
@@ -548,6 +542,13 @@ void Map::deleteSubview(Subview* subview)
   d->currentSubview = &d->defaultSubview;
   tpRemoveOne(d->subviews, subview);
   delete subview;
+}
+
+//##################################################################################################
+void Map::deleteAllSubviews()
+{
+  while(!d->subviews.empty())
+    deleteSubview(d->subviews.front());
 }
 
 //##################################################################################################
@@ -657,12 +658,6 @@ void Map::invalidateBuffers()
 }
 
 //##################################################################################################
-Controller* Map::controller()
-{
-  return d->controller;
-}
-
-//##################################################################################################
 void Map::setBackgroundColor(const glm::vec3& color)
 {
   d->backgroundColor = {color.x, color.y, color.z, 1.0f};
@@ -705,7 +700,7 @@ void Map::setRenderPasses(const std::vector<RenderPass>& renderPasses)
     d->intermediateFBOs.clear();
   }
 
-  d->setRenderPassesInternal(renderPasses);
+  d->currentSubview->setRenderPassesInternal(renderPasses);
 }
 
 //##################################################################################################
@@ -1105,7 +1100,7 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
   }
 
   // 3D GUI Geometry
-  if(d->hasRenderPass(RenderPass::GUI3D))
+  if(d->currentSubview->hasRenderPass(RenderPass::GUI3D))
   {
     glClear(GL_DEPTH_BUFFER_BIT);
     d->renderInfo.pass = RenderPass::PickingGUI3D;
@@ -1392,6 +1387,7 @@ void Map::paintGL()
   makeCurrent();
   setInPaint(true);
   TP_CLEANUP([&]{setInPaint(false);});
+  setCurrentSubview(defaultSID());
   paintGLNoMakeCurrent();
 }
 
@@ -1402,18 +1398,18 @@ void Map::paintGLNoMakeCurrent()
 
   d->renderTimer.start();
 
-  d->computedRenderPasses.clear();
-  d->computedRenderPasses.reserve(d->renderPasses.size()*2);
-  for(const auto& renderPass : d->renderPasses)
+  d->currentSubview->m_computedRenderPasses.clear();
+  d->currentSubview->m_computedRenderPasses.reserve(d->currentSubview->m_renderPasses.size()*2);
+  for(const auto& renderPass : d->currentSubview->m_renderPasses)
   {
     if(renderPass.type == RenderPass::Delegate)
-      renderPass.postLayer->addRenderPasses(d->computedRenderPasses);
+      renderPass.postLayer->addRenderPasses(d->currentSubview->m_computedRenderPasses);
     else
-      d->computedRenderPasses.push_back(renderPass);
+      d->currentSubview->m_computedRenderPasses.push_back(renderPass);
   }
 #if 0
   int ctr=0;
-  for(const auto& rp : d->computedRenderPasses)
+  for(const auto& rp : d->currentSubview->m_computedRenderPasses)
     tpWarning() << "Render pass: " << rp.describe() << " index: " << ctr++;
 #endif
 #ifdef TP_FBO_SUPPORTED
@@ -1430,26 +1426,26 @@ void Map::paintGLNoMakeCurrent()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // Skip the passes that don't need a full render.
-  size_t rp = skipRenderPasses();
+  size_t rp = skipRenderPasses(d->currentSubview);
 
   d->renderFromStage = RenderFromStage::Reset;
 
 #ifdef TP_FBO_SUPPORTED
-  executeRenderPasses(rp, originalFrameBuffer);
+  executeRenderPasses(d->currentSubview, rp, originalFrameBuffer);
 #endif
 
   Errors::printOpenGLError("Map::paintGL");
 }
 
 //##################################################################################################
-size_t Map::skipRenderPasses()
+size_t Map::skipRenderPasses(Subview* subview)
 {
   size_t rp=0;
   if(d->renderFromStage != RenderFromStage::Full && d->renderFromStage != RenderFromStage::Reset)
   {
-    for(; rp<d->computedRenderPasses.size(); rp++)
+    for(; rp<subview->m_computedRenderPasses.size(); rp++)
     {
-      auto renderPass = d->computedRenderPasses.at(rp);
+      auto renderPass = subview->m_computedRenderPasses.at(rp);
 
 #ifdef TP_FBO_SUPPORTED
       switch(renderPass.type)
@@ -1521,14 +1517,14 @@ size_t Map::skipRenderPasses()
 }
 
 //##################################################################################################
-void Map::executeRenderPasses(size_t rp, GLint& originalFrameBuffer)
+void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameBuffer)
 {
   PRINT_FUNCTION_NAME("Map::executeRenderPasses");
   PRF_SCOPED_RANGE(d->profiler.get(), "executeRenderPasses", {255,255,255});
 
-  for(; rp<d->computedRenderPasses.size(); rp++)
+  for(; rp<subview->m_computedRenderPasses.size(); rp++)
   {
-    auto renderPass = d->computedRenderPasses.at(rp);
+    auto renderPass = subview->m_computedRenderPasses.at(rp);
     try
     {
       if(renderPass.postLayer)
@@ -2101,6 +2097,12 @@ void Map::startTextInput()
 void Map::stopTextInput()
 {
 
+}
+
+//##################################################################################################
+Controller* Map::controller()
+{
+  return d->controller;
 }
 
 //##################################################################################################

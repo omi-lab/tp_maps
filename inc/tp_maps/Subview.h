@@ -15,7 +15,7 @@ class TP_MAPS_EXPORT Subview
   TP_NONCOPYABLE(Subview);
 public:
   //################################################################################################
-  Subview(const tp_utils::StringID& name);
+  Subview(Map* map, const tp_utils::StringID& name);
 
   //################################################################################################
   ~Subview();
@@ -23,8 +23,21 @@ public:
   //################################################################################################
   const tp_utils::StringID& name() const;
 
-private:
+private:  
+  //################################################################################################
+  void setRenderPassesInternal(const std::vector<RenderPass>& renderPasses);
+
+  //################################################################################################
+  bool hasRenderPass(RenderPass::RenderPassType renderPassType);
+
+  //################################################################################################
+  void deletePostLayers();
+
+  Map* m_map;
   const tp_utils::StringID m_name;
+
+  std::vector<RenderPass> m_renderPasses;
+  std::vector<RenderPass> m_computedRenderPasses;
 };
 
 }
