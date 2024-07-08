@@ -51,6 +51,7 @@ void Subview::deletePostLayers()
 {
   for(const auto& renderPass : m_renderPasses)
     delete renderPass.postLayer;
+  m_renderPasses.clear();
 }
 
 }

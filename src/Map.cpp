@@ -393,8 +393,6 @@ void Map::preDelete()
   delete d->controller;
   d->controller=nullptr;
 
-  deleteAllSubviews();
-
   clearLayers();
 
   while(!d->fontRenderers.empty())
@@ -786,6 +784,9 @@ void Map::removeLayer(Layer* layer)
 //##################################################################################################
 void Map::clearLayers()
 {
+  d->defaultSubview.deletePostLayers();
+  deleteAllSubviews();
+
   while(!d->layers.empty())
     delete d->layers.at(d->layers.size()-1);
 }
