@@ -192,12 +192,8 @@ struct Map::Private
   size_t nextEventHandlerId{0};
   std::vector<std::shared_ptr<EventHandler_lt>> eventHandlers;
 
-  RenderFromStage renderFromStage{RenderFromStage::Full};
-
   RenderInfo renderInfo;
 
-  size_t width{1};
-  size_t height{1};
   glm::vec4 backgroundColor{0.0f, 0.0f, 0.0f, 1.0f};
   GLboolean writeAlpha{GL_FALSE};
 
@@ -343,10 +339,10 @@ struct Map::Private
   //################################################################################################
   void callMapResized()
   {
-    controller->mapResized(int(width), int(height));
+    controller->mapResized(int(defaultSubview.m_width), int(defaultSubview.m_height));
 
     for(auto layer : layers)
-      layer->mapResized(int(width), int(height));
+      layer->mapResized(int(defaultSubview.m_width), int(defaultSubview.m_height));
   }
 };
 
@@ -522,7 +518,8 @@ void Map::setCurrentSubview(const tp_utils::StringID& name)
     {
       if(subView->m_name == name)
       {
-
+        d->currentSubview = subView;
+        break;
       }
     }
   }
@@ -541,6 +538,15 @@ void Map::deleteSubview(Subview* subview)
   tpRemoveOne(d->subviews, subview);
   delete subview;
 }
+
+//##################################################################################################
+void Map::deleteSubview(const tp_utils::StringID& name)
+{
+  for(auto subView : d->subviews)
+    if(subView->m_name == name)
+      return deleteSubview(subView);
+}
+
 
 //##################################################################################################
 void Map::deleteAllSubviews()
@@ -876,8 +882,8 @@ void Map::project(const glm::vec3& scenePoint, glm::vec2& screenPoint, const glm
   if(std::fabs(v.w)>0.00001f)
     screenPoint /= v.w;
   screenPoint = (screenPoint+1.0f)/2.0f;
-  screenPoint.x = screenPoint.x * float(d->width);
-  screenPoint.y = float(d->height) - (screenPoint.y * float(d->height));
+  screenPoint.x = screenPoint.x * float(d->currentSubview->m_width);
+  screenPoint.y = float(d->currentSubview->m_height) - (screenPoint.y * float(d->currentSubview->m_height));
 }
 
 //##################################################################################################
@@ -892,8 +898,8 @@ void Map::project(const glm::vec3& scenePoint, glm::vec3& screenPoint, const glm
   screenPoint.x = (screenPoint.x+1.0f)/2.0f;
   screenPoint.y = (screenPoint.y+1.0f)/2.0f;
 
-  screenPoint.x = screenPoint.x * float(d->width);
-  screenPoint.y = float(d->height) - (screenPoint.y * float(d->height));
+  screenPoint.x = screenPoint.x * float(d->currentSubview->m_width);
+  screenPoint.y = float(d->currentSubview->m_height) - (screenPoint.y * float(d->currentSubview->m_height));
 }
 
 //##################################################################################################
@@ -904,8 +910,8 @@ void Map::projectGL(const glm::vec3& scenePoint, glm::vec2& screenPoint, const g
 
   v = (v+1.0f)/2.0f;
 
-  screenPoint.x = v.x * float(d->width);
-  screenPoint.y = v.y * float(d->height);
+  screenPoint.x = v.x * float(d->currentSubview->m_width);
+  screenPoint.y = v.y * float(d->currentSubview->m_height);
 }
 
 //##################################################################################################
@@ -934,8 +940,8 @@ bool Map::unProject(const glm::vec2& screenPoint, glm::vec3& scenePoint, const t
   for(size_t i=0; i<2; i++)
   {
     glm::vec4& tmp = screenPoints.at(i);
-    tmp.x = tmp.x / float(d->width);
-    tmp.y = (float(d->height) - tmp.y) / float(d->height);
+    tmp.x = tmp.x / float(d->currentSubview->m_width);
+    tmp.y = (float(d->currentSubview->m_height) - tmp.y) / float(d->currentSubview->m_height);
     tmp = tmp * 2.0f - 1.0f;
 
     glm::vec4 obj = inverse * tmp;
@@ -960,8 +966,8 @@ bool Map::unProject(const glm::dvec2& screenPoint, glm::dvec3& scenePoint, const
   for(size_t i=0; i<2; i++)
   {
     glm::dvec4& tmp = screenPoints.at(i);
-    tmp.x = tmp.x / double(d->width);
-    tmp.y = (double(d->height) - tmp.y) / double(d->height);
+    tmp.x = tmp.x / double(d->currentSubview->m_width);
+    tmp.y = (double(d->currentSubview->m_height) - tmp.y) / double(d->currentSubview->m_height);
     tmp = tmp * 2.0 - 1.0;
 
     glm::dvec4 obj = inverse * tmp;
@@ -984,8 +990,8 @@ glm::vec3 Map::unProject(const glm::vec3& screenPoint, const glm::mat4& matrix)
   glm::mat4 inverse = glm::inverse(matrix);
 
   glm::vec4 tmp{screenPoint, 1.0f};
-  tmp.x = tmp.x / float(d->width);
-  tmp.y = (float(d->height) - tmp.y) / float(d->height);
+  tmp.x = tmp.x / float(d->currentSubview->m_width);
+  tmp.y = (float(d->currentSubview->m_height) - tmp.y) / float(d->currentSubview->m_height);
   tmp.x = tmp.x * 2.0f - 1.0f;
   tmp.y = tmp.y * 2.0f - 1.0f;
   glm::vec4 obj = inverse * tmp;
@@ -1055,7 +1061,7 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
   const int pickingSize=9;
   const int left=pickingSize/2;
 
-  if(d->width<pickingSize || d->height<pickingSize)
+  if(d->currentSubview->m_width<pickingSize || d->currentSubview->m_height<pickingSize)
     return nullptr;
 
   makeCurrent();
@@ -1069,8 +1075,8 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
   // Configure the frame buffer that the picking values will be rendered to.
   if(!d->buffers.prepareBuffer("renderToImage",
                                d->renderToImageBuffer,
-                               d->width,
-                               d->height,
+                               d->currentSubview->m_width,
+                               d->currentSubview->m_height,
                                CreateColorBuffer::Yes,
                                Multisample::No,
                                HDR::No,
@@ -1113,7 +1119,7 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
 
   //The size of the area to perform picking in, must be an odd number
   int windowX = tpBound(0, pos.x-left, width()-(pickingSize+1));
-  int windowY = tpBound(0, (int(d->height)-pos.y)-left, int(height()-(pickingSize+1)));
+  int windowY = tpBound(0, (int(d->currentSubview->m_height)-pos.y)-left, int(height()-(pickingSize+1)));
   std::vector<unsigned char> pixels(pickingSize*pickingSize*4);
 
   switch(d->shaderProfile)
@@ -1210,8 +1216,8 @@ bool Map::renderToImage(size_t width, size_t height, HDR hdr, const std::functio
     return false;
   }
 
-  auto originalWidth  = d->width;
-  auto originalHeight = d->height;
+  auto originalWidth  = d->currentSubview->m_width;
+  auto originalHeight = d->currentSubview->m_height;
   resizeGL(int(width), int(height));
 
   makeCurrent();
@@ -1253,11 +1259,11 @@ bool Map::renderToImage(size_t width, size_t height, HDR hdr, const std::functio
   renderComplete();
 
   // Return to the original viewport settings
-  d->width = originalWidth;
-  d->height = originalHeight;
+  d->currentSubview->m_width = originalWidth;
+  d->currentSubview->m_height = originalHeight;
   resizeGL(int(originalWidth), int(originalHeight));
   glBindFramebuffer(GL_FRAMEBUFFER, originalFrameBuffer);
-  glViewport(0, 0, TPGLsizei(d->width), TPGLsizei(d->height));
+  glViewport(0, 0, TPGLsizei(d->currentSubview->m_width), TPGLsizei(d->currentSubview->m_height));
 
   DEBUG_printOpenGLError("renderToImage D");
 
@@ -1311,26 +1317,26 @@ const std::vector<OpenGLFBO>& Map::lightBuffers() const
 //##################################################################################################
 int Map::width() const
 {
-  return int(d->width);
+  return int(d->currentSubview->m_width);
 }
 
 //##################################################################################################
 int Map::height() const
 {
-  return int(d->height);
+  return int(d->currentSubview->m_height);
 }
 
 //##################################################################################################
 glm::vec2 Map::screenSize() const
 {
-  return {d->width, d->height};
+  return {d->currentSubview->m_width, d->currentSubview->m_height};
 }
 
 //##################################################################################################
 void Map::update(RenderFromStage renderFromStage)
 {
-  if(renderFromStage<d->renderFromStage)
-    d->renderFromStage = renderFromStage;
+  if(renderFromStage<d->currentSubview->m_renderFromStage)
+    d->currentSubview->m_renderFromStage = renderFromStage;
 }
 
 //##################################################################################################
@@ -1376,7 +1382,7 @@ void Map::initializeGL()
   tpWarning() << glGetString(GL_VERSION);
 
   d->initialized = true;
-  d->renderFromStage = RenderFromStage::Full;
+  d->currentSubview->m_renderFromStage = RenderFromStage::Full;
 
   d->callMapResized();
 }
@@ -1384,11 +1390,20 @@ void Map::initializeGL()
 //##################################################################################################
 void Map::paintGL()
 {
+  setCurrentSubview(defaultSID());
+  paintGLCurrentSubview();
+}
+
+//##################################################################################################
+void Map::paintGLCurrentSubview()
+{
   PRF_SCOPED_RANGE(d->profiler.get(), "Frame", {255,255,255});
   makeCurrent();
+
+  glViewport(0, 0, TPGLsizei(d->currentSubview->m_width), TPGLsizei(d->currentSubview->m_height));
+
   setInPaint(true);
   TP_CLEANUP([&]{setInPaint(false);});
-  setCurrentSubview(defaultSID());
   paintGLNoMakeCurrent();
 }
 
@@ -1429,20 +1444,20 @@ void Map::paintGLNoMakeCurrent()
   // Skip the passes that don't need a full render.
   size_t rp = skipRenderPasses(d->currentSubview);
 
-  d->renderFromStage = RenderFromStage::Reset;
+  d->currentSubview->m_renderFromStage = RenderFromStage::Reset;
 
 #ifdef TP_FBO_SUPPORTED
   executeRenderPasses(d->currentSubview, rp, originalFrameBuffer);
 #endif
 
-  Errors::printOpenGLError("Map::paintGL");
+  Errors::printOpenGLError("Map::paintGLNoMakeCurrent");
 }
 
 //##################################################################################################
 size_t Map::skipRenderPasses(Subview* subview)
 {
   size_t rp=0;
-  if(d->renderFromStage != RenderFromStage::Full && d->renderFromStage != RenderFromStage::Reset)
+  if(d->currentSubview->m_renderFromStage != RenderFromStage::Full && d->currentSubview->m_renderFromStage != RenderFromStage::Reset)
   {
     for(; rp<subview->m_computedRenderPasses.size(); rp++)
     {
@@ -1500,7 +1515,7 @@ size_t Map::skipRenderPasses(Subview* subview)
 
         case RenderPass::Stage: //------------------------------------------------------------------
         {
-          if(d->renderFromStage == RenderFromStage::Stage && renderPass.index == d->renderFromStage.index)
+          if(d->currentSubview->m_renderFromStage == RenderFromStage::Stage && renderPass.index == d->currentSubview->m_renderFromStage.index)
           {
             rp++;
             return rp;
@@ -1596,7 +1611,7 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
 
           DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers");
 
-          glViewport(0, 0, TPGLsizei(d->width), TPGLsizei(d->height));
+          glViewport(0, 0, TPGLsizei(d->currentSubview->m_width), TPGLsizei(d->currentSubview->m_height));
           glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
           DEBUG_printOpenGLError("RenderPass::LightFBOs bind default buffer");
 #endif
@@ -1615,8 +1630,8 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
 
           if(!d->buffers.prepareBuffer("currentDraw",
                                        *d->currentDrawFBO,
-                                       d->width,
-                                       d->height,
+                                       d->currentSubview->m_width,
+                                       d->currentSubview->m_height,
                                        CreateColorBuffer::Yes,
                                        Multisample::Yes,
                                        hdr(),
@@ -1645,8 +1660,8 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
 
           if(!d->buffers.prepareBuffer("currentDraw",
                                        *d->currentDrawFBO,
-                                       d->width,
-                                       d->height,
+                                       d->currentSubview->m_width,
+                                       d->currentSubview->m_height,
                                        CreateColorBuffer::Yes,
                                        multisample,
                                        hdr(),
@@ -1675,8 +1690,8 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
 
           if(!d->buffers.prepareBuffer("currentDraw",
                                        *d->currentDrawFBO,
-                                       d->width,
-                                       d->height,
+                                       d->currentSubview->m_width,
+                                       d->currentSubview->m_height,
                                        CreateColorBuffer::Yes,
                                        multisample,
                                        hdr(),
@@ -1871,15 +1886,17 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
 //##################################################################################################
 void Map::resizeGL(int w, int h)
 {
+  d->currentSubview->m_width  = size_t(w);
+  d->currentSubview->m_height = size_t(h);
+
+  if(!d->initialized)
+    return;
+
   makeCurrent();
 
-  d->width  = size_t(w);
-  d->height = size_t(h);
+  glViewport(0, 0, TPGLsizei(d->currentSubview->m_width), TPGLsizei(d->currentSubview->m_height));
 
-  glViewport(0, 0, TPGLsizei(d->width), TPGLsizei(d->height));
-
-  if(d->initialized)
-    d->callMapResized();
+  d->callMapResized();
 
   update();
 }

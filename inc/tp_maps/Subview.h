@@ -37,7 +37,12 @@ private:
   const tp_utils::StringID m_name;
 
   std::vector<RenderPass> m_renderPasses;
-  std::vector<RenderPass> m_computedRenderPasses;
+  std::vector<RenderPass> m_computedRenderPasses;  
+
+  size_t m_width{1};
+  size_t m_height{1};
+
+  RenderFromStage m_renderFromStage{RenderFromStage::Full};
 };
 
 }
