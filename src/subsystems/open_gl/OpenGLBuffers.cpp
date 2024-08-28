@@ -273,8 +273,6 @@ struct OpenGLBuffers::Private
   {
     DEBUG_printOpenGLError("prepareBuffer Start");
 
-
-
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
     if(updateSamplesRequired)
     {
@@ -466,6 +464,15 @@ struct OpenGLBuffers::Private
   //################################################################################################
   void deleteBuffer(OpenGLFBO& buffer)
   {
+    for(auto i=storedBuffers.begin(); i!=storedBuffers.end(); ++i)
+    {
+      if(i->second == &buffer)
+      {
+        storedBuffers.erase(i);
+        break;
+      }
+    }
+
     glBindTexture(GL_TEXTURE_2D, 0);
 
     if(buffer.frameBuffer)

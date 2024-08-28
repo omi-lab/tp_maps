@@ -167,6 +167,10 @@ struct EventHandler_lt
   std::unordered_set<int32_t> m_hasKeyFocusFor;
 };
 }
+}
+
+namespace tp_maps
+{
 
 //##################################################################################################
 struct Map::Private
@@ -182,7 +186,6 @@ struct Map::Private
   std::vector<Subview*> subviews;
   Subview* currentSubview{&defaultSubview};
 
-  Controller* controller{nullptr};
   std::vector<Layer*> layers;
   std::unordered_map<tp_utils::StringID, Shader*> shaders;
   std::vector<FontRenderer*> fontRenderers;
@@ -204,7 +207,7 @@ struct Map::Private
   // We don't want to multisample multiple times it just makes the result blury. So what we do here
   // is have 3 buffers, the first has the 3D geometry drawn to it and is multisampled after this the
   // render pipeline toggles between the second and third for the remaining post processing steps.
-  std::unordered_map<tp_utils::StringID, std::unique_ptr<OpenGLFBO>> intermediateFBOs;
+  std::unordered_map<FBOKey, std::unique_ptr<OpenGLFBO>> intermediateFBOs;
 
   OpenGLFBO* currentReadFBO{intermediateFBO(defaultSID())};
   OpenGLFBO* currentDrawFBO{intermediateFBO(defaultSID())};
@@ -296,7 +299,7 @@ struct Map::Private
   //################################################################################################
   OpenGLFBO* intermediateFBO(const tp_utils::StringID& name)
   {
-    auto& intermediateFBO = intermediateFBOs[name];
+    auto& intermediateFBO = intermediateFBOs[{name, currentSubview}];
     if(!intermediateFBO)
       intermediateFBO = std::make_unique<OpenGLFBO>();
     return intermediateFBO.get();
@@ -305,7 +308,7 @@ struct Map::Private
   //################################################################################################
   void render()
   {
-    controller->updateMatrices();
+    currentSubview->m_controller->updateMatrices();
 
     auto render = [&](auto test)
     {
@@ -339,7 +342,7 @@ struct Map::Private
   //################################################################################################
   void callMapResized()
   {
-    controller->mapResized(int(defaultSubview.m_width), int(defaultSubview.m_height));
+    currentSubview->m_controller->mapResized(int(defaultSubview.m_width), int(defaultSubview.m_height));
 
     for(auto layer : layers)
       layer->mapResized(int(defaultSubview.m_width), int(defaultSubview.m_height));
@@ -354,7 +357,7 @@ Map::Map(bool enableDepthBuffer):
 
   d->renderModeManager = new RenderModeManager(this);
 
-  d->controller = new FlatController(this);
+  d->currentSubview->m_controller = new FlatController(this);
 
   d->currentSubview->setRenderPassesInternal({
                                                tp_maps::RenderPass::LightFBOs     ,
@@ -386,8 +389,11 @@ void Map::preDelete()
   delete d->renderModeManager;
   d->renderModeManager = nullptr;
 
-  delete d->controller;
-  d->controller=nullptr;
+  for(auto subview : d->subviews)
+  {
+    delete subview->m_controller;
+    subview->m_controller=nullptr;
+  }
 
   clearLayers();
 
@@ -579,7 +585,7 @@ void Map::animate(double timestampMS)
   d->timeSincePreviousAnimate = timestampMS - d->previousAnimateTimestamp;
   d->previousAnimateTimestamp = timestampMS;
 
-  d->controller->animate(timestampMS);
+  d->currentSubview->m_controller->animate(timestampMS);
 
   for(auto l : d->layers)
     l->animate(timestampMS);
@@ -806,7 +812,7 @@ const std::vector<Layer*>& Map::layers() const
 //##################################################################################################
 void Map::resetController()
 {
-  d->controller = new FlatController(this);
+  d->currentSubview->m_controller = new FlatController(this);
 }
 
 //##################################################################################################
@@ -917,13 +923,13 @@ void Map::projectGL(const glm::vec3& scenePoint, glm::vec2& screenPoint, const g
 //##################################################################################################
 bool Map::unProject(const glm::vec2& screenPoint, glm::vec3& scenePoint, const tp_math_utils::Plane& plane)
 {
-  return unProject(screenPoint, scenePoint, plane, d->controller->matrix(defaultSID()));
+  return unProject(screenPoint, scenePoint, plane, d->currentSubview->m_controller->matrix(defaultSID()));
 }
 
 //##################################################################################################
 bool Map::unProject(const glm::dvec2& screenPoint, glm::dvec3& scenePoint, const tp_math_utils::Plane& plane)
 {
-  return unProject(screenPoint, scenePoint, plane, d->controller->matrices(defaultSID()).dvp);
+  return unProject(screenPoint, scenePoint, plane, d->currentSubview->m_controller->matrices(defaultSID()).dvp);
 }
 
 //##################################################################################################
@@ -981,7 +987,7 @@ bool Map::unProject(const glm::dvec2& screenPoint, glm::dvec3& scenePoint, const
 //##################################################################################################
 glm::vec3 Map::unProject(const glm::vec3& screenPoint)
 {
-  return unProject(screenPoint, d->controller->matrix(defaultSID()));
+  return unProject(screenPoint, d->currentSubview->m_controller->matrix(defaultSID()));
 }
 
 //##################################################################################################
@@ -1598,9 +1604,9 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
               return;
 
             DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers (B)");
-            d->controller->setCurrentLight(light);
+            d->currentSubview->m_controller->setCurrentLight(light);
             DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers (C)");
-            lightBuffer.worldToTexture = d->controller->lightMatrices();
+            lightBuffer.worldToTexture = d->currentSubview->m_controller->lightMatrices();
             DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers (D)");
 
             if(light.castShadows)
@@ -1933,12 +1939,12 @@ bool Map::mouseEvent(const MouseEvent& event)
       }
     }
 
-    if(auto i = d->controller->m_hasMouseFocusFor.find(event.button); i!=d->controller->m_hasMouseFocusFor.end())
+    if(auto i = d->defaultSubview.m_controller->m_hasMouseFocusFor.find(event.button); i!=d->defaultSubview.m_controller->m_hasMouseFocusFor.end())
     {
       if(event.type == MouseEventType::Release)
-        d->controller->m_hasMouseFocusFor.erase(i);
+        d->defaultSubview.m_controller->m_hasMouseFocusFor.erase(i);
 
-      if(d->controller->mouseEvent(event))
+      if(d->defaultSubview.m_controller->mouseEvent(event))
         return true;
     }
   }
@@ -1965,10 +1971,10 @@ bool Map::mouseEvent(const MouseEvent& event)
     }
   }
 
-  if(d->controller->mouseEvent(event))
+  if(d->defaultSubview.m_controller->mouseEvent(event))
   {
     if(event.type == MouseEventType::Press || event.type == MouseEventType::DragStart)
-      d->controller->m_hasMouseFocusFor.insert(event.button);
+      d->defaultSubview.m_controller->m_hasMouseFocusFor.insert(event.button);
     return true;
   }
 
@@ -2008,10 +2014,10 @@ bool Map::keyEvent(const KeyEvent& event)
       }
     }
 
-    if(auto i = d->controller->m_hasKeyFocusFor.find(event.scancode); i!=d->controller->m_hasKeyFocusFor.end())
+    if(auto i = d->defaultSubview.m_controller->m_hasKeyFocusFor.find(event.scancode); i!=d->defaultSubview.m_controller->m_hasKeyFocusFor.end())
     {
-      d->controller->m_hasKeyFocusFor.erase(i);
-      if(d->controller->keyEvent(event))
+      d->defaultSubview.m_controller->m_hasKeyFocusFor.erase(i);
+      if(d->defaultSubview.m_controller->keyEvent(event))
         return true;
     }
   }
@@ -2038,10 +2044,10 @@ bool Map::keyEvent(const KeyEvent& event)
     }
   }
 
-  if(d->controller->keyEvent(event))
+  if(d->defaultSubview.m_controller->keyEvent(event))
   {
     if(event.type == KeyEventType::Press)
-      d->controller->m_hasKeyFocusFor.insert(event.scancode);
+      d->defaultSubview.m_controller->m_hasKeyFocusFor.insert(event.scancode);
     return true;
   }
 
@@ -2120,7 +2126,7 @@ void Map::stopTextInput()
 //##################################################################################################
 Controller* Map::controller()
 {
-  return d->controller;
+  return d->currentSubview->m_controller;
 }
 
 //##################################################################################################
@@ -2133,8 +2139,8 @@ void Map::layerDestroyed(Layer* layer)
 //##################################################################################################
 void Map::setController(Controller* controller)
 {
-  delete d->controller;
-  d->controller = controller;
+  delete d->currentSubview->m_controller;
+  d->currentSubview->m_controller = controller;
   controllerUpdate();
 }
 
