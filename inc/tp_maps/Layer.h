@@ -132,6 +132,9 @@ public:
   void setVisibleQuiet(bool visible);
 
   //################################################################################################
+  bool visibileToCurrentSubview() const;
+
+  //################################################################################################
   bool excludeFromPicking() const;
 
   //################################################################################################
@@ -150,6 +153,13 @@ public:
   //################################################################################################
   //! Set the render pass that this layer should do most of its rendering in.
   virtual void setDefaultRenderPass(const RenderPass& defaultRenderPass);
+
+  //################################################################################################
+  //! The names of subviews to exclude this layer from.
+  const std::unordered_set<tp_utils::StringID>& excludeFromSubviews() const;
+
+  //################################################################################################
+  void setExcludeFromSubviews(const std::unordered_set<tp_utils::StringID>& excludeFromSubviews);
 
   //################################################################################################
   //! Called when buffers become invalid.

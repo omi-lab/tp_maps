@@ -1,6 +1,7 @@
 #include "tp_maps/Layer.h"
 #include "tp_maps/LayerPointer.h"
 #include "tp_maps/Map.h"
+#include "tp_maps/Subview.h"
 #include "tp_maps/DragDropEvent.h"
 
 #include "tp_utils/DebugUtils.h"
@@ -24,6 +25,7 @@ struct Layer::Private
   glm::mat4 modelMatrix{1.0f};
   tp_utils::StringID coordinateSystem{defaultSID()};
   RenderPass defaultRenderPass{RenderPass::Normal};
+  std::unordered_set<tp_utils::StringID> excludeFromSubviews;
   bool visible{true};
   bool excludeFromPicking{false};
   std::shared_ptr<int> alive{std::make_shared<int>()};
@@ -131,6 +133,12 @@ void Layer::setVisibleQuiet(bool visible)
 }
 
 //##################################################################################################
+bool Layer::visibileToCurrentSubview() const
+{
+  return d->visible && !tpContains(d->excludeFromSubviews, map()->currentSubview()->name());
+}
+
+//##################################################################################################
 bool Layer::excludeFromPicking() const
 {
   return d->excludeFromPicking;
@@ -152,6 +160,18 @@ const RenderPass& Layer::defaultRenderPass() const
 void Layer::setDefaultRenderPass(const RenderPass& defaultRenderPass)
 {
   d->defaultRenderPass = defaultRenderPass;
+}
+
+//##################################################################################################
+const std::unordered_set<tp_utils::StringID>& Layer::excludeFromSubviews() const
+{
+  return d->excludeFromSubviews;
+}
+
+//##################################################################################################
+void Layer::setExcludeFromSubviews(const std::unordered_set<tp_utils::StringID>& excludeFromSubviews)
+{
+  d->excludeFromSubviews = excludeFromSubviews;
 }
 
 //##################################################################################################
@@ -209,13 +229,13 @@ void Layer::render(RenderInfo& renderInfo)
   if(renderInfo.isPickingRender())
   {
     for(auto l : d->layers)
-      if(l->visible() && !l->excludeFromPicking())
+      if(l->visibileToCurrentSubview() && !l->excludeFromPicking())
         l->render(renderInfo);
   }
   else
   {
     for(auto l : d->layers)
-      if(l->visible())
+      if(l->visibileToCurrentSubview())
         l->render(renderInfo);
   }
 }

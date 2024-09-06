@@ -334,9 +334,9 @@ struct Map::Private
     };
 
     if(renderInfo.isPickingRender())
-      render([](auto l){return l->visible() && !l->excludeFromPicking();});
+      render([](auto l){return l->visibileToCurrentSubview() && !l->excludeFromPicking();});
     else
-      render([](auto l){return l->visible();});
+      render([](auto l){return l->visibileToCurrentSubview();});
   }
 
   //################################################################################################
@@ -516,19 +516,19 @@ void Map::setCurrentSubview(Subview* subview)
 //##################################################################################################
 void Map::setCurrentSubview(const tp_utils::StringID& name)
 {
-  if(name == defaultSID())
-    d->currentSubview = &d->defaultSubview;
-  else
+  if(name != defaultSID())
   {
     for(auto subView : d->subviews)
     {
       if(subView->m_name == name)
       {
         d->currentSubview = subView;
-        break;
+        return;
       }
     }
   }
+
+  d->currentSubview = &d->defaultSubview;
 }
 
 //##################################################################################################
