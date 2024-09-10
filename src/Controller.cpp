@@ -154,7 +154,7 @@ void Controller::update(RenderFromStage renderFromStage)
   if(d->map)
   {
     d->map->controllerUpdate();
-    d->map->update(renderFromStage);
+    d->map->update(renderFromStage, this);
   }
 }
 

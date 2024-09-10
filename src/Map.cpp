@@ -185,6 +185,8 @@ struct Map::Private
   Subview defaultSubview{q, defaultSID()};
   std::vector<Subview*> subviews;
   Subview* currentSubview{&defaultSubview};
+  std::vector<Subview*> allSubviews;
+  std::vector<tp_utils::StringID> allSubviewNames;
 
   std::vector<Layer*> layers;
   std::unordered_map<tp_utils::StringID, Shader*> shaders;
@@ -278,6 +280,24 @@ struct Map::Private
   }
 
   //################################################################################################
+  void updateAllSubviewsList()
+  {
+    allSubviews.clear();
+    allSubviewNames.clear();
+
+    auto updateSubview = [&](auto subview)
+    {
+      allSubviews.push_back(subview);
+      allSubviewNames.push_back(subview->m_name);
+    };
+
+    for(auto& subview : subviews)
+      updateSubview(subview);
+
+    updateSubview(&defaultSubview);
+  }
+
+  //################################################################################################
   void deleteShaders()
   {
     if(shaders.empty())
@@ -355,6 +375,8 @@ Map::Map(bool enableDepthBuffer):
 {
   TP_UNUSED(enableDepthBuffer);
 
+  d->updateAllSubviewsList();
+
   d->renderModeManager = new RenderModeManager(this);
 
   d->currentSubview->m_controller = new FlatController(this);
@@ -394,6 +416,8 @@ void Map::preDelete()
     delete subview->m_controller;
     subview->m_controller=nullptr;
   }
+
+  delete d->defaultSubview.m_controller;
 
   clearLayers();
 
@@ -534,14 +558,17 @@ void Map::setCurrentSubview(const tp_utils::StringID& name)
 //##################################################################################################
 void Map::addSubview(Subview* subview)
 {
-  d->subviews.push_back(subview);
+  d->subviews.push_back(subview);  
+  d->updateAllSubviewsList();
 }
 
 //##################################################################################################
 void Map::deleteSubview(Subview* subview)
 {
   d->currentSubview = &d->defaultSubview;
-  tpRemoveOne(d->subviews, subview);
+  tpRemoveOne(d->subviews, subview);  
+  d->updateAllSubviewsList();
+  delete subview->m_controller;
   delete subview;
 }
 
@@ -559,6 +586,12 @@ void Map::deleteAllSubviews()
 {
   while(!d->subviews.empty())
     deleteSubview(d->subviews.front());
+}
+
+//##################################################################################################
+const std::vector<tp_utils::StringID>& Map::allSubviewNames() const
+{
+  return d->allSubviewNames;
 }
 
 //##################################################################################################
@@ -671,14 +704,14 @@ void Map::invalidateBuffers()
 void Map::setBackgroundColor(const glm::vec3& color)
 {
   d->backgroundColor = {color.x, color.y, color.z, 1.0f};
-  update();
+  update(RenderFromStage::Full, d->allSubviewNames);
 }
 
 //##################################################################################################
 void Map::setBackgroundColor(const glm::vec4& color)
 {
   d->backgroundColor = color;
-  update();
+  update(RenderFromStage::Full, d->allSubviewNames);
 }
 
 //##################################################################################################
@@ -753,7 +786,7 @@ void Map::setLights(const std::vector<tp_math_utils::Light>& lights)
   for(auto l : d->layers)
     l->lightsChanged(lightingModelChanged);
 
-  update();
+  update(RenderFromStage::Full, d->allSubviewNames);
 }
 
 //##################################################################################################
@@ -783,7 +816,7 @@ void Map::insertLayer(size_t i, Layer* layer)
 
   layerInserted(i, layer);
 
-  update();
+  update(RenderFromStage::Full, d->allSubviewNames);
 }
 
 //##################################################################################################
@@ -846,7 +879,7 @@ void Map::setHDR(HDR hdr)
   {
     d->hdr = hdr;
     d->deleteShaders();
-    update();
+    update(RenderFromStage::Full, d->allSubviewNames);
   }
 }
 
@@ -863,7 +896,7 @@ void Map::setExtendedFBO(ExtendedFBO extendedFBO)
   {
     d->extendedFBO = extendedFBO;
     d->deleteShaders();
-    update();
+    update(RenderFromStage::Full, d->allSubviewNames);
   }
 }
 
@@ -1299,7 +1332,7 @@ void Map::deleteShader(const tp_utils::StringID& name)
   delete i->second;
   d->shaders.erase(i);
 
-  update();
+  update(RenderFromStage::Full, d->allSubviewNames);
 }
 
 //##################################################################################################
@@ -1339,10 +1372,27 @@ glm::vec2 Map::screenSize() const
 }
 
 //##################################################################################################
-void Map::update(RenderFromStage renderFromStage)
+void Map::update(RenderFromStage renderFromStage, const std::vector<tp_utils::StringID>& subviews)
 {
-  if(renderFromStage<d->currentSubview->m_renderFromStage)
-    d->currentSubview->m_renderFromStage = renderFromStage;
+  for(auto& subview : d->allSubviews)
+  {
+    if(tpContains(subviews, subview->m_name))
+    {
+      if(renderFromStage<subview->m_renderFromStage)
+      {
+        subview->m_renderFromStage = renderFromStage;
+        subviewUpdateRequested(subview->m_name);
+      }
+    }
+  }
+}
+
+//##################################################################################################
+void Map::update(RenderFromStage renderFromStage, Controller* controller)
+{
+  for(const auto& subview : d->allSubviews)
+    if(subview->m_controller == controller)
+      return update(renderFromStage, {subview->m_name});
 }
 
 //##################################################################################################
@@ -1904,7 +1954,7 @@ void Map::resizeGL(int w, int h)
 
   d->callMapResized();
 
-  update();
+  update(RenderFromStage::Full, d->allSubviewNames);
 }
 
 //##################################################################################################
@@ -2133,7 +2183,7 @@ Controller* Map::controller()
 void Map::layerDestroyed(Layer* layer)
 {
   tpRemoveOne(d->layers, layer);
-  update();
+  update(RenderFromStage::Full, d->allSubviewNames);
 }
 
 //##################################################################################################

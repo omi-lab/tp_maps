@@ -132,7 +132,7 @@ void RenderModeManager::setRenderMode(RenderMode renderMode)
     case RenderMode::Full         : d->shadowSamples = d->shadowSamplesFull        ; break;
   }
 
-  d->map->update();
+  d->map->update(RenderFromStage::Full, d->map->allSubviewNames());
 }
 
 //##################################################################################################

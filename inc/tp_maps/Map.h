@@ -124,6 +124,12 @@ public:
   void deleteAllSubviews();
 
   //################################################################################################
+  const std::vector<tp_utils::StringID>& allSubviewNames() const;
+
+  //################################################################################################
+  tp_utils::CallbackCollection<void(const tp_utils::StringID&)> subviewUpdateRequested;
+
+  //################################################################################################
   RenderModeManager& renderModeManger() const;
 
   //################################################################################################
@@ -403,7 +409,14 @@ public:
 
   //################################################################################################
   //! Called to queue a refresh
-  virtual void update(RenderFromStage renderFromStage=RenderFromStage::Full);
+  virtual void update(RenderFromStage renderFromStage, const std::vector<tp_utils::StringID>& subviews);
+
+private:
+
+  //################################################################################################
+  void update(RenderFromStage renderFromStage, Controller* controller);
+
+public:
 
   //################################################################################################
   virtual void callAsync(const std::function<void()>& callback)=0;

@@ -341,7 +341,14 @@ void Layer::mapResized(int w, int h)
 void Layer::update(RenderFromStage renderFromStage)
 {
   if(d->map)
-    d->map->update(renderFromStage);
+  {
+    std::vector<tp_utils::StringID> subviews = d->map->allSubviewNames();
+
+    for(const auto& excluded : d->excludeFromSubviews)
+      tpRemoveOne(subviews, excluded);
+
+    d->map->update(renderFromStage, subviews);
+  }
 }
 
 //##################################################################################################
