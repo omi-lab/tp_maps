@@ -127,6 +127,9 @@ public:
   const std::vector<tp_utils::StringID>& allSubviewNames() const;
 
   //################################################################################################
+  std::vector<tp_utils::StringID> excludeFromSubviewsOtherThan(const tp_utils::StringID& subview) const;
+
+  //################################################################################################
   tp_utils::CallbackCollection<void(const tp_utils::StringID&)> subviewUpdateRequested;
 
   //################################################################################################
@@ -438,6 +441,9 @@ public:
 
   //################################################################################################
   void resizeGL(int w, int h);
+
+  //################################################################################################
+  void resizeGLNoUpdate(int w, int h);
 
   //################################################################################################
   bool mouseEvent(const MouseEvent& event);

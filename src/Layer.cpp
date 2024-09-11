@@ -175,6 +175,15 @@ void Layer::setExcludeFromSubviews(const std::unordered_set<tp_utils::StringID>&
 }
 
 //##################################################################################################
+void Layer::setExcludeFromSubviewsVector(const std::vector<tp_utils::StringID>& excludeFromSubviews)
+{
+  d->excludeFromSubviews.clear();
+  d->excludeFromSubviews.reserve(excludeFromSubviews.size());
+  for(const auto& subview : excludeFromSubviews)
+    d->excludeFromSubviews.insert(subview);
+}
+
+//##################################################################################################
 void Layer::addChildLayer(Layer* layer)
 {
   insertChildLayer(d->layers.size(), layer);

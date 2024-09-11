@@ -595,6 +595,14 @@ const std::vector<tp_utils::StringID>& Map::allSubviewNames() const
 }
 
 //##################################################################################################
+std::vector<tp_utils::StringID> Map::excludeFromSubviewsOtherThan(const tp_utils::StringID& subview) const
+{
+  auto subviewNames = d->allSubviewNames;
+  tpRemoveOne(subviewNames, subview);
+  return subviewNames;
+}
+
+//##################################################################################################
 RenderModeManager& Map::renderModeManger() const
 {
   return *d->renderModeManager;
@@ -1942,6 +1950,9 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
 //##################################################################################################
 void Map::resizeGL(int w, int h)
 {
+  if(d->currentSubview->m_width == size_t(w) && d->currentSubview->m_height == size_t(h))
+    return;
+
   d->currentSubview->m_width  = size_t(w);
   d->currentSubview->m_height = size_t(h);
 

@@ -162,6 +162,9 @@ public:
   void setExcludeFromSubviews(const std::unordered_set<tp_utils::StringID>& excludeFromSubviews);
 
   //################################################################################################
+  void setExcludeFromSubviewsVector(const std::vector<tp_utils::StringID>& excludeFromSubviews);
+
+  //################################################################################################
   //! Called when buffers become invalid.
   /*!
   This is called when the OpenGL context becomes invalid, all OpenGL resources should be ignored.
