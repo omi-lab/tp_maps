@@ -3,9 +3,9 @@
 namespace tp_maps
 {
 //##################################################################################################
-const char* PassThroughShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& PassThroughShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/PassThroughShader.frag"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 }

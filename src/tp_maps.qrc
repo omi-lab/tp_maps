@@ -55,5 +55,8 @@
         <file preprocess="shader" alias="WriteFragment.150.render.glsl">resources/shaders/WriteFragment.150.render.glsl</file>
         <file preprocess="shader" alias="WriteFragment.100.hdr.glsl">resources/shaders/WriteFragment.100.hdr.glsl</file>
         <file preprocess="shader" alias="WriteFragment.100.render.glsl">resources/shaders/WriteFragment.100.render.glsl</file>
+        <file preprocess="shader" alias="BasicColorManagement.glsl">resources/shaders/BasicColorManagement.glsl</file>
+        <file preprocess="shader" alias="FilmicColorManagement.glsl">resources/shaders/FilmicColorManagement.glsl</file>
+        <file preprocess="shader" alias="NoColorManagement.glsl">resources/shaders/NoColorManagement.glsl</file>
     </qresource>
 </RCC>

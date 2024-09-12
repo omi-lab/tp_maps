@@ -27,10 +27,10 @@ public:
   ~PointSpriteShader() override;
 
   //################################################################################################
-  const char* vertexShaderStr(ShaderType shaderType) override;
+  const std::string& vertexShaderStr(ShaderType shaderType) override;
 
   //################################################################################################
-  const char* fragmentShaderStr(ShaderType shaderType) override;
+  const std::string& fragmentShaderStr(ShaderType shaderType) override;
 
   //################################################################################################
   void bindLocations(GLuint program, ShaderType shaderType) override;

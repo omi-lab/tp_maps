@@ -37,7 +37,7 @@ void PostAOMergeShader::setSSAOTexture(const GLuint ssaoTextureID)
 }
 
 //##################################################################################################
-const char* PostAOMergeShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& PostAOMergeShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/MergeAmbientOcclusionShader.frag"};
   fragSrcScratch = s.dataStr(shaderProfile(), shaderType);
@@ -57,7 +57,7 @@ const char* PostAOMergeShader::fragmentShaderStr(ShaderType shaderType)
 
   tp_utils::replace(fragSrcScratch, "/*AO_FRAG_VARS*/", AO_FRAG_VARS);
 
-  return fragSrcScratch.c_str();
+  return fragSrcScratch;
 }
 
 //##################################################################################################

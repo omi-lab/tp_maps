@@ -41,6 +41,7 @@ class FontRenderer;
 class PostLayer;
 class EventHandler;
 class RenderModeManager;
+class ColorManagement;
 struct MouseEvent;
 struct DragDropEvent;
 struct KeyEvent;
@@ -87,6 +88,13 @@ public:
 
   //################################################################################################
   ShaderProfile shaderProfile() const;
+
+  //################################################################################################
+  const ColorManagement& colorManagement() const;
+
+  //################################################################################################
+  //! This will take ownership
+  void setColorManagement(ColorManagement* colorManagement);
 
   //################################################################################################
   //! Returns true if the 3D view is currently visible
@@ -405,6 +413,9 @@ public:
 
   //################################################################################################
   glm::vec2 screenSize() const;
+
+  //################################################################################################
+  tp_utils::CallbackCollection<void(int,int)> mapResized;
 
   //################################################################################################
   //! Make the GL context of this map current

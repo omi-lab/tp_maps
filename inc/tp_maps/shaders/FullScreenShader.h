@@ -61,7 +61,7 @@ public:
 
 protected:
   //################################################################################################
-  const char* vertexShaderStr(ShaderType shaderType) override;
+  const std::string& vertexShaderStr(ShaderType shaderType) override;
 
   //################################################################################################
   void getLocations(GLuint program, ShaderType shaderType) override;

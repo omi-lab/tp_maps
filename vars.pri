@@ -76,6 +76,9 @@ HEADERS += inc/tp_maps/RenderModeManager.h
 SOURCES += src/Subview.cpp
 HEADERS += inc/tp_maps/Subview.h
 
+SOURCES += src/ColorManagement.cpp
+HEADERS += inc/tp_maps/ColorManagement.h
+
 
 #-- Subsystems -------------------------------------------------------------------------------------
 HEADERS += inc/tp_maps/subsystems/Subsystem.h
@@ -263,6 +266,17 @@ HEADERS += inc/tp_maps/shaders/PostDoFMergeShader.h
 SOURCES += src/shaders/PostDoFDownsampleShader.cpp
 HEADERS += inc/tp_maps/shaders/PostDoFDownsampleShader.h
 
+
+#-- Color Management -------------------------------------------------------------------------------
+
+SOURCES += src/color_management/BasicColorManagement.cpp
+HEADERS += inc/tp_maps/color_management/BasicColorManagement.h
+
+SOURCES += src/color_management/FilmicColorManagement.cpp
+HEADERS += inc/tp_maps/color_management/FilmicColorManagement.h
+
+SOURCES += src/color_management/NoColorManagement.cpp
+HEADERS += inc/tp_maps/color_management/NoColorManagement.h
 
 
 #-- Layers -----------------------------------------------------------------------------------------

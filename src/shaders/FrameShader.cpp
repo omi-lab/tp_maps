@@ -187,17 +187,17 @@ void FrameShader::use(ShaderType shaderType)
 }
 
 //##################################################################################################
-const char* FrameShader::vertexShaderStr(ShaderType shaderType)
+const std::string& FrameShader::vertexShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/FrameShader.vert"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 //##################################################################################################
-const char* FrameShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& FrameShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/FrameShader.frag"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 //##################################################################################################

@@ -73,33 +73,33 @@ PointSpriteShader::~PointSpriteShader()
 }
 
 //##################################################################################################
-const char* PointSpriteShader::vertexShaderStr(ShaderType shaderType)
+const std::string& PointSpriteShader::vertexShaderStr(ShaderType shaderType)
 {
 #ifdef TP_GLSL_PICKING_SUPPORTED
   if(shaderType == ShaderType::Picking)
   {
     static ShaderResource s{"/tp_maps/PointSpriteShader.picking.vert"};
-    return s.data(shaderProfile(), shaderType);
+    return s.dataStr(shaderProfile(), shaderType);
   }
 #endif
 
   static ShaderResource s{"/tp_maps/PointSpriteShader.vert"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 //##################################################################################################
-const char* PointSpriteShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& PointSpriteShader::fragmentShaderStr(ShaderType shaderType)
 {
 #ifdef TP_GLSL_PICKING_SUPPORTED
   if(shaderType == ShaderType::Picking)
   {
     static ShaderResource s{"/tp_maps/PointSpriteShader.picking.frag"};
-    return s.data(shaderProfile(), shaderType);
+    return s.dataStr(shaderProfile(), shaderType);
   }
 #endif
 
   static ShaderResource s{"/tp_maps/PointSpriteShader.frag"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 //##################################################################################################

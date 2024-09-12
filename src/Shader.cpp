@@ -1,7 +1,10 @@
 #include "tp_maps/Shader.h"
+#include "tp_maps/Map.h"
+#include "tp_maps/ColorManagement.h"
 
 #include "tp_utils/DebugUtils.h"
 #include "tp_utils/RefCount.h"
+#include "tp_utils/TimeUtils.h" // IWYU pragma: keep
 
 #include <unordered_map>
 
@@ -40,7 +43,7 @@ struct Shader::Private
   }
 
   //################################################################################################
-  void printSrc(const char* shaderSrc)
+  void printSrc(const std::string& shaderSrc)
   {
     tpWarning() << "----- Shader Src -----";
     std::vector<std::string> lines;
@@ -102,9 +105,9 @@ ShaderType Shader::currentShaderType() const
 }
 
 //##################################################################################################
-GLuint Shader::loadShader(const char* shaderSrc, GLenum type)
+GLuint Shader::loadShader(const std::string& shaderSrc, GLenum type)
 {
-  if(!shaderSrc)
+  if(shaderSrc.empty())
   {
     tpWarning() << "Null shader string.";
     return 0;
@@ -117,7 +120,9 @@ GLuint Shader::loadShader(const char* shaderSrc, GLenum type)
     return 0;
   }
 
-  glShaderSource(shader, 1, &shaderSrc, nullptr);
+  const char* s = shaderSrc.c_str();
+
+  glShaderSource(shader, 1, &s, nullptr);
   glCompileShader(shader);
 
   GLint compiled=0;
@@ -159,11 +164,25 @@ void Shader::compile(ShaderType shaderType)
   d->currentShaderType = shaderType;
   auto& s = d->shaders[shaderType];
 
-  auto vertexShaderStr   = this->vertexShaderStr(shaderType);
-  auto fragmentShaderStr = this->fragmentShaderStr(shaderType);
+  const auto& vertexShaderStr   = this->vertexShaderStr(shaderType);
+  const std::string* fragmentShaderStr = &this->fragmentShaderStr(shaderType);
+
+  std::string modifiedFragmentShaderStr;
+  if(tpContains(*fragmentShaderStr, std::string("TP_COLOR_MANAGEMENT")))
+  {
+    modifiedFragmentShaderStr = *fragmentShaderStr;
+    fragmentShaderStr = &modifiedFragmentShaderStr;
+
+    auto replace = [&](const std::string& key, const std::string& value)
+    {
+      tp_utils::replace(modifiedFragmentShaderStr, "#pragma replace " + key, value);
+    };
+
+    replace("TP_COLOR_MANAGEMENT", d->map->colorManagement().glsl());
+  }
 
   s.vertexShader   = loadShader(vertexShaderStr,   GL_VERTEX_SHADER  );
-  s.fragmentShader = loadShader(fragmentShaderStr, GL_FRAGMENT_SHADER);
+  s.fragmentShader = loadShader(*fragmentShaderStr, GL_FRAGMENT_SHADER);
   s.program = glCreateProgram();
 
   if(s.vertexShader==0 || s.fragmentShader==0 || s.program==0)
@@ -186,7 +205,7 @@ void Shader::compile(ShaderType shaderType)
     if(printSlowShaderCompileTimer.elapsed()>100)
       tpWarning() << "Slow shader compile:\n" <<
                      "================== vert ==================\n" << vertexShaderStr <<
-                     "\n================== frag ==================\n" << fragmentShaderStr;
+                     "\n================== frag ==================\n" << (*fragmentShaderStr);
   });
 #endif
 
@@ -204,7 +223,7 @@ void Shader::compile(ShaderType shaderType)
     tpWarning() << "Failed to link program: " << static_cast<const GLchar*>(infoLog);
 
     d->printSrc(vertexShaderStr);
-    d->printSrc(fragmentShaderStr);
+    d->printSrc(*fragmentShaderStr);
 
     glDeleteProgram(s.program);
     s.program = 0;
@@ -217,17 +236,19 @@ void Shader::compile(ShaderType shaderType)
 
 
 //##################################################################################################
-const char* Shader::vertexShaderStr(ShaderType shaderType)
+const std::string& Shader::vertexShaderStr(ShaderType shaderType)
 {
   TP_UNUSED(shaderType);
-  return "";
+  static std::string s;
+  return s;
 }
 
 //##################################################################################################
-const char* Shader::fragmentShaderStr(ShaderType shaderType)
+const std::string& Shader::fragmentShaderStr(ShaderType shaderType)
 {
   TP_UNUSED(shaderType);
-  return "";
+  static std::string s;
+  return s;
 }
 
 //##################################################################################################

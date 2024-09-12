@@ -3,9 +3,9 @@
 namespace tp_maps
 {
 //##################################################################################################
-const char* PostBlurAndTintShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& PostBlurAndTintShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/PostBlurAndTintShader.frag"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 }

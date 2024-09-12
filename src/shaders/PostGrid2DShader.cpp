@@ -3,9 +3,9 @@
 namespace tp_maps
 {
 //##################################################################################################
-const char* PostGrid2DShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& PostGrid2DShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/PostGrid2DShader.frag"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 }

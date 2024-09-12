@@ -3,9 +3,9 @@
 namespace tp_maps
 {
 //##################################################################################################
-const char* PostGammaShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& PostGammaShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/PostGammaShader.frag"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 }

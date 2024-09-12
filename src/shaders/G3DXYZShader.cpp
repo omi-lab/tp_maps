@@ -132,17 +132,17 @@ void G3DXYZShader::use(ShaderType shaderType)
   Shader::use(shaderType);
 }
 //##################################################################################################
-const char* G3DXYZShader::vertexShaderStr(ShaderType shaderType)
+const std::string& G3DXYZShader::vertexShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/G3DXYZShader.vert"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 //##################################################################################################
-const char* G3DXYZShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& G3DXYZShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/G3DXYZShader.frag"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 //##################################################################################################

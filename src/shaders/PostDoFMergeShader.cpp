@@ -61,10 +61,10 @@ void PostDoFMergeShader::setDownsampledFocusTexture(const GLuint downsampledFocu
 }
 
 //##################################################################################################
-const char* PostDoFMergeShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& PostDoFMergeShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/MergeDofShader.frag"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 //##################################################################################################

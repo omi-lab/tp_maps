@@ -4,10 +4,10 @@ namespace tp_maps
 {
 
 //##################################################################################################
-const char* G3DYUVImageShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& G3DYUVImageShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/YUVImageShader.frag"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 }

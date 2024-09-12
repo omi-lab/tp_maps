@@ -44,17 +44,17 @@ void BackgroundImageShader::setMatrix(const glm::mat4& matrix)
 }
 
 //##################################################################################################
-const char* BackgroundImageShader::vertexShaderStr(ShaderType shaderType)
+const std::string& BackgroundImageShader::vertexShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/BackgroundImageShader.vert"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 //##################################################################################################
-const char* BackgroundImageShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& BackgroundImageShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/BackgroundImageShader.frag"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 //##################################################################################################

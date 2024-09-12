@@ -48,17 +48,17 @@ LineShader::~LineShader()
 }
 
 //##################################################################################################
-const char* LineShader::vertexShaderStr(ShaderType shaderType)
+const std::string& LineShader::vertexShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/LineShader.vert"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 //##################################################################################################
-const char* LineShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& LineShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/LineShader.frag"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 //##################################################################################################

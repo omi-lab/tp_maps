@@ -36,10 +36,10 @@ void BackgroundPatternShader::setScreenSizeAndGridSpacing(const glm::vec2& scree
 }
 
 //##################################################################################################
-const char* BackgroundPatternShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& BackgroundPatternShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/BackgroundPatternShader.frag"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 //##################################################################################################

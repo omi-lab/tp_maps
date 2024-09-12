@@ -265,17 +265,17 @@ void FontShader::use(ShaderType shaderType)
 }
 
 //##################################################################################################
-const char* FontShader::vertexShaderStr(ShaderType shaderType)
+const std::string& FontShader::vertexShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/FontShader.vert"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 //##################################################################################################
-const char* FontShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& FontShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/FontShader.frag"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 //##################################################################################################

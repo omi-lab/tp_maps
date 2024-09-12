@@ -228,7 +228,7 @@ void G3DStaticLightShader::setDiscardOpacity(float discardOpacity)
 }
 
 //##################################################################################################
-const char* G3DStaticLightShader::vertexShaderStr(ShaderType shaderType)
+const std::string& G3DStaticLightShader::vertexShaderStr(ShaderType shaderType)
 {
   switch(shaderType)
   {
@@ -236,7 +236,7 @@ const char* G3DStaticLightShader::vertexShaderStr(ShaderType shaderType)
   case ShaderType::RenderExtendedFBO:
   {
     static ShaderResource s{"/tp_maps/G3DStaticLightShader.render.vert"};
-    return s.data(shaderProfile(), shaderType);
+    return s.dataStr(shaderProfile(), shaderType);
   }
 
   case ShaderType::Picking:
@@ -246,11 +246,12 @@ const char* G3DStaticLightShader::vertexShaderStr(ShaderType shaderType)
     break;
   }
 
-  return nullptr;
+  static std::string s;
+  return s;
 }
 
 //##################################################################################################
-const char* G3DStaticLightShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& G3DStaticLightShader::fragmentShaderStr(ShaderType shaderType)
 {
   switch(shaderType)
   {
@@ -258,7 +259,7 @@ const char* G3DStaticLightShader::fragmentShaderStr(ShaderType shaderType)
   case ShaderType::RenderExtendedFBO:
   {
     static ShaderResource s{"/tp_maps/G3DStaticLightShader.render.frag"};
-    return s.data(shaderProfile(), shaderType);
+    return s.dataStr(shaderProfile(), shaderType);
   }
 
   case ShaderType::Picking:
@@ -268,7 +269,8 @@ const char* G3DStaticLightShader::fragmentShaderStr(ShaderType shaderType)
     break;
   }
 
-  return nullptr;
+  static std::string s;
+  return s;
 }
 
 //##################################################################################################

@@ -15,6 +15,7 @@ uniform float rotationFactor;
 
 #pragma replace TP_GLSL_GLFRAGCOLOR_DEF
 #pragma replace TP_WRITE_FRAGMENT
+#pragma replace TP_COLOR_MANAGEMENT
 
 //##################################################################################################
 void main()
@@ -35,10 +36,8 @@ void main()
 
   textureCoord.x += rotationFactor;
 
-  vec3 ambient = TP_GLSL_TEXTURE_2D(textureSampler, textureCoord).xyz;
-
   //Note: GammaCorrection
-  ambient = pow(ambient, vec3(2.2));
+  vec3 ambient = toLinear(TP_GLSL_TEXTURE_2D(textureSampler, textureCoord).xyz);
 
   vec3 diffuse = vec3(0.0);
   vec3 specular = vec3(0.0);

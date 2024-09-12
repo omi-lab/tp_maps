@@ -112,7 +112,7 @@ void PostAOShader::use(ShaderType shaderType)
 }
 
 //##################################################################################################
-const char* PostAOShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& PostAOShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/AmbientOcclusionShader.frag"};
   fragSrcScratch = s.dataStr(shaderProfile(), shaderType);
@@ -134,7 +134,7 @@ const char* PostAOShader::fragmentShaderStr(ShaderType shaderType)
   tp_utils::replace(fragSrcScratch, "/*AO_FRAG_VARS*/", AO_FRAG_VARS);
   tp_utils::replace(fragSrcScratch, "/*AO_FRAG_CALC*/", AO_FRAG_CALC);
 
-  return fragSrcScratch.c_str();
+  return fragSrcScratch;
 }
 
 //##################################################################################################

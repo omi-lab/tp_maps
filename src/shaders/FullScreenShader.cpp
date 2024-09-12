@@ -149,10 +149,10 @@ FullScreenShader::Object* FullScreenShader::makeFrameObject(const glm::vec2& hol
 }
 
 //##################################################################################################
-const char* FullScreenShader::vertexShaderStr(ShaderType shaderType)
+const std::string& FullScreenShader::vertexShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/FullScreenShader.vert"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 //##################################################################################################

@@ -107,7 +107,7 @@ void PostSSAOShader::use(ShaderType shaderType)
 }
 
 //##################################################################################################
-const char* PostSSAOShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& PostSSAOShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/PostSSAOShader.frag"};
   fragSrcScratch = s.dataStr(shaderProfile(), shaderType);
@@ -156,7 +156,7 @@ const char* PostSSAOShader::fragmentShaderStr(ShaderType shaderType)
   tp_utils::replace(fragSrcScratch, "/*AO_FRAG_VARS*/", AO_FRAG_VARS);
   tp_utils::replace(fragSrcScratch, "/*AO_FRAG_CALC*/", AO_FRAG_CALC);
 
-  return fragSrcScratch.c_str();
+  return fragSrcScratch;
 }
 
 //##################################################################################################

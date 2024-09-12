@@ -493,17 +493,17 @@ void G3DMaterialShader::compile(ShaderType shaderType)
 }
 
 //##################################################################################################
-const char* G3DMaterialShader::vertexShaderStr(ShaderType shaderType)
+const std::string& G3DMaterialShader::vertexShaderStr(ShaderType shaderType)
 {
   TP_UNUSED(shaderType);
-  return vertSrcScratch.c_str();
+  return vertSrcScratch;
 }
 
 //##################################################################################################
-const char* G3DMaterialShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& G3DMaterialShader::fragmentShaderStr(ShaderType shaderType)
 {
   TP_UNUSED(shaderType);
-  return fragSrcScratch.c_str();
+  return fragSrcScratch;
 }
 
 //##################################################################################################

@@ -3,7 +3,7 @@
 namespace tp_maps
 {
 //##################################################################################################
-const char* PostDoFBlurShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& PostDoFBlurShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/DepthOfFieldBlurShader.frag"};
   fragSrcScratch = s.dataStr(shaderProfile(), shaderType);
@@ -23,6 +23,6 @@ const char* PostDoFBlurShader::fragmentShaderStr(ShaderType shaderType)
 
   tp_utils::replace(fragSrcScratch, "#pragma replace DOF_FRAG_VARS", DOF_FRAG_VARS);
 
-  return fragSrcScratch.c_str();
+  return fragSrcScratch;
 }
 }

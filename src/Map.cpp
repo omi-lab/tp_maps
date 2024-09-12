@@ -15,6 +15,7 @@
 #include "tp_maps/RenderModeManager.h"
 #include "tp_maps/event_handlers/MouseEventHandler.h"
 #include "tp_maps/subsystems/open_gl/OpenGLBuffers.h"
+#include "tp_maps/color_management/BasicColorManagement.h"
 
 #include "tp_math_utils/Plane.h"
 #include "tp_math_utils/Ray.h"
@@ -203,7 +204,11 @@ struct Map::Private
   GLboolean writeAlpha{GL_FALSE};
 
   ShaderProfile shaderProfile{TP_DEFAULT_PROFILE};
+
+  std::unique_ptr<ColorManagement> colorManagement{new BasicColorManagement()};
+
   bool visible{true};
+
 
   // The first is multisampled the second and third are not.
   // We don't want to multisample multiple times it just makes the result blury. So what we do here
@@ -362,10 +367,15 @@ struct Map::Private
   //################################################################################################
   void callMapResized()
   {
-    currentSubview->m_controller->mapResized(int(defaultSubview.m_width), int(defaultSubview.m_height));
+    int w = int(defaultSubview.m_width);
+    int h = int(defaultSubview.m_height);
+
+    currentSubview->m_controller->mapResized(w, h);
 
     for(auto layer : layers)
-      layer->mapResized(int(defaultSubview.m_width), int(defaultSubview.m_height));
+      layer->mapResized(w, h);
+
+    q->mapResized(w, h);
   }
 };
 
@@ -511,6 +521,19 @@ const std::shared_ptr<tp_utils::Profiler>& Map::profiler() const
 ShaderProfile Map::shaderProfile() const
 {
   return d->shaderProfile;
+}
+
+//##################################################################################################
+const ColorManagement& Map::colorManagement() const
+{
+  return *d->colorManagement;
+}
+
+//##################################################################################################
+void Map::setColorManagement(ColorManagement* colorManagement)
+{
+  d->colorManagement.reset(colorManagement);
+  d->deleteShaders();
 }
 
 //##################################################################################################
@@ -1963,7 +1986,8 @@ void Map::resizeGL(int w, int h)
 
   glViewport(0, 0, TPGLsizei(d->currentSubview->m_width), TPGLsizei(d->currentSubview->m_height));
 
-  d->callMapResized();
+  if(d->currentSubview == &d->defaultSubview)
+    d->callMapResized();
 
   update(RenderFromStage::Full, d->allSubviewNames);
 }

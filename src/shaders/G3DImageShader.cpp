@@ -144,17 +144,17 @@ void G3DImageShader::use(ShaderType shaderType)
 }
 
 //##################################################################################################
-const char* G3DImageShader::vertexShaderStr(ShaderType shaderType)
+const std::string& G3DImageShader::vertexShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/G3DImageShader.vert"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 //##################################################################################################
-const char* G3DImageShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& G3DImageShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/G3DImageShader.frag"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 //##################################################################################################

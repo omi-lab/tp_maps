@@ -53,10 +53,10 @@ void BackgroundSkyBoxShader::setRotationFactor(float rotationFactor)
 }
 
 //##################################################################################################
-const char* BackgroundSkyBoxShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& BackgroundSkyBoxShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/BackgroundSkyBoxShader.frag"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 //##################################################################################################

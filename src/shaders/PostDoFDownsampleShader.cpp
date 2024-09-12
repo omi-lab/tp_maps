@@ -4,10 +4,10 @@ namespace tp_maps
 {
 
 //##################################################################################################
-const char* PostDoFDownsampleShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& PostDoFDownsampleShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/DownsampleShader.frag"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 }

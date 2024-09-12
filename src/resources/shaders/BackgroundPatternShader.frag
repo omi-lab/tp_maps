@@ -10,6 +10,7 @@ uniform vec2 scaleFactor;
 
 #pragma replace TP_GLSL_GLFRAGCOLOR_DEF
 #pragma replace TP_WRITE_FRAGMENT
+#pragma replace TP_COLOR_MANAGEMENT
 
 //##################################################################################################
 void main()
@@ -21,7 +22,7 @@ void main()
   //vec3 ambient = vec3(coord_tex.x,coord_tex.y,0.0);
 
   //Note: GammaCorrection
-  ambient = pow(ambient, vec3(2.2));
+  ambient = toLinear(ambient);
 
   vec3 diffuse = vec3(0.0);
   vec3 specular = vec3(0.0);

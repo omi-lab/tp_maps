@@ -569,28 +569,6 @@ enum class Button : size_t
 //##################################################################################################
 [[nodiscard]] bool keyboardModifierAllSet(KeyboardModifier mask, KeyboardModifier bit);
 
-//##################################################################################################
-template<typename V>
-inline V gammaCorrectedToLinear(const V& in)
-{
-  glm::vec3 out;
-  out.x = std::pow(in.x, 2.2f);
-  out.y = std::pow(in.y, 2.2f);
-  out.z = std::pow(in.z, 2.2f);
-  return out;
-}
-
-//##################################################################################################
-template<typename V>
-inline V linearToGammaCorrected(const V& in)
-{
-  glm::vec3 out;
-  out.x = std::pow(in.x, 1.0f/2.2f);
-  out.y = std::pow(in.y, 1.0f/2.2f);
-  out.z = std::pow(in.z, 1.0f/2.2f);
-  return out;
-}
-
 }
 
 #endif

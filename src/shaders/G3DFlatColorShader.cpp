@@ -124,17 +124,17 @@ void G3DFlatColorShader::use(ShaderType shaderType)
 }
 
 //##################################################################################################
-const char* G3DFlatColorShader::vertexShaderStr(ShaderType shaderType)
+const std::string& G3DFlatColorShader::vertexShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/G3DFlatColorShader.vert"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 //##################################################################################################
-const char* G3DFlatColorShader::fragmentShaderStr(ShaderType shaderType)
+const std::string& G3DFlatColorShader::fragmentShaderStr(ShaderType shaderType)
 {
   static ShaderResource s{"/tp_maps/G3DFlatColorShader.frag"};
-  return s.data(shaderProfile(), shaderType);
+  return s.dataStr(shaderProfile(), shaderType);
 }
 
 //##################################################################################################

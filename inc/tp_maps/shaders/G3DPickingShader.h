@@ -19,7 +19,7 @@ public:
 
 protected:
   //################################################################################################
-  const char* fragmentShaderStr(ShaderType shaderType) override;
+  const std::string& fragmentShaderStr(ShaderType shaderType) override;
 };
 
 }

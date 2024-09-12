@@ -40,7 +40,7 @@ public:
   ShaderType currentShaderType() const;
 
   //################################################################################################
-  GLuint loadShader(const char* shaderSrc, GLenum type);
+  GLuint loadShader(const std::string& shaderSrc, GLenum type);
 
   //################################################################################################
   bool error() const;
@@ -53,10 +53,10 @@ protected:
   virtual void compile(ShaderType shaderType);
 
   //################################################################################################
-  virtual const char* vertexShaderStr(ShaderType shaderType);
+  virtual const std::string& vertexShaderStr(ShaderType shaderType);
 
   //################################################################################################
-  virtual const char* fragmentShaderStr(ShaderType shaderType);
+  virtual const std::string& fragmentShaderStr(ShaderType shaderType);
 
   //################################################################################################
   virtual void bindLocations(GLuint program, ShaderType shaderType);
