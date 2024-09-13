@@ -1,6 +1,5 @@
 #include "tp_maps/layers/ImageLayer.h"
 #include "tp_maps/shaders/G3DImageShader.h"
-#include "tp_maps/picking_results/ImagePickingResult.h"
 #include "tp_maps/Texture.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/Controller.h"
