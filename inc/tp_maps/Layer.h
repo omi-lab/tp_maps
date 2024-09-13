@@ -162,7 +162,23 @@ public:
   void setExcludeFromSubviews(const std::unordered_set<tp_utils::StringID>& excludeFromSubviews);
 
   //################################################################################################
-  void setExcludeFromSubviewsVector(const std::vector<tp_utils::StringID>& excludeFromSubviews);
+  void setExcludeFromSubviews(const std::vector<tp_utils::StringID>& excludeFromSubviews);
+
+  //################################################################################################
+  void setExcludeFromSubviews(std::initializer_list<tp_utils::StringID> excludeFromSubviews);
+
+  //################################################################################################
+  //! The names of subviews to exclude this layer from.
+  const std::vector<tp_utils::StringID>& onlyInSubviews() const;
+
+  //################################################################################################
+  void setOnlyInSubviews(const std::unordered_set<tp_utils::StringID>& onlyInSubviews);
+
+  //################################################################################################
+  void setOnlyInSubviews(const std::vector<tp_utils::StringID>& onlyInSubviews);
+
+  //################################################################################################
+  void setOnlyInSubviews(std::initializer_list<tp_utils::StringID> onlyInSubviews);
 
   //################################################################################################
   //! Called when buffers become invalid.
@@ -266,6 +282,9 @@ protected:
   //################################################################################################
   //! Calls update on the map
   void update(RenderFromStage renderFromStage=RenderFromStage::Full);
+
+  //################################################################################################
+  void update(RenderFromStage renderFromStage, const std::vector<tp_utils::StringID>& subviews);
 
   //################################################################################################
   void callAsync(const std::function<void()>& callback);

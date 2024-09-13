@@ -25,7 +25,11 @@ struct Layer::Private
   glm::mat4 modelMatrix{1.0f};
   tp_utils::StringID coordinateSystem{defaultSID()};
   RenderPass defaultRenderPass{RenderPass::Normal};
+
   std::unordered_set<tp_utils::StringID> excludeFromSubviews;
+  std::vector<tp_utils::StringID> onlyInSubviews;
+  bool inheritSubviews{true};
+
   bool visible{true};
   bool excludeFromPicking{false};
   std::shared_ptr<int> alive{std::make_shared<int>()};
@@ -36,6 +40,21 @@ struct Layer::Private
   {
 
   }
+
+  //################################################################################################
+  void propagateSubviews()
+  {
+    for(const auto& layer : layers)
+    {
+      if(!layer->d->inheritSubviews)
+        continue;
+
+      layer->d->excludeFromSubviews = excludeFromSubviews;
+      layer->d->onlyInSubviews = onlyInSubviews;
+      layer->d->propagateSubviews();
+    }
+  }
+
 };
 
 //##################################################################################################
@@ -135,7 +154,16 @@ void Layer::setVisibleQuiet(bool visible)
 //##################################################################################################
 bool Layer::visibileToCurrentSubview() const
 {
-  return d->visible && !tpContains(d->excludeFromSubviews, map()->currentSubview()->name());
+  if(!d->visible)
+    return false;
+
+  if(!d->onlyInSubviews.empty() && !tpContains(d->onlyInSubviews, map()->currentSubview()->name()))
+    return false;
+
+  if(tpContains(d->excludeFromSubviews, map()->currentSubview()->name()))
+    return false;
+
+  return true;
 }
 
 //##################################################################################################
@@ -172,15 +200,60 @@ const std::unordered_set<tp_utils::StringID>& Layer::excludeFromSubviews() const
 void Layer::setExcludeFromSubviews(const std::unordered_set<tp_utils::StringID>& excludeFromSubviews)
 {
   d->excludeFromSubviews = excludeFromSubviews;
+  d->inheritSubviews = false;
+  d->propagateSubviews();
 }
 
 //##################################################################################################
-void Layer::setExcludeFromSubviewsVector(const std::vector<tp_utils::StringID>& excludeFromSubviews)
+void Layer::setExcludeFromSubviews(const std::vector<tp_utils::StringID>& excludeFromSubviews)
 {
   d->excludeFromSubviews.clear();
   d->excludeFromSubviews.reserve(excludeFromSubviews.size());
   for(const auto& subview : excludeFromSubviews)
     d->excludeFromSubviews.insert(subview);
+  d->inheritSubviews = false;
+  d->propagateSubviews();
+}
+
+//##################################################################################################
+void Layer::setExcludeFromSubviews(std::initializer_list<tp_utils::StringID> excludeFromSubviews)
+{
+  d->excludeFromSubviews = excludeFromSubviews;
+  d->inheritSubviews = false;
+  d->propagateSubviews();
+}
+
+//##################################################################################################
+const std::vector<tp_utils::StringID>& Layer::onlyInSubviews() const
+{
+  return d->onlyInSubviews;
+}
+
+//##################################################################################################
+void Layer::setOnlyInSubviews(const std::unordered_set<tp_utils::StringID>& onlyInSubviews)
+{
+  d->onlyInSubviews.clear();
+  d->onlyInSubviews.reserve(onlyInSubviews.size());
+  for(const auto& subview : onlyInSubviews)
+    d->onlyInSubviews.push_back(subview);
+  d->inheritSubviews = false;
+  d->propagateSubviews();
+}
+
+//##################################################################################################
+void Layer::setOnlyInSubviews(const std::vector<tp_utils::StringID>& onlyInSubviews)
+{
+  d->onlyInSubviews = onlyInSubviews;
+  d->inheritSubviews = false;
+  d->propagateSubviews();
+}
+
+//##################################################################################################
+void Layer::setOnlyInSubviews(std::initializer_list<tp_utils::StringID> onlyInSubviews)
+{
+  d->onlyInSubviews = onlyInSubviews;
+  d->inheritSubviews = false;
+  d->propagateSubviews();
 }
 
 //##################################################################################################
@@ -201,6 +274,7 @@ void Layer::insertChildLayer(size_t i, Layer *layer)
 
   d->layers.insert(d->layers.begin()+int(i), layer);
   layer->setMap(map(), this);
+  d->propagateSubviews();
   update();
 }
 
@@ -351,13 +425,25 @@ void Layer::update(RenderFromStage renderFromStage)
 {
   if(d->map)
   {
-    std::vector<tp_utils::StringID> subviews = d->map->allSubviewNames();
+    if(!d->onlyInSubviews.empty())
+      d->map->update(renderFromStage, d->onlyInSubviews);
 
-    for(const auto& excluded : d->excludeFromSubviews)
-      tpRemoveOne(subviews, excluded);
+    else
+    {
+      std::vector<tp_utils::StringID> subviews = d->map->allSubviewNames();
 
-    d->map->update(renderFromStage, subviews);
+      for(const auto& excluded : d->excludeFromSubviews)
+        tpRemoveOne(subviews, excluded);
+
+      d->map->update(renderFromStage, subviews);
+    }
   }
+}
+
+//##################################################################################################
+void Layer::update(RenderFromStage renderFromStage, const std::vector<tp_utils::StringID>& subviews)
+{
+  d->map->update(renderFromStage, subviews);
 }
 
 //##################################################################################################

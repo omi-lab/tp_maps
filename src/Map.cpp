@@ -618,14 +618,6 @@ const std::vector<tp_utils::StringID>& Map::allSubviewNames() const
 }
 
 //##################################################################################################
-std::vector<tp_utils::StringID> Map::excludeFromSubviewsOtherThan(const tp_utils::StringID& subview) const
-{
-  auto subviewNames = d->allSubviewNames;
-  tpRemoveOne(subviewNames, subview);
-  return subviewNames;
-}
-
-//##################################################################################################
 RenderModeManager& Map::renderModeManger() const
 {
   return *d->renderModeManager;

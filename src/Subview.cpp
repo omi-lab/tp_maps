@@ -33,8 +33,13 @@ void Subview::setRenderPassesInternal(const std::vector<RenderPass>& renderPasse
 
   m_renderPasses = renderPasses;
   for(const auto& renderPass : m_renderPasses)
+  {
     if(renderPass.postLayer)
+    {
+      renderPass.postLayer->setOnlyInSubviews({m_name});
       m_map->insertLayer(0, renderPass.postLayer);
+    }
+  }
 }
 
 //##################################################################################################
