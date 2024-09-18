@@ -135,6 +135,9 @@ public:
   const std::vector<tp_utils::StringID>& allSubviewNames() const;
 
   //################################################################################################
+  const std::vector<Subview*>& allSubviews() const;
+
+  //################################################################################################
   tp_utils::CallbackCollection<void(const tp_utils::StringID&)> subviewUpdateRequested;
 
   //################################################################################################

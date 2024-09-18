@@ -618,6 +618,12 @@ const std::vector<tp_utils::StringID>& Map::allSubviewNames() const
 }
 
 //##################################################################################################
+const std::vector<Subview*>& Map::allSubviews() const
+{
+  return d->allSubviews;
+}
+
+//##################################################################################################
 RenderModeManager& Map::renderModeManger() const
 {
   return *d->renderModeManager;

@@ -27,6 +27,12 @@ const tp_utils::StringID& Subview::name() const
 }
 
 //##################################################################################################
+Controller* Subview::controller() const
+{
+  return m_controller;
+}
+
+//##################################################################################################
 void Subview::setRenderPassesInternal(const std::vector<RenderPass>& renderPasses)
 {
   deletePostLayers();

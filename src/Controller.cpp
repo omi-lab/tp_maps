@@ -1,5 +1,6 @@
 #include "tp_maps/Controller.h"
 #include "tp_maps/Map.h"
+#include "tp_maps/Subview.h"
 
 #include "glm/gtx/transform.hpp" // IWYU pragma: keep
 
@@ -140,6 +141,16 @@ void Controller::loadState(const nlohmann::json& j)
 Map* Controller::map() const
 {
   return d->map;
+}
+
+//##################################################################################################
+Subview* Controller::subview() const
+{
+  for(auto subview : d->map->allSubviews())
+    if(subview->controller() == this)
+      return subview;
+
+  return d->map->currentSubview();
 }
 
 //##################################################################################################
