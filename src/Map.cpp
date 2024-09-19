@@ -766,7 +766,7 @@ GLboolean Map::writeAlpha() const
 //##################################################################################################
 void Map::setRenderPasses(const std::vector<RenderPass>& renderPasses)
 {
-  if(!d->intermediateFBOs.empty() && this->initialized())
+  if(!d->intermediateFBOs.empty() && d->initialized)
   {
     makeCurrent();
     for(auto& i : d->intermediateFBOs)
@@ -1131,7 +1131,9 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
   const int pickingSize=9;
   const int left=pickingSize/2;
 
-  if(d->currentSubview->m_width<pickingSize || d->currentSubview->m_height<pickingSize)
+  if(!d->initialized or
+     d->currentSubview->m_width<pickingSize or
+     d->currentSubview->m_height<pickingSize)
     return nullptr;
 
   makeCurrent();
@@ -1280,19 +1282,22 @@ bool Map::renderToImage(size_t width, size_t height, HDR hdr, const std::functio
 {
   PRF_SCOPED_RANGE(d->profiler.get(), "Frame", {255,255,255});
 
+  if(!d->initialized)
+    return false;
+
   if(width<1 || height<1)
   {
     tpWarning() << "Error Map::renderToImage can't render to image smaller than 1 pixel.";
     return false;
   }
 
-  auto originalWidth  = d->currentSubview->m_width;
-  auto originalHeight = d->currentSubview->m_height;
-  resizeGL(int(width), int(height));
-
   makeCurrent();
   setInPaint(true);
   TP_CLEANUP([&]{setInPaint(false);});
+
+  auto originalWidth  = d->currentSubview->m_width;
+  auto originalHeight = d->currentSubview->m_height;
+  resizeGL(int(width), int(height));
 
   GLint originalFrameBuffer = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
