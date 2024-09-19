@@ -416,6 +416,8 @@ Map::~Map()
 //##################################################################################################
 void Map::preDelete()
 {
+  deleteStarted();
+
   d->deleteShaders();
 
   delete d->renderModeManager;
