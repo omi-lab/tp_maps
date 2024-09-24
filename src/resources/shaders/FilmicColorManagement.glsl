@@ -1,3 +1,12 @@
+// See FilmicColorManagement.h for those constants
+const float pieceWiseThreshold = 0.95;
+const float lowerPieceSlope = 0.9; // Scale saturation by a factor of 0.9
+const float upperPieceSlope = (1. - lowerPieceSlope*pieceWiseThreshold) / (1.-pieceWiseThreshold);
+const float upperPieceAffineOffset = (lowerPieceSlope - upperPieceSlope) * pieceWiseThreshold;
+const float revPieceWiseThreshold = lowerPieceSlope * pieceWiseThreshold;
+const float revLowerPieceSlope  = 1./lowerPieceSlope;
+const float revUpperPieceSlope = (1. - revLowerPieceSlope*revPieceWiseThreshold) / (1.-revPieceWiseThreshold);
+const float revUpperPieceAffineOffset = (revLowerPieceSlope - revUpperPieceSlope) * revPieceWiseThreshold;
 
 //##################################################################################################
 vec3 rgb2hsv(vec3 c)
@@ -23,7 +32,12 @@ vec3 hsv2rgb(vec3 c)
 vec3 toLinear(vec3 color)
 {
   vec3 hsv = rgb2hsv(pow(color, vec3(2.2)));
-  hsv.y /= 0.9;
+  // Piecewise linear transfer function.
+  // We go branchless: compute value from both "pieces", select the right one without branch.
+  float isUpperPiece = step(revPieceWiseThreshold, hsv.y);
+  float lowerPieceValue = revLowerPieceSlope * hsv.y;
+  float upperPieceValue = revUpperPieceAffineOffset + revUpperPieceSlope * hsv.y;
+  hsv.y = (1. - isUpperPiece) * lowerPieceValue + isUpperPiece * upperPieceValue;
   return hsv2rgb(hsv);
 }
 
@@ -36,8 +50,14 @@ vec4 toLinear(vec4 color)
 //##################################################################################################
 vec3 fromLinear(vec3 color)
 {
+
   vec3 hsv = rgb2hsv(color);
-  hsv.y *= 0.9;
+  // Piecewise linear transfer function.
+  // We go branchless: compute value from both "pieces", select the right one without branch.
+  float isUpperPiece = step(pieceWiseThreshold, hsv.y);
+  float lowerPieceValue = lowerPieceSlope * hsv.y;
+  float upperPieceValue = upperPieceAffineOffset + upperPieceSlope * hsv.y - 0.01/* this epsilon needed because of numerical effects */;
+  hsv.y = (1. - isUpperPiece) * lowerPieceValue + isUpperPiece * upperPieceValue;
   return pow(hsv2rgb(hsv), vec3(1.0/2.2));
 }
 
