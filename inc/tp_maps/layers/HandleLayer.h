@@ -32,7 +32,6 @@ public:
   float radius;
 
   void* opaque;
-  void(*movedCallback)(HandleDetails* handle, const glm::vec3& newPosition);
 
   //################################################################################################
   HandleDetails(HandleLayer* layer,
