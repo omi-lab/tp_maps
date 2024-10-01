@@ -105,8 +105,7 @@ HandleDetails::HandleDetails(HandleLayer* layer,
   color(color_),
   sprite(sprite_),
   radius(radius_),
-  opaque(nullptr),
-  movedCallback(nullptr)
+  opaque(nullptr)
 {
   m_layer->d->handles.insert(m_layer->d->handles.begin()+index, this);
   m_layer->d->updateVertexBuffer=true;
@@ -501,10 +500,7 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
 //##################################################################################################
 void HandleLayer::moveHandle(HandleDetails* handle, const glm::vec3& newPosition)
 {
-  if(handle->movedCallback)
-    handle->movedCallback(handle, newPosition);
-  else
-    handle->position = newPosition;
+  handle->position = newPosition;
 
   handleMoved(handle);
 
