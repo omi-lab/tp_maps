@@ -557,6 +557,12 @@ Subview* Map::currentSubview() const
 }
 
 //##################################################################################################
+Subview* Map::defaultSubview() const
+{
+  return &d->defaultSubview;
+}
+
+//##################################################################################################
 void Map::setCurrentSubview(Subview* subview)
 {
   d->currentSubview = subview;

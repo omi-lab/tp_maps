@@ -18,6 +18,7 @@ class Transformation;
 
 namespace tp_maps
 {
+class Subview;
 class Map;
 class LayerPointer;
 class RenderInfo;
@@ -133,6 +134,10 @@ public:
 
   //################################################################################################
   bool visibileToCurrentSubview() const;
+
+  //################################################################################################
+  //! Find the most appropriate subview for this layer.
+  Subview* subview() const;
 
   //################################################################################################
   bool excludeFromPicking() const;

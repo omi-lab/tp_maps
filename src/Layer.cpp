@@ -167,6 +167,26 @@ bool Layer::visibileToCurrentSubview() const
 }
 
 //##################################################################################################
+Subview* Layer::subview() const
+{
+  if(!d->onlyInSubviews.empty())
+  {
+    for(auto subview : map()->allSubviews())
+      if(tpContains(d->onlyInSubviews, subview->name()))
+        return subview;
+  }
+
+  else if(!d->excludeFromSubviews.empty())
+  {
+    for(auto subview : map()->allSubviews())
+      if(!tpContains(d->excludeFromSubviews, subview->name()))
+        return subview;
+  }
+
+  return map()->defaultSubview();
+}
+
+//##################################################################################################
 bool Layer::excludeFromPicking() const
 {
   return d->excludeFromPicking;

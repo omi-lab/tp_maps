@@ -32,6 +32,19 @@ Controller* Subview::controller() const
   return m_controller;
 }
 
+
+//##################################################################################################
+size_t Subview::width() const
+{
+  return m_width;
+}
+
+//##################################################################################################
+size_t Subview::height() const
+{
+  return m_height;
+}
+
 //##################################################################################################
 void Subview::setRenderPassesInternal(const std::vector<RenderPass>& renderPasses)
 {
