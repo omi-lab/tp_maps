@@ -1253,6 +1253,8 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
 //##################################################################################################
 bool Map::renderToImage(size_t width, size_t height, tp_image_utils::ColorMap& image, bool swapY)
 {
+  tpDebug() << "Map::renderToImage from stage: " << d->currentSubview->m_renderFromStage.toString();
+
   image.setSize(width, height);
   return renderToImage(width, height, image.data(), swapY);
 }

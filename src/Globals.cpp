@@ -71,6 +71,12 @@ std::string RenderFromStage::typeToString() const
 }
 
 //##################################################################################################
+std::string RenderFromStage::toString() const
+{
+  return typeToString() + " (index: " + std::to_string(index) + ")";
+}
+
+//##################################################################################################
 std::string shaderTypeToString(ShaderType shaderType)
 {
   switch(shaderType)
