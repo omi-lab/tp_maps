@@ -367,15 +367,18 @@ struct Map::Private
   //################################################################################################
   void callMapResized()
   {
-    int w = int(defaultSubview.m_width);
-    int h = int(defaultSubview.m_height);
+    int w = int(currentSubview->m_width);
+    int h = int(currentSubview->m_height);
 
     currentSubview->m_controller->mapResized(w, h);
 
-    for(auto layer : layers)
-      layer->mapResized(w, h);
+    if(currentSubview == &defaultSubview)
+    {
+      for(auto layer : layers)
+        layer->mapResized(w, h);
 
-    q->mapResized(w, h);
+      q->mapResized(w, h);
+    }
   }
 };
 
@@ -589,7 +592,7 @@ void Map::setCurrentSubview(const tp_utils::StringID& name)
 //##################################################################################################
 void Map::addSubview(Subview* subview)
 {
-  d->subviews.push_back(subview);  
+  d->subviews.push_back(subview);
   d->updateAllSubviewsList();
 }
 
@@ -597,7 +600,7 @@ void Map::addSubview(Subview* subview)
 void Map::deleteSubview(Subview* subview)
 {
   d->currentSubview = &d->defaultSubview;
-  tpRemoveOne(d->subviews, subview);  
+  tpRemoveOne(d->subviews, subview);
   d->updateAllSubviewsList();
   delete subview->m_controller;
   delete subview;
@@ -2001,8 +2004,7 @@ void Map::resizeGL(int w, int h)
 
   glViewport(0, 0, TPGLsizei(d->currentSubview->m_width), TPGLsizei(d->currentSubview->m_height));
 
-  if(d->currentSubview == &d->defaultSubview)
-    d->callMapResized();
+  d->callMapResized();
 
   update(RenderFromStage::Full, d->allSubviewNames);
 }
