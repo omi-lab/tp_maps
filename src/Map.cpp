@@ -333,7 +333,7 @@ struct Map::Private
   //################################################################################################
   void render()
   {
-    currentSubview->m_controller->updateMatrices();
+    tp_maps::CheckUpdateMatrices checkUpdateMatrices(currentSubview->m_controller);
 
     auto render = [&](auto test)
     {
@@ -1168,6 +1168,8 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
   //------------------------------------------------------------------------------------------------
   // Execute a picking render pass.
 
+  tp_maps::CheckUpdateMatrices checkUpdateMatrices(d->currentSubview->m_controller);
+
   // 3D Geometry
   {
     d->renderInfo.resetPicking();
@@ -1509,6 +1511,8 @@ void Map::paintGLCurrentSubview()
 void Map::paintGLNoMakeCurrent()
 {
   DEBUG_printOpenGLError("paintGLNoMakeCurrent start");
+
+  tp_maps::CheckUpdateMatrices checkUpdateMatrices(d->currentSubview->m_controller);
 
   d->renderTimer.start();
 

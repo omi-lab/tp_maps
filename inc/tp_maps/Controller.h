@@ -6,8 +6,6 @@
 
 #include "tp_math_utils/Light.h"
 
-#include "tp_utils/CallbackCollection.h"
-
 #include "json.hpp"
 
 #include <functional>
@@ -16,6 +14,7 @@
 namespace tp_maps
 {
 class Map;
+class CheckUpdateMatrices;
 class Subview;
 struct KeyEvent;
 
@@ -23,6 +22,7 @@ struct KeyEvent;
 class TP_MAPS_EXPORT Controller
 {
   friend class Map;
+  friend class CheckUpdateMatrices;
   TP_NONCOPYABLE(Controller);
   TP_DQ;
 public:
@@ -157,6 +157,31 @@ protected:
 private:
   std::unordered_set<Button> m_hasMouseFocusFor; //!< Set when the controller accepts focus for a mouse press event.
   std::unordered_set<int32_t> m_hasKeyFocusFor;  //!< Set when the controller accepts focus for a key press event.
+  size_t m_lockCount{0};
+};
+
+//##################################################################################################
+class CheckUpdateMatrices
+{
+  TP_NONCOPYABLE(CheckUpdateMatrices);
+  Controller* m_controller;
+public:
+
+  //################################################################################################
+  CheckUpdateMatrices(Controller* controller):
+    m_controller(controller)
+  {
+    if(m_controller->m_lockCount==0)
+      m_controller->updateMatrices();
+
+    m_controller->m_lockCount++;
+  }
+
+  //################################################################################################
+  ~CheckUpdateMatrices()
+  {
+    m_controller->m_lockCount--;
+  }
 };
 
 }
