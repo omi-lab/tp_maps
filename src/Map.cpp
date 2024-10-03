@@ -1291,7 +1291,6 @@ bool Map::renderToImage(size_t width, size_t height, tp_image_utils::ColorMapF& 
 //##################################################################################################
 bool Map::renderToImage(size_t width, size_t height, HDR hdr, const std::function<void()>& renderComplete)
 {
-  tpDebug() << "Map::renderToImage from stage: " << d->currentSubview->m_renderFromStage.toString();
   PRF_SCOPED_RANGE(d->profiler.get(), "Frame", {255,255,255});
 
   if(!d->initialized)
