@@ -16,9 +16,7 @@ namespace
 struct LinesDetails_lt
 {
   LineShader::VertexBuffer* vertexBuffer{nullptr};
-  glm::vec3 color{0.0f, 0.0f, 0.0f};
-  glm::vec3 gridNormal{0.0f, 0.0f, 1.0f};
-  float alpha{1.0f};
+  glm::vec4 color{0.0f, 0.0f, 0.0f, 1.0f};
 };
 }
 
@@ -28,7 +26,7 @@ struct GridLayer::Private
   TP_REF_COUNT_OBJECTS("tp_maps::GridLayer::Private");
   TP_NONCOPYABLE(Private);
 
-  GridLayer* q;
+  Q* q;
 
   FontRenderer* font{nullptr};
 
@@ -36,6 +34,10 @@ struct GridLayer::Private
   std::vector<LinesDetails_lt> processedGeometry;
 
   bool updateVertexBuffer{true};
+
+  GridMode mode{GridMode::Fixed};
+  GridAxis axis{GridAxis::ZPlane};
+  GridHandles handles{GridHandles::None};
 
   float scale; // default: 1 = 1 meter
   const float halfLength = 1.0f; // Half length of the grid.
@@ -48,7 +50,7 @@ struct GridLayer::Private
   bool gridAs2DOverlay = false;
 
   //################################################################################################
-  Private(GridLayer* q_,
+  Private(Q* q_,
           float scale_,
           const glm::vec3& gridColor_):
     q(q_),
@@ -125,12 +127,12 @@ struct GridLayer::Private
         LinesDetails_lt details;
         // Central lines (in red)
         details.vertexBuffer = shader->generateVertexBuffer(q->map(), centralLinesVertices);
-        details.color = glm::vec3(1.0f, 0.0f, 0.0f);
+        details.color = {1.0f, 0.0f, 0.0f, 1.0f};
         processedGeometry.push_back(details);
 
         // Side lines
         details.vertexBuffer = shader->generateVertexBuffer(q->map(), linesVertices);
-        details.color = gridColor;
+        details.color = {gridColor, 1.0f};
         processedGeometry.push_back(details);
       };
 
@@ -176,7 +178,7 @@ struct GridLayer::Private
     q->map()->controller()->enableScissor(q->coordinateSystem());
     for(const LinesDetails_lt& line : processedGeometry)
     {
-      shader->setColor({line.color, line.alpha});
+      shader->setColor(line.color);
       shader->drawLines(GL_LINES, line.vertexBuffer);
     }
     q->map()->controller()->disableScissor();
@@ -207,6 +209,57 @@ GridLayer::GridLayer(float scale, const glm::vec3& gridColor):
 GridLayer::~GridLayer()
 {
   delete d;
+}
+
+//##################################################################################################
+void GridLayer::setMode(GridMode mode)
+{
+  if(d->mode != mode)
+  {
+    d->mode = mode;
+    d->updateVertexBuffer = true;
+    update();
+  }
+}
+
+//##################################################################################################
+GridMode GridLayer::mode() const
+{
+  return d->mode;
+}
+
+//##################################################################################################
+void GridLayer::setAxis(GridAxis axis)
+{
+  if(d->axis != axis)
+  {
+    d->axis = axis;
+    d->updateVertexBuffer = true;
+    update();
+  }
+}
+
+//##################################################################################################
+GridAxis GridLayer::axis() const
+{
+  return d->axis;
+}
+
+//##################################################################################################
+void GridLayer::setHandles(GridHandles handles)
+{
+  if(d->handles != handles)
+  {
+    d->handles = handles;
+    d->updateVertexBuffer = true;
+    update();
+  }
+}
+
+//##################################################################################################
+GridHandles GridLayer::handles() const
+{
+  return d->handles;
 }
 
 //##################################################################################################
