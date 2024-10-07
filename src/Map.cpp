@@ -1421,6 +1421,9 @@ glm::vec2 Map::screenSize() const
 //##################################################################################################
 void Map::update(RenderFromStage renderFromStage, const std::vector<tp_utils::StringID>& subviews)
 {
+  if(inPaint())
+    return;
+
   for(auto& subview : d->allSubviews)
   {
     if(tpContains(subviews, subview->m_name))
