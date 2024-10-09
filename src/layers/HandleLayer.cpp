@@ -97,7 +97,7 @@ struct HandleLayer::Private
 HandleDetails::HandleDetails(HandleLayer* layer,
                              const glm::vec3& position_,
                              const glm::vec4& color_,
-                             int sprite_,
+                             size_t sprite_,
                              float radius_,
                              int index):
   m_layer(layer),
@@ -107,6 +107,9 @@ HandleDetails::HandleDetails(HandleLayer* layer,
   radius(radius_),
   opaque(nullptr)
 {
+  if(index<=m_layer->d->currentHandle)
+    m_layer->d->currentHandle++;
+
   m_layer->d->handles.insert(m_layer->d->handles.begin()+index, this);
   m_layer->d->updateVertexBuffer=true;
   m_layer->update();
@@ -117,7 +120,16 @@ HandleDetails::~HandleDetails()
 {
   if(m_layer)
   {
-    tpRemoveOne(m_layer->d->handles, this);
+    size_t index = tpIndexOf(m_layer->d->handles, this);
+
+    if(int(index) < m_layer->d->currentHandle)
+      m_layer->d->currentHandle--;
+
+    else if(int(index) == m_layer->d->currentHandle)
+      m_layer->d->currentHandle=-1;
+
+    tpRemoveAt(m_layer->d->handles, index);
+
     m_layer->d->updateVertexBuffer=true;
     m_layer->update();
   }
@@ -162,6 +174,12 @@ HandleLayer::~HandleLayer()
 void HandleLayer::setPlane(const tp_math_utils::Plane& plane)
 {
   d->plane = plane;
+}
+
+//##################################################################################################
+const tp_math_utils::Plane& HandleLayer::plane() const
+{
+  return d->plane;
 }
 
 //##################################################################################################
@@ -252,8 +270,10 @@ void HandleLayer::render(RenderInfo& renderInfo)
         PointSpriteShader::PointSprite ps;
         ps.color       = hh->color;
         ps.position    = hh->position;
-        ps.spriteIndex = 0;
+        ps.spriteIndex = hh->sprite;
         ps.radius      = hh->radius;
+        ps.offset.x    = hh->offset.x;
+        ps.offset.y    = hh->offset.y;
         ps.offset.z    = d->zOffset;
         pointSprites.push_back(ps);
       }

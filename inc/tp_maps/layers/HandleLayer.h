@@ -27,7 +27,8 @@ class TP_MAPS_EXPORT HandleDetails
 public:
   glm::vec3 position;
   glm::vec4 color;
-  int sprite;
+  glm::vec2 offset{0.0f, 0.0f}; //! Offset of the sprite relative to the radius of the sprite.
+  size_t sprite;
 
   float radius;
 
@@ -37,7 +38,7 @@ public:
   HandleDetails(HandleLayer* layer,
                 const glm::vec3& position_,
                 const glm::vec4& color_,
-                int sprite,
+                size_t sprite_,
                 float radius_=10.0f,
                 int index=0);
 
@@ -70,6 +71,9 @@ public:
 
   //################################################################################################
   void setPlane(const tp_math_utils::Plane& plane);
+
+  //################################################################################################
+  const tp_math_utils::Plane& plane() const;
 
   //################################################################################################
   float zOffset() const;

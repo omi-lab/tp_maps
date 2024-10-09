@@ -6,6 +6,7 @@
 namespace tp_maps
 {
 class FontRenderer;
+class SpriteTexture;
 
 //##################################################################################################
 enum class GridMode
@@ -37,7 +38,7 @@ class TP_MAPS_EXPORT GridLayer: public Layer
   TP_DQ;
 public:
   //################################################################################################
-  GridLayer(float scale = 1.0f, const glm::vec3& gridColor = {0.05f, 0.05f, 0.9f});
+  GridLayer(const std::function<tp_maps::SpriteTexture*(tp_maps::Map*)>& makeTexture={});
 
   //################################################################################################
   ~GridLayer() override;
@@ -70,16 +71,6 @@ public:
   //################################################################################################
   float spacing() const;
 
-  //##################################################################################################
-  //! Toggle between a 2D overlay grid and grid in perspective.
-  /*!
-  \param gridAs2DOverlay True to make the grid a 2D overlay, false to have it on the ground as perspective.
-  */
-  void setGridAs2DOverlay(bool gridAs2DOverlay);
-
-  //##################################################################################################
-  float gridAs2DOverlay() const;
-
   //################################################################################################
   //! Set an offset to move the grid vertically.
   /*!
@@ -105,15 +96,13 @@ public:
   void setHorizontalOrientation(const glm::vec2& horizontalOrientation);
 
   //################################################################################################
-  //! Set the font that will be used to labels
-  /*!
-  This sets the font that will be used to draw the grid labels.
-  \note This does not take ownership.
-  \param font The font to use for drawing grid labels.
-  */
-  void setFont(FontRenderer* font);
+  void setDefaultRenderPass(const RenderPass& defaultRenderPass) override;
 
 protected:
+
+  //################################################################################################
+  void addedToMap() override;
+
   //################################################################################################
   void render(RenderInfo& renderInfo) override;
 
