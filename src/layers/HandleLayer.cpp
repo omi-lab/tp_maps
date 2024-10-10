@@ -60,6 +60,7 @@ struct HandleLayer::Private
   GLuint textureID{0};
 
   int currentHandle{-1};
+  glm::ivec2 clickOffset{0,0};
 
   bool doubleClickToAdd{true};
   bool doubleClickToRemove{true};
@@ -334,18 +335,33 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
     if(event.button != Button::LeftButton)
       return false;
 
+    float width   = float(map()->width());
+    float height  = float(map()->height());
+    float xOffset = width  / 2.0f;
+    float yOffset = height / 2.0f;
+
     PickingResult* result = map()->performPicking(gizmoLayerSID(), event.pos);
     TP_CLEANUP([&]{delete result;});
 
     auto pickingResult = dynamic_cast<HandlePickingResult*>(result);
-
     if(pickingResult && pickingResult->layer == this)
     {
       for(size_t i=0; i<d->handles.size(); i++)
       {
-        if(d->handles.at(i) == pickingResult->handle)
+        const auto& handle = d->handles.at(i);
+        if(handle == pickingResult->handle)
         {
           d->currentHandle = int(i);
+
+          const glm::vec3& position = handle->position;
+
+          glm::vec2 screenCoord = tpProj(m, position);
+          screenCoord.x = screenCoord.x * xOffset + xOffset;
+          screenCoord.y = height - (screenCoord.y * yOffset + yOffset);
+          screenCoord += handle->offset*handle->radius;
+
+          d->clickOffset = event.pos - glm::ivec2(screenCoord);
+
           dragStart(pickingResult->handle);
           return true;
         }
@@ -353,10 +369,6 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
     }
 
 #if 0 //If not picking ....
-    float width   = float(map()->width());
-    float height  = float(map()->height());
-    float xOffset = width  / 2.0f;
-    float yOffset = height / 2.0f;
 
     size_t hMax = d->handles.size();
     for(size_t h=0; h<hMax; h++)
@@ -387,16 +399,17 @@ bool HandleLayer::mouseEvent(const MouseEvent& event)
   {
     if(d->currentHandle>=0 && d->currentHandle<int(d->handles.size()))
     {
+      glm::ivec2 offsetPos = event.pos - d->clickOffset;
       glm::vec3 newPosition;
       if(d->calculateHandlePositionCallback)
       {
-        if(d->calculateHandlePositionCallback(d->handles[size_t(d->currentHandle)], event.pos, m, newPosition))
+        if(d->calculateHandlePositionCallback(d->handles[size_t(d->currentHandle)], offsetPos, m, newPosition))
         {
           moveHandle(d->handles[size_t(d->currentHandle)], newPosition);
           return true;
         }
       }
-      else if(map()->unProject(event.pos, newPosition, d->plane, m))
+      else if(map()->unProject(offsetPos, newPosition, d->plane, m))
       {
         moveHandle(d->handles[size_t(d->currentHandle)], newPosition);
         return true;

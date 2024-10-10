@@ -1,10 +1,9 @@
 #include "tp_maps/layers/GridLayer.h"
 #include "tp_maps/layers/HandleLayer.h"
-#include "tp_maps/shaders/LineShader.h"
+#include "tp_maps/layers/LinesLayer.h"
 #include "tp_maps/textures/DefaultSpritesTexture.h"
 #include "tp_maps/Map.h"
 #include "tp_maps/RenderInfo.h"
-#include "tp_maps/Controller.h"
 
 #include <vector>
 
@@ -12,13 +11,6 @@ namespace tp_maps
 {
 namespace
 {
-//##################################################################################################
-struct LinesDetails_lt
-{
-  LineShader::VertexBuffer* vertexBuffer{nullptr};
-  glm::vec4 color{0.0f, 0.0f, 0.0f, 1.0f};
-};
-
 //##################################################################################################
 enum class Orientation_lt
 {
@@ -78,10 +70,8 @@ struct GridLayer::Private
 
   Q* q;
 
+  LinesLayer* linesLayer{nullptr};
   HandleLayer* handleLayer{nullptr};
-
-  //Processed geometry ready for rendering
-  std::vector<LinesDetails_lt> processedGeometry;
 
   bool updateVertexBuffer{true};
 
@@ -103,25 +93,21 @@ struct GridLayer::Private
   const glm::vec3 gridColor{0.05f, 0.05f, 0.9f};
   const float lineThickness = 1.0f;
 
-  std::function<tp_maps::SpriteTexture*(tp_maps::Map*)> makeTexture;
+  GridColors colors;
+
+  std::function<SpriteTexture*(Map*)> makeTexture;
 
   //################################################################################################
-  Private(Q* q_, const std::function<tp_maps::SpriteTexture*(tp_maps::Map*)>& makeTexture_):
+  Private(Q* q_, const std::function<SpriteTexture*(Map*)>& makeTexture_):
     q(q_),
     makeTexture(makeTexture_)
   {
-    if(!makeTexture) makeTexture = [](tp_maps::Map* map)
+    if(!makeTexture) makeTexture = [](Map* map)
     {
-      auto t = new tp_maps::SpriteTexture();
-      t->setTexture(new tp_maps::DefaultSpritesTexture(map));
+      auto t = new SpriteTexture();
+      t->setTexture(new DefaultSpritesTexture(map));
       return t;
     };
-  }
-
-  //################################################################################################
-  ~Private()
-  {
-    deleteVertexBuffers();
   }
 
   //################################################################################################
@@ -131,43 +117,64 @@ struct GridLayer::Private
 
     switch(axis)
     {
-      case GridAxis::Frame: [[fallthrough]];
+      case GridAxis::Frame:
+      coordinateSystem = maskSID();
+      break;
+
       case GridAxis::Screen:
-      coordinateSystem = "Mask";//tp_maps::screenSID();
+      coordinateSystem = screenSID();
       break;
 
       case GridAxis::XPlane: [[fallthrough]];
       case GridAxis::YPlane: [[fallthrough]];
       case GridAxis::ZPlane:
-      coordinateSystem = tp_maps::defaultSID();
+      coordinateSystem = defaultSID();
       break;
     }
 
     q->setCoordinateSystem(coordinateSystem);
+
+    if(linesLayer)
+      linesLayer->setCoordinateSystem(coordinateSystem);
 
     if(handleLayer)
       handleLayer->setCoordinateSystem(coordinateSystem);
   }
 
   //################################################################################################
-  void deleteVertexBuffers()
+  void generateLines_Fixed()
   {
-    for(const auto& details : processedGeometry)
-      delete details.vertexBuffer;
+    std::vector<Lines> lines;
+    TP_CLEANUP([&]{linesLayer->setLines(lines);});
 
-    processedGeometry.clear();
-  }
-
-  //################################################################################################
-  void generateLines_Fixed(LineShader* shader)
-  {
-    auto drawGraduationsOnAxis = [&](const glm::vec3& axisToAddGraduations,  const glm::vec3& lineDirection, const glm::vec3& offset, float spaceBetweenGraduations, size_t graduationCount)
+    auto drawGraduationsOnAxis = [&](const glm::vec3& axisToAddGraduations, const glm::vec3& lineDirection)
     {
-      glm::vec3 axisOffset = spaceBetweenGraduations * axisToAddGraduations;
+      glm::vec3 offset{horizontalTranslationOffset, heightOffset};
+
+      size_t intermediates = 10;
+
+      float spaceBetweenGraduations = spacing * scale;
+      size_t graduationCount = size_t(halfLength / spacing + 1.0f);
+
+      glm::vec3 axisOffset = (spaceBetweenGraduations / float(intermediates)) * axisToAddGraduations;
       glm::vec3 directionOffset = graduationCount * spaceBetweenGraduations * lineDirection;
 
-      std::vector<glm::vec3> centralLinesVertices;
-      std::vector<glm::vec3> linesVertices;
+      graduationCount *= intermediates;
+
+      lines.resize(3);
+      Lines& centralLines = lines.at(0);
+      Lines& primaryLines = lines.at(1);
+      Lines& intermediateLines = lines.at(2);
+
+      centralLines.mode = GL_LINES;
+      centralLines.color = colors.centralLines;
+
+      primaryLines.mode = GL_LINES;
+      primaryLines.color = colors.primaryLines;
+
+      intermediateLines.mode = GL_LINES;
+      intermediateLines.color = colors.intermediateLines;
+
       glm::vec3 gridOrigin = offset;
 
       auto addLine = [&](int lineIdx, std::vector<glm::vec3>& vertices)
@@ -178,144 +185,106 @@ struct GridLayer::Private
       };
 
       // Draw graduation lines on the current axis.
-      for (size_t graduationIdx = 0; graduationIdx < graduationCount; ++graduationIdx)
+      for (size_t graduationIdx = 0; graduationIdx <= graduationCount; graduationIdx++)
       {
-        if (graduationIdx == 0)
+        if(graduationIdx == 0)
         {
-          addLine(int(graduationIdx), centralLinesVertices);
+          addLine(int(graduationIdx), centralLines.lines);
+        }
+        else if(graduationIdx%intermediates == 0)
+        {
+          addLine( int(graduationIdx), primaryLines.lines);
+          addLine(-int(graduationIdx), primaryLines.lines);
         }
         else
         {
-          // Positive side of the axis.
-          addLine(int(graduationIdx), linesVertices);
-          // Negative side of the axis.
-          addLine(-int(graduationIdx), linesVertices);
+          addLine( int(graduationIdx), intermediateLines.lines);
+          addLine(-int(graduationIdx), intermediateLines.lines);
         }
-      }
-
-      // Central lines (in red)
-      {
-        LinesDetails_lt& details = processedGeometry.emplace_back();
-        details.vertexBuffer = shader->generateVertexBuffer(q->map(), centralLinesVertices);
-        details.color = {1.0f, 0.0f, 0.0f, 1.0f};
-      }
-
-      // Side lines
-      {
-        LinesDetails_lt& details = processedGeometry.emplace_back();
-        details.vertexBuffer = shader->generateVertexBuffer(q->map(), linesVertices);
-        details.color = {gridColor, 1.0f};
       }
     };
 
-    glm::vec3 forwardAxis{0.0f, 1.0f, 0.0f}; // y-axix
-    glm::vec3 rightAxis{1.0f, 0.0f, 0.0f}; // x-axis
-
-    //    if (gridAs2DOverlay)
-    //    {
-    //      float ratio = 1.0f;
-    //      if (q->map()->height() != 0)
-    //        ratio = float(q->map()->width()) / float(q->map()->height());
-    //      float spacing2D = spacing * 4.0f;
-    //      float spaceBetweenGraduations = spacing2D;
-    //      size_t graduationCount = size_t(halfLength / spacing2D + 1.0f);
-    //      // Draw graduation lines on x-axis, parallel to y-axis.
-    //      drawGraduationsOnAxis(rightAxis, forwardAxis, glm::vec3(0.0f, 0.0f, 0.0f),
-    //                            spaceBetweenGraduations / ratio, size_t(graduationCount * ratio));
-    //      // Draw graduation lines on y-axis, parallel to x-axis.
-    //      drawGraduationsOnAxis(forwardAxis, rightAxis, glm::vec3(0.0f, 0.0f, 0.0f),
-    //                            spaceBetweenGraduations, graduationCount);
-    //    }
-    //    else
+    glm::vec3 xAxis{1.0f, 0.0f, 0.0f};
+    glm::vec3 yAxis{0.0f, 1.0f, 0.0f};
     {
       if (horizontalOrientation != glm::vec2(0.0f))
       {
-        forwardAxis = glm::normalize(glm::vec3(horizontalOrientation, 0.0f));
-        rightAxis = glm::normalize(glm::vec3(horizontalOrientation.y, -horizontalOrientation.x, 0.0f));
+        yAxis = glm::normalize(glm::vec3(horizontalOrientation, 0.0f));
+        xAxis = glm::normalize(glm::vec3(horizontalOrientation.y, -horizontalOrientation.x, 0.0f));
       }
-      float spaceBetweenGraduations = spacing * scale;
-      size_t graduationCount = size_t(halfLength / spacing + 1.0f);
 
-      // Grid on horizontal plane (i.e. xOy). Following Blender coordinate system.
-      // Draw graduation lines on x-axis, parallel to y-axis.
-      drawGraduationsOnAxis(rightAxis, forwardAxis, glm::vec3(horizontalTranslationOffset, heightOffset), spaceBetweenGraduations, graduationCount);
-      // Draw graduation lines on y-axis, parallel to x-axis.
-      drawGraduationsOnAxis(forwardAxis, rightAxis, glm::vec3(horizontalTranslationOffset, heightOffset), spaceBetweenGraduations, graduationCount);
+      drawGraduationsOnAxis(xAxis, yAxis);
+      drawGraduationsOnAxis(yAxis, xAxis);
     }
   }
   //################################################################################################
-  void generateLines_User(LineShader* shader)
+  void generateLines_User()
   {
-    std::vector<glm::vec3> verts;
-    verts.reserve(freeDragLines.size()*4);
+    std::vector<Lines> lines;
+    TP_CLEANUP([&]{linesLayer->setLines(lines);});
+
+    lines.resize(1);
+    Lines& verts = lines.at(0);
+
+    verts.mode = GL_LINES;
+    verts.color = colors.userLines;
+    verts.lines.reserve(freeDragLines.size()*4);
+
     for(const auto& dragLinePair : freeDragLines)
     {
       auto addLine = [&](const DragLineDetails_lt& dragLine)
       {
-        verts.push_back(dragLine.handleA->position);
-        verts.push_back(dragLine.handleB->position);
+        verts.lines.push_back(dragLine.handleA->position);
+        verts.lines.push_back(dragLine.handleB->position);
       };
 
       addLine(dragLinePair.a);
       addLine(dragLinePair.b);
     }
-
-    {
-      LinesDetails_lt& details = processedGeometry.emplace_back();
-      details.vertexBuffer = shader->generateVertexBuffer(q->map(), verts);
-      details.color = {1.0f, 0.0f, 0.0f, 1.0f};
-    }
   }
 
   //################################################################################################
-  void renderLines(RenderInfo& renderInfo, const glm::mat4& matrix)
+  void generateLines()
   {
-    auto shader = q->map()->getShader<LineShader>();
-    if(shader->error())
-      return;
-
     if(updateVertexBuffer)
     {
-      deleteVertexBuffers();
       updateVertexBuffer=false;
 
       switch(mode)
       {
         case GridMode::Fixed:
-        generateLines_Fixed(shader);
+        generateLines_Fixed();
         break;
 
         case GridMode::User:
-        generateLines_User(shader);
+        generateLines_User();
         break;
       }
     }
-
-    shader->use(renderInfo.shaderType());
-    shader->setMatrix(matrix);
-
-    q->map()->controller()->enableScissor(q->coordinateSystem());
-    for(const LinesDetails_lt& line : processedGeometry)
-    {
-      shader->setColor(line.color);
-      shader->drawLines(GL_LINES, line.vertexBuffer);
-    }
-    q->map()->controller()->disableScissor();
   }
 
   //################################################################################################
-  void createHandleLayer()
+  void createLayers()
   {
-    handleLayer = new tp_maps::HandleLayer(makeTexture(q->map()));
-    handleLayer->setAddRemove(false, false);
-    handleLayer->setCalculateHandlePositionCallback(calculateHandlePosition);
-    handleLayer->setDefaultRenderPass(q->defaultRenderPass());
-    q->addChildLayer(handleLayer);
+    {
+      linesLayer = new LinesLayer();
+      linesLayer->setDefaultRenderPass(q->defaultRenderPass());
+      q->addChildLayer(linesLayer);
+    }
+
+    {
+      handleLayer = new HandleLayer(makeTexture(q->map()));
+      handleLayer->setAddRemove(false, false);
+      handleLayer->setCalculateHandlePositionCallback(calculateHandlePosition);
+      handleLayer->setDefaultRenderPass(q->defaultRenderPass());
+      q->addChildLayer(handleLayer);
+    }
+
     updateCoordinateSystem();
   }
 
   //################################################################################################
-  const std::function<bool(tp_maps::HandleDetails*, const glm::ivec2&, const glm::mat4&, glm::vec3&)> calculateHandlePosition = [&](tp_maps::HandleDetails* h, const glm::ivec2& pos, const glm::mat4& m, glm::vec3& newPosition)
+  const std::function<bool(HandleDetails*, const glm::ivec2&, const glm::mat4&, glm::vec3&)> calculateHandlePosition = [&](HandleDetails* h, const glm::ivec2& pos, const glm::mat4& m, glm::vec3& newPosition)
   {
     updateVertexBuffer = true;
 
@@ -429,7 +398,7 @@ struct GridLayer::Private
   //################################################################################################
   void updateHandles()
   {
-    if(initDragLines)
+    if(mode == GridMode::User and initDragLines)
     {
       initDragLines = false;
 
@@ -564,6 +533,9 @@ void GridLayer::setDefaultRenderPass(const RenderPass& defaultRenderPass)
 {
   Layer::setDefaultRenderPass(defaultRenderPass);
 
+  if(d->linesLayer)
+    d->linesLayer->setDefaultRenderPass(defaultRenderPass);
+
   if(d->handleLayer)
     d->handleLayer->setDefaultRenderPass(defaultRenderPass);
 }
@@ -572,7 +544,7 @@ void GridLayer::setDefaultRenderPass(const RenderPass& defaultRenderPass)
 void GridLayer::addedToMap()
 {
   Layer::addedToMap();
-  d->createHandleLayer();
+  d->createLayers();
 }
 
 //##################################################################################################
@@ -581,24 +553,10 @@ void GridLayer::render(RenderInfo& renderInfo)
   if(renderInfo.pass == RenderPass::PreRender)
   {
     d->updateHandles();
+    d->generateLines();
   }
 
   Layer::render(renderInfo);
-
-  if(renderInfo.pass != defaultRenderPass())
-    return;
-
-  glm::mat4 matrix = map()->controller()->matrix(coordinateSystem());
-
-  d->renderLines(renderInfo, matrix);
-}
-
-//##################################################################################################
-void GridLayer::invalidateBuffers()
-{
-  d->deleteVertexBuffers();
-  d->updateVertexBuffer=true;
-  Layer::invalidateBuffers();
 }
 
 }

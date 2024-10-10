@@ -66,6 +66,7 @@ namespace tp_maps
 {
 TP_DECLARE_ID(                      defaultSID,                          "Default");
 TP_DECLARE_ID(                       screenSID,                           "Screen");
+TP_DECLARE_ID(                         maskSID,                             "Mask");
 TP_DECLARE_ID(                   gizmoLayerSID,                      "Gizmo layer");
 TP_DECLARE_ID(                   lineShaderSID,                      "Line shader");
 TP_DECLARE_ID(                  imageShaderSID,                     "Image shader");

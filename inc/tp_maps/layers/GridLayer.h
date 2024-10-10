@@ -33,6 +33,15 @@ enum class GridHandles
 };
 
 //##################################################################################################
+struct GridColors
+{
+  glm::vec4 centralLines     {1.0f, 1.0f, 0.8f, 0.80f};
+  glm::vec4 primaryLines     {0.7f, 0.7f, 0.6f, 0.40f};
+  glm::vec4 intermediateLines{0.7f, 0.7f, 0.6f, 0.02f};
+  glm::vec4 userLines        {1.0f, 1.0f, 0.8f, 1.00f};
+};
+
+//##################################################################################################
 class TP_MAPS_EXPORT GridLayer: public Layer
 {
   TP_DQ;
@@ -105,9 +114,6 @@ protected:
 
   //################################################################################################
   void render(RenderInfo& renderInfo) override;
-
-  //################################################################################################
-  void invalidateBuffers() override;
 };
 
 }
