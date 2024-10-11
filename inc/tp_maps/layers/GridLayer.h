@@ -12,6 +12,7 @@ class SpriteTexture;
 enum class GridMode
 {
   Fixed,
+  Predefined,
   User
 };
 
@@ -35,10 +36,17 @@ enum class GridHandles
 //##################################################################################################
 struct GridColors
 {
-  glm::vec4 centralLines     {1.0f, 1.0f, 0.8f, 0.80f};
-  glm::vec4 primaryLines     {0.7f, 0.7f, 0.6f, 0.40f};
-  glm::vec4 intermediateLines{0.7f, 0.7f, 0.6f, 0.02f};
+  glm::vec4 centralLines     {1.0f, 1.0f, 1.0f, 0.80f};
+  glm::vec4 primaryLines     {1.0f, 1.0f, 1.0f, 0.30f};
+  glm::vec4 intermediateLines{1.0f, 1.0f, 1.0f, 0.05f};
   glm::vec4 userLines        {1.0f, 1.0f, 0.8f, 1.00f};
+};
+
+//##################################################################################################
+struct GridPredefinedLines
+{
+  std::vector<float> horizontalLines;
+  std::vector<float> verticalLines;
 };
 
 //##################################################################################################
@@ -69,6 +77,12 @@ public:
 
   //################################################################################################
   GridHandles handles() const;
+
+  //################################################################################################
+  void setPredefinedLines(const GridPredefinedLines& predefinedLines);
+
+  //################################################################################################
+  const GridPredefinedLines& predefinedLines() const;
 
   //################################################################################################
   //! Set a multiplier for the spacing between each graduation in the grid.

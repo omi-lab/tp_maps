@@ -81,6 +81,8 @@ struct GridLayer::Private
 
   bool initDragLines{true};
 
+  GridPredefinedLines predefinedLines;
+
   std::vector<DragLineDetails_lt> staticDragLines;
   std::vector<DragLinePair_lt> freeDragLines;
 
@@ -217,6 +219,33 @@ struct GridLayer::Private
       drawGraduationsOnAxis(yAxis, xAxis);
     }
   }
+
+  //################################################################################################
+  void generateLines_Predefined()
+  {
+    std::vector<Lines> lines;
+    TP_CLEANUP([&]{linesLayer->setLines(lines);});
+
+    lines.resize(1);
+    Lines& verts = lines.at(0);
+
+    verts.mode = GL_LINES;
+    verts.color = colors.userLines;
+    verts.lines.reserve(freeDragLines.size()*4);
+
+    for(const auto& y : predefinedLines.horizontalLines)
+    {
+      verts.lines.push_back({-1.0f, y, 0.0f});
+      verts.lines.push_back({ 1.0f, y, 0.0f});
+    }
+
+    for(const auto& x : predefinedLines.verticalLines)
+    {
+      verts.lines.push_back({x, -1.0f, 0.0f});
+      verts.lines.push_back({x,  1.0f, 0.0f});
+    }
+  }
+
   //################################################################################################
   void generateLines_User()
   {
@@ -254,6 +283,10 @@ struct GridLayer::Private
       {
         case GridMode::Fixed:
         generateLines_Fixed();
+        break;
+
+        case GridMode::Predefined:
+        generateLines_Predefined();
         break;
 
         case GridMode::User:
@@ -476,6 +509,18 @@ void GridLayer::setHandles(GridHandles handles)
 GridHandles GridLayer::handles() const
 {
   return d->handles;
+}
+
+//##################################################################################################
+void GridLayer::setPredefinedLines(const GridPredefinedLines& predefinedLines)
+{
+  d->predefinedLines = predefinedLines;
+}
+
+//##################################################################################################
+const GridPredefinedLines& GridLayer::predefinedLines() const
+{
+  return d->predefinedLines;
 }
 
 //##################################################################################################
