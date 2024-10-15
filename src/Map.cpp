@@ -379,6 +379,11 @@ struct Map::Private
 
       q->mapResized(w, h);
     }
+    else
+    {
+      for(auto layer : layers)
+        layer->subviewResized(w, h);
+    }
   }
 };
 
@@ -2003,9 +2008,11 @@ void Map::resizeGL(int w, int h)
   if(!d->initialized)
     return;
 
-  makeCurrent();
-
-  glViewport(0, 0, TPGLsizei(d->currentSubview->m_width), TPGLsizei(d->currentSubview->m_height));
+  if(d->currentSubview == &d->defaultSubview)
+  {
+    makeCurrent();
+    glViewport(0, 0, TPGLsizei(d->currentSubview->m_width), TPGLsizei(d->currentSubview->m_height));
+  }
 
   d->callMapResized();
 

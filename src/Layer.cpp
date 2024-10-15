@@ -55,7 +55,6 @@ struct Layer::Private
       layer->d->propagateSubviews();
     }
   }
-
 };
 
 //##################################################################################################
@@ -439,6 +438,13 @@ void Layer::mapResized(int w, int h)
 {
   for(auto layer : d->layers)
     layer->mapResized(w, h);
+}
+
+//##################################################################################################
+void Layer::subviewResized(int w, int h)
+{
+  for(auto layer : d->layers)
+    layer->subviewResized(w, h);
 }
 
 //##################################################################################################

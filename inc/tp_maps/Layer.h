@@ -285,6 +285,10 @@ protected:
   virtual void mapResized(int w, int h);
 
   //################################################################################################
+  //! Called by the map when it is resized
+  virtual void subviewResized(int w, int h);
+
+  //################################################################################################
   //! Calls update on the map
   void update(RenderFromStage renderFromStage=RenderFromStage::Full);
 
