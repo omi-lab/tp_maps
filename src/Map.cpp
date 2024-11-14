@@ -76,7 +76,7 @@ class ScopedDebug_lt
   tp_utils::Profiler* m_profiler;
 #endif
 
-  const std::string m_name;
+  const std::string m_name;  
 
 #ifdef TP_ENABLE_FUNCTION_TIME
   const char* m_file;
@@ -568,6 +568,12 @@ Subview* Map::currentSubview() const
 Subview* Map::defaultSubview() const
 {
   return &d->defaultSubview;
+}
+
+//##################################################################################################
+bool Map::isDefaultSubview() const
+{
+  return d->currentSubview == &d->defaultSubview;
 }
 
 //##################################################################################################
