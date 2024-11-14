@@ -550,8 +550,9 @@ void Geometry3DPool::subscribe(const tp_utils::StringID& name,
     }
 
     details.updateVertexBufferTextures=true;
+
+    changed();
   }
-  changed();
 }
 
 //##################################################################################################
