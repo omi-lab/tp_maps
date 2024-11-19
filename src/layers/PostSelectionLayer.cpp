@@ -8,7 +8,8 @@ struct PostSelectionLayer::Private
 {
   tp_utils::StringID selectionOutput{"Selection output"};
   tp_maps::RenderPass selectionRenderPass{PostSelectionLayer::selectionRenderPass()};
-  tp_maps::RenderFromStage renderFromStageMask, renderFromStageUpdate;
+  tp_maps::RenderFromStage renderFromStageMask;
+  tp_maps::RenderFromStage renderFromStageUpdate;
 
   //################################################################################################
   Private(size_t stageMask, size_t stageUpdate):
