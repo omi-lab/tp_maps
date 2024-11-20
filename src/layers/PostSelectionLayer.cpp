@@ -63,8 +63,8 @@ void PostSelectionLayer::addRenderPasses(std::vector<tp_maps::RenderPass>& rende
     auto inputFBO = findInputFBO(renderPasses);
     renderPasses.emplace_back(d->renderFromStageMask);
     renderPasses.emplace_back(tp_maps::RenderPass::SwapToFBO, tp_maps::selectionPassSID());
-    renderPasses.emplace_back(d->selectionRenderPass);
     renderPasses.emplace_back(d->renderFromStageUpdate);
+    renderPasses.emplace_back(d->selectionRenderPass);
     renderPasses.emplace_back(tp_maps::RenderPass::SwapToFBO, d->selectionOutput);
     renderPasses.emplace_back(tp_maps::RenderPass::BlitFromFBO, inputFBO);
   }
