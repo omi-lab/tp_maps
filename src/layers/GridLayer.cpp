@@ -29,7 +29,7 @@ struct DragLineDetails_lt
   //################################################################################################
   bool owns(HandleDetails* h)
   {
-    return handleA==h or handleB==h;
+    return handleA==h || handleB==h;
   }
 
   //################################################################################################
@@ -51,7 +51,7 @@ struct DragLinePair_lt
   //################################################################################################
   bool owns(HandleDetails* h)
   {
-    return a.owns(h) or b.owns(h);
+    return a.owns(h) || b.owns(h);
   }
 
   //################################################################################################
@@ -431,7 +431,7 @@ struct GridLayer::Private
   //################################################################################################
   void updateHandles()
   {
-    if(mode == GridMode::User and initDragLines)
+    if(mode == GridMode::User && initDragLines)
     {
       initDragLines = false;
 

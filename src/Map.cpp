@@ -1151,8 +1151,8 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
   const int pickingSize=9;
   const int left=pickingSize/2;
 
-  if(!d->initialized or
-     d->currentSubview->m_width<pickingSize or
+  if(!d->initialized ||
+     d->currentSubview->m_width<pickingSize ||
      d->currentSubview->m_height<pickingSize)
     return nullptr;
 
