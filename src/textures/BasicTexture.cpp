@@ -66,6 +66,105 @@ bool BasicTexture::imageReady()
 }
 
 //##################################################################################################
+void BasicTexture::updateContent(GLuint texId)
+{
+  if(!d->imageReady)
+    return;
+
+  glBindTexture(GL_TEXTURE_2D, texId);
+
+  TPGLenum format = d->nChannels==NChannels::RGB?GL_RGB:GL_RGBA;
+
+  switch(map()->shaderProfile())
+  {
+  case ShaderProfile::GLSL_110: [[fallthrough]];
+  case ShaderProfile::GLSL_120: [[fallthrough]];
+  case ShaderProfile::GLSL_130: [[fallthrough]];
+  case ShaderProfile::GLSL_140: [[fallthrough]];
+  case ShaderProfile::GLSL_150: [[fallthrough]];
+  case ShaderProfile::GLSL_330: [[fallthrough]];
+  case ShaderProfile::GLSL_400: [[fallthrough]];
+  case ShaderProfile::GLSL_410: [[fallthrough]];
+  case ShaderProfile::GLSL_420: [[fallthrough]];
+  case ShaderProfile::GLSL_430: [[fallthrough]];
+  case ShaderProfile::GLSL_440: [[fallthrough]];
+  case ShaderProfile::GLSL_450: [[fallthrough]];
+  case ShaderProfile::GLSL_460:
+  {
+    glTexSubImage2D(GL_TEXTURE_2D, 0 /*level */, 0 /* x offset */, 0 /* y offset */, int(d->image.width()), int(d->image.height()), GL_RGBA, GL_UNSIGNED_BYTE, d->image.constData());
+    break;
+  }
+
+  case ShaderProfile::GLSL_100_ES: [[fallthrough]];
+  case ShaderProfile::GLSL_300_ES: [[fallthrough]];
+  case ShaderProfile::GLSL_310_ES: [[fallthrough]];
+  case ShaderProfile::GLSL_320_ES:
+  {
+    if(format == GL_RGB)
+    {
+      // For GL ES we seem to need the internalFormat and format to be the same, so here we take the
+      // RGBA data and pack it as RGB.
+      struct RGB
+      {
+        uint8_t r;
+        uint8_t g;
+        uint8_t b;
+      };
+      std::vector<RGB> packed;
+      packed.resize(d->image.size());
+
+      auto dst = packed.begin();
+      auto src = d->image.constData();
+      for(; dst!=packed.end(); src++, ++dst)
+      {
+        dst->r = src->r;
+        dst->g = src->g;
+        dst->b = src->b;
+      }
+
+      // Each pixel is 3 bytes so row alignment may not be 4 bytes so set it to 1
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+      glTexSubImage2D(GL_TEXTURE_2D, 0 /*level */, 0 /* x offset */, 0 /* y offset */, int(d->image.width()), int(d->image.height()), GL_RGB, GL_UNSIGNED_BYTE, packed.data());
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    }
+    else if(format == GL_RGBA)
+    {
+      glTexSubImage2D(GL_TEXTURE_2D, 0 /*level */, 0 /* x offset */, 0 /* y offset */, int(d->image.width()), int(d->image.height()), GL_RGBA, GL_UNSIGNED_BYTE, d->image.constData());
+    }
+
+    break;
+  }
+
+  case ShaderProfile::HLSL_10:
+  case ShaderProfile::HLSL_11:
+  case ShaderProfile::HLSL_12:
+  case ShaderProfile::HLSL_13:
+  case ShaderProfile::HLSL_14:
+  case ShaderProfile::HLSL_20:
+  case ShaderProfile::HLSL_20a:
+  case ShaderProfile::HLSL_20b:
+  case ShaderProfile::HLSL_30:
+  case ShaderProfile::HLSL_40:
+  case ShaderProfile::HLSL_41:
+  case ShaderProfile::HLSL_50:
+  case ShaderProfile::HLSL_51:
+  case ShaderProfile::HLSL_60:
+  case ShaderProfile::HLSL_61:
+  case ShaderProfile::HLSL_62:
+  case ShaderProfile::HLSL_63:
+  case ShaderProfile::HLSL_64:
+  case ShaderProfile::HLSL_65:
+  case ShaderProfile::HLSL_66:
+  case ShaderProfile::HLSL_67:
+  {
+    tpWarning() << "HLSL not implemented.";
+    break;
+  }
+  }
+
+}
+
+//##################################################################################################
 GLuint BasicTexture::bindTexture()
 {
   if(!d->imageReady)

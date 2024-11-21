@@ -41,13 +41,16 @@ public:
   virtual bool imageReady()=0;
 
   //################################################################################################
+  //! Called whenever the memory layout of the image is unchanged, and only the data should be updated.
+  virtual void updateContent(GLuint texId)=0;
+
+  //################################################################################################
   //! This will be called to get the image texture ID it must bind the texture.
   /*!
   Subclasses should implement this and when it is called they should bind their texture.
   \return The texture ID.
   */
   virtual GLuint bindTexture()=0;
-
   //################################################################################################
   void setMagFilterOption(GLint magFilterOption);
 

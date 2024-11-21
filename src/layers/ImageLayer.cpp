@@ -31,6 +31,9 @@ struct ImageLayer::Private
   glm::vec3 bottomLeft{};
   glm::vec3 topLeft{};
 
+  glm::vec2 prevTextureDims {0, 0};
+  glm::vec2 prevImageDims {0, 0};
+
   G3DImageShader::VertexBuffer* vertexBuffer{nullptr};
 
   GLuint textureID{0};
@@ -77,7 +80,12 @@ ImageLayer::ImageLayer(Texture* texture):
 {
   texture->setImageChangedCallback([this]()
   {
-    d->bindBeforeRender = true;
+    if(d->texture->textureDims() != d->prevTextureDims || d->texture->imageDims() != d->prevImageDims)
+    {
+      d->prevTextureDims = d->texture->textureDims();
+      d->prevImageDims = d->texture->imageDims();
+      d->bindBeforeRender = true;
+    }
     update();
   });
 }
@@ -153,6 +161,13 @@ void ImageLayer::render(RenderInfo& renderInfo)
     map()->deleteTexture(d->textureID);
     d->textureID = d->texture->bindTexture();
     d->updateVertexBuffer=true;
+  }
+  else
+  {
+    if(d->textureID)
+    {
+      d->texture->updateContent(d->textureID);
+    }
   }
 
   if(!d->textureID)
