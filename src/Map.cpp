@@ -1165,7 +1165,7 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
 
   //------------------------------------------------------------------------------------------------
   // Configure the frame buffer that the picking values will be rendered to.
-  if(!d->buffers.prepareBuffer("renderToImage",
+  if(!d->buffers.prepareBuffer("pickingBuffer",
                                d->pickingBuffer,
                                d->currentSubview->m_width,
                                d->currentSubview->m_height,
