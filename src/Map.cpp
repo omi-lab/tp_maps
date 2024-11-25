@@ -2005,6 +2005,9 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
 //##################################################################################################
 void Map::resizeGL(int w, int h)
 {
+  w = std::max(w, 2);
+  h = std::max(h, 2);
+
   if(d->currentSubview->m_width == size_t(w) && d->currentSubview->m_height == size_t(h))
     return;
 
