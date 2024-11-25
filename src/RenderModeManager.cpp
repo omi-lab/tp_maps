@@ -26,6 +26,7 @@ struct RenderModeManager::Private
   size_t shadowSamplesFull{0};
 
   size_t shadowSamples{0};
+  bool isDoFRendered{false};
 
   //################################################################################################
   Private(Q* q_, Map* map_):
@@ -127,9 +128,18 @@ void RenderModeManager::setRenderMode(RenderMode renderMode)
 
   switch(renderMode)
   {
-    case RenderMode::Fast         : d->shadowSamples = d->shadowSamplesFast        ; break;
-    case RenderMode::Intermediate : d->shadowSamples = d->shadowSamplesIntermediate; break;
-    case RenderMode::Full         : d->shadowSamples = d->shadowSamplesFull        ; break;
+    case RenderMode::Fast:
+      d->shadowSamples = d->shadowSamplesFast;
+      d->isDoFRendered = false;
+      break;
+    case RenderMode::Intermediate:
+      d->shadowSamples = d->shadowSamplesIntermediate;
+      d->isDoFRendered = true;
+      break;
+    case RenderMode::Full:
+      d->shadowSamples = d->shadowSamplesFull;
+      d->isDoFRendered = true;
+      break;
   }
 
   d->map->update(RenderFromStage::Full, d->map->allSubviewNames());
@@ -169,6 +179,12 @@ size_t RenderModeManager::shadowSamples(RenderMode renderMode) const
 size_t RenderModeManager::shadowSamples() const
 {
   return d->shadowSamples;
+}
+
+//##################################################################################################
+bool RenderModeManager::isDoFRendered() const
+{
+  return d->isDoFRendered;
 }
 
 //##################################################################################################
