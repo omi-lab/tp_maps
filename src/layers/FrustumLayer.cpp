@@ -30,7 +30,7 @@ struct FrustumLayer::Private
   TP_REF_COUNT_OBJECTS("tp_maps::FrustumLayer::Private");
   TP_NONCOPYABLE(Private);
 
-  FrustumLayer* q;
+  Q* q;
 
   //Processed geometry ready for rendering
   bool updateVertexBuffer{true};
@@ -45,7 +45,7 @@ struct FrustumLayer::Private
   glm::vec4 raysColor{0.0f, 1.0f, 0.0f, 1.0f};
 
   //################################################################################################
-  Private(FrustumLayer* q_):
+  Private(Q* q_):
     q(q_)
   {
 

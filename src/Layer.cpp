@@ -16,7 +16,7 @@ struct Layer::Private
   TP_REF_COUNT_OBJECTS("tp_maps::Layer::Private");
   TP_NONCOPYABLE(Private);
 
-  Layer* q;
+  Q* q;
 
   std::vector<LayerPointer*> layerPointers;
 
@@ -36,7 +36,7 @@ struct Layer::Private
   std::shared_ptr<int> alive{std::make_shared<int>()};
 
   //################################################################################################
-  Private(Layer* q_):
+  Private(Q* q_):
     q(q_)
   {
 

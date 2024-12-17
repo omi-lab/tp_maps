@@ -15,7 +15,7 @@ struct PostLayer::Private
   TP_REF_COUNT_OBJECTS("tp_maps::PostLayer::Private");
   TP_NONCOPYABLE(Private);
 
-  PostLayer* q;
+  Q* q;
 
   bool bypass{false};
 
@@ -32,7 +32,7 @@ struct PostLayer::Private
   bool blitFrame{false};
 
   //################################################################################################
-  Private(PostLayer* q_):
+  Private(Q* q_):
     q(q_)
   {
 

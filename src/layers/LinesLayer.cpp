@@ -24,7 +24,7 @@ struct LinesLayer::Private
   TP_REF_COUNT_OBJECTS("tp_maps::LinesLayer::Private");
   TP_NONCOPYABLE(Private);
 
-  LinesLayer* q;
+  Q* q;
   std::vector<Lines> lines;
 
   //Processed geometry ready for rendering
@@ -33,7 +33,7 @@ struct LinesLayer::Private
   float lineWidth{1.0f};
 
   //################################################################################################
-  Private(LinesLayer* q_):
+  Private(Q* q_):
     q(q_)
   {
 

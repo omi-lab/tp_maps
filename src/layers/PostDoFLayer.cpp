@@ -16,7 +16,7 @@ namespace tp_maps
 //##################################################################################################
 struct PostDoFLayer::Private
 {
-  PostDoFLayer* q;
+  Q* q;
   PostDoFParameters parameters;
 
   tp_utils::StringID dofPass1{"DoF 1"};
@@ -40,7 +40,7 @@ struct PostDoFLayer::Private
   OpenGLFBO downsampledFocusCalcFbo;
 
   //################################################################################################
-  Private(PostDoFLayer* q_):
+  Private(Q* q_):
     q(q_)
   {
 

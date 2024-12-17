@@ -17,7 +17,7 @@ struct FlatController::Private
   TP_REF_COUNT_OBJECTS("tp_maps::FlatController::Private");
   TP_NONCOPYABLE(Private);
 
-  FlatController* q;
+  Q* q;
 
   float distance{10.0f};
 
@@ -43,7 +43,7 @@ struct FlatController::Private
   Button translateButton{Button::LeftButton};
 
   //################################################################################################
-  Private(FlatController* q_):
+  Private(Q* q_):
     q(q_)
   {
 

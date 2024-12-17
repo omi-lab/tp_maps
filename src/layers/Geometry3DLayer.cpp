@@ -21,7 +21,7 @@ struct Geometry3DLayer::Private
   TP_REF_COUNT_OBJECTS("tp_maps::Geometry3DLayer::Private");
   TP_NONCOPYABLE(Private);
 
-  Geometry3DLayer* q;
+  Q* q;
 
   tp_utils::StringID name{defaultSID()};
   tp_utils::StringID pickingName{defaultSID()};
@@ -41,7 +41,7 @@ struct Geometry3DLayer::Private
   std::vector<glm::mat3> uvMatricies;
 
   //################################################################################################
-  Private(Geometry3DLayer* q_, Geometry3DPool* geometry3DPool_):
+  Private(Q* q_, Geometry3DPool* geometry3DPool_):
     q(q_),
     geometry3DPool(geometry3DPool_)
   {

@@ -18,7 +18,7 @@ struct GraphController::Private
   TP_REF_COUNT_OBJECTS("GraphController::Private");
   TP_NONCOPYABLE(Private);
 
-  GraphController* q;
+  Q* q;
 
   double distanceX{10.0};
   double distanceY{1.0};
@@ -36,7 +36,7 @@ struct GraphController::Private
   Button mouseInteraction{Button::NoButton};
 
   //################################################################################################
-  Private(GraphController* q_):
+  Private(Q* q_):
     q(q_)
   {
 

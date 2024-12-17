@@ -63,7 +63,7 @@ struct G3DStaticLightShader::Private
   UniformLocations_lt locations;
 
   //################################################################################################
-  Private(G3DStaticLightShader* q_):
+  Private(Q* q_):
     q(q_)
   {
 

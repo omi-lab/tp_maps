@@ -179,7 +179,7 @@ struct Map::Private
   TP_REF_COUNT_OBJECTS("tp_maps::Map::Private");
   TP_NONCOPYABLE(Private);
 
-  Map* q;
+  Q* q;
   Errors errors;
   OpenGLBuffers buffers;
 
@@ -248,7 +248,7 @@ struct Map::Private
 #endif
 
   //################################################################################################
-  Private(Map* q_):
+  Private(Q* q_):
     q(q_),
     errors(q),
     buffers(q)

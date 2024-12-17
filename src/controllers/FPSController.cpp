@@ -18,7 +18,7 @@ struct FPSController::Private
   TP_REF_COUNT_OBJECTS("tp_maps::FPSController::Private");
   TP_NONCOPYABLE(Private);
 
-  FPSController* q;
+  Q* q;
 
   glm::ivec2 previousPos{0,0};
   glm::ivec2 previousPos2{0,0};
@@ -42,7 +42,7 @@ struct FPSController::Private
   bool fullScreen{true};
 
   //################################################################################################
-  Private(FPSController* q_, bool fullScreen_):
+  Private(Q* q_, bool fullScreen_):
     q(q_),
     fullScreen(fullScreen_)
   {

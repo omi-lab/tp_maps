@@ -79,7 +79,7 @@ struct FBOLayer::Private
   TP_REF_COUNT_OBJECTS("tp_maps::FBOLayer::Private");
   TP_NONCOPYABLE(Private);
 
-  FBOLayer* q;
+  Q* q;
 
   std::vector<FBOWindow> windows;
 
@@ -91,7 +91,7 @@ struct FBOLayer::Private
   bool updateVertexBuffer{true};
 
   //################################################################################################
-  Private(FBOLayer* q_):
+  Private(Q* q_):
     q(q_)
   {
 

@@ -17,7 +17,7 @@ struct FontRenderer::Private
   TP_REF_COUNT_OBJECTS("tp_maps::FontRenderer::Private");
   TP_NONCOPYABLE(Private);
 
-  FontRenderer* q;
+  Q* q;
   Map* map;
   std::shared_ptr<Font> font;
 
@@ -34,7 +34,7 @@ struct FontRenderer::Private
   bool regenerate{false};
 
   //################################################################################################
-  Private(FontRenderer* q_, Map* map_, std::shared_ptr<Font> font_):
+  Private(Q* q_, Map* map_, std::shared_ptr<Font> font_):
     q(q_),
     map(map_),
     font(std::move(font_)),

@@ -12,7 +12,7 @@ struct AnimatedFlatController::Private
   TP_REF_COUNT_OBJECTS("tp_maps::AnimatedFlatController::Private");
   TP_NONCOPYABLE(Private);
 
-  AnimatedFlatController* q;
+  Q* q;
 
   float distance{10.0f};
   float rotationAngle{0.0f};
@@ -24,7 +24,7 @@ struct AnimatedFlatController::Private
   glm::vec2 inertia{0.0f, 0.0f};
 
   //################################################################################################
-  Private(AnimatedFlatController* q_):
+  Private(Q* q_):
     q(q_)
   {
 

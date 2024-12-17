@@ -16,7 +16,7 @@ struct PointsLayer::Private
   TP_REF_COUNT_OBJECTS("tp_maps::PointsLayer::Private");
   TP_NONCOPYABLE(Private);
 
-  PointsLayer* q;
+  Q* q;
 
   SpriteTexture* spriteTexture;
 
@@ -31,7 +31,7 @@ struct PointsLayer::Private
 
 
   //################################################################################################
-  Private(PointsLayer* q_, SpriteTexture* spriteTexture_):
+  Private(Q* q_, SpriteTexture* spriteTexture_):
     q(q_),
     spriteTexture(spriteTexture_)
   {

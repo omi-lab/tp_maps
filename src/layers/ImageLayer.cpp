@@ -17,7 +17,7 @@ struct ImageLayer::Private
   TP_REF_COUNT_OBJECTS("tp_maps::ImageLayer::Private");
   TP_NONCOPYABLE(Private);
 
-  ImageLayer* q;
+  Q* q;
 
   Texture* texture;
 
@@ -45,7 +45,7 @@ struct ImageLayer::Private
   std::function<G3DImageShader*(Map*)> getShader;
 
   //################################################################################################
-  Private(ImageLayer* q_, Texture* texture_):
+  Private(Q* q_, Texture* texture_):
     q(q_),
     texture(texture_),
     getShader([](Map* map){return map->getShader<G3DImageShader>();})

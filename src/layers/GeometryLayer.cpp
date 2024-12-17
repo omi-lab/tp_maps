@@ -26,7 +26,7 @@ struct GeometryLayer::Private
   TP_REF_COUNT_OBJECTS("tp_maps::Geometry3DLayer::Private");
   TP_NONCOPYABLE(Private);
 
-  GeometryLayer* q;
+  Q* q;
 
   std::vector<tp_math_utils::Geometry> geometry;
   bool drawBackFaces{false};
@@ -36,7 +36,7 @@ struct GeometryLayer::Private
   bool updateVertexBuffer{true};
 
   //################################################################################################
-  Private(GeometryLayer* q_):
+  Private(Q* q_):
     q(q_)
   {
 

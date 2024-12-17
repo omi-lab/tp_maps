@@ -55,7 +55,7 @@ struct CADController::Private
   TP_REF_COUNT_OBJECTS("tp_maps::CADController::Private");
   TP_NONCOPYABLE(Private);
 
-  CADController* q;
+  Q* q;
 
   CADControllerMode mode{CADControllerMode::Perspective};
 
@@ -89,7 +89,7 @@ struct CADController::Private
   bool fullScreen{true};
 
   //################################################################################################
-  Private(CADController* q_, bool fullScreen_):
+  Private(Q* q_, bool fullScreen_):
     q(q_),
     fullScreen(fullScreen_)
   {

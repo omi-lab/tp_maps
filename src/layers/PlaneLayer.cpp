@@ -13,12 +13,12 @@ struct PlaneLayer::Private
   TP_REF_COUNT_OBJECTS("tp_maps::PlaneLayer::Private");
   TP_NONCOPYABLE(Private);
 
-  PlaneLayer* q;
+  Q* q;
   tp_math_utils::Plane plane;
   glm::vec4 color{1.0f, 0.0f, 0.0f, 1.0f};
 
   //################################################################################################
-  Private(PlaneLayer* q_):
+  Private(Q* q_):
     q(q_)
   {
 

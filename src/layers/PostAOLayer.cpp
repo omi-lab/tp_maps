@@ -12,7 +12,7 @@ namespace tp_maps
 //##################################################################################################
 struct PostAOLayer::Private
 {
-  PostAOLayer* q;
+  Q* q;
   PostAOParameters parameters;
 
   tp_utils::StringID ssaoPass1{"SSAO 1"};
@@ -27,6 +27,13 @@ struct PostAOLayer::Private
   OpenGLFBO blurFbo;
 
   //################################################################################################
+  Private(Q* q_):
+    q(q_)
+  {
+
+  }
+
+  //################################################################################################
   void recompileShaders()
   {
     if(q->map())
@@ -34,13 +41,6 @@ struct PostAOLayer::Private
       q->map()->deleteShader(PostAOShader::name());
       q->map()->deleteShader(PostAOMergeShader::name());
     }
-  }
-
-  //################################################################################################
-  Private(PostAOLayer* q_):
-    q(q_)
-  {
-
   }
 };
 

@@ -28,7 +28,7 @@ struct RulerLayer::Private
   TP_REF_COUNT_OBJECTS("tp_maps::RulerLayer::Private");
   TP_NONCOPYABLE(Private);
 
-  RulerLayer* q;
+  Q* q;
 
   FontRenderer* font{nullptr};
 
@@ -40,7 +40,7 @@ struct RulerLayer::Private
   float scale;
 
   //################################################################################################
-  Private(RulerLayer* q_, float scale_):
+  Private(Q* q_, float scale_):
     q(q_),
     scale(scale_)
   {

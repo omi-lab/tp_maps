@@ -38,7 +38,7 @@ struct HandleLayer::Private
   TP_REF_COUNT_OBJECTS("tp_maps::HandleLayer::Private");
   TP_NONCOPYABLE(Private);
 
-  HandleLayer* q;
+  Q* q;
 
   SpriteTexture* spriteTexture;
 
@@ -66,7 +66,7 @@ struct HandleLayer::Private
   bool doubleClickToRemove{true};
 
   //################################################################################################
-  Private(HandleLayer* q_, SpriteTexture* spriteTexture_):
+  Private(Q* q_, SpriteTexture* spriteTexture_):
     q(q_),
     spriteTexture(spriteTexture_)
   {

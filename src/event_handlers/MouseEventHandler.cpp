@@ -25,13 +25,13 @@ struct EventHandler_lt
 //##################################################################################################
 struct MouseEventHandler::Private
 {
-  MouseEventHandler* q;
+  Q* q;
   Map* map;
 
   std::unordered_map<Button, std::unique_ptr<EventHandler_lt>> eventHandlers;
 
   //################################################################################################
-  Private(MouseEventHandler* q_, Map* map_):
+  Private(Q* q_, Map* map_):
     q(q_),
     map(map_)
   {

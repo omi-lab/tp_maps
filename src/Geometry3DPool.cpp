@@ -297,7 +297,7 @@ struct PoolDetails_lt
 //##################################################################################################
 struct Geometry3DPool::Private
 {
-  Geometry3DPool* q;
+  Q* q;
   Map* m_map;
   Layer* m_layer;
 
@@ -309,7 +309,7 @@ struct Geometry3DPool::Private
   int keepHot{0};
 
   //################################################################################################
-  Private(Geometry3DPool* q_, Map* map_, TexturePool* texturePool_):
+  Private(Q* q_, Map* map_, TexturePool* texturePool_):
     q(q_),
     m_map(map_),
     m_layer(nullptr),
@@ -326,7 +326,7 @@ struct Geometry3DPool::Private
   }
 
   //################################################################################################
-  Private(Geometry3DPool* q_, Layer* layer_, TexturePool* texturePool_):
+  Private(Q* q_, Layer* layer_, TexturePool* texturePool_):
     q(q_),
     m_map(nullptr),
     m_layer(layer_),
