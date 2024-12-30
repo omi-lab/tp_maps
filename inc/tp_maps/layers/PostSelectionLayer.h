@@ -26,8 +26,7 @@ public:
   tp_maps::RenderFromStage renderFromStageMask() const;
 
   //################################################################################################
-  //! Render from stage to update state given mask already rendered
-  tp_maps::RenderFromStage renderFromStageUpdate() const;
+  void setNeedsSelection() const;
 
 protected:
   //################################################################################################

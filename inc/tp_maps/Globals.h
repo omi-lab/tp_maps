@@ -102,6 +102,7 @@ TP_DECLARE_ID(             backgroundShaderSID,                "Background shade
 TP_DECLARE_ID(        backgroundImageShaderSID,          "Background image shader");
 TP_DECLARE_ID(      backgroundPatternShaderSID,        "Background pattern shader");
 TP_DECLARE_ID(                selectionPassSID,                   "Selection pass");
+TP_DECLARE_ID(                pulsatingPassSID,                   "Pulsating pass");
 TP_DECLARE_ID(                     selectedSID,                         "Selected");
 
 //##################################################################################################
