@@ -9,7 +9,6 @@ struct PostSelectionLayer::Private
   tp_utils::StringID selectionOutput{"Selection output"};
   tp_maps::RenderPass selectionRenderPass{PostSelectionLayer::selectionRenderPass()};
   tp_maps::RenderFromStage renderFromStageMask;
-  bool needsSelection{false};
 
   //################################################################################################
   Private(size_t stageMask):
@@ -45,18 +44,10 @@ tp_maps::RenderFromStage PostSelectionLayer::renderFromStageMask() const
 }
 
 //##################################################################################################
-void PostSelectionLayer::setNeedsSelection() const
-{
-  d->needsSelection = true;
-}
-
-//##################################################################################################
 void PostSelectionLayer::addRenderPasses(std::vector<tp_maps::RenderPass>& renderPasses)
 {
-  if(bypass() || !d->needsSelection /*PostOutline fails because this now*/)
+  if(bypass())
     return;
-
-  d->needsSelection = false;
 
   if(!containsPass(renderPasses, d->selectionRenderPass))
   {

@@ -513,6 +513,9 @@ public:
   //################################################################################################
   double timeSincePreviousAnimate() const;
 
+  //################################################################################################
+  double timeSincePreviousAnimateInSecs() const;
+
 protected:
   //################################################################################################
   //! Used by make current to detect when we are in a paint event and to detect nested paint events.

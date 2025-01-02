@@ -25,9 +25,6 @@ public:
   //! Render from stage to render mask
   tp_maps::RenderFromStage renderFromStageMask() const;
 
-  //################################################################################################
-  void setNeedsSelection() const;
-
 protected:
   //################################################################################################
   void addRenderPasses(std::vector<tp_maps::RenderPass>& renderPasses) override;
