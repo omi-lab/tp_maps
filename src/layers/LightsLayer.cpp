@@ -246,6 +246,7 @@ void LightsLayer::render(RenderInfo& renderInfo)
         auto& label = d->labels.at(l);
 
         std::string text = d->prefix + std::to_string(l) + " : " + light.name.toString();
+        text += " (Power: " + std::to_string(int(light.diffuseScale*830.0f)) + ")";
 
         label.preparedString.reset(new tp_maps::FontShader::PreparedString(font(), tpFromUTF8(text), config));
         label.position = light.position();
