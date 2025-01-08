@@ -103,11 +103,9 @@ float PostDoFLayer::calculateFStopDistance(float fStop) const
   float minFStop = 2.0f;
   float maxFStop = 7.0f;
   float fraction = (std::clamp(fStop, minFStop, maxFStop) - minFStop) / (maxFStop - minFStop);
-
   float minDiffToFocalPlane = 0.05f;
   float maxDiffToFocalPlane = 1.5f;
   float distance = minDiffToFocalPlane + (maxDiffToFocalPlane - minDiffToFocalPlane) * fraction;
-
   return distance;
 }
 

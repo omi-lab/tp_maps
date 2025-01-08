@@ -562,12 +562,15 @@ void Geometry3DPool::unsubscribe(const tp_utils::StringID& name)
   CHECK_FOR_DUPLICATE_IDS();
 
   auto i = d->pools.find(name);
-  i->second.count--;
-  if(!i->second.count && d->keepHot==0)
+  if(i != d->pools.end())
   {
-    i->second.deleteVertexBuffers();
-    d->unsubscribeTextures(i->second.textureSubscriptions);
-    d->pools.erase(i);
+    i->second.count--;
+    if(!i->second.count && d->keepHot==0)
+    {
+      i->second.deleteVertexBuffers();
+      d->unsubscribeTextures(i->second.textureSubscriptions);
+      d->pools.erase(i);
+    }
   }
 }
 

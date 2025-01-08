@@ -33,7 +33,6 @@ struct Geometry3DLayer::Private
 
   Geometry3DPool* geometry3DPool;
 
-
   ShaderSelection shaderSelection{ShaderSelection::Material};
   std::unordered_map<tp_utils::StringID, tp_utils::StringID> alternativeMaterials;
 
