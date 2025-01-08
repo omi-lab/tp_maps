@@ -156,6 +156,12 @@ public:
   const OpenGLBuffers& buffers() const;
 
   //################################################################################################
+  std::unordered_map<std::string, OpenGLFBO*> intermediateBuffers() const;
+
+  //################################################################################################
+  const OpenGLFBO* intermediateBuffer(const tp_utils::StringID&) const;
+
+  //################################################################################################
   //!Sets the background clear color
   void setBackgroundColor(const glm::vec3& color);
 
@@ -506,6 +512,9 @@ public:
 
   //################################################################################################
   double timeSincePreviousAnimate() const;
+
+  //################################################################################################
+  double timeSincePreviousAnimateInSecs() const;
 
 protected:
   //################################################################################################

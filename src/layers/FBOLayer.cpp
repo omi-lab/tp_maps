@@ -259,8 +259,11 @@ void FBOLayer::render(RenderInfo& renderInfo)
     auto vertexBuffer = d->vertexBuffers.at(i);
 
     OpenGLFBO* fbo = tpGetMapValue(map()->buffers().storedBuffers(), window.fboName, nullptr);
-    if(!fbo)
-      continue;
+    if(!fbo) {
+      fbo = tpGetMapValue(map()->intermediateBuffers(), window.fboName, nullptr);
+      if(!fbo)
+        continue;
+    }
 
     GLuint textureID{0};
     switch(window.source)

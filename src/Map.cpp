@@ -658,6 +658,24 @@ const OpenGLBuffers& Map::buffers() const
 }
 
 //##################################################################################################
+std::unordered_map<std::string, OpenGLFBO*> Map::intermediateBuffers() const
+{
+  std::unordered_map<std::string, OpenGLFBO*> output;
+  for (auto const & [key, fbo] : d->intermediateFBOs)
+    output.emplace(key.name.toString(), fbo.get());
+  return output;
+}
+
+//################################################################################################
+const OpenGLFBO* Map::intermediateBuffer(const tp_utils::StringID& name) const
+{
+  for (auto const & [key, fbo] : d->intermediateFBOs)
+    if (key.name == name)
+      return fbo.get();
+  return nullptr;
+}
+
+//##################################################################################################
 RenderInfo& Map::renderInfo()
 {
   return d->renderInfo;
@@ -681,6 +699,13 @@ void Map::animate(double timestampMS)
 double Map::timeSincePreviousAnimate() const
 {
   return d->timeSincePreviousAnimate;
+}
+
+//##################################################################################################
+double Map::timeSincePreviousAnimateInSecs() const
+{
+  static const double msToSecs = 1e-3;
+  return d->timeSincePreviousAnimate * msToSecs;
 }
 
 namespace
