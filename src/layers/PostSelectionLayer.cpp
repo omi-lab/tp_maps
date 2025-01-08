@@ -22,6 +22,7 @@ PostSelectionLayer::PostSelectionLayer(const RenderPass& customRenderPass, size_
   PostLayer(customRenderPass),
   d(new Private(stageMask))
 {
+  TP_UNUSED(stageUpdate);
   d->selectionRenderPass.postLayer = this;
 }
 

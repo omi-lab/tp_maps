@@ -704,7 +704,7 @@ double Map::timeSincePreviousAnimate() const
 //##################################################################################################
 double Map::timeSincePreviousAnimateInSecs() const
 {
-  static const float msToSecs = 1e-3f;
+  static const double msToSecs = 1e-3;
   return d->timeSincePreviousAnimate * msToSecs;
 }
 
