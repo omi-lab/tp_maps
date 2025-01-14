@@ -6,8 +6,8 @@ namespace tp_maps
 {
 
 //##################################################################################################
-PostOutlineLayer::PostOutlineLayer(size_t stageMask, size_t stageUpdate):
-  PostSelectionLayer({tp_maps::RenderPass::Custom, postOutlineShaderSID()}, stageMask, stageUpdate)
+PostOutlineLayer::PostOutlineLayer():
+  PostLayer({tp_maps::RenderPass::Custom, postOutlineShaderSID()})
 {
 
 }

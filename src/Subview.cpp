@@ -46,15 +46,33 @@ size_t Subview::height() const
 }
 
 //##################################################################################################
+size_t Subview::getStageIndex(const tp_utils::StringID& stageName) const
+{
+  auto i = m_stageNameToIndex.find(stageName);
+  return i!=m_stageNameToIndex.end()?i->second:size_t(0);
+}
+
+//##################################################################################################
 void Subview::setRenderPassesInternal(const std::vector<RenderPass>& renderPasses)
 {
   deletePostLayers();
 
+  m_stageNameToIndex.clear();
+
   m_renderPasses = renderPasses;
-  for(const auto& renderPass : m_renderPasses)
+  for(size_t i=0; i<m_renderPasses.size(); i++)
   {
+    auto& renderPass = m_renderPasses.at(i);
+
+    if(renderPass.type == RenderPass::Stage)
+    {
+      renderPass.index = i;
+      m_stageNameToIndex[renderPass.name] = i;
+    }
+
     if(renderPass.postLayer)
     {
+      renderPass.postLayer->setStageIndex(i);
       renderPass.postLayer->setOnlyInSubviews({m_name});
       m_map->insertLayer(0, renderPass.postLayer);
     }

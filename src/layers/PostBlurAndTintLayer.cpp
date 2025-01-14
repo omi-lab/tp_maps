@@ -18,15 +18,4 @@ PostShader* PostBlurAndTintLayer::makeShader()
   return map()->getShader<PostBlurAndTintShader>();
 }
 
-
-//##################################################################################################
-void PostBlurAndTintLayer::addRenderPasses(std::vector<RenderPass>& renderPasses)
-{
-  if(bypass())
-    return;
-
-  renderPasses.emplace_back(RenderPass::SwapToFBO, postBlurAndTintShaderSID());
-  renderPasses.emplace_back(defaultRenderPass());
-}
-
 }

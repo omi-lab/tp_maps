@@ -16,9 +16,6 @@ public:
 protected:
   //################################################################################################
   PostShader* makeShader() override;
-
-  //################################################################################################
-  void addRenderPasses(std::vector<RenderPass>& renderPasses) override;
 };
 
 }

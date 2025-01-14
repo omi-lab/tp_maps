@@ -23,8 +23,7 @@ public:
   ~OpenGLBuffers();
 
   //################################################################################################
-  bool prepareBuffer(const std::string& name,
-                     OpenGLFBO& buffer,
+  bool prepareBuffer(OpenGLFBO& buffer,
                      size_t width,
                      size_t height,
                      CreateColorBuffer createColorBuffer,
@@ -32,6 +31,9 @@ public:
                      HDR hdr,
                      ExtendedFBO extendedFBO,
                      bool clear) const;
+
+  //################################################################################################
+  bool bindBuffer(OpenGLFBO& buffer) const;
 
   //################################################################################################
   void invalidateBuffer(OpenGLFBO& fbo) const;
@@ -55,7 +57,7 @@ public:
   void initializeGL();
 
   //################################################################################################
-  std::unordered_map<std::string, OpenGLFBO*> storedBuffers() const;
+  const std::unordered_map<tp_utils::StringID, OpenGLFBO*>& storedBuffers() const;
 };
 
 }

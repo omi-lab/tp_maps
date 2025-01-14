@@ -28,6 +28,13 @@ public:
   void setFrameCoordinateSystem(const tp_utils::StringID& frameCoordinateSystem);
 
   //################################################################################################
+  //! The stage just before rendering the selection.
+  const RenderFromStage& stage() const;
+
+  //################################################################################################
+  void setStageIndex(size_t stageIndex);
+
+  //################################################################################################
   //! If true just blit read to draw buffers.
   bool bypass() const;
 
@@ -60,8 +67,14 @@ protected:
   //! Called before each frame to allow the post layer to add the render passes it needs.
   virtual void addRenderPasses(std::vector<RenderPass>& renderPasses);
 
-  //################################################################################################
-  static tp_utils::StringID findInputFBO(const std::vector<tp_maps::RenderPass>& c);
+//  //################################################################################################
+//  static tp_utils::StringID findInputFBO(const std::vector<tp_maps::RenderPass>& c);
+
+//  //################################################################################################
+//  static tp_utils::StringID currentReadFBO(const std::vector<tp_maps::RenderPass>& c);
+
+//  //################################################################################################
+//  static tp_utils::StringID currentDrawFBO(const std::vector<tp_maps::RenderPass>& c);
 
   //################################################################################################
   static bool containsPass(const std::vector<tp_maps::RenderPass>& renderPasses, tp_maps::RenderPass pass);
@@ -93,7 +106,7 @@ protected:
   void invalidateBuffers() override;
 
   //################################################################################################
-  virtual PostShader* makeShader()=0;
+  virtual PostShader* makeShader();
 };
 
 }

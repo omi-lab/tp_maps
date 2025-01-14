@@ -17,6 +17,8 @@ struct PostLayer::Private
 
   Q* q;
 
+  RenderFromStage stage{RenderFromStage::Stage, 0};
+
   bool bypass{false};
 
   FullScreenShader::Object* rectangleObject{nullptr};
@@ -72,6 +74,18 @@ void PostLayer::setFrameCoordinateSystem(const tp_utils::StringID& frameCoordina
 }
 
 //##################################################################################################
+const RenderFromStage& PostLayer::stage() const
+{
+  return d->stage;
+}
+
+//##################################################################################################
+void PostLayer::setStageIndex(size_t stageIndex)
+{
+  d->stage.index = stageIndex;
+}
+
+//##################################################################################################
 bool PostLayer::bypass() const
 {
   return d->bypass;
@@ -80,8 +94,11 @@ bool PostLayer::bypass() const
 //##################################################################################################
 void PostLayer::setBypass(bool bypass)
 {
+  if(d->bypass == bypass)
+    return;
+
   d->bypass = bypass;
-  update();
+  update(stage());
 }
 
 //##################################################################################################
@@ -114,17 +131,48 @@ void PostLayer::addRenderPasses(std::vector<RenderPass>& renderPasses)
   if(bypass())
     return;
 
+  renderPasses.emplace_back(tp_maps::RenderPass::SwapToFBO, defaultRenderPass().name);
   renderPasses.push_back(defaultRenderPass());
 }
 
-//##################################################################################################
-tp_utils::StringID PostLayer::findInputFBO(const std::vector<tp_maps::RenderPass>& c)
-{
-  for(size_t i=c.size()-1; i<c.size(); i--)
-    if(const auto& p=c[i]; p.type == RenderPass::SwapToFBO || p.type == RenderPass::PrepareDrawFBO)
-      return p.name;
-  return {};
-}
+////##################################################################################################
+//tp_utils::StringID PostLayer::findInputFBO(const std::vector<tp_maps::RenderPass>& c)
+//{
+//  for(size_t i=c.size()-1; i<c.size(); i--)
+//    if(const auto& p=c[i]; p.type == RenderPass::SwapToFBO || p.type == RenderPass::PrepareDrawFBO)
+//    {
+//      if(p.name.isValid())
+//        return p.name;
+//      return defaultSID();
+//    }
+//  return defaultSID();
+//}
+
+////##################################################################################################
+//tp_utils::StringID PostLayer::currentReadFBO(const std::vector<tp_maps::RenderPass>& c)
+//{
+//  bool foundFirst=false;
+//  for(size_t i=c.size()-1; i<c.size(); i--)
+//  {
+//    if(const auto& p=c[i]; p.type == RenderPass::SwapToFBO || p.type == RenderPass::PrepareDrawFBO)
+//    {
+//      if(foundFirst)
+//      {
+//        if(p.name.isValid())
+//          return p.name;
+//        return defaultSID();
+//      }
+//      foundFirst=true;
+//    }
+//  }
+//  return defaultSID();
+//}
+
+////##################################################################################################
+//tp_utils::StringID PostLayer::currentDrawFBO(const std::vector<tp_maps::RenderPass>& c)
+//{
+//  return findInputFBO(c);
+//}
 
 //##################################################################################################
 bool PostLayer::containsPass(const std::vector<tp_maps::RenderPass>& renderPasses, tp_maps::RenderPass pass)
@@ -170,7 +218,7 @@ void PostLayer::render(RenderInfo& renderInfo)
     if(d->blitRectangle || d->blitFrame)
     {
       shader->use(renderInfo.shaderType());
-      shader->setReadFBO(map()->currentReadFBO());
+      shader->setReadFBO(*map()->currentReadFBO());
       shader->setFrameMatrix(map()->controller()->matrices(d->frameCoordinateSystem).p);
       shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);
 
@@ -190,7 +238,7 @@ void PostLayer::render(RenderInfo& renderInfo)
       return;
 
     shader->use(renderInfo.shaderType());
-    shader->setReadFBO(map()->currentReadFBO());
+    shader->setReadFBO(*map()->currentReadFBO());
     shader->setFrameMatrix(map()->controller()->matrices(d->frameCoordinateSystem).p);
     shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);
 
@@ -219,7 +267,7 @@ void PostLayer::renderWithShader(PostShader* shader, std::function<void()> bindA
     if(d->blitRectangle || d->blitFrame)
     {
       shader->use(map()->renderInfo().shaderType());
-      shader->setReadFBO(map()->currentReadFBO());
+      shader->setReadFBO(*map()->currentReadFBO());
       shader->setFrameMatrix(map()->controller()->matrices(d->frameCoordinateSystem).p);
       shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);
 
@@ -235,7 +283,7 @@ void PostLayer::renderWithShader(PostShader* shader, std::function<void()> bindA
     return;
 
   shader->use(map()->renderInfo().shaderType());
-  shader->setReadFBO(map()->currentReadFBO());
+  shader->setReadFBO(*map()->currentReadFBO());
 
   bindAdditionalTextures();
 
@@ -266,7 +314,7 @@ void PostLayer::renderToFbo(PostShader* shader, OpenGLFBO& customFbo, const GLui
     if(d->blitRectangle || d->blitFrame)
     {
       shader->use(map()->renderInfo().shaderType());
-      shader->setReadFBO(map()->currentReadFBO());
+      shader->setReadFBO(*map()->currentReadFBO());
       shader->setFrameMatrix(map()->controller()->matrices(d->frameCoordinateSystem).p);
       shader->setProjectionMatrix(map()->controller()->matrices(coordinateSystem()).p);
 
@@ -284,14 +332,14 @@ void PostLayer::renderToFbo(PostShader* shader, OpenGLFBO& customFbo, const GLui
   shader->use(map()->renderInfo().shaderType());
 
   // Change render target
-  glBindFramebuffer(GL_FRAMEBUFFER, customFbo.frameBuffer );
+  glBindFramebuffer(GL_FRAMEBUFFER, customFbo.frameBuffer);
 
   glDisable(GL_DEPTH_TEST);
   glClearColor(0.8f,0.8f,0.8f,1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 
   // Textures set in here
-  shader->setReadFBO(map()->currentReadFBO());
+  shader->setReadFBO(*map()->currentReadFBO());
 
   if(sourceTexture)
     shader->setFBOSourceTexture(sourceTexture);
@@ -305,7 +353,7 @@ void PostLayer::renderToFbo(PostShader* shader, OpenGLFBO& customFbo, const GLui
     shader->draw(*d->frameObject);
 
   // Change framebuffer back
-  glBindFramebuffer(GL_FRAMEBUFFER, map()->currentDrawFBO().frameBuffer);
+  glBindFramebuffer(GL_FRAMEBUFFER, map()->currentDrawFBO()->frameBuffer);
 }
 
 //##################################################################################################
@@ -313,6 +361,12 @@ void PostLayer::invalidateBuffers()
 {
   d->freeObject();
   Layer::invalidateBuffers();
+}
+
+//##################################################################################################
+PostShader* PostLayer::makeShader()
+{
+  return nullptr;
 }
 
 

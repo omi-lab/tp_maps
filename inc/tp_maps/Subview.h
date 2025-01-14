@@ -33,6 +33,9 @@ public:
   //################################################################################################
   size_t height() const;
 
+  //################################################################################################
+  size_t getStageIndex(const tp_utils::StringID& stageName) const;
+
 private:  
   //################################################################################################
   void setRenderPassesInternal(const std::vector<RenderPass>& renderPasses);
@@ -48,6 +51,7 @@ private:
 
   std::vector<RenderPass> m_renderPasses;
   std::vector<RenderPass> m_computedRenderPasses;
+  std::unordered_map<tp_utils::StringID, size_t> m_stageNameToIndex;
 
   Controller* m_controller{nullptr};
 

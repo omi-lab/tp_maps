@@ -138,6 +138,8 @@ namespace tp_maps
 //##################################################################################################
 struct OpenGLFBO
 {
+  tp_utils::StringID name;
+
   GLuint frameBuffer{0};
 
   GLuint textureID{0};  //!< The color buffer texture.
@@ -171,6 +173,8 @@ struct OpenGLFBO
   Multisample multisample{Multisample::No}; //!< Yes if multisample buffers have been created.
   HDR hdr{HDR::No};                         //!< Yes if HDR buffers have been created.
   ExtendedFBO extendedFBO{ExtendedFBO::No}; //!< Yes if deferred rendering buffers have been created.
+
+  bool blitRequired{false};
 };
 
 }
