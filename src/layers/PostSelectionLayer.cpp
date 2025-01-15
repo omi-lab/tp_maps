@@ -36,12 +36,7 @@ const tp_utils::StringID& PostSelectionLayer::selectionMaskFBO() const
 void PostSelectionLayer::incrementSelectedCount()
 {
   d->selectedCount++;
-
-  if(d->selectedCount == 1)
-    setBypass(false);
-  else
-    update(stage());
-
+  update(stage());
   selectedCountChanged();
 }
 
@@ -49,12 +44,7 @@ void PostSelectionLayer::incrementSelectedCount()
 void PostSelectionLayer::decrementSelectedCount()
 {
   d->selectedCount--;
-
-  if(d->selectedCount == 0)
-    setBypass(false);
-  else
-    update(stage());
-
+  update(stage());
   selectedCountChanged();
 }
 
