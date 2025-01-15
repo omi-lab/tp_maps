@@ -34,7 +34,7 @@ void main()
 
         if(TP_GLSL_TEXTURE_2D(depthObjectSampler, vec2(sx, sy)).x<1.0f)
         {
-          TP_GLSL_GLFRAGCOLOR = vec4(0.25,0.25,0.8,1.0);
+          TP_GLSL_GLFRAGCOLOR = vec4(0.4,0.4,0.95,1.0);
           return;
         }
       }
