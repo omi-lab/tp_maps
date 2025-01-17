@@ -101,6 +101,9 @@ public:
   void setUVTransformations(const std::vector<tp_math_utils::UVTransformation>& uvTransformations);
 
   //################################################################################################
+  void setLightMaskUVTransformations(const std::vector<tp_math_utils::UVTransformation>& uvTransformations);
+
+  //################################################################################################
   const std::vector<tp_math_utils::UVTransformation>& uvTransformations() const;
 
 

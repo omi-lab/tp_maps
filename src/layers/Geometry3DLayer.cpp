@@ -11,6 +11,7 @@
 #include "tp_maps/shaders/G3DStaticLightShader.h"
 
 #include "tp_utils/TimeUtils.h"
+#include "tp_utils/DebugUtils.h"
 
 namespace tp_maps
 {
@@ -248,6 +249,16 @@ void Geometry3DLayer::setUVTransformations(const std::vector<tp_math_utils::UVTr
   d->uvMatricies.resize(d->uvTransformations.size());
   for(size_t i=0; i<d->uvTransformations.size(); i++)
     d->uvMatricies[i] = d->uvTransformations.at(i).uvMatrix();
+  update();
+}
+
+//##################################################################################################
+void Geometry3DLayer::setLightMaskUVTransformations(const std::vector<tp_math_utils::UVTransformation>& uvTransformations)
+{
+  d->uvTransformations = uvTransformations;
+  d->uvMatricies.resize(d->uvTransformations.size());
+  for(size_t i=0; i<d->uvTransformations.size(); i++)
+    d->uvMatricies[i] = d->uvTransformations.at(i).lightMaskUVMatrix();
   update();
 }
 
