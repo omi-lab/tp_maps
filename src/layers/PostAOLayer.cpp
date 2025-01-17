@@ -102,8 +102,8 @@ void PostAOLayer::render(tp_maps::RenderInfo& renderInfo)
 {
   if(renderInfo.pass == d->customRenderPass1) //----------------------------------------------------
   {
-    if(!map()->buffers().prepareBuffer("ssao",
-                                       d->ssaoFbo,
+    d->ssaoFbo.name = "ssao";
+    if(!map()->buffers().prepareBuffer(d->ssaoFbo,
                                        map()->width(),
                                        map()->height(),
                                        CreateColorBuffer::Yes,
@@ -122,8 +122,8 @@ void PostAOLayer::render(tp_maps::RenderInfo& renderInfo)
 
   else if(renderInfo.pass == d->customRenderPass2) //-----------------------------------------------
   {
-   if(!map()->buffers().prepareBuffer("ssaoBlurred",
-                                      d->blurFbo,
+    d->blurFbo.name = "ssaoBlurred";
+   if(!map()->buffers().prepareBuffer(d->blurFbo,
                                       map()->width(),
                                       map()->height(),
                                       CreateColorBuffer::Yes,

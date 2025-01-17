@@ -2,6 +2,7 @@
 #define tp_maps_Map_h
 
 #include "tp_maps/Shader.h"
+#include "tp_maps/Subview.h"
 #include "tp_maps/subsystems/open_gl/OpenGL.h" // IWYU pragma: keep
 #include "tp_maps/subsystems/open_gl/OpenGLBuffers.h" // IWYU pragma: keep
 
@@ -156,7 +157,7 @@ public:
   const OpenGLBuffers& buffers() const;
 
   //################################################################################################
-  std::unordered_map<std::string, OpenGLFBO*> intermediateBuffers() const;
+  const std::unordered_map<FBOKey, std::unique_ptr<OpenGLFBO>>& intermediateBuffers() const;
 
   //################################################################################################
   const OpenGLFBO* intermediateBuffer(const tp_utils::StringID&) const;
@@ -403,10 +404,10 @@ public:
   void deleteShader(const tp_utils::StringID& name);
 
   //################################################################################################
-  const OpenGLFBO& currentReadFBO();
+  const OpenGLFBO* currentReadFBO();
 
   //################################################################################################
-  const OpenGLFBO& currentDrawFBO();
+  const OpenGLFBO* currentDrawFBO();
 
   //################################################################################################
   //! Returns the depth textures for each light.
@@ -438,12 +439,12 @@ public:
 
   //################################################################################################
   //! Called to queue a refresh
-  virtual void update(RenderFromStage renderFromStage, const std::vector<tp_utils::StringID>& subviews);
+  virtual void update(const RenderFromStage& renderFromStage, const std::vector<tp_utils::StringID>& subviews);
 
 private:
 
   //################################################################################################
-  void update(RenderFromStage renderFromStage, Controller* controller);
+  void update(const RenderFromStage& renderFromStage, Controller* controller);
 
 public:
 
@@ -566,5 +567,9 @@ private:
   void updateEventHandlerCallbacks(size_t eventHandlerId,
                                    const std::function<void(EventHandlerCallbacks&)>& closure);
 };
+
+//##################################################################################################
+void describeRenderPass(size_t rp, const RenderPass& renderPass, OpenGLFBO* currentReadFBO, OpenGLFBO* currentDrawFBO);
+
 }
 #endif

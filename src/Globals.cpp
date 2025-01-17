@@ -47,7 +47,6 @@ TP_DEFINE_ID(             backgroundShaderSID,                "Background shader
 TP_DEFINE_ID(        backgroundImageShaderSID,          "Background image shader");
 TP_DEFINE_ID(      backgroundPatternShaderSID,        "Background pattern shader");
 TP_DEFINE_ID(                selectionPassSID,                   "Selection pass");
-TP_DEFINE_ID(                pulsatingPassSID,                   "Pulsating pass");
 TP_DEFINE_ID(                     selectedSID,                         "Selected");
 
 //##################################################################################################
@@ -492,6 +491,22 @@ glm::vec2 Matrices::nearAndFar() const
 {
   glm::mat4 m = glm::inverse(p);
   return {std::fabs(tpProj(m, {0.0f, 0.0f, -1.0f}).z), std::fabs(tpProj(m, {0.0f, 0.0f, 1.0f}).z)};
+}
+
+//##################################################################################################
+std::string mouseEventTypeToString(MouseEventType mouseEventType)
+{
+  switch(mouseEventType)
+  {
+    case MouseEventType::Press       : return "Press";
+    case MouseEventType::Move        : return "Move";
+    case MouseEventType::Release     : return "Release";
+    case MouseEventType::Wheel       : return "Wheel";
+    case MouseEventType::DoubleClick : return "DoubleClick";
+    case MouseEventType::Click       : return "Click";
+    case MouseEventType::DragStart   : return "DragStart";
+  }
+  return "";
 }
 
 //##################################################################################################

@@ -5,7 +5,7 @@
 
 #include "tp_utils/RefCount.h"
 
-#include "json.hpp"
+#include "json.hpp" // IWYU pragma: keep
 
 namespace tp_maps
 {
@@ -32,10 +32,10 @@ std::vector<std::string> fboLayerSources();
 //##################################################################################################
 struct FBOWindow
 {
-  std::string    fboName;                        //!< The name of the FBO to display.
-  FBOLayerSource source {FBOLayerSource::Color}; //!< The texture to display.
-  glm::vec2      origin {0.75f, 0.75f};          //!< The origin of the window.
-  glm::vec2      size   {0.20f, 0.20f};          //!< The size of the window.
+  tp_utils::StringID fboName;                        //!< The name of the FBO to display.
+  FBOLayerSource     source {FBOLayerSource::Color}; //!< The texture to display.
+  glm::vec2          origin {0.75f, 0.75f};          //!< The origin of the window.
+  glm::vec2          size   {0.20f, 0.20f};          //!< The size of the window.
 
   //################################################################################################
   void saveState(nlohmann::json& j) const;

@@ -58,10 +58,10 @@ std::vector<std::string> fboLayerSources()
 //##################################################################################################
 void FBOWindow::saveState(nlohmann::json& j) const
 {
-  j["fboName"] = fboName;
-  j["source"] = fboLayerSourceToString(source);
-  j["origin"] = tp_math_utils::vec2ToJSON(origin);
-  j["size"  ] = tp_math_utils::vec2ToJSON(size);
+  j["fboName"] = fboName.toString();
+  j["source"]  = fboLayerSourceToString(source);
+  j["origin"]  = tp_math_utils::vec2ToJSON(origin);
+  j["size"  ]  = tp_math_utils::vec2ToJSON(size);
 }
 
 //##################################################################################################
@@ -259,11 +259,12 @@ void FBOLayer::render(RenderInfo& renderInfo)
     auto vertexBuffer = d->vertexBuffers.at(i);
 
     OpenGLFBO* fbo = tpGetMapValue(map()->buffers().storedBuffers(), window.fboName, nullptr);
-    if(!fbo) {
-      fbo = tpGetMapValue(map()->intermediateBuffers(), window.fboName, nullptr);
+//    if(!fbo)
+//    {
+//      fbo = tpGetMapValue(map()->intermediateBuffers(), window.fboName, nullptr);
       if(!fbo)
         continue;
-    }
+//    }
 
     GLuint textureID{0};
     switch(window.source)

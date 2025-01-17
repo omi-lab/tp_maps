@@ -1,29 +1,23 @@
 #include "tp_maps/layers/PostSelectionLayer.h"
 
+#include "tp_utils/DebugUtils.h"
+
 namespace tp_maps
 {
 
 //##################################################################################################
 struct PostSelectionLayer::Private
 {
-  tp_utils::StringID selectionOutput{"Selection output"};
-  tp_maps::RenderPass selectionRenderPass{PostSelectionLayer::selectionRenderPass()};
-  tp_maps::RenderFromStage renderFromStageMask;
-
-  //################################################################################################
-  Private(size_t stageMask):
-    renderFromStageMask(tp_maps::RenderFromStage::Stage, stageMask)
-  {
-  }
+  size_t selectedCount{0};
 };
 
+
 //##################################################################################################
-PostSelectionLayer::PostSelectionLayer(const RenderPass& customRenderPass, size_t stageMask, size_t stageUpdate):
-  PostLayer(customRenderPass),
-  d(new Private(stageMask))
+PostSelectionLayer::PostSelectionLayer():
+  PostLayer(RenderPass(tp_maps::RenderPass::Custom, tp_maps::selectionPassSID())),
+  d(new Private())
 {
-  TP_UNUSED(stageUpdate);
-  d->selectionRenderPass.postLayer = this;
+
 }
 
 //##################################################################################################
@@ -33,15 +27,31 @@ PostSelectionLayer::~PostSelectionLayer()
 }
 
 //##################################################################################################
-tp_maps::RenderPass PostSelectionLayer::selectionRenderPass()
+const tp_utils::StringID& PostSelectionLayer::selectionMaskFBO() const
 {
-  return {tp_maps::RenderPass::Custom, tp_maps::selectionPassSID()};
+  return tp_maps::selectionPassSID();
 }
 
 //##################################################################################################
-tp_maps::RenderFromStage PostSelectionLayer::renderFromStageMask() const
+void PostSelectionLayer::incrementSelectedCount()
 {
-  return d->renderFromStageMask;
+  d->selectedCount++;
+  update(stage());
+  selectedCountChanged();
+}
+
+//##################################################################################################
+void PostSelectionLayer::decrementSelectedCount()
+{
+  d->selectedCount--;
+  update(stage());
+  selectedCountChanged();
+}
+
+//##################################################################################################
+size_t PostSelectionLayer::selectedCount() const
+{
+  return d->selectedCount;
 }
 
 //##################################################################################################
@@ -50,29 +60,24 @@ void PostSelectionLayer::addRenderPasses(std::vector<tp_maps::RenderPass>& rende
   if(bypass())
     return;
 
-  if(!containsPass(renderPasses, d->selectionRenderPass))
-  {
-    auto inputFBO = findInputFBO(renderPasses);
-    renderPasses.emplace_back(d->renderFromStageMask);
-    renderPasses.emplace_back(tp_maps::RenderPass::SwapToFBO, tp_maps::selectionPassSID());
-    renderPasses.emplace_back(d->selectionRenderPass);
-    renderPasses.emplace_back(tp_maps::RenderPass::SwapToFBO, d->selectionOutput);
-    renderPasses.emplace_back(tp_maps::RenderPass::BlitFromFBO, inputFBO);
-  }
-
-  renderPasses.emplace_back(defaultRenderPass());
+  renderPasses.emplace_back(tp_maps::RenderPass::PushFBOs);
+  renderPasses.emplace_back(tp_maps::RenderPass::SwapToFBO, selectionMaskFBO());
+  renderPasses.emplace_back(defaultRenderPass());  
+  renderPasses.emplace_back(tp_maps::RenderPass::PopFBOs);
 }
 
 //##################################################################################################
 void PostSelectionLayer::prepareForRenderPass(const tp_maps::RenderPass& renderPass)
 {
-  if(d->selectionRenderPass == renderPass)
-  {
-    glDepthMask(true);
-    glEnable(GL_DEPTH_TEST);
-  }
-  else
-    tp_maps::PostLayer::prepareForRenderPass(renderPass);
+  TP_UNUSED(renderPass);
+  glDepthMask(true);
+  glEnable(GL_DEPTH_TEST);
+}
+
+//##################################################################################################
+void PostSelectionLayer::render(RenderInfo& renderInfo)
+{
+  TP_UNUSED(renderInfo);
 }
 
 }

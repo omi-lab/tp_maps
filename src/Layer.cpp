@@ -448,28 +448,31 @@ void Layer::subviewResized(int w, int h)
 }
 
 //##################################################################################################
-void Layer::update(RenderFromStage renderFromStage)
+void Layer::update(const RenderFromStage& renderFromStage)
 {
-  if(d->map)
+  if(!d->map)
+    return;
+
+  if(!d->onlyInSubviews.empty())
+    d->map->update(renderFromStage, d->onlyInSubviews);
+
+  else
   {
-    if(!d->onlyInSubviews.empty())
-      d->map->update(renderFromStage, d->onlyInSubviews);
+    std::vector<tp_utils::StringID> subviews = d->map->allSubviewNames();
 
-    else
-    {
-      std::vector<tp_utils::StringID> subviews = d->map->allSubviewNames();
+    for(const auto& excluded : d->excludeFromSubviews)
+      tpRemoveOne(subviews, excluded);
 
-      for(const auto& excluded : d->excludeFromSubviews)
-        tpRemoveOne(subviews, excluded);
-
-      d->map->update(renderFromStage, subviews);
-    }
+    d->map->update(renderFromStage, subviews);
   }
 }
 
 //##################################################################################################
-void Layer::update(RenderFromStage renderFromStage, const std::vector<tp_utils::StringID>& subviews)
+void Layer::update(const RenderFromStage& renderFromStage, const std::vector<tp_utils::StringID>& subviews)
 {
+  if(!d->map)
+    return;
+
   d->map->update(renderFromStage, subviews);
 }
 

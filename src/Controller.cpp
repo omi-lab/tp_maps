@@ -160,7 +160,7 @@ Controller::~Controller()
 }
 
 //##################################################################################################
-void Controller::update(RenderFromStage renderFromStage)
+void Controller::update(const RenderFromStage& renderFromStage)
 {
   if(d->map)
   {

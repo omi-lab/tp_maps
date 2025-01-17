@@ -289,11 +289,10 @@ protected:
   virtual void subviewResized(int w, int h);
 
   //################################################################################################
-  //! Calls update on the map
-  void update(RenderFromStage renderFromStage=RenderFromStage::Full);
+  void update(const RenderFromStage& renderFromStage=RenderFromStage::Full);
 
   //################################################################################################
-  void update(RenderFromStage renderFromStage, const std::vector<tp_utils::StringID>& subviews);
+  void update(const RenderFromStage& renderFromStage, const std::vector<tp_utils::StringID>& subviews);
 
   //################################################################################################
   void callAsync(const std::function<void()>& callback);

@@ -102,7 +102,6 @@ TP_DECLARE_ID(             backgroundShaderSID,                "Background shade
 TP_DECLARE_ID(        backgroundImageShaderSID,          "Background image shader");
 TP_DECLARE_ID(      backgroundPatternShaderSID,        "Background pattern shader");
 TP_DECLARE_ID(                selectionPassSID,                   "Selection pass");
-TP_DECLARE_ID(                pulsatingPassSID,                   "Pulsating pass");
 TP_DECLARE_ID(                     selectedSID,                         "Selected");
 
 //##################################################################################################
@@ -123,6 +122,7 @@ struct RenderFromStage
 
   RenderFromStageType type;
   size_t index{0};
+  tp_utils::StringID stageName;
 
   //################################################################################################
   RenderFromStage()
@@ -139,19 +139,29 @@ struct RenderFromStage
   }
 
   //################################################################################################
-  bool operator==(RenderFromStageType type_)
+  RenderFromStage(const tp_utils::StringID& stageName_):
+    type(Stage),
+    index(0),
+    stageName(stageName_)
+  {
+
+  }
+
+
+  //################################################################################################
+  bool operator==(RenderFromStageType type_) const
   {
     return type == type_;
   }
 
   //################################################################################################
-  bool operator!=(RenderFromStageType type_)
+  bool operator!=(RenderFromStageType type_) const
   {
     return type != type_;
   }
 
   //################################################################################################
-  bool operator<(RenderFromStage other)
+  bool operator<(const RenderFromStage& other) const
   {
     if(type<other.type)
       return true;
@@ -175,30 +185,33 @@ struct RenderPass
     RenderSubview,     //!< Run a full render for the subview specified by name.
     PreRender,         //!< Executed at the start of a render to update models.
     LightFBOs,         //!< Render depth maps from the point of view of lights to FBOs.
-    PrepareDrawFBO,    //!< Prepare the initial draw FBO ready for drawing to (read FBO is not ready).
 
-    // Only fbo 0 is multisampled.
     SwapToFBO,         //!< Swap the draw and read FBO (draw=FBO n, read=previous draw FBO).
-    SwapToFBONoClear,  //!< Same as above but does not clear the draw depth or color buffers.
+    SwapToMSAA,        //!< Same as SwapToFBO but the draw FBO will have MSAA enabled. (If MSAA is enabled)
+    SwapToOriginalFBO, //!< Swap back to the original FBO provided by the window manager (draw=null, read=previous draw FBO).
     BlitFromFBO,       //!< Blit from FBO n into the current draw buffer. Multisample.
+    Blit,              //!< Blit read to draw.
+    PushFBOs,          //!< Save the draw and read FBOs.
+    PopFBOs,           //!< Restore the draw and read FBOs.
 
     Background,        //!< Render background without writing to the depth buffer.
     Normal,            //!< Render normal 3D geometry.
     Transparency,      //!< Render transparent 3D geometry.
-    FinishDrawFBO,     //!< Swap the draw into the read FBO and bind the default FBO.
     Text,              //!< Render text on top of scene.
     GUI3D,             //!< Render UI on top of scene and text, similar to GUI but has a depth buffer.
     GUI,               //!< Render UI on top of scene and text.
+
     Picking,           //!< Picking render.
     PickingGUI3D,      //!< Picking render for GUI3D geometry.
+
     Custom,            //!< A custom named render pass.
     Delegate,          //!< Delegate to the postLayer to populate render passes.
 
-    Stage              //!< A custom named stage, used to render from partway through the pipeline.
+    Stage             //!< A custom named stage, used to render from partway through the pipeline.
   };
 
   RenderPassType type{RenderPassType::PreRender};
-  tp_utils::StringID name{defaultSID()};
+  tp_utils::StringID name{};
   size_t index{0};
   PostLayer* postLayer{nullptr};
 
@@ -234,6 +247,7 @@ struct RenderPass
   //################################################################################################
   RenderPass(const RenderFromStage& renderFromStage):
     type(Stage),
+    name(renderFromStage.stageName),
     index(renderFromStage.index)
   {
 
@@ -282,25 +296,27 @@ struct RenderPass
   {
     switch(type)
     {
-      case RenderSubview    : return "RenderSubview "    + getNameString();
-      case PreRender        : return "PreRender "        + getNameString();
-      case LightFBOs        : return "LightFBOs "        + getNameString();
-      case PrepareDrawFBO   : return "PrepareDrawFBO "   + getNameString();
-      case SwapToFBO        : return "SwapToFBO "        + getNameString();
-      case SwapToFBONoClear : return "SwapToFBONoClear " + getNameString();
-      case BlitFromFBO      : return "BlitFromFBO "      + getNameString();
-      case Background       : return "Background "       + getNameString();
-      case Normal           : return "Normal "           + getNameString();
-      case Transparency     : return "Transparency "     + getNameString();
-      case FinishDrawFBO    : return "FinishDrawFBO "    + getNameString();
-      case Text             : return "Text "             + getNameString();
-      case GUI3D            : return "GUI3D "            + getNameString();
-      case GUI              : return "GUI "              + getNameString();
-      case Picking          : return "Picking "          + getNameString();
-      case PickingGUI3D     : return "PickingGUI3D "     + getNameString();
-      case Custom           : return "Custom "           + getNameString();
-      case Delegate         : return "Delegate "         + getNameString();
-      case Stage            : return "Stage "            + getNameString();
+      case RenderSubview    : return "RenderSubview    : " + getNameString();
+      case PreRender        : return "PreRender        : -";
+      case LightFBOs        : return "LightFBOs        : -";
+      case SwapToFBO        : return "SwapToFBO        : " + getNameString();
+      case SwapToMSAA       : return "SwapToMSAA       : " + getNameString();
+      case SwapToOriginalFBO: return "SwapToOriginalFBO: -";
+      case BlitFromFBO      : return "BlitFromFBO      : " + getNameString();
+      case Blit             : return "Blit             : -";
+      case PushFBOs         : return "PushFBOs         : -";
+      case PopFBOs          : return "PopFBOs          : -";
+      case Background       : return "Background       : -";
+      case Normal           : return "Normal           : -";
+      case Transparency     : return "Transparency     : -";
+      case Text             : return "Text             : -";
+      case GUI3D            : return "GUI3D            : -";
+      case GUI              : return "GUI              : -";
+      case Picking          : return "Picking          : -";
+      case PickingGUI3D     : return "PickingGUI3D     : -";
+      case Custom           : return "Custom           : " + getNameString();
+      case Delegate         : return "Delegate         : " + getNameString();
+      case Stage            : return "Stage            : ***(" + std::to_string(index) + ")*** " + name.toString();
     }
 
     return "";
@@ -551,6 +567,9 @@ enum class MouseEventType
   Click,    //! The mouse has been pressed and released.
   DragStart //! The mouse has been pressed and moved.
 };
+
+//##################################################################################################
+std::string mouseEventTypeToString(MouseEventType mouseEventType);
 
 //##################################################################################################
 enum class Button : size_t

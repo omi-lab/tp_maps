@@ -17,6 +17,8 @@
 #include "tp_maps/subsystems/open_gl/OpenGLBuffers.h"
 #include "tp_maps/color_management/BasicColorManagement.h"
 
+#include "tp_image_utils/SaveImages.h"
+
 #include "tp_math_utils/Plane.h"
 #include "tp_math_utils/Ray.h"
 #include "tp_math_utils/Intersection.h"
@@ -76,7 +78,7 @@ class ScopedDebug_lt
   tp_utils::Profiler* m_profiler;
 #endif
 
-  const std::string m_name;  
+  const std::string m_name;
 
 #ifdef TP_ENABLE_FUNCTION_TIME
   const char* m_file;
@@ -168,10 +170,6 @@ struct EventHandler_lt
   std::unordered_set<int32_t> m_hasKeyFocusFor;
 };
 }
-}
-
-namespace tp_maps
-{
 
 //##################################################################################################
 struct Map::Private
@@ -216,8 +214,10 @@ struct Map::Private
   // render pipeline toggles between the second and third for the remaining post processing steps.
   std::unordered_map<FBOKey, std::unique_ptr<OpenGLFBO>> intermediateFBOs;
 
-  OpenGLFBO* currentReadFBO{intermediateFBO(defaultSID())};
-  OpenGLFBO* currentDrawFBO{intermediateFBO(defaultSID())};
+  OpenGLFBO* currentReadFBO{nullptr};
+  OpenGLFBO* currentDrawFBO{nullptr};
+
+  std::vector<std::pair<OpenGLFBO*, OpenGLFBO*>> fboStack;
 
   std::vector<tp_math_utils::Light> lights;
   std::vector<OpenGLFBO> lightBuffers;
@@ -326,7 +326,10 @@ struct Map::Private
   {
     auto& intermediateFBO = intermediateFBOs[{name, currentSubview}];
     if(!intermediateFBO)
+    {
       intermediateFBO = std::make_unique<OpenGLFBO>();
+      intermediateFBO->name = name;
+    }
     return intermediateFBO.get();
   }
 
@@ -400,16 +403,17 @@ Map::Map(bool enableDepthBuffer):
   d->currentSubview->m_controller = new FlatController(this);
 
   d->currentSubview->setRenderPassesInternal({
-                                               tp_maps::RenderPass::LightFBOs     ,
-                                               tp_maps::RenderPass::PrepareDrawFBO,
-                                               tp_maps::RenderPass::Background    ,
-                                               tp_maps::RenderPass::Normal        ,
-                                               tp_maps::RenderPass::Transparency  ,
-                                               tp_maps::RenderPass::FinishDrawFBO ,
-                                               new tp_maps::PostGammaLayer()      ,
-                                               tp_maps::RenderPass::Text          ,
-                                               tp_maps::RenderPass::GUI3D          ,
-                                               tp_maps::RenderPass::GUI
+                                               tp_maps::RenderPass::LightFBOs                 ,
+                                               {tp_maps::RenderPass::SwapToMSAA, defaultSID()},
+                                               tp_maps::RenderPass::Background                ,
+                                               tp_maps::RenderPass::Normal                    ,
+                                               tp_maps::RenderPass::Transparency              ,
+                                               new tp_maps::PostGammaLayer()                  ,
+                                               tp_maps::RenderPass::Text                      ,
+                                               tp_maps::RenderPass::GUI3D                     ,
+                                               tp_maps::RenderPass::GUI                       ,
+                                               tp_maps::RenderPass::SwapToOriginalFBO         ,
+                                               tp_maps::RenderPass::Blit
                                              });
 }
 
@@ -658,12 +662,9 @@ const OpenGLBuffers& Map::buffers() const
 }
 
 //##################################################################################################
-std::unordered_map<std::string, OpenGLFBO*> Map::intermediateBuffers() const
+const std::unordered_map<FBOKey, std::unique_ptr<OpenGLFBO>>& Map::intermediateBuffers() const
 {
-  std::unordered_map<std::string, OpenGLFBO*> output;
-  for (auto const & [key, fbo] : d->intermediateFBOs)
-    output.emplace(key.name.toString(), fbo.get());
-  return output;
+  return d->intermediateFBOs;
 }
 
 //################################################################################################
@@ -754,6 +755,8 @@ void Map::invalidateBuffers()
   d->shaders.clear();
 
   d->intermediateFBOs.clear();
+  d->currentReadFBO = nullptr;
+  d->currentDrawFBO = nullptr;
 
   d->buffers.invalidateBuffer(d->pickingBuffer);
   d->buffers.invalidateBuffer(d->renderToImageBuffer);
@@ -1188,10 +1191,11 @@ PickingResult* Map::performPicking(const tp_utils::StringID& pickingType, const 
   GLint originalFrameBuffer = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
 
+  d->pickingBuffer.name = "pickingBuffer";
+
   //------------------------------------------------------------------------------------------------
   // Configure the frame buffer that the picking values will be rendered to.
-  if(!d->buffers.prepareBuffer("pickingBuffer",
-                               d->pickingBuffer,
+  if(!d->buffers.prepareBuffer(d->pickingBuffer,
                                d->currentSubview->m_width,
                                d->currentSubview->m_height,
                                CreateColorBuffer::Yes,
@@ -1351,9 +1355,10 @@ bool Map::renderToImage(size_t width, size_t height, HDR hdr, const std::functio
 
   DEBUG_printOpenGLError("renderToImage A");
 
+  d->renderToImageBuffer.name = "renderToImage";
+
   // Configure the frame buffer that the image will be rendered to.
-  if(!d->buffers.prepareBuffer("renderToImage",
-                               d->renderToImageBuffer,
+  if(!d->buffers.prepareBuffer(d->renderToImageBuffer,
                                width,
                                height,
                                CreateColorBuffer::Yes,
@@ -1419,15 +1424,18 @@ void Map::deleteShader(const tp_utils::StringID& name)
 }
 
 //##################################################################################################
-const OpenGLFBO& Map::currentReadFBO()
+const OpenGLFBO* Map::currentReadFBO()
 {
-  return *d->currentReadFBO;
+  if(d->currentReadFBO && d->currentReadFBO->blitRequired)
+    d->buffers.swapMultisampledBuffer(*d->currentReadFBO);
+
+  return d->currentReadFBO;
 }
 
 //##################################################################################################
-const OpenGLFBO& Map::currentDrawFBO()
+const OpenGLFBO* Map::currentDrawFBO()
 {
-  return *d->currentDrawFBO;
+  return d->currentDrawFBO;
 }
 
 //##################################################################################################
@@ -1455,18 +1463,23 @@ glm::vec2 Map::screenSize() const
 }
 
 //##################################################################################################
-void Map::update(RenderFromStage renderFromStage, const std::vector<tp_utils::StringID>& subviews)
+void Map::update(const RenderFromStage& renderFromStage, const std::vector<tp_utils::StringID>& subviews)
 {
   if(inPaint())
     return;
+
+  RenderFromStage s=renderFromStage;
 
   for(auto& subview : d->allSubviews)
   {
     if(tpContains(subviews, subview->m_name))
     {
-      if(renderFromStage<subview->m_renderFromStage)
+      if(s.stageName.isValid())
+        s.index = subview->getStageIndex(s.stageName);
+
+      if(s<subview->m_renderFromStage)
       {
-        subview->m_renderFromStage = renderFromStage;
+        subview->m_renderFromStage = s;
         subviewUpdateRequested(subview->m_name);
       }
     }
@@ -1474,7 +1487,7 @@ void Map::update(RenderFromStage renderFromStage, const std::vector<tp_utils::St
 }
 
 //##################################################################################################
-void Map::update(RenderFromStage renderFromStage, Controller* controller)
+void Map::update(const RenderFromStage& renderFromStage, Controller* controller)
 {
   for(const auto& subview : d->allSubviews)
     if(subview->m_controller == controller)
@@ -1563,14 +1576,18 @@ void Map::paintGLNoMakeCurrent()
   for(const auto& renderPass : d->currentSubview->m_renderPasses)
   {
     if(renderPass.type == RenderPass::Delegate)
+    {
+      d->currentSubview->m_computedRenderPasses.push_back(renderPass.postLayer->stage());
       renderPass.postLayer->addRenderPasses(d->currentSubview->m_computedRenderPasses);
+    }
     else
       d->currentSubview->m_computedRenderPasses.push_back(renderPass);
   }
 #if 0
+  tpWarning() << "======== Computed render passes ========";
   int ctr=0;
   for(const auto& rp : d->currentSubview->m_computedRenderPasses)
-    tpWarning() << "Render pass: " << rp.describe() << " index: " << ctr++;
+    tpWarning() << tp_utils::fixedWidthKeepRight(std::to_string(ctr++), 3, ' ') << " Render pass: " << rp.describe();
 #endif
 #ifdef TP_FBO_SUPPORTED
   GLint originalFrameBuffer = 0;
@@ -1600,11 +1617,28 @@ void Map::paintGLNoMakeCurrent()
 //##################################################################################################
 size_t Map::skipRenderPasses(Subview* subview)
 {
+  d->currentReadFBO = nullptr;
+  d->currentDrawFBO = nullptr;
+
+#ifdef TP_DEBUG_RENDER_PASSES
+  tpWarning() << "########################################";
+  tpWarning() << "======== Skip render passes ========";
+#endif
+
   size_t rp=0;
   if(d->currentSubview->m_renderFromStage != RenderFromStage::Full && d->currentSubview->m_renderFromStage != RenderFromStage::Reset)
   {
     for(; rp<subview->m_computedRenderPasses.size(); rp++)
     {
+
+#ifdef TP_DEBUG_RENDER_PASSES
+      auto f=[&, rp]
+      {
+        describeRenderPass(rp, subview->m_computedRenderPasses.at(rp), d->currentReadFBO, d->currentDrawFBO);
+      };
+      TP_CLEANUP(f);
+#endif
+
       auto renderPass = subview->m_computedRenderPasses.at(rp);
 
 #ifdef TP_FBO_SUPPORTED
@@ -1615,13 +1649,6 @@ size_t Map::skipRenderPasses(Subview* subview)
         case RenderPass::LightFBOs: //--------------------------------------------------------------
         break;
 
-        case RenderPass::PrepareDrawFBO: //---------------------------------------------------------
-        {
-          d->currentDrawFBO = d->intermediateFBO(defaultSID());
-          d->currentReadFBO = d->intermediateFBO(defaultSID());
-          break;
-        }
-
         case RenderPass::SwapToFBO: //--------------------------------------------------------------
         {
           d->currentReadFBO = d->currentDrawFBO;
@@ -1629,25 +1656,41 @@ size_t Map::skipRenderPasses(Subview* subview)
           break;
         }
 
-        case RenderPass::SwapToFBONoClear: //-------------------------------------------------------
+        case RenderPass::SwapToMSAA: //-------------------------------------------------------------
         {
           d->currentReadFBO = d->currentDrawFBO;
           d->currentDrawFBO = d->intermediateFBO(renderPass.name);
           break;
         }
 
-        case RenderPass::BlitFromFBO: //------------------------------------------------------------
-        case RenderPass::Background: //-------------------------------------------------------------
-        case RenderPass::Normal: //-----------------------------------------------------------------
-        case RenderPass::Transparency: //-----------------------------------------------------------
-        break;
-
-        case RenderPass::FinishDrawFBO: //----------------------------------------------------------
+        case RenderPass::SwapToOriginalFBO: //------------------------------------------------------
         {
-          std::swap(d->currentDrawFBO, d->currentReadFBO);
+          d->currentReadFBO = d->currentDrawFBO;
+          d->currentDrawFBO = nullptr;
           break;
         }
 
+        case RenderPass::BlitFromFBO: //------------------------------------------------------------
+        case RenderPass::Blit: //-------------------------------------------------------------------
+        break;
+
+        case RenderPass::PushFBOs: //---------------------------------------------------------------
+        {
+          d->fboStack.emplace_back(d->currentReadFBO, d->currentDrawFBO);
+          break;
+        }
+
+        case RenderPass::PopFBOs: //----------------------------------------------------------------
+        {
+          d->currentReadFBO = d->fboStack.back().first;
+          d->currentDrawFBO = d->fboStack.back().second;
+          d->fboStack.pop_back();
+          break;
+        }
+
+        case RenderPass::Background: //-------------------------------------------------------------
+        case RenderPass::Normal: //-----------------------------------------------------------------
+        case RenderPass::Transparency: //-----------------------------------------------------------
         case RenderPass::Text: //-------------------------------------------------------------------
         case RenderPass::GUI3D: //------------------------------------------------------------------
         case RenderPass::GUI: //--------------------------------------------------------------------
@@ -1682,8 +1725,20 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
   PRINT_FUNCTION_NAME("Map::executeRenderPasses");
   PRF_SCOPED_RANGE(d->profiler.get(), "executeRenderPasses", {255,255,255});
 
+#ifdef TP_DEBUG_RENDER_PASSES
+  tpWarning() << "======== Execute render passes ========";
+#endif
+
   for(; rp<subview->m_computedRenderPasses.size(); rp++)
   {
+
+#ifdef TP_DEBUG_RENDER_PASSES
+    TP_CLEANUP([&]
+    {
+      describeRenderPass(rp, subview->m_computedRenderPasses.at(rp), d->currentReadFBO, d->currentDrawFBO);
+    });
+#endif
+
     auto renderPass = subview->m_computedRenderPasses.at(rp);
     try
     {
@@ -1728,10 +1783,10 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
           {
             const auto& light = d->lights.at(i);
             auto& lightBuffer = d->lightBuffers.at(i);
+            lightBuffer.name = std::string( "lightBuffer_" ) + std::to_string(i);
 
             DEBUG_printOpenGLError("RenderPass::LightFBOs prepare buffers (A)");
-            if(!d->buffers.prepareBuffer(std::string( "lightBuffer_" ) + std::to_string(i),
-                                         lightBuffer,
+            if(!d->buffers.prepareBuffer(lightBuffer,
                                          d->lightTextureSize,
                                          d->lightTextureSize,
                                          CreateColorBuffer::No,
@@ -1762,52 +1817,22 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
           break;
         }
 
-        case RenderPass::PrepareDrawFBO: //---------------------------------------------------------
-        {
-#ifdef TP_FBO_SUPPORTED
-          DEBUG_scopedDebug("RenderPass::PrepareDrawFBO", TPPixel(0, 255, 0));
-          d->renderInfo.hdr = hdr();
-          d->renderInfo.extendedFBO = extendedFBO();
-          glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
-          d->currentDrawFBO = d->intermediateFBO(defaultSID());
-          d->currentReadFBO = d->intermediateFBO(defaultSID());
-
-          if(!d->buffers.prepareBuffer("currentDraw",
-                                       *d->currentDrawFBO,
-                                       d->currentSubview->m_width,
-                                       d->currentSubview->m_height,
-                                       CreateColorBuffer::Yes,
-                                       Multisample::Yes,
-                                       hdr(),
-                                       extendedFBO(),
-                                       true))
-          {
-            Errors::printOpenGLError("RenderPass::PrepareDrawFBO");
-            return;
-          }
-#endif
-          break;
-        }
-
         case RenderPass::SwapToFBO: //--------------------------------------------------------------
+        case RenderPass::SwapToMSAA: //-------------------------------------------------------------
         {
 #ifdef TP_FBO_SUPPORTED
-          DEBUG_scopedDebug("RenderPass::SwapToFBO " + renderPass.getNameString(), TPPixel(0, 0, 255));
-
-          Multisample multisample = renderPass.index==0?Multisample::Yes:Multisample::No;
+          DEBUG_scopedDebug((renderPass.type==RenderPass::SwapToMSAA?"RenderPass::SwapToFBO ":"RenderPass::SwapToMSAA ") + renderPass.getNameString(), TPPixel(0, 0, 255));
 
           d->renderInfo.hdr = hdr();
           d->renderInfo.extendedFBO = extendedFBO();
-          d->buffers.swapMultisampledBuffer(*d->currentDrawFBO);
           d->currentReadFBO = d->currentDrawFBO;
           d->currentDrawFBO = d->intermediateFBO(renderPass.name);
 
-          if(!d->buffers.prepareBuffer("currentDraw",
-                                       *d->currentDrawFBO,
+          if(!d->buffers.prepareBuffer(*d->currentDrawFBO,
                                        d->currentSubview->m_width,
                                        d->currentSubview->m_height,
                                        CreateColorBuffer::Yes,
-                                       multisample,
+                                       renderPass.type==RenderPass::SwapToMSAA?Multisample::Yes:Multisample::No,
                                        hdr(),
                                        extendedFBO(),
                                        true))
@@ -1819,42 +1844,25 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
           break;
         }
 
-        case RenderPass::SwapToFBONoClear: //-------------------------------------------------------
+        case RenderPass::SwapToOriginalFBO: //------------------------------------------------------
         {
 #ifdef TP_FBO_SUPPORTED
-          DEBUG_scopedDebug("RenderPass::SwapToFBONoClear " + renderPass.getNameString(), TPPixel(255, 255, 0));
-
-          Multisample multisample = renderPass.name==defaultSID()?Multisample::Yes:Multisample::No;
-
-          d->renderInfo.hdr = hdr();
-          d->renderInfo.extendedFBO = extendedFBO();
-          d->buffers.swapMultisampledBuffer(*d->currentDrawFBO);
+          DEBUG_scopedDebug("RenderPass::SwapToOriginalFBO " + renderPass.getNameString(), TPPixel(255, 255, 0));
           d->currentReadFBO = d->currentDrawFBO;
-          d->currentDrawFBO = d->intermediateFBO(renderPass.name);
+          d->currentDrawFBO = nullptr;
 
-          if(!d->buffers.prepareBuffer("currentDraw",
-                                       *d->currentDrawFBO,
-                                       d->currentSubview->m_width,
-                                       d->currentSubview->m_height,
-                                       CreateColorBuffer::Yes,
-                                       multisample,
-                                       hdr(),
-                                       extendedFBO(),
-                                       false))
-          {
-            Errors::printOpenGLError("RenderPass::SwapDrawFBO " + renderPass.getNameString() + "NoClear");
-            return;
-          }
+          glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
 #endif
           break;
         }
 
         case RenderPass::BlitFromFBO: //------------------------------------------------------------
+        case RenderPass::Blit: //-------------------------------------------------------------------
         {
 #ifdef TP_FBO_SUPPORTED
           DEBUG_scopedDebug("RenderPass::BlitFromFBO " + renderPass.getNameString(), TPPixel(0, 255, 255));
 
-          OpenGLFBO* readFBO = d->intermediateFBO(renderPass.name);
+          OpenGLFBO* readFBO = (renderPass.type==RenderPass::BlitFromFBO)?d->intermediateFBO(renderPass.name):d->currentReadFBO;
 
 #ifdef TP_BLIT_WITH_SHADER
           // Kludge to get round a crash in glBlitFramebuffer on Chrome.
@@ -1915,6 +1923,27 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
           break;
         }
 
+        case RenderPass::PushFBOs: //---------------------------------------------------------------
+        {
+          d->fboStack.emplace_back(d->currentReadFBO, d->currentDrawFBO);
+          break;
+        }
+
+        case RenderPass::PopFBOs: //----------------------------------------------------------------
+        {
+          d->currentReadFBO = d->fboStack.back().first;
+
+          if(d->currentDrawFBO != d->fboStack.back().second)
+          {
+            d->currentDrawFBO = d->fboStack.back().second;
+            if(d->currentDrawFBO)
+              d->buffers.bindBuffer(*d->currentDrawFBO);
+          }
+
+          d->fboStack.pop_back();
+          break;
+        }
+
         case RenderPass::Background: //-------------------------------------------------------------
         {
           DEBUG_scopedDebug("RenderPass::Background", TPPixel(255, 0, 255));
@@ -1941,19 +1970,6 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
           glDepthFunc(GL_LESS);
           glDepthMask(GL_TRUE);
           d->render();
-          break;
-        }
-
-        case RenderPass::FinishDrawFBO: //----------------------------------------------------------
-        {
-          DEBUG_scopedDebug("RenderPass::FinishDrawFBO", TPPixel(50, 200, 255));
-#ifdef TP_FBO_SUPPORTED
-          d->renderInfo.hdr = HDR::No;
-          d->renderInfo.extendedFBO = ExtendedFBO::No;
-          d->buffers.swapMultisampledBuffer(*d->currentDrawFBO);
-          std::swap(d->currentDrawFBO, d->currentReadFBO);
-          glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
-#endif
           break;
         }
 
@@ -2359,6 +2375,18 @@ void Map::updateEventHandlerCallbacks(size_t eventHandlerId,
       break;
     }
   }
+}
+
+//##################################################################################################
+void describeRenderPass(size_t rp, const RenderPass& renderPass, OpenGLFBO* currentReadFBO, OpenGLFBO* currentDrawFBO)
+{
+  tpWarning() << tp_utils::fixedWidthKeepRight(std::to_string(rp), 3, ' ')
+              << " Render pass: "
+              << tp_utils::fixedWidthKeepLeft(renderPass.describe(), 49, ' ')
+              << " Read: "
+              << tp_utils::fixedWidthKeepLeft(currentReadFBO?currentReadFBO->name.toString():std::string(), 30, ' ')
+              << " Draw: "
+              << tp_utils::fixedWidthKeepLeft(currentDrawFBO?currentDrawFBO->name.toString():std::string(), 30, ' ');
 }
 
 }

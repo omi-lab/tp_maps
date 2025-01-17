@@ -24,7 +24,7 @@ struct OpenGLBuffers::Private
   size_t maxSamples{1};
   size_t samples{1};
 
-  std::unordered_map<std::string, OpenGLFBO*> storedBuffers;
+  std::unordered_map<tp_utils::StringID, OpenGLFBO*> storedBuffers;
 
   //################################################################################################
   Private(Map* map_):
@@ -261,8 +261,7 @@ struct OpenGLBuffers::Private
 
   \return true if we managed to create a functional FBO.
   */
-  bool prepareBuffer(const std::string& name,
-                     OpenGLFBO& buffer,
+  bool prepareBuffer(OpenGLFBO& buffer,
                      size_t width,
                      size_t height,
                      CreateColorBuffer createColorBuffer,
@@ -272,6 +271,8 @@ struct OpenGLBuffers::Private
                      bool clear)
   {
     DEBUG_printOpenGLError("prepareBuffer Start");
+
+    assert(buffer.name.isValid());
 
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
     if(updateSamplesRequired)
@@ -286,6 +287,8 @@ struct OpenGLBuffers::Private
         tpWarning() << "Max samples set to: " << samples;
     }
 #endif
+
+    buffer.blitRequired = false;
 
     multisample = (multisample==Multisample::Yes && (samples>1))?Multisample::Yes:Multisample::No;
 
@@ -309,11 +312,8 @@ struct OpenGLBuffers::Private
     DEBUG_printOpenGLError("prepareBuffer glBindFramebuffer first");
 
     // Some versions of OpenGL must have a color buffer even if we are not going to use it.
-    if(createColorBuffer == CreateColorBuffer::No)
-    {
-      if(map->shaderProfile() == ShaderProfile::GLSL_100_ES)
-        createColorBuffer = CreateColorBuffer::Yes;
-    }
+    if(map->shaderProfile() == ShaderProfile::GLSL_100_ES)
+      createColorBuffer = CreateColorBuffer::Yes;
 
     if(createColorBuffer == CreateColorBuffer::Yes)
     {
@@ -354,6 +354,7 @@ struct OpenGLBuffers::Private
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
     if(multisample == Multisample::Yes)
     {
+      buffer.blitRequired = true;
       glEnable(GL_MULTISAMPLE);
 
       if(!buffer.multisampleFrameBuffer)
@@ -410,8 +411,7 @@ struct OpenGLBuffers::Private
 
     DEBUG_printOpenGLError("prepareBuffer end");
 
-
-    storedBuffers[name] = &buffer;
+    storedBuffers[buffer.name] = &buffer;
 
     return true;
   }
@@ -421,6 +421,7 @@ struct OpenGLBuffers::Private
   //before we can actually use it. (thanks OpenGL)
   void swapMultisampledBuffer(OpenGLFBO& buffer)
   {
+    buffer.blitRequired = false;
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
     if(buffer.multisample == Multisample::Yes)
     {
@@ -593,18 +594,16 @@ OpenGLBuffers::~OpenGLBuffers()
 }
 
 //##################################################################################################
-bool OpenGLBuffers::prepareBuffer(const std::string& name,
-                            OpenGLFBO& buffer,
-                            size_t width,
-                            size_t height,
-                            CreateColorBuffer createColorBuffer,
-                            Multisample multisample,
-                            HDR hdr,
-                            ExtendedFBO extendedFBO,
-                            bool clear) const
+bool OpenGLBuffers::prepareBuffer(OpenGLFBO& buffer,
+                                  size_t width,
+                                  size_t height,
+                                  CreateColorBuffer createColorBuffer,
+                                  Multisample multisample,
+                                  HDR hdr,
+                                  ExtendedFBO extendedFBO,
+                                  bool clear) const
 {
-  return d->prepareBuffer(name,
-                          buffer,
+  return d->prepareBuffer(buffer,
                           width,
                           height,
                           createColorBuffer,
@@ -612,6 +611,19 @@ bool OpenGLBuffers::prepareBuffer(const std::string& name,
                           hdr,
                           extendedFBO,
                           clear);
+}
+
+//##################################################################################################
+bool OpenGLBuffers::bindBuffer(OpenGLFBO& buffer) const
+{
+  return d->prepareBuffer(buffer,
+                          buffer.width,
+                          buffer.height,
+                          buffer.textureID!=0?CreateColorBuffer::Yes:CreateColorBuffer::No,
+                          buffer.multisample,
+                          buffer.hdr,
+                          buffer.extendedFBO,
+                          false);
 }
 
 //##################################################################################################
@@ -658,7 +670,7 @@ void OpenGLBuffers::initializeGL()
 }
 
 //##################################################################################################
-std::unordered_map<std::string, OpenGLFBO*> OpenGLBuffers::storedBuffers() const
+const std::unordered_map<tp_utils::StringID, OpenGLFBO*>& OpenGLBuffers::storedBuffers() const
 {
   return d->storedBuffers;
 }
