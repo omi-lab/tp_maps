@@ -156,13 +156,13 @@ struct OpenGLFBO
 
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
   GLuint multisampleFrameBuffer{0};
-  GLuint multisampleTextureID{0};
+  // GLuint multisampleTextureID{0};
 
   GLuint multisampleColorRBO{0};
   GLuint multisampleDepthRBO{0};
 
-  GLuint multisampleNormalsTextureID{0};
-  GLuint multisampleSpecularTextureID{0};
+  // GLuint multisampleNormalsTextureID{0};
+  // GLuint multisampleSpecularTextureID{0};
 
   GLuint multisampleNormalsRBO{0};
   GLuint multisampleSpecularRBO{0};

@@ -186,11 +186,11 @@ bool Errors::printFBOError(OpenGLFBO& buffer, const std::string& description)
                    "  samples:                      " << buffer.samples     << '\n' <<
                #ifdef TP_ENABLE_MULTISAMPLE_FBO
                    "  multisampleFrameBuffer:       " << buffer.multisampleFrameBuffer       << '\n' <<
-                   "  multisampleTextureID:         " << buffer.multisampleTextureID         << '\n' <<
+                   // "  multisampleTextureID:         " << buffer.multisampleTextureID         << '\n' <<
                    "  multisampleColorRBO:          " << buffer.multisampleColorRBO          << '\n' <<
                    "  multisampleDepthRBO:          " << buffer.multisampleDepthRBO          << '\n' <<
-                   "  multisampleNormalsTextureID:  " << buffer.multisampleNormalsTextureID  << '\n' <<
-                   "  multisampleSpecularTextureID: " << buffer.multisampleSpecularTextureID << '\n' <<
+                   // "  multisampleNormalsTextureID:  " << buffer.multisampleNormalsTextureID  << '\n' <<
+                   // "  multisampleSpecularTextureID: " << buffer.multisampleSpecularTextureID << '\n' <<
                    "  multisampleNormalsRBO:        " << buffer.multisampleNormalsRBO        << '\n' <<
                    "  multisampleSpecularRBO:       " << buffer.multisampleSpecularRBO       << '\n' <<
                #endif

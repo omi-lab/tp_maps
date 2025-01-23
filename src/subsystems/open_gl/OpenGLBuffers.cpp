@@ -119,41 +119,41 @@ struct OpenGLBuffers::Private
   }
 
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
-  //################################################################################################
-  void createMultisampleTexture(GLuint& multisampleTextureID, size_t width, size_t height, HDR hdr, Alpha alpha, GLenum attachment)
-  {
-    switch(map->shaderProfile())
-    {
-      case ShaderProfile::GLSL_100_ES: [[fallthrough]];
-      case ShaderProfile::GLSL_300_ES: [[fallthrough]];
-      case ShaderProfile::GLSL_310_ES: [[fallthrough]];
-      case ShaderProfile::GLSL_320_ES:
-      break;
+  // //################################################################################################
+  // void createMultisampleTexture(GLuint& multisampleTextureID, size_t width, size_t height, HDR hdr, Alpha alpha, GLenum attachment)
+  // {
+  //   switch(map->shaderProfile())
+  //   {
+  //     case ShaderProfile::GLSL_100_ES: [[fallthrough]];
+  //     case ShaderProfile::GLSL_300_ES: [[fallthrough]];
+  //     case ShaderProfile::GLSL_310_ES: [[fallthrough]];
+  //     case ShaderProfile::GLSL_320_ES:
+  //     break;
 
-      default:
-      glGenTextures(1, &multisampleTextureID);
-      glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, multisampleTextureID);
+  //     default:
+  //     glGenTextures(1, &multisampleTextureID);
+  //     glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, multisampleTextureID);
 
-      if(hdr == HDR::No)
-      {
-        if(alpha == Alpha::No)
-          glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, TPGLsizei(samples), GL_RGB, TPGLsizei(width), TPGLsizei(height), GL_TRUE);
-        else
-          glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, TPGLsizei(samples), GL_RGBA, TPGLsizei(width), TPGLsizei(height), GL_TRUE);
-      }
-      else
-      {
-        if(alpha == Alpha::No)
-          glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, TPGLsizei(samples), colorFormatF(alpha), TPGLsizei(width), TPGLsizei(height), GL_TRUE);
-        else
-          glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, TPGLsizei(samples), colorFormatF(alpha), TPGLsizei(width), TPGLsizei(height), GL_TRUE);
-      }
+  //     if(hdr == HDR::No)
+  //     {
+  //       if(alpha == Alpha::No)
+  //         glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, TPGLsizei(samples), GL_RGB, TPGLsizei(width), TPGLsizei(height), GL_TRUE);
+  //       else
+  //         glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, TPGLsizei(samples), GL_RGBA, TPGLsizei(width), TPGLsizei(height), GL_TRUE);
+  //     }
+  //     else
+  //     {
+  //       if(alpha == Alpha::No)
+  //         glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, TPGLsizei(samples), colorFormatF(alpha), TPGLsizei(width), TPGLsizei(height), GL_TRUE);
+  //       else
+  //         glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, TPGLsizei(samples), colorFormatF(alpha), TPGLsizei(width), TPGLsizei(height), GL_TRUE);
+  //     }
 
-      glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, multisampleTextureID, 0);
-      break;
-    }
-    DEBUG_printOpenGLError("createMultisampleTexture generate 2D texture for multisample FBO");
-  }
+  //     glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, multisampleTextureID, 0);
+  //     break;
+  //   }
+  //   DEBUG_printOpenGLError("createMultisampleTexture generate 2D texture for multisample FBO");
+  // }
 #endif
 
   //################################################################################################
@@ -211,8 +211,8 @@ struct OpenGLBuffers::Private
         glRenderbufferStorageMultisample(GL_RENDERBUFFER, TPGLsizei(samples), colorFormatF(alpha), TPGLsizei(width), TPGLsizei(height));
     }
 
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, rboID);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
     DEBUG_printOpenGLError("createColorRBO multisample RBO for attachment " + std::to_string(attachment));
   }
 
@@ -261,7 +261,7 @@ struct OpenGLBuffers::Private
 
   \return true if we managed to create a functional FBO.
   */
-  bool prepareBuffer(OpenGLFBO& buffer,
+  bool  prepareBuffer(OpenGLFBO& buffer,
                      size_t width,
                      size_t height,
                      CreateColorBuffer createColorBuffer,
@@ -285,7 +285,7 @@ struct OpenGLBuffers::Private
 
       if(samples != maxSamples)
         tpWarning() << "Max samples set to: " << samples;
-    }
+    } 
 #endif
 
     buffer.blitRequired = false;
@@ -366,19 +366,19 @@ struct OpenGLBuffers::Private
       if(!buffer.multisampleDepthRBO)
         createDepthRBO(buffer.multisampleDepthRBO, width, height);
 
-      if(!buffer.multisampleTextureID)
-        createMultisampleTexture(buffer.multisampleTextureID, width, height, hdr, Alpha::No, GL_COLOR_ATTACHMENT0);
+      // if(!buffer.multisampleTextureID)
+      //   createMultisampleTexture(buffer.multisampleTextureID, width, height, hdr, Alpha::No, GL_COLOR_ATTACHMENT0);
 
       if(!buffer.multisampleColorRBO)
         createColorRBO(buffer.multisampleColorRBO, width, height, hdr, Alpha::No, GL_COLOR_ATTACHMENT0);
 
       if(extendedFBO == ExtendedFBO::Yes)
       {
-        if(!buffer.multisampleNormalsTextureID)
-          createMultisampleTexture(buffer.multisampleNormalsTextureID, width, height, HDR::Yes, Alpha::No, GL_COLOR_ATTACHMENT1);
+        // if(!buffer.multisampleNormalsTextureID)
+        //   createMultisampleTexture(buffer.multisampleNormalsTextureID, width, height, HDR::Yes, Alpha::No, GL_COLOR_ATTACHMENT1);
 
-        if(!buffer.multisampleSpecularTextureID)
-          createMultisampleTexture(buffer.multisampleSpecularTextureID, width, height, HDR::Yes, Alpha::Yes, GL_COLOR_ATTACHMENT2);
+        // if(!buffer.multisampleSpecularTextureID)
+        //   createMultisampleTexture(buffer.multisampleSpecularTextureID, width, height, HDR::Yes, Alpha::Yes, GL_COLOR_ATTACHMENT2);
 
         if(!buffer.multisampleNormalsRBO)
           createColorRBO(buffer.multisampleNormalsRBO, width, height, HDR::Yes, Alpha::No, GL_COLOR_ATTACHMENT1);
@@ -425,33 +425,41 @@ struct OpenGLBuffers::Private
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
     if(buffer.multisample == Multisample::Yes)
     {
+      auto const executeBlit = [&buffer] (int a=0, int b=0, bool depth=false)
+      {
+        const int attA = GL_COLOR_ATTACHMENT0 + a;
+        const int attB = GL_COLOR_ATTACHMENT0 + b;
+        const int flagDepth = depth ? GL_DEPTH_BUFFER_BIT : 0;
+
+        glReadBuffer(attA);
+        DEBUG_printOpenGLError("swapMultisampledBuffer a");
+
+        glDrawBuffer(attB);
+        DEBUG_printOpenGLError("swapMultisampledBuffer b");
+
+        glBlitFramebuffer(
+            0, 0, GLint(buffer.width), GLint(buffer.height),
+            0, 0, GLint(buffer.width), GLint(buffer.height),
+            GL_COLOR_BUFFER_BIT | flagDepth,
+            GL_NEAREST
+        );
+        DEBUG_printOpenGLError("swapMultisampledBuffer blit color [and depth]");
+      };
+
       glBindFramebuffer(GL_READ_FRAMEBUFFER, buffer.multisampleFrameBuffer);
       glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer.frameBuffer);
       DEBUG_printOpenGLError("swapMultisampledBuffer bind FBOs");
 
-      glReadBuffer(GL_COLOR_ATTACHMENT0);
-      DEBUG_printOpenGLError("swapMultisampledBuffer a");
-      setDrawBuffers({GL_COLOR_ATTACHMENT0});
-      DEBUG_printOpenGLError("swapMultisampledBuffer b");
-      glBlitFramebuffer(0, 0, GLint(buffer.width), GLint(buffer.height), 0, 0, GLint(buffer.width), GLint(buffer.height), GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-      DEBUG_printOpenGLError("swapMultisampledBuffer blit color 0 and depth");
+      executeBlit(0,0,true);
 
       if(buffer.extendedFBO == ExtendedFBO::Yes)
       {
-        glReadBuffer(GL_COLOR_ATTACHMENT1);
-        setDrawBuffers({GL_COLOR_ATTACHMENT1});
-        glBlitFramebuffer(0, 0, GLint(buffer.width), GLint(buffer.height), 0, 0, GLint(buffer.width), GLint(buffer.height), GL_COLOR_BUFFER_BIT, GL_NEAREST);
-        DEBUG_printOpenGLError("swapMultisampledBuffer blit color 1");
-
-        glReadBuffer(GL_COLOR_ATTACHMENT2);
-        setDrawBuffers({GL_COLOR_ATTACHMENT2});
-        glBlitFramebuffer(0, 0, GLint(buffer.width), GLint(buffer.height), 0, 0, GLint(buffer.width), GLint(buffer.height), GL_COLOR_BUFFER_BIT, GL_NEAREST);
-        DEBUG_printOpenGLError("swapMultisampledBuffer blit color 2");
-
+        executeBlit(1,1,false);
+        executeBlit(2,2,false);
         setDrawBuffers({GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2});
       }
       else
-        setDrawBuffers({GL_COLOR_ATTACHMENT0});
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
       glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
       DEBUG_printOpenGLError("swapMultisampledBuffer bind FBO");
@@ -513,11 +521,11 @@ struct OpenGLBuffers::Private
       buffer.multisampleFrameBuffer = 0;
     }
 
-    if(buffer.multisampleTextureID)
-    {
-      glDeleteTextures(1, &buffer.multisampleTextureID);
-      buffer.multisampleTextureID = 0;
-    }
+    // if(buffer.multisampleTextureID)
+    // {
+    //   glDeleteTextures(1, &buffer.multisampleTextureID);
+    //   buffer.multisampleTextureID = 0;
+    // }
 
     if(buffer.multisampleColorRBO)
     {
@@ -531,17 +539,17 @@ struct OpenGLBuffers::Private
       buffer.multisampleDepthRBO = 0;
     }
 
-    if(buffer.multisampleNormalsTextureID)
-    {
-      glDeleteTextures(1, &buffer.multisampleNormalsTextureID);
-      buffer.multisampleNormalsTextureID = 0;
-    }
+    // if(buffer.multisampleNormalsTextureID)
+    // {
+    //   glDeleteTextures(1, &buffer.multisampleNormalsTextureID);
+    //   buffer.multisampleNormalsTextureID = 0;
+    // }
 
-    if(buffer.multisampleSpecularTextureID)
-    {
-      glDeleteTextures(1, &buffer.multisampleSpecularTextureID);
-      buffer.multisampleSpecularTextureID = 0;
-    }
+    // if(buffer.multisampleSpecularTextureID)
+    // {
+    //   glDeleteTextures(1, &buffer.multisampleSpecularTextureID);
+    //   buffer.multisampleSpecularTextureID = 0;
+    // }
 
     if(buffer.multisampleNormalsRBO)
     {
@@ -560,6 +568,12 @@ struct OpenGLBuffers::Private
   //################################################################################################
   void invalidateBuffer(OpenGLFBO& buffer)
   {
+    // FIXME: Better approach ?
+    // deleteBuffer(buffer);
+    // return;
+    // NOTE: Isn't this a memory leak?
+    // Dropping an OpenGL IDs/Handles is equivalent to forget a pointer in C++
+
     buffer.frameBuffer = 0;
     buffer.textureID   = 0;
     buffer.depthID     = 0;
@@ -568,12 +582,12 @@ struct OpenGLBuffers::Private
 
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
     buffer.multisampleFrameBuffer = 0;
-    buffer.multisampleTextureID   = 0;
+    // buffer.multisampleTextureID   = 0;
     buffer.multisampleColorRBO    = 0;
     buffer.multisampleDepthRBO    = 0;
 
-    buffer.multisampleNormalsTextureID  = 0;
-    buffer.multisampleSpecularTextureID = 0;
+    // buffer.multisampleNormalsTextureID  = 0;
+    // buffer.multisampleSpecularTextureID = 0;
     buffer.multisampleNormalsRBO        = 0;
     buffer.multisampleSpecularRBO       = 0;
 #endif

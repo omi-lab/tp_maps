@@ -280,7 +280,7 @@ struct Map::Private
 
       lights.push_back(light);
     }
-    
+
     renderInfo.map = q;
   }
 
@@ -1426,8 +1426,19 @@ void Map::deleteShader(const tp_utils::StringID& name)
 //##################################################################################################
 const OpenGLFBO* Map::currentReadFBO()
 {
+  // This is called from PostLayer
   if(d->currentReadFBO && d->currentReadFBO->blitRequired)
+  {
+    // Temporary solution, get track here of active FBO ID to reassign it later
+    int currFboID = -1;
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &currFboID);
+
+    // This blits AND bind FBOs afecting to OpenGL stack
     d->buffers.swapMultisampledBuffer(*d->currentReadFBO);
+
+    // TODO: Track the creation of FBOs and proper stack management
+    glBindFramebuffer(GL_FRAMEBUFFER, currFboID);  // This is hacky but makes the trick
+  }
 
   return d->currentReadFBO;
 }
@@ -1567,6 +1578,9 @@ void Map::paintGLNoMakeCurrent()
 {
   DEBUG_printOpenGLError("paintGLNoMakeCurrent start");
 
+  tpDebug() << "";
+  tpDebug() << "==================== paintGLNoMakeCurrent start ===============";
+
   tp_maps::CheckUpdateMatrices checkUpdateMatrices(d->currentSubview->m_controller);
 
   d->renderTimer.start();
@@ -1592,6 +1606,9 @@ void Map::paintGLNoMakeCurrent()
 #ifdef TP_FBO_SUPPORTED
   GLint originalFrameBuffer = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
+
+  tpDebug() << "*** OriginalFBO       :"
+            << " DrawFBO -> " << originalFrameBuffer;
 #endif
 
   d->renderInfo.pass = RenderPass::PreRender;
@@ -1821,7 +1838,6 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
         case RenderPass::SwapToMSAA: //-------------------------------------------------------------
         {
 #ifdef TP_FBO_SUPPORTED
-          // DEBUG_scopedDebug((renderPass.type==RenderPass::SwapToMSAA?"RenderPass::SwapToFBO ":"RenderPass::SwapToMSAA ") + renderPass.getNameString(), TPPixel(0, 0, 255));
           DEBUG_scopedDebug((renderPass.type==RenderPass::SwapToMSAA?"RenderPass::SwapToMSAA ":"RenderPass::SwapToFBO ") + renderPass.getNameString(), TPPixel(0, 0, 255));
 
           d->renderInfo.hdr = hdr();
@@ -1841,6 +1857,18 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
             Errors::printOpenGLError("RenderPass::SwapDrawFBO " + renderPass.getNameString());
             return;
           }
+
+          if (renderPass.type==RenderPass::SwapToMSAA)
+          {
+              int fboID = -1;
+              glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &fboID);
+              tpDebug() << "*** SwapToMSAA        :"
+                        << " DrawFBO -> " << fboID
+                        << " toBlit -> "   << d->currentDrawFBO->blitRequired
+                        << " FBO -> "     << d->currentDrawFBO->frameBuffer
+                        << " MSAA -> "    << d->currentDrawFBO->multisampleFrameBuffer;
+          }
+
 #endif
           break;
         }
@@ -1849,8 +1877,18 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
         {
 #ifdef TP_FBO_SUPPORTED
           DEBUG_scopedDebug("RenderPass::SwapToOriginalFBO " + renderPass.getNameString(), TPPixel(255, 255, 0));
+
           d->currentReadFBO = d->currentDrawFBO;
           d->currentDrawFBO = nullptr;
+
+          // d->buffers.swapMultisampledBuffer(*d->currentReadFBO);
+          // int fboID = -1;
+          // glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &fboID);
+          // tpDebug() << "*** SwapToOriginalFBO :"
+          //            << " ReadFBO -> " << fboID
+          //            << " toBlit -> "   << d->currentReadFBO->blitRequired
+          //            << " FBO -> "     << d->currentReadFBO->frameBuffer
+          //            << " MSAA -> "    << d->currentReadFBO->multisampleFrameBuffer;
 
           glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
 #endif
