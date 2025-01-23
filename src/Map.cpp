@@ -1578,9 +1578,6 @@ void Map::paintGLNoMakeCurrent()
 {
   DEBUG_printOpenGLError("paintGLNoMakeCurrent start");
 
-  tpDebug() << "";
-  tpDebug() << "==================== paintGLNoMakeCurrent start ===============";
-
   tp_maps::CheckUpdateMatrices checkUpdateMatrices(d->currentSubview->m_controller);
 
   d->renderTimer.start();
@@ -1606,9 +1603,6 @@ void Map::paintGLNoMakeCurrent()
 #ifdef TP_FBO_SUPPORTED
   GLint originalFrameBuffer = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &originalFrameBuffer);
-
-  tpDebug() << "*** OriginalFBO       :"
-            << " DrawFBO -> " << originalFrameBuffer;
 #endif
 
   d->renderInfo.pass = RenderPass::PreRender;
@@ -1858,17 +1852,6 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
             return;
           }
 
-          if (renderPass.type==RenderPass::SwapToMSAA)
-          {
-              int fboID = -1;
-              glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &fboID);
-              tpDebug() << "*** SwapToMSAA        :"
-                        << " DrawFBO -> " << fboID
-                        << " toBlit -> "   << d->currentDrawFBO->blitRequired
-                        << " FBO -> "     << d->currentDrawFBO->frameBuffer
-                        << " MSAA -> "    << d->currentDrawFBO->multisampleFrameBuffer;
-          }
-
 #endif
           break;
         }
@@ -1880,15 +1863,6 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
 
           d->currentReadFBO = d->currentDrawFBO;
           d->currentDrawFBO = nullptr;
-
-          // d->buffers.swapMultisampledBuffer(*d->currentReadFBO);
-          // int fboID = -1;
-          // glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &fboID);
-          // tpDebug() << "*** SwapToOriginalFBO :"
-          //            << " ReadFBO -> " << fboID
-          //            << " toBlit -> "   << d->currentReadFBO->blitRequired
-          //            << " FBO -> "     << d->currentReadFBO->frameBuffer
-          //            << " MSAA -> "    << d->currentReadFBO->multisampleFrameBuffer;
 
           glBindFramebuffer(GL_FRAMEBUFFER, GLuint(originalFrameBuffer));
 #endif
