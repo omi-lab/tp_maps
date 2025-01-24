@@ -1426,18 +1426,15 @@ void Map::deleteShader(const tp_utils::StringID& name)
 //##################################################################################################
 const OpenGLFBO* Map::currentReadFBO()
 {
-  // This is called from PostLayer
   if(d->currentReadFBO && d->currentReadFBO->blitRequired)
   {
-    // Temporary solution, get track here of active FBO ID to reassign it later
-    int currFboID = -1;
-    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &currFboID);
+    // Bind current FBO back, after blitting
+    int fboID = -1;
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &fboID);
+    TP_CLEANUP([&fboID]{ glBindFramebuffer(GL_FRAMEBUFFER, fboID); });
 
-    // This blits AND bind FBOs afecting to OpenGL stack
+    // This modifies the bound Draw buffer
     d->buffers.swapMultisampledBuffer(*d->currentReadFBO);
-
-    // TODO: Track the creation of FBOs and proper stack management
-    glBindFramebuffer(GL_FRAMEBUFFER, currFboID);  // This is hacky but makes the trick
   }
 
   return d->currentReadFBO;
