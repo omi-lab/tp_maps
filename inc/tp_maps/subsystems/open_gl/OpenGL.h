@@ -170,9 +170,10 @@ struct OpenGLFBO
 
   Matrices worldToTexture; //!< For lighting this is used to map world coords onto the texture.
 
-  Multisample multisample{Multisample::No}; //!< Yes if multisample buffers have been created.
-  HDR hdr{HDR::No};                         //!< Yes if HDR buffers have been created.
-  ExtendedFBO extendedFBO{ExtendedFBO::No}; //!< Yes if deferred rendering buffers have been created.
+  Multisample multisample{Multisample::No};      //!< Yes if multisample buffers have been created.
+  Multisample multisampleParam{Multisample::No}; //!< Yes if multisample buffers was requested.
+  HDR hdr{HDR::No};                              //!< Yes if HDR buffers have been created.
+  ExtendedFBO extendedFBO{ExtendedFBO::No};      //!< Yes if deferred rendering buffers have been created.
 
   bool blitRequired{false};
 };
