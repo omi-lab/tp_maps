@@ -571,11 +571,6 @@ struct OpenGLBuffers::Private
   //################################################################################################
   void invalidateBuffer(OpenGLFBO& buffer)
   {
-    // NOTE: Isn't this a memory leak?
-    // Dropping an OpenGL IDs/Handles is equivalent to forget a pointer in C++
-    // PROPOSAL, delete before unassign:
-    // deleteBuffer(buffer);
-
     buffer.frameBuffer = 0;
     buffer.textureID   = 0;
     buffer.depthID     = 0;
