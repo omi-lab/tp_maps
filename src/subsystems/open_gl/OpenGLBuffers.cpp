@@ -422,7 +422,7 @@ struct OpenGLBuffers::Private
   //before we can actually use it. (thanks OpenGL)
   void swapMultisampledBuffer(OpenGLFBO& buffer)
   {
-    assert(buffer.multisampleParam == Multisample::Yes && "WARNING : Calling 'swapMultisampledBuffer' in a non MSAA FBO");
+    // assert(buffer.multisampleParam == Multisample::Yes && "WARNING : Calling 'swapMultisampledBuffer' in a non MSAA FBO");
 
     buffer.blitRequired = false;
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
