@@ -4,6 +4,7 @@
 #include "tp_maps/TexturePoolKey.h"
 
 #include "tp_utils/TimeUtils.h"
+#include "tp_utils/DebugUtils.h"
 
 namespace tp_maps
 {
@@ -114,7 +115,6 @@ struct PoolDetails_lt
   void checkUpdateVertexBuffer(Geometry3DShader* shader, Map* map)
   {
     TP_FUNCTION_TIME("Geometry3DPool::PoolDetails_lt::checkUpdateVertexBuffer");
-
     if(updateVertexBuffer)
     {
       deleteVertexBuffers();
@@ -135,7 +135,6 @@ struct PoolDetails_lt
           shape.material.viewOpenGL([&](const auto& m){details.material = m;});
           details.materialUVMatrix = shape.material.uvTransformation.uvMatrix();
           details.materialName = shape.material.name;
-
           if(!isOnlyMaterial)
           {
             std::vector<GLuint> indexes;
@@ -562,12 +561,15 @@ void Geometry3DPool::unsubscribe(const tp_utils::StringID& name)
   CHECK_FOR_DUPLICATE_IDS();
 
   auto i = d->pools.find(name);
-  i->second.count--;
-  if(!i->second.count && d->keepHot==0)
+  if(i != d->pools.end())
   {
-    i->second.deleteVertexBuffers();
-    d->unsubscribeTextures(i->second.textureSubscriptions);
-    d->pools.erase(i);
+    i->second.count--;
+    if(!i->second.count && d->keepHot==0)
+    {
+      i->second.deleteVertexBuffers();
+      d->unsubscribeTextures(i->second.textureSubscriptions);
+      d->pools.erase(i);
+    }
   }
 }
 
@@ -605,7 +607,6 @@ void Geometry3DPool::viewProcessedGeometry(const tp_utils::StringID& name,
       auto& mesh = i->second.processedGeometry.at(c);
 
       mesh.uvMatrix = (c<uvMatrices.size())?uvMatrices.at(c):glm::mat3(1.0f);
-
       mesh.alternativeMaterial = &mesh;
       auto itr = alternativeMaterials.find(mesh.materialName);
       if(itr != alternativeMaterials.end())

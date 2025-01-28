@@ -79,7 +79,6 @@ void G3DXYZShader::setMaterial(RenderInfo& renderInfo, const ProcessedGeometry3D
   TP_UNUSED(renderInfo);
 
   glm::mat3 uvMatrix = processedGeometry3D.uvMatrix * processedGeometry3D.alternativeMaterial->materialUVMatrix;
-
   glUniformMatrix3fv(d->uvMatrixLocation, 1, GL_FALSE, glm::value_ptr(uvMatrix));
 
   glActiveTexture(GL_TEXTURE0);
