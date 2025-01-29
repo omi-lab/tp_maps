@@ -9,7 +9,7 @@ namespace tp_maps
 PostOutlineLayer::PostOutlineLayer():
   PostLayer({tp_maps::RenderPass::Custom, postOutlineShaderSID()})
 {
-
+  setOnlyInSubviews({tp_maps::defaultSID()});
 }
 
 //##################################################################################################
