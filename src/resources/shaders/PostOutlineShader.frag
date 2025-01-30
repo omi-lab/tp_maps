@@ -5,7 +5,7 @@
 
 TP_GLSL_IN_F vec2 coord_tex;
 
-uniform sampler2D depthObjSampler;
+uniform sampler2D depthObjectSampler;
 uniform sampler2D textureSampler;
 uniform sampler2D depthSampler;
 
@@ -18,7 +18,7 @@ uniform vec2 pixelSize;
 
 void main()
 {
-  if(TP_GLSL_TEXTURE_2D(depthObjSampler, coord_tex).x>=1.0f)
+  if(TP_GLSL_TEXTURE_2D(depthObjectSampler, coord_tex).x>=1.0f)
   {
     for(int y=-2; y<3; y++)
     {
@@ -32,7 +32,7 @@ void main()
         if(sx<0.0f || sx>1.0f)
           continue;
 
-        if(TP_GLSL_TEXTURE_2D(depthObjSampler, vec2(sx, sy)).x<1.0f)
+        if(TP_GLSL_TEXTURE_2D(depthObjectSampler, vec2(sx, sy)).x<1.0f)
         {
           TP_GLSL_GLFRAGCOLOR = vec4(0.4,0.4,0.95,1.0);
           return;

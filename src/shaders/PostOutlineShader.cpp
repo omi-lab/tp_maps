@@ -50,6 +50,6 @@ const std::string& PostOutlineShader::fragmentShaderStr(ShaderType shaderType)
 void PostOutlineShader::getLocations(GLuint program, tp_maps::ShaderType shaderType)
 {
   tp_maps::PostShader::getLocations(program, shaderType);
-  d->depthObjectLocation = glGetUniformLocation(program, "depthObjSampler");
+  d->depthObjectLocation = glGetUniformLocation(program, "depthObjectSampler");
 }
 }

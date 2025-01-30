@@ -671,7 +671,7 @@ const std::unordered_map<FBOKey, std::unique_ptr<OpenGLFBO>>& Map::intermediateB
 const OpenGLFBO* Map::intermediateBuffer(const tp_utils::StringID& name) const
 {
   for (auto const & [key, fbo] : d->intermediateFBOs)
-    if (key.name == name)
+    if (key.subview == d->currentSubview && key.name == name)
       return fbo.get();
   return nullptr;
 }
