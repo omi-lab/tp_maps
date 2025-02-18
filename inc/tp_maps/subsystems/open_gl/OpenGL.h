@@ -5,10 +5,10 @@
 
 #include <cstddef>
 
-#ifdef TP_GLES2 //----------------------------------------------------------------------------------
+#if defined(TP_GLES2) //----------------------------------------------------------------------------------
 #  include <GLES2/gl2.h>
 
-#elif defined(TP_GLES3) //--------------------------------------------------------------------------
+#elif defined(TP_GLES3) || defined(TP_FORCE_ES3)//--------------------------------------------------------------------------
 #  include <GLES3/gl3.h>
 
 #elif defined(TP_OSX) //----------------------------------------------------------------------------
@@ -73,6 +73,17 @@
 
 #endif //-------------------------------------------------------------------------------------------
 
+
+#ifdef TP_FORCE_ES3 //------------------------------------------------------------------------------
+
+// #undef  TP_GL3
+// #undef  TP_DEFAULT_PROFILE
+
+#define TP_GLES3
+
+#endif
+
+
 #ifdef TP_GL3 //------------------------------------------------------------------------------------
 #  define TP_VERTEX_ARRAYS_SUPPORTED
 #  define tpGenVertexArrays glGenVertexArrays
@@ -126,6 +137,9 @@ using TPGLenum = GLenum;
 
 #  define TP_GLSL_PICKING_SUPPORTED
 #  define TP_FBO_SUPPORTED
+
+#  define TP_ENABLE_MULTISAMPLE
+#  define TP_ENABLE_MULTISAMPLE_FBO
 
 using TPGLsizei = GLsizei;
 using TPGLfloat = float;

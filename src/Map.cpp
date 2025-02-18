@@ -675,6 +675,14 @@ const OpenGLFBO* Map::intermediateBuffer(const tp_utils::StringID& name) const
       return fbo.get();
   return nullptr;
 }
+//################################################################################################
+OpenGLFBO* Map::intermediateBufferRef(const tp_utils::StringID& name) const
+{
+  for (auto & [key, fbo] : d->intermediateFBOs)
+    if (key.subview == d->currentSubview && key.name == name)
+      return fbo.get();
+  return nullptr;
+}
 
 //##################################################################################################
 RenderInfo& Map::renderInfo()
@@ -1378,7 +1386,7 @@ bool Map::renderToImage(size_t width, size_t height, HDR hdr, const std::functio
   DEBUG_printOpenGLError("renderToImage C1");
 
   // Swap the multisampled FBO into the non multisampled FBO.
-  d->buffers.swapMultisampledBuffer(d->renderToImageBuffer);
+  d->buffers.swapMultisampledBuffer(d->renderToImageBuffer, true);
   DEBUG_printOpenGLError("renderToImage C2");
 
   // Read the texture that we just generated
@@ -1426,16 +1434,8 @@ void Map::deleteShader(const tp_utils::StringID& name)
 //##################################################################################################
 const OpenGLFBO* Map::currentReadFBO()
 {
-  if(d->currentReadFBO && d->currentReadFBO->blitRequired)
-  {
-    // Bind current FBO back, after blitting
-    int fboID = -1;
-    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &fboID);
-    TP_CLEANUP([&fboID]{ glBindFramebuffer(GL_FRAMEBUFFER, fboID); });
-
-    // This modifies the bound Draw buffer
-    d->buffers.swapMultisampledBuffer(*d->currentReadFBO);
-  }
+  if (d->currentReadFBO)
+    d->buffers.swapMultisampledBuffer(*d->currentReadFBO, false);
 
   return d->currentReadFBO;
 }
@@ -1539,7 +1539,7 @@ void Map::initializeGL()
   glFrontFace(GL_CCW);
   glCullFace(GL_BACK);
 
-#ifdef TP_ENABLE_MULTISAMPLE
+#if defined(TP_ENABLE_MULTISAMPLE) && !defined(TP_GLES3)
   glEnable(GL_MULTISAMPLE);
 #endif
   tpWarning() << glGetString(GL_VERSION);
@@ -1678,6 +1678,7 @@ size_t Map::skipRenderPasses(Subview* subview)
           break;
         }
 
+        case RenderPass::BlitMSAA: //---------------------------------------------------------------
         case RenderPass::BlitFromFBO: //------------------------------------------------------------
         case RenderPass::Blit: //-------------------------------------------------------------------
         break;
@@ -1829,7 +1830,9 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
         case RenderPass::SwapToMSAA: //-------------------------------------------------------------
         {
 #ifdef TP_FBO_SUPPORTED
-          DEBUG_scopedDebug((renderPass.type==RenderPass::SwapToMSAA?"RenderPass::SwapToMSAA ":"RenderPass::SwapToFBO ") + renderPass.getNameString(), TPPixel(0, 0, 255));
+          bool const isMSAA = renderPass.type==RenderPass::SwapToMSAA;
+          auto const passName = renderPass.getNameString();
+          DEBUG_scopedDebug((isMSAA?"RenderPass::SwapToMSAA ":"RenderPass::SwapToFBO ") + passName, TPPixel(0, 0, 255));
 
           d->renderInfo.hdr = hdr();
           d->renderInfo.extendedFBO = extendedFBO();
@@ -1845,10 +1848,9 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
                                        extendedFBO(),
                                        true))
           {
-            Errors::printOpenGLError("RenderPass::SwapDrawFBO " + renderPass.getNameString());
+            Errors::printOpenGLError("RenderPass::SwapDrawFBO " + passName);
             return;
           }
-
 #endif
           break;
         }
@@ -1865,6 +1867,10 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
 #endif
           break;
         }
+
+        case RenderPass::BlitMSAA: //---------------------------------------------------------------
+          if (d->currentDrawFBO)
+            buffers().swapMultisampledBuffer(*d->currentDrawFBO, true);
 
         case RenderPass::BlitFromFBO: //------------------------------------------------------------
         case RenderPass::Blit: //-------------------------------------------------------------------
@@ -1906,7 +1912,9 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
             d->buffers.setDrawBuffers({GL_COLOR_ATTACHMENT0});
             DEBUG_printOpenGLError("RenderPass::BlitFromFBO " + renderPass.getNameString() + " b");
 
-            glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+            // Temporary removed Depth from this blitting stage... (Ping @dani if something fails over here)
+            auto const blitFlags = GL_COLOR_BUFFER_BIT; // | GL_DEPTH_BUFFER_BIT;
+            glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), blitFlags, GL_NEAREST);
 
             DEBUG_printOpenGLError("RenderPass::BlitFromFBO " + renderPass.getNameString() + " blit color 0 and depth");
 

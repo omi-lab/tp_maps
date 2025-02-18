@@ -42,7 +42,7 @@ public:
   void deleteBuffer(OpenGLFBO& fbo) const;
 
   //################################################################################################
-  void swapMultisampledBuffer(OpenGLFBO& fbo) const;
+  void swapMultisampledBuffer(OpenGLFBO& fbo, bool bindNormalFBO) const;
 
   //################################################################################################
   void setDrawBuffers(const std::vector<GLenum>& buffers) const;

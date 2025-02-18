@@ -1,5 +1,6 @@
 #include "tp_maps/layers/PostSelectionLayer.h"
 
+#include "tp_maps/Map.h"
 #include "tp_utils/DebugUtils.h"
 
 namespace tp_maps
@@ -61,8 +62,12 @@ void PostSelectionLayer::addRenderPasses(std::vector<tp_maps::RenderPass>& rende
     return;
 
   renderPasses.emplace_back(tp_maps::RenderPass::PushFBOs);
-  renderPasses.emplace_back(tp_maps::RenderPass::SwapToFBO, selectionMaskFBO());
-  renderPasses.emplace_back(defaultRenderPass());  
+  renderPasses.emplace_back(tp_maps::RenderPass::SwapToMSAA, selectionMaskFBO());
+  renderPasses.emplace_back(defaultRenderPass());
+  if (map()->buffers().maxSamples() > 1)  // TODO : Should not be needed
+  {
+    renderPasses.emplace_back(tp_maps::RenderPass::BlitMSAA);
+  }
   renderPasses.emplace_back(tp_maps::RenderPass::PopFBOs);
 }
 

@@ -191,6 +191,7 @@ struct RenderPass
     SwapToOriginalFBO, //!< Swap back to the original FBO provided by the window manager (draw=null, read=previous draw FBO).
     BlitFromFBO,       //!< Blit from FBO n into the current draw buffer. Multisample.
     Blit,              //!< Blit read to draw.
+    BlitMSAA,          //!< Blit Draw MSAA to Draw normal FBO.
     PushFBOs,          //!< Save the draw and read FBOs.
     PopFBOs,           //!< Restore the draw and read FBOs.
 
@@ -302,6 +303,7 @@ struct RenderPass
       case SwapToFBO        : return "SwapToFBO        : " + getNameString();
       case SwapToMSAA       : return "SwapToMSAA       : " + getNameString();
       case SwapToOriginalFBO: return "SwapToOriginalFBO: -";
+      case BlitMSAA         : return "BlitMSAA         : " + getNameString();
       case BlitFromFBO      : return "BlitFromFBO      : " + getNameString();
       case Blit             : return "Blit             : -";
       case PushFBOs         : return "PushFBOs         : -";

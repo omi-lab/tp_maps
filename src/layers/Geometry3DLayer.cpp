@@ -217,10 +217,12 @@ Geometry3DLayer::ShaderSelection Geometry3DLayer::shaderSelectionFromString(cons
 }
 
 //##################################################################################################
-void Geometry3DLayer::setShaderSelection(ShaderSelection shaderSelection)
+void Geometry3DLayer::setShaderSelection(ShaderSelection shaderSelection, bool doUpdate)
 {
   d->shaderSelection = shaderSelection;
-  update();
+
+  if (doUpdate)
+    update();
 }
 
 //##################################################################################################

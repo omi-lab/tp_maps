@@ -161,6 +161,8 @@ public:
 
   //################################################################################################
   const OpenGLFBO* intermediateBuffer(const tp_utils::StringID&) const;
+  //################################################################################################
+  OpenGLFBO* intermediateBufferRef(const tp_utils::StringID&) const;
 
   //################################################################################################
   //!Sets the background clear color

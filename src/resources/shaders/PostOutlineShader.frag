@@ -14,32 +14,91 @@ uniform mat4 invProjectionMatrix;
 
 uniform vec2 pixelSize;
 
+uniform sampler2D outlineSampler;
+uniform int mode;  // 0: calculate outline, 1: merge 'outlineSampler' with 'textureSampler'
+
 #pragma replace TP_GLSL_GLFRAGCOLOR_DEF
 
-void main()
+//--- HELPERS ---------------------------------------------------
+
+float objDepthAt(in vec2 uv) { return TP_GLSL_TEXTURE_2D(depthObjectSampler, uv).x; }
+float objDepthAt(in float x, in float y) { return objDepthAt(vec2(x,y)); }
+
+//--- OUTLINE ---------------------------------------------------
+
+float calculateOutline()
 {
-  if(TP_GLSL_TEXTURE_2D(depthObjectSampler, coord_tex).x>=1.0f)
+  if (objDepthAt(coord_tex) < 1.0)
+    return 0.0;
+
+  for (float y = -2.0; y <= 2.0; ++y)
   {
-    for(int y=-2; y<3; y++)
+    float sy = coord_tex.y + pixelSize.y * y;
+    if (sy < 0.0 || sy > 1.0)
+      continue;
+
+    for(float x = -2.0; x <= 2.0; ++x)
     {
-      float sy = coord_tex.y + pixelSize.y*float(y);
-      if(sy<0.0f || sy>1.0f)
+      float sx = coord_tex.x + pixelSize.x * x;
+      if(sx < 0.0 || sx > 1.0)
         continue;
 
-      for(int x=-2; x<3; x++)
-      {
-        float sx = coord_tex.x + pixelSize.x*float(x);
-        if(sx<0.0f || sx>1.0f)
-          continue;
-
-        if(TP_GLSL_TEXTURE_2D(depthObjectSampler, vec2(sx, sy)).x<1.0f)
-        {
-          TP_GLSL_GLFRAGCOLOR = vec4(0.4,0.4,0.95,1.0);
-          return;
-        }
-      }
+      float d = objDepthAt(sx, sy);
+      if(d < 1.0)
+        return d;
     }
   }
 
-  TP_GLSL_GLFRAGCOLOR = TP_GLSL_TEXTURE_2D(textureSampler, coord_tex);
+  return 0.0;
+}
+
+//--- OUTLINE ---------------------------------------------------
+
+// vec4[9] make_kernel(sampler2D tex, vec2 coord)
+// {
+//   vec4 n[9];
+// 	float w = pixelSize.x;
+// 	float h = pixelSize.y;
+
+// 	n[0] = texture( tex, coord + vec2( -w, -h ) );
+// 	n[1] = texture( tex, coord + vec2(0.0, -h ) );
+// 	n[2] = texture( tex, coord + vec2(  w, -h ) );
+// 	n[3] = texture( tex, coord + vec2( -w, 0.0) );
+// 	n[4] = texture( tex, coord );
+// 	n[5] = texture( tex, coord + vec2(  w, 0.0) );
+// 	n[6] = texture( tex, coord + vec2( -w,  h ) );
+// 	n[7] = texture( tex, coord + vec2(0.0,  h ) );
+// 	n[8] = texture( tex, coord + vec2(  w,  h ) );
+
+//   return n;
+// }
+
+// vec4 calculateOutline()
+// {
+//   vec4 n[9] = make_kernel(depthObjectSampler, coord_tex);
+
+// 	vec4 sobel_edge_h = n[2] + (2.0*n[5]) + n[8] - (n[0] + (2.0*n[3]) + n[6]);
+//   vec4 sobel_edge_v = n[0] + (2.0*n[1]) + n[2] - (n[6] + (2.0*n[7]) + n[8]);
+// 	vec4 sobel = sqrt((sobel_edge_h * sobel_edge_h) + (sobel_edge_v * sobel_edge_v));
+
+//   return vec4(sobel.rgb, 1.0);
+// 	// return vec4( 1.0 - sobel.rgb, 1.0 ).r;
+// }
+
+//--- ENTRY POINT -----------------------------------------------
+
+void main()
+{
+  if (mode == 0)
+  {
+    // TP_GLSL_GLFRAGCOLOR = calculateOutline();
+    TP_GLSL_GLFRAGCOLOR = vec4(vec3(calculateOutline()), 1.0);
+    return;
+  }
+
+  vec4 outlineColor = vec4(0.4,0.4,0.95,1.0);
+  vec4 mask = TP_GLSL_TEXTURE_2D(outlineSampler, coord_tex);
+  vec4 srcColor = TP_GLSL_TEXTURE_2D(textureSampler, coord_tex);
+
+  TP_GLSL_GLFRAGCOLOR = mix(srcColor, outlineColor, mask.r);
 }

@@ -82,7 +82,7 @@ public:
   static ShaderSelection shaderSelectionFromString(const std::string& shaderSelection);
 
   //################################################################################################
-  void setShaderSelection(ShaderSelection shaderSelection);
+  void setShaderSelection(ShaderSelection shaderSelection, bool update=true);
 
   //################################################################################################
   ShaderSelection shaderSelection() const;

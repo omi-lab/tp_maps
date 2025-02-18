@@ -16,11 +16,14 @@ namespace tp_maps
 {
 
 //##################################################################################################
+// enum class SamplesUpdate { None, Settings, Heuristic };
+
+//##################################################################################################
 struct OpenGLBuffers::Private
 {
   Map* map;
 
-  bool updateSamplesRequired{true};
+  bool   samplesNeedUpdate{false};
   size_t maxSamples{1};
   size_t samples{1};
 
@@ -31,6 +34,51 @@ struct OpenGLBuffers::Private
     map(map_)
   {
 
+  }
+
+  //################################################################################################
+  size_t glMaxSamples()
+  {
+    static size_t glMaxSamples_{0};
+
+    if (glMaxSamples_ == 0)
+    {
+      int max=0;
+      glGetIntegerv(GL_MAX_SAMPLES, &max);
+      glMaxSamples_ = static_cast<size_t>(tpBound(1, max, 32));
+    }
+
+    return glMaxSamples_;
+  }
+
+  //################################################################################################
+  void updateSamples()
+  {
+    // Update is not required
+    if (!samplesNeedUpdate)
+      return;
+    samplesNeedUpdate = false;
+
+#ifdef TP_GLES3
+    const bool fromSettings = false;
+#else
+    const bool fromSettings = true;
+#endif
+
+    // Validate that sample value is in correct range
+    static auto const inBounds = [this](size_t v) { return tpBound(size_t(1), v, size_t(32)); };
+
+    // Update based on user settings or heuristics
+    const size_t glMax = glMaxSamples();
+
+    if (fromSettings)
+      samples = inBounds(tpMin(maxSamples, glMax));
+    else
+      samples = maxSamples = inBounds(glMax/2);  // Watchout: Modifying maxSamples too!
+
+    tpWarning() << "Samples set to: " << samples
+                << " / Based on: " << (fromSettings ? "Settings" : "Heuristics")
+                << " / glMaxSamples: " << glMax;
   }
 
   //################################################################################################
@@ -53,23 +101,36 @@ struct OpenGLBuffers::Private
   }
 
   //################################################################################################
-  GLint depthFormatF()
+  struct DepthFormatData
   {
-#ifdef TP_GLES2
-    return GL_R32F_EXT;
-#else
+    GLint  internalFormat = TP_GL_DEPTH_COMPONENT24;
+    GLenum type           = GL_UNSIGNED_SHORT;
+  };
+  DepthFormatData depthFormat()
+  {
+    DepthFormatData dfd {};
+
     switch(map->shaderProfile())
     {
-      case ShaderProfile::GLSL_100_ES: [[fallthrough]];
+      case ShaderProfile::GLSL_100_ES:
+        dfd.internalFormat = GL_DEPTH_COMPONENT;
+        dfd.type = GL_UNSIGNED_SHORT;
+        break;
+
       case ShaderProfile::GLSL_300_ES: [[fallthrough]];
       case ShaderProfile::GLSL_310_ES: [[fallthrough]];
       case ShaderProfile::GLSL_320_ES:
-      return GL_R32F;
+        dfd.internalFormat = TP_GL_DEPTH_COMPONENT32;
+        dfd.type = GL_FLOAT;
+        break;
 
       default:
-      return GL_R32F;
+        dfd.internalFormat = TP_GL_DEPTH_COMPONENT24;
+        dfd.type = GL_UNSIGNED_SHORT;
+        break;
     }
-#endif
+
+    return dfd;
   }
 
   //################################################################################################
@@ -118,44 +179,6 @@ struct OpenGLBuffers::Private
     DEBUG_printOpenGLError("create2DColorTexture generate 2D texture for color buffer");
   }
 
-#ifdef TP_ENABLE_MULTISAMPLE_FBO
-  // //################################################################################################
-  // void createMultisampleTexture(GLuint& multisampleTextureID, size_t width, size_t height, HDR hdr, Alpha alpha, GLenum attachment)
-  // {
-  //   switch(map->shaderProfile())
-  //   {
-  //     case ShaderProfile::GLSL_100_ES: [[fallthrough]];
-  //     case ShaderProfile::GLSL_300_ES: [[fallthrough]];
-  //     case ShaderProfile::GLSL_310_ES: [[fallthrough]];
-  //     case ShaderProfile::GLSL_320_ES:
-  //     break;
-
-  //     default:
-  //     glGenTextures(1, &multisampleTextureID);
-  //     glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, multisampleTextureID);
-
-  //     if(hdr == HDR::No)
-  //     {
-  //       if(alpha == Alpha::No)
-  //         glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, TPGLsizei(samples), GL_RGB, TPGLsizei(width), TPGLsizei(height), GL_TRUE);
-  //       else
-  //         glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, TPGLsizei(samples), GL_RGBA, TPGLsizei(width), TPGLsizei(height), GL_TRUE);
-  //     }
-  //     else
-  //     {
-  //       if(alpha == Alpha::No)
-  //         glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, TPGLsizei(samples), colorFormatF(alpha), TPGLsizei(width), TPGLsizei(height), GL_TRUE);
-  //       else
-  //         glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, TPGLsizei(samples), colorFormatF(alpha), TPGLsizei(width), TPGLsizei(height), GL_TRUE);
-  //     }
-
-  //     glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, multisampleTextureID, 0);
-  //     break;
-  //   }
-  //   DEBUG_printOpenGLError("createMultisampleTexture generate 2D texture for multisample FBO");
-  // }
-#endif
-
   //################################################################################################
   void create2DDepthTexture(GLuint& depthID, size_t width, size_t height)
   {
@@ -163,24 +186,8 @@ struct OpenGLBuffers::Private
 
     glBindTexture(GL_TEXTURE_2D, depthID);
 
-    switch(map->shaderProfile())
-    {
-      case ShaderProfile::GLSL_100_ES:
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, TPGLsizei(width), TPGLsizei(height), 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
-      break;
-
-      case ShaderProfile::GLSL_300_ES: [[fallthrough]];
-      case ShaderProfile::GLSL_310_ES: [[fallthrough]];
-      case ShaderProfile::GLSL_320_ES:
-
-      //          (GLenum target, GLint level,    GLint internalformat,    GLsizei width,    GLsizei height, GLint border,      GLenum format,  GLenum type, const void *pixels);
-      glTexImage2D(GL_TEXTURE_2D,           0, TP_GL_DEPTH_COMPONENT32, TPGLsizei(width), TPGLsizei(height),            0, GL_DEPTH_COMPONENT,     GL_FLOAT,            nullptr);
-      break;
-
-      default:
-      glTexImage2D(GL_TEXTURE_2D, 0, TP_GL_DEPTH_COMPONENT24, TPGLsizei(width), TPGLsizei(height), 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
-      break;
-    }
+    auto const [iFormat, type] = depthFormat();
+    glTexImage2D(GL_TEXTURE_2D, 0, iFormat, TPGLsizei(width), TPGLsizei(height), 0, GL_DEPTH_COMPONENT, type, nullptr);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -219,9 +226,11 @@ struct OpenGLBuffers::Private
   //################################################################################################
   void createDepthRBO(GLuint& rboID, size_t width, size_t height)
   {
+    auto const [iFormat, _] = depthFormat();
+
     glGenRenderbuffers(1, &rboID);
     glBindRenderbuffer(GL_RENDERBUFFER, rboID);
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, TPGLsizei(samples), TP_GL_DEPTH_COMPONENT24, TPGLsizei(width), TPGLsizei(height));
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, TPGLsizei(samples), iFormat, TPGLsizei(width), TPGLsizei(height));
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboID);
     DEBUG_printOpenGLError("createDepthRBO multisample RBO for depth");
@@ -240,6 +249,26 @@ struct OpenGLBuffers::Private
       break;
     }
 
+  }
+
+  //################################################################################################
+  void blitAttachment(OpenGLFBO const & buffer, GLint attachmentIndex=0, bool depthBit=false)
+  {
+    GLint  const w = GLint(buffer.width);
+    GLint  const h = GLint(buffer.height);
+    GLenum const attachment = GL_COLOR_ATTACHMENT0 + attachmentIndex;
+
+    GLint mask = GL_COLOR_BUFFER_BIT;
+    if (depthBit) mask |= GL_DEPTH_BUFFER_BIT;
+
+    glReadBuffer(attachment);
+    DEBUG_printOpenGLError("swapMultisampledBuffer a");
+
+    glDrawBuffers(1, &attachment);
+    DEBUG_printOpenGLError("swapMultisampledBuffer b");
+
+    glBlitFramebuffer(0,0,w,h, 0,0,w,h, mask, GL_NEAREST);
+    DEBUG_printOpenGLError("swapMultisampledBuffer blit color [and depth]");
   }
 
   //################################################################################################
@@ -274,22 +303,15 @@ struct OpenGLBuffers::Private
 
     assert(buffer.name.isValid());
 
-#ifdef TP_ENABLE_MULTISAMPLE_FBO
-    if(updateSamplesRequired)
-    {
-      updateSamplesRequired = false;
-
-      GLint max=1;
-      glGetIntegerv(GL_MAX_SAMPLES, &max);
-      samples = tpMin(size_t(max), maxSamples);
-
-      if(samples != maxSamples)
-        tpWarning() << "Max samples set to: " << samples;
-    } 
-#endif
-
     buffer.blitRequired = false;
     buffer.multisampleParam = multisample;
+
+#ifdef TP_ENABLE_MULTISAMPLE_FBO
+    if (multisample==Multisample::Yes) {
+      // tpDebug() << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+      updateSamples();
+    }
+#endif
 
     multisample = (multisample==Multisample::Yes && (samples>1))?Multisample::Yes:Multisample::No;
 
@@ -349,14 +371,18 @@ struct OpenGLBuffers::Private
     else
       setDrawBuffers({GL_COLOR_ATTACHMENT0});
 
-    if(Errors::printFBOError(buffer, "Error Map::Private::prepareBuffer frame buffer not complete!"))
+    if(Errors::printFBOError(buffer, "Error Map::Private::prepareBuffer frame buffer not complete!")){
+      // deleteBuffer(buffer);
       return false;
+    }
 
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
     if(multisample == Multisample::Yes)
     {
       buffer.blitRequired = true;
-      glEnable(GL_MULTISAMPLE);
+// #if !defined(TP_GLES3)
+//       glEnable(GL_MULTISAMPLE);
+// #endif
 
       if(!buffer.multisampleFrameBuffer)
         glGenFramebuffers(1, &buffer.multisampleFrameBuffer);
@@ -420,52 +446,46 @@ struct OpenGLBuffers::Private
   //################################################################################################
   //If we are rendering to a multisample FBO we need to blit the results to a non multisampled FBO
   //before we can actually use it. (thanks OpenGL)
-  void swapMultisampledBuffer(OpenGLFBO& buffer)
+  void swapMultisampledBuffer(OpenGLFBO& buffer, bool bindNormalFBO)
   {
-    // assert(buffer.multisampleParam == Multisample::Yes && "WARNING : Calling 'swapMultisampledBuffer' in a non MSAA FBO");
+    if (!buffer.blitRequired)
+      return;
 
     buffer.blitRequired = false;
+
+
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
     if(buffer.multisample == Multisample::Yes)
     {
-      auto const executeBlit = [&buffer] (int a=0, int b=0, bool depth=false)
-      {
-        const int attA = GL_COLOR_ATTACHMENT0 + a;
-        const int attB = GL_COLOR_ATTACHMENT0 + b;
-        const int flagDepth = depth ? GL_DEPTH_BUFFER_BIT : 0;
-
-        glReadBuffer(attA);
-        DEBUG_printOpenGLError("swapMultisampledBuffer a");
-
-        glDrawBuffer(attB);
-        DEBUG_printOpenGLError("swapMultisampledBuffer b");
-
-        glBlitFramebuffer(
-            0, 0, GLint(buffer.width), GLint(buffer.height),
-            0, 0, GLint(buffer.width), GLint(buffer.height),
-            GL_COLOR_BUFFER_BIT | flagDepth,
-            GL_NEAREST
-        );
-        DEBUG_printOpenGLError("swapMultisampledBuffer blit color [and depth]");
-      };
+      // Track stack state :: This must be before any binding !
+      int prevDrawFboID = -1;
+      glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &prevDrawFboID);
 
       glBindFramebuffer(GL_READ_FRAMEBUFFER, buffer.multisampleFrameBuffer);
       glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer.frameBuffer);
       DEBUG_printOpenGLError("swapMultisampledBuffer bind FBOs");
 
-      executeBlit(0,0,true);
+      blitAttachment(buffer, 0, true);
 
       if(buffer.extendedFBO == ExtendedFBO::Yes)
       {
-        executeBlit(1,1,false);
-        executeBlit(2,2,false);
+        blitAttachment(buffer, 1);
+        blitAttachment(buffer, 2);
         setDrawBuffers({GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2});
       }
       else
-        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        setDrawBuffers({GL_COLOR_ATTACHMENT0});
 
-      glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
-      DEBUG_printOpenGLError("swapMultisampledBuffer bind FBO");
+      if (!bindNormalFBO && prevDrawFboID != buffer.multisampleFrameBuffer)
+      {
+        glBindFramebuffer(GL_FRAMEBUFFER, prevDrawFboID);
+        DEBUG_printOpenGLError("swapMultisampledBuffer bind Prev FBO");
+      }
+      else
+      {
+        glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
+        DEBUG_printOpenGLError("swapMultisampledBuffer bind Normal FBO");
+      }
     }
 #else
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -650,9 +670,9 @@ void OpenGLBuffers::deleteBuffer(OpenGLFBO& fbo) const
 }
 
 //##################################################################################################
-void OpenGLBuffers::swapMultisampledBuffer(OpenGLFBO& fbo) const
+void OpenGLBuffers::swapMultisampledBuffer(OpenGLFBO& fbo, bool bindNormalFBO) const
 {
-  d->swapMultisampledBuffer(fbo);
+  d->swapMultisampledBuffer(fbo, bindNormalFBO);
 }
 
 //##################################################################################################
@@ -664,8 +684,8 @@ void OpenGLBuffers::setDrawBuffers(const std::vector<GLenum>& buffers) const
 //##################################################################################################
 void OpenGLBuffers::setMaxSamples(size_t maxSamples)
 {
-  d->updateSamplesRequired = true;
-  d->maxSamples = maxSamples;
+  d->samplesNeedUpdate = true;
+  d->maxSamples = tpMax(size_t(1), maxSamples);
 }
 
 //##################################################################################################
@@ -677,7 +697,7 @@ size_t OpenGLBuffers::maxSamples() const
 //##################################################################################################
 void OpenGLBuffers::initializeGL()
 {
-  d->updateSamplesRequired = true;
+  d->samplesNeedUpdate = true;
 }
 
 //##################################################################################################

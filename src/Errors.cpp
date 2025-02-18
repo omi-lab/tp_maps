@@ -11,7 +11,7 @@
 #  define DEBUG_printOpenGLError(A) do{}while(false)
 #endif
 
-#if defined(TP_MAPS_DEBUG) && !defined(TP_EMSCRIPTEN) && !defined(TP_OSX)
+#if defined(TP_MAPS_DEBUG) && !defined(TP_EMSCRIPTEN) && !defined(TP_OSX) && !defined(TP_GLES3)
 //##################################################################################################
 static void APIENTRY tpOutputOpenGLDebug(GLenum source,
                                          GLenum type,
@@ -103,7 +103,7 @@ Errors::~Errors()
 //##################################################################################################
 void Errors::initializeGL()
 {
-#if defined(TP_MAPS_DEBUG) && !defined(TP_EMSCRIPTEN) && !defined(TP_OSX)
+#if defined(TP_MAPS_DEBUG) && !defined(TP_EMSCRIPTEN) && !defined(TP_OSX) && !defined(TP_GLES3)
   {
     int flags;
     glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
@@ -160,10 +160,12 @@ bool Errors::printFBOError(OpenGLFBO& buffer, const std::string& description)
       case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: return std::string("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
       case GL_FRAMEBUFFER_UNSUPPORTED:                   return std::string("GL_FRAMEBUFFER_UNSUPPORTED");
 
-#ifdef TP_ENABLE_MULTISAMPLE_FBO
+#if defined(TP_ENABLE_MULTISAMPLE_FBO)
+#if !defined(TP_GLES3)
       case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:        return std::string("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER");
       case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:        return std::string("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER");
       case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:      return std::string("GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS");
+#endif
       case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:        return std::string("GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE");
 #endif
       }

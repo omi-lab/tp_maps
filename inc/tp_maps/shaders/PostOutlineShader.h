@@ -24,6 +24,11 @@ public:
   //################################################################################################
   void use(tp_maps::ShaderType shaderType) override;
 
+  //################################################################################################
+  // This is used in the use method and should be set before that is called
+  int mode = 0;  // 0: compute outline, 1: merge outline
+  GLuint outlineTexID = 0;
+
 protected:
   //################################################################################################
   const std::string& fragmentShaderStr(ShaderType shaderType) override;

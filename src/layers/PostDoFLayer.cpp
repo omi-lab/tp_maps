@@ -112,7 +112,7 @@ float PostDoFLayer::calculateFStopDistance(float fStop) const
 //##################################################################################################
 PostShader* PostDoFLayer::makeShader()
 {
-  return map()->getShader<PostDoFBlurShader>(d->parameters);
+  return nullptr; //map()->getShader<PostDoFBlurShader>(d->parameters);
 }
 
 //##################################################################################################
