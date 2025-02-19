@@ -17,8 +17,6 @@
 #include "tp_maps/subsystems/open_gl/OpenGLBuffers.h"
 #include "tp_maps/color_management/BasicColorManagement.h"
 
-#include "tp_image_utils/SaveImages.h"
-
 #include "tp_math_utils/Plane.h"
 #include "tp_math_utils/Ray.h"
 #include "tp_math_utils/Intersection.h"
@@ -1869,8 +1867,9 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
         }
 
         case RenderPass::BlitMSAA: //---------------------------------------------------------------
-          if (d->currentDrawFBO)
-            buffers().swapMultisampledBuffer(*d->currentDrawFBO, true);
+        if (d->currentDrawFBO)
+          buffers().swapMultisampledBuffer(*d->currentDrawFBO, true);
+        [[fallthrough]];
 
         case RenderPass::BlitFromFBO: //------------------------------------------------------------
         case RenderPass::Blit: //-------------------------------------------------------------------

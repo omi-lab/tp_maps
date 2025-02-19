@@ -476,7 +476,7 @@ struct OpenGLBuffers::Private
       else
         setDrawBuffers({GL_COLOR_ATTACHMENT0});
 
-      if (!bindNormalFBO && prevDrawFboID != buffer.multisampleFrameBuffer)
+      if (!bindNormalFBO && prevDrawFboID != int(buffer.multisampleFrameBuffer))
       {
         glBindFramebuffer(GL_FRAMEBUFFER, prevDrawFboID);
         DEBUG_printOpenGLError("swapMultisampledBuffer bind Prev FBO");

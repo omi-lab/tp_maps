@@ -1499,7 +1499,7 @@ struct GizmoLayer::Private
       if(selectedColorSubscribed)
         layer->geometry3DPool()->unsubscribe(selectedSID());
 
-      layer->geometry3DPool()->subscribe(selectedSID(), [=]
+      layer->geometry3DPool()->subscribe(selectedSID(), [this, params]
       {
         std::vector<tp_math_utils::Geometry3D> geometry;
         setMaterial(geometry.emplace_back(), params.selectedColor);
