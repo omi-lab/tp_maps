@@ -229,6 +229,9 @@ HEADERS += inc/tp_maps/shaders/PostOutlineShader.h
 SOURCES += src/shaders/PostBasicBlurShader.cpp
 HEADERS += inc/tp_maps/shaders/PostBasicBlurShader.h
 
+SOURCES += src/shaders/PostTwoPassBlurShader.cpp
+HEADERS += inc/tp_maps/shaders/PostTwoPassBlurShader.h
+
 SOURCES += src/shaders/PostBlurAndTintShader.cpp
 HEADERS += inc/tp_maps/shaders/PostBlurAndTintShader.h
 

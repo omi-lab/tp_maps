@@ -48,6 +48,7 @@
         <file preprocess="shader" alias="PostOutlineShader.frag">resources/shaders/PostOutlineShader.frag</file>
         <file preprocess="shader" alias="PostBlurAndTintShader.frag">resources/shaders/PostBlurAndTintShader.frag</file>
         <file preprocess="shader" alias="PostBasicBlurShader.frag">resources/shaders/PostBasicBlurShader.frag</file>
+        <file preprocess="shader" alias="PostTwoPassBlurShader.frag">resources/shaders/PostTwoPassBlurShader.frag</file>
         <file preprocess="shader" alias="PostGrid2DShader.frag">resources/shaders/PostGrid2DShader.frag</file>
         <file preprocess="shader" alias="WriteFragment.hdr.glsl">resources/shaders/WriteFragment.hdr.glsl</file>
         <file preprocess="shader" alias="WriteFragment.render.glsl">resources/shaders/WriteFragment.render.glsl</file>

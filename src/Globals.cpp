@@ -34,6 +34,7 @@ TP_DEFINE_ID(                postSSRShaderSID,                  "Post ssr shader
 TP_DEFINE_ID(               postBlitShaderSID,                 "Post blit shader");
 TP_DEFINE_ID(            postOutlineShaderSID,              "Post outline shader");
 TP_DEFINE_ID(          postBasicBlurShaderSID,           "Post basic blur shader");
+TP_DEFINE_ID(        postTwoPassBlurShaderSID,        "Post two pass blur shader");
 TP_DEFINE_ID(        postBlurAndTintShaderSID,        "Post blur and tint shader");
 TP_DEFINE_ID(       depthOfFieldBlurShaderSID,       "Depth of field blur shader");
 TP_DEFINE_ID(         calculateFocusShaderSID,           "Calculate focus shader");
