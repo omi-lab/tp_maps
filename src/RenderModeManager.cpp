@@ -28,6 +28,8 @@ struct RenderModeManager::Private
   size_t shadowSamples{0};
   bool isDoFRendered{false};
 
+  bool msaaAllowed{false};
+
   //################################################################################################
   Private(Q* q_, Map* map_):
     q(q_),
@@ -131,14 +133,17 @@ void RenderModeManager::setRenderMode(RenderMode renderMode)
     case RenderMode::Fast:
       d->shadowSamples = d->shadowSamplesFast;
       d->isDoFRendered = false;
+      d->msaaAllowed   = false;
       break;
     case RenderMode::Intermediate:
       d->shadowSamples = d->shadowSamplesIntermediate;
       d->isDoFRendered = true;
+      d->msaaAllowed   = true;
       break;
     case RenderMode::Full:
       d->shadowSamples = d->shadowSamplesFull;
       d->isDoFRendered = true;
+      d->msaaAllowed   = true;
       break;
   }
 
@@ -185,6 +190,12 @@ size_t RenderModeManager::shadowSamples() const
 bool RenderModeManager::isDoFRendered() const
 {
   return d->isDoFRendered;
+}
+
+//##################################################################################################
+bool RenderModeManager::msaaAllowed() const
+{
+  return d->msaaAllowed;
 }
 
 //##################################################################################################

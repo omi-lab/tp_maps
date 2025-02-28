@@ -1,4 +1,5 @@
 #include "tp_maps/subsystems/open_gl/OpenGLBuffers.h"
+#include "tp_maps/RenderModeManager.h"
 #ifdef TP_MAPS_SUBSYSTEM_OPENGL
 
 #include "tp_maps/Errors.h"
@@ -25,7 +26,7 @@ struct OpenGLBuffers::Private
 
   bool   samplesNeedUpdate{false};
   size_t maxSamples{1};
-  size_t samples{1};
+  size_t samples_{1};
 
   std::unordered_map<tp_utils::StringID, OpenGLFBO*> storedBuffers;
 
@@ -72,13 +73,20 @@ struct OpenGLBuffers::Private
     const size_t glMax = glMaxSamples();
 
     if (fromSettings)
-      samples = inBounds(tpMin(maxSamples, glMax));
+      samples_ = inBounds(tpMin(maxSamples, glMax));
     else
-      samples = maxSamples = inBounds(glMax/2);  // Watchout: Modifying maxSamples too!
+      samples_ = maxSamples = inBounds(glMax/2);  // Watchout: Modifying maxSamples too!
 
-    tpWarning() << "Samples set to: " << samples
+    tpWarning() << "Samples set to: " << samples_
                 << " / Based on: " << (fromSettings ? "Settings" : "Heuristics")
                 << " / glMaxSamples: " << glMax;
+  }
+
+  //################################################################################################
+  size_t samples()
+  {
+    bool const useMSAA = map->renderModeManger().msaaAllowed();
+    return useMSAA ? samples_ : 1;
   }
 
   //################################################################################################
@@ -206,16 +214,16 @@ struct OpenGLBuffers::Private
     if(hdr == HDR::No)
     {
       if(alpha == Alpha::No)
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, TPGLsizei(samples), GL_RGB8, TPGLsizei(width), TPGLsizei(height));
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, TPGLsizei(samples()), GL_RGB8, TPGLsizei(width), TPGLsizei(height));
       else
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, TPGLsizei(samples), GL_RGBA8, TPGLsizei(width), TPGLsizei(height));
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, TPGLsizei(samples()), GL_RGBA8, TPGLsizei(width), TPGLsizei(height));
     }
     else
     {
       if(alpha == Alpha::No)
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, TPGLsizei(samples), colorFormatF(alpha), TPGLsizei(width), TPGLsizei(height));
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, TPGLsizei(samples()), colorFormatF(alpha), TPGLsizei(width), TPGLsizei(height));
       else
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, TPGLsizei(samples), colorFormatF(alpha), TPGLsizei(width), TPGLsizei(height));
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, TPGLsizei(samples()), colorFormatF(alpha), TPGLsizei(width), TPGLsizei(height));
     }
 
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, rboID);
@@ -230,7 +238,7 @@ struct OpenGLBuffers::Private
 
     glGenRenderbuffers(1, &rboID);
     glBindRenderbuffer(GL_RENDERBUFFER, rboID);
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, TPGLsizei(samples), iFormat, TPGLsizei(width), TPGLsizei(height));
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, TPGLsizei(samples()), iFormat, TPGLsizei(width), TPGLsizei(height));
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboID);
     DEBUG_printOpenGLError("createDepthRBO multisample RBO for depth");
@@ -307,15 +315,14 @@ struct OpenGLBuffers::Private
     buffer.multisampleParam = multisample;
 
 #ifdef TP_ENABLE_MULTISAMPLE_FBO
-    if (multisample==Multisample::Yes) {
-      // tpDebug() << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    if (multisample == Multisample::Yes) {
       updateSamples();
     }
 #endif
 
-    multisample = (multisample==Multisample::Yes && (samples>1))?Multisample::Yes:Multisample::No;
+    multisample = (multisample==Multisample::Yes && (samples()>1))?Multisample::Yes:Multisample::No;
 
-    if(buffer.width!=width || buffer.height!=height || buffer.samples!=samples || buffer.hdr != hdr || buffer.extendedFBO != extendedFBO || buffer.multisample != multisample)
+    if(buffer.width!=width || buffer.height!=height || buffer.samples!=samples() || buffer.hdr != hdr || buffer.extendedFBO != extendedFBO || buffer.multisample != multisample)
       deleteBuffer(buffer);
 
     if(!buffer.frameBuffer)
@@ -323,7 +330,7 @@ struct OpenGLBuffers::Private
       glGenFramebuffers(1, &buffer.frameBuffer);
       buffer.width       = width;
       buffer.height      = height;
-      buffer.samples     = samples;
+      buffer.samples     = samples();
       buffer.hdr         = hdr;
       buffer.extendedFBO = extendedFBO;
       buffer.multisample = multisample;
