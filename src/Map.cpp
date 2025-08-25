@@ -1830,9 +1830,8 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
         case RenderPass::SwapToMSAA: //-------------------------------------------------------------
         {
 #ifdef TP_FBO_SUPPORTED
-          bool const isMSAA = renderPass.type==RenderPass::SwapToMSAA;
           auto const passName = renderPass.getNameString();
-          DEBUG_scopedDebug((isMSAA?"RenderPass::SwapToMSAA ":"RenderPass::SwapToFBO ") + passName, TPPixel(0, 0, 255));
+          DEBUG_scopedDebug((renderPass.type==RenderPass::SwapToMSAA?"RenderPass::SwapToMSAA ":"RenderPass::SwapToFBO ") + passName, TPPixel(0, 0, 255));
 
           d->renderInfo.hdr = hdr();
           d->renderInfo.extendedFBO = extendedFBO();
