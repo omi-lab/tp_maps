@@ -32,12 +32,11 @@
 #include "glm/glm.hpp" // IWYU pragma: keep
 #include "glm/gtx/norm.hpp" // IWYU pragma: keep
 
-#include <numeric>
 #include <algorithm>
 
 // Note: GL
 
-#ifdef TP_EMSCRIPTEN
+#if defined(TP_EMSCRIPTEN) || defined(TP_FORCE_BLIT_WITH_SHADER)
 #include "tp_maps/shaders/PostBlitShader.h"
 #define TP_BLIT_WITH_SHADER
 #endif
@@ -1540,7 +1539,10 @@ void Map::initializeGL()
 #if defined(TP_ENABLE_MULTISAMPLE) && !defined(TP_GLES3)
   glEnable(GL_MULTISAMPLE);
 #endif
-  tpWarning() << glGetString(GL_VERSION);
+
+#ifdef TP_MAPS_DEBUG
+  tpWarning() << "OpenGL version: " << glGetString(GL_VERSION);
+#endif
 
   d->initialized = true;
   d->currentSubview->m_renderFromStage = RenderFromStage::Full;
@@ -1911,7 +1913,7 @@ void Map::executeRenderPasses(Subview* subview, size_t rp, GLint& originalFrameB
             d->buffers.setDrawBuffers({GL_COLOR_ATTACHMENT0});
             DEBUG_printOpenGLError("RenderPass::BlitFromFBO " + renderPass.getNameString() + " b");
 
-            // Temporary removed Depth from this blitting stage... (Ping @dani if something fails over here)
+            // Temporary removed Depth from this blitting stage... (Ping @danic if something fails over here)
             auto const blitFlags = GL_COLOR_BUFFER_BIT; // | GL_DEPTH_BUFFER_BIT;
             glBlitFramebuffer(0, 0, GLint(readFBO->width), GLint(readFBO->height), 0, 0, GLint(readFBO->width), GLint(readFBO->height), blitFlags, GL_NEAREST);
 

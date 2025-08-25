@@ -30,6 +30,8 @@
         <file preprocess="shader" alias="G3DDepthShader.frag">resources/shaders/G3DDepthShader.frag</file>
         <file preprocess="shader" alias="G3DXYZShader.vert">resources/shaders/G3DXYZShader.vert</file>
         <file preprocess="shader" alias="G3DXYZShader.frag">resources/shaders/G3DXYZShader.frag</file>
+        <file preprocess="shader" alias="G3DPatternShader.vert">resources/shaders/G3DPatternShader.vert</file>
+        <file preprocess="shader" alias="G3DPatternShader.frag">resources/shaders/G3DPatternShader.frag</file>
         <file preprocess="shader" alias="G3DMaterialShader.render.frag">resources/shaders/G3DMaterialShader.render.frag</file>
         <file preprocess="shader" alias="G3DMaterialShader.render.vert">resources/shaders/G3DMaterialShader.render.vert</file>
         <file preprocess="shader" alias="G3DMaterialShader.light.frag">resources/shaders/G3DMaterialShader.light.frag</file>

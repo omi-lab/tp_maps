@@ -663,7 +663,6 @@ struct GizmoLayer::Private
           size_t aMax = (params.style==GizmoRingStyle::QuaterTorus)?90:360;
 
           const size_t bMax=10;
-          constexpr float bStep=glm::radians(360.0f/float(bMax));
 
           circle.indexes.resize(1);
           auto& indexes = circle.indexes.at(0);
@@ -675,6 +674,9 @@ struct GizmoLayer::Private
 
           auto addRingOfVerts = [&](size_t a)
           {
+            const size_t bMax=10;
+            constexpr float bStep=glm::radians(360.0f/float(bMax));
+
             float x = std::sin(glm::radians(float(a)));
             float y = std::cos(glm::radians(float(a)));
 

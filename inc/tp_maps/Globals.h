@@ -73,6 +73,7 @@ TP_DECLARE_ID(                  imageShaderSID,                     "Image shade
 TP_DECLARE_ID(              flatColorShaderSID,                "Flat color shader");
 TP_DECLARE_ID(                image3DShaderSID,                  "Image 3D shader");
 TP_DECLARE_ID(                    xyzShaderSID,                       "XYZ shader");
+TP_DECLARE_ID(                patternShaderSID,                   "Pattern shader");
 TP_DECLARE_ID(            pointSpriteShaderSID,              "Point sprite shader");
 TP_DECLARE_ID(               materialShaderSID,                  "Material shader");
 TP_DECLARE_ID(            staticLightShaderSID,              "Static light shader");

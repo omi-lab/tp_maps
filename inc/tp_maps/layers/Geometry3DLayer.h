@@ -65,11 +65,12 @@ public:
   //################################################################################################
   enum class ShaderSelection
   {
-    Material,   //!< Render the 3D geometry as a shaded material using the G3DMaterialShader.
-    Image,      //!< Render the 3D geometry as flat unshaded images using the G3DImageShader.
-    XYZ,        //!< Write the frag xyz coords in world coords to the output buffer using the G3DXYZShader.
-    Depth,      //!< Write the depth buffer to the output buffer.
-    StaticLight //!< Render the 3D geometry as a shaded material ignoring lights and shadows.
+    Material,    //!< Render the 3D geometry as a shaded material using the G3DMaterialShader.
+    Image,       //!< Render the 3D geometry as flat unshaded images using the G3DImageShader.
+    XYZ,         //!< Write the frag xyz coords in world coords to the output buffer using the G3DXYZShader.
+    Depth,       //!< Write the depth buffer to the output buffer.
+    StaticLight, //!< Render the 3D geometry as a shaded material ignoring lights and shadows.
+    Pattern,     //!< Render the 3D geometry as with a custom shader drawing a specific pattern.
   };
 
   //################################################################################################

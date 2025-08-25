@@ -67,7 +67,7 @@ struct OpenGLBuffers::Private
 #endif
 
     // Validate that sample value is in correct range
-    static auto const inBounds = [this](size_t v) { return tpBound(size_t(1), v, size_t(32)); };
+    static auto const inBounds = [](size_t v) { return tpBound(size_t(1), v, size_t(32)); };
 
     // Update based on user settings or heuristics
     const size_t glMax = glMaxSamples();
@@ -77,9 +77,11 @@ struct OpenGLBuffers::Private
     else
       samples_ = maxSamples = inBounds(glMax/2);  // Watchout: Modifying maxSamples too!
 
+#ifdef TP_MAPS_DEBUG
     tpWarning() << "Samples set to: " << samples_
                 << " / Based on: " << (fromSettings ? "Settings" : "Heuristics")
                 << " / glMaxSamples: " << glMax;
+#endif
   }
 
   //################################################################################################
@@ -318,9 +320,11 @@ struct OpenGLBuffers::Private
     if (multisample == Multisample::Yes) {
       updateSamples();
     }
+    multisample = (multisample==Multisample::Yes && (samples()>1))?Multisample::Yes:Multisample::No;
+#else
+    multisample = Multisample::No;
 #endif
 
-    multisample = (multisample==Multisample::Yes && (samples()>1))?Multisample::Yes:Multisample::No;
 
     if(buffer.width!=width || buffer.height!=height || buffer.samples!=samples() || buffer.hdr != hdr || buffer.extendedFBO != extendedFBO || buffer.multisample != multisample)
       deleteBuffer(buffer);

@@ -95,6 +95,7 @@ struct UniformLocations_lt
   GLint               materialUseReflectionLocation{0};
 
   GLint               materialShadowCatcherLocation{0};
+  GLint              materialHideInViewportLocation{0};
 
   GLint                 materialAlbedoScaleLocation{0};
 
@@ -559,6 +560,7 @@ void G3DMaterialShader::getLocations(GLuint program, ShaderType shaderType)
     locations. materialUseReflectionLocation = loc(program, "material.useReflection" );
 
     locations.materialShadowCatcherLocation  = loc(program, "material.rayVisibilityShadowCatcher");
+    locations.materialHideInViewportLocation = loc(program, "material.hideInViewport");
 
     locations.  materialAlbedoScaleLocation      = loc(program, "material.albedoScale"  );
     locations.  materialAlbedoBrightnessLocation = loc(program, "material.albedoBrightness"  );
@@ -785,8 +787,9 @@ void G3DMaterialShader::draw(RenderInfo& renderInfo,
                              GLenum mode,
                              VertexBuffer* vertexBuffer)
 {
-  if(renderInfo.pass == RenderPass::LightFBOs &&
-     processedGeometry3D.alternativeMaterial->material.rayVisibilityShadowCatcher)
+  auto const & altMat = processedGeometry3D.alternativeMaterial->material;
+
+  if(renderInfo.pass == RenderPass::LightFBOs && altMat.rayVisibilityShadowCatcher)
     return;
 
   d->draw(mode, vertexBuffer);

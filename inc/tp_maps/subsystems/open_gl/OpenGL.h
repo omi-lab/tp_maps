@@ -13,7 +13,7 @@
 
 #elif defined(TP_OSX) //----------------------------------------------------------------------------
 #  define GL_DO_NOT_WARN_IF_MULTI_GL_GLSL_HEADERS_INCLUDED
-#  include <gl3.h>
+#  include <OpenGL/gl3.h>
 #  include <OpenGL/glext.h>
 #  define TP_DEFAULT_PROFILE tp_maps::ShaderProfile::GLSL_410
 #  define TP_GL3

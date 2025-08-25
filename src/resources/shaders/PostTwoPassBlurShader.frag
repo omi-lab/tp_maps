@@ -36,8 +36,6 @@ void main()
 	for(float step = -radiusHalf; step <= radiusHalf; step += 2.0)
 	{
 		vec2 off_uv = coord_tex + vec2(step + 0.5) * f;
-		//off_uv.x += (step + 0.5) * f.x;
-		//off_uv.y += (step + 0.5) * f.y;
 
 		float weight = gauss(step, blurSigma) + gauss(step + 1.0, blurSigma);
 		color       += texture(textureSampler, off_uv) * weight;

@@ -24,6 +24,11 @@ static void APIENTRY tpOutputOpenGLDebug(GLenum source,
   TP_UNUSED(length);
   TP_UNUSED(userParam);
 
+#ifdef TP_MAPS_DEBUG_IGNORE_NOTIFICATIONS
+  if(severity == GL_DEBUG_SEVERITY_NOTIFICATION)
+    return;
+#endif
+
   // ignore non-significant error/warning codes
   if(id == 131169 || id == 131185 || id == 131218 || id == 131204) return;
 

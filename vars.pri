@@ -194,6 +194,9 @@ HEADERS += inc/tp_maps/shaders/G3DDepthShader.h
 SOURCES += src/shaders/G3DXYZShader.cpp
 HEADERS += inc/tp_maps/shaders/G3DXYZShader.h
 
+SOURCES += src/shaders/G3DPatternShader.cpp
+HEADERS += inc/tp_maps/shaders/G3DPatternShader.h
+
 SOURCES += src/shaders/G3DMaterialShader.cpp
 HEADERS += inc/tp_maps/shaders/G3DMaterialShader.h
 

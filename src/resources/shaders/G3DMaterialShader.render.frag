@@ -75,7 +75,7 @@ uniform mat4 v;
 uniform mat4 mInv;
 
 uniform vec3 cameraOrigin_world;
-  
+
 mat4 worldToTangent;
 vec3 cameraOrigin_tangent;
 vec3 fragPos_tangent;
@@ -368,11 +368,11 @@ float spotLightSampleShadow2D(vec3 norm, Light light, vec3 lightDirection_tangen
     // We can separate the sx/sy components from the uvxt derivatives as
     //   a*uvxydx + b*uvxydy = (1), c*uvxydx + d*uvxydy = (0)
     //                         (0)                        (1)
-    // 
+    //
     // This is solved by a 2x2 matrix equation, then we can calculate
     //   depth(sx,sy) = sx*(a*depthdx + b*depthdy) + sy*(c*depthdx + d*depthdy)
     //
-    // 
+    //
     mat2 A = mat2(uvxydx, uvxydy);
     mat2 Ai = invMat2(A);
     vec2 depthGradXY = txlSize*vec2(Ai[0][0]*depthdx + Ai[0][1]*depthdy, Ai[1][0]*depthdx + Ai[1][1]*depthdy);

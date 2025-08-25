@@ -1,0 +1,93 @@
+#ifndef tp_maps_PatternShader_h
+#define tp_maps_PatternShader_h
+
+#include "tp_maps/shaders/Geometry3DShader.h"
+
+namespace tp_maps
+{
+//##################################################################################################
+//! A shader for drawing images.
+class TP_MAPS_EXPORT G3DPatternShader: public Geometry3DShader
+{
+  TP_DQ;
+public:
+  //################################################################################################
+  static inline const tp_utils::StringID& name(){return patternShaderSID();}
+
+  //################################################################################################
+  G3DPatternShader(Map* map, tp_maps::ShaderProfile shaderProfile);
+
+  //################################################################################################
+  ~G3DPatternShader() override;
+
+  //################################################################################################
+  void setMatrix(const glm::mat4& m, const glm::mat4& mvp);
+
+  //################################################################################################
+  bool initPass(RenderInfo& renderInfo,
+                const Matrices& m,
+                const glm::mat4& modelToWorldMatrix) override;
+
+  //################################################################################################
+  void setMaterial(RenderInfo& renderInfo,
+                   const ProcessedGeometry3D& processedGeometry3D) override;
+
+  //################################################################################################
+  void setMaterialPicking(RenderInfo& renderInfo,
+                          const ProcessedGeometry3D& processedGeometry3D) override;
+
+  //################################################################################################
+  void draw(RenderInfo& renderInfo,
+            const ProcessedGeometry3D& processedGeometry3D,
+            GLenum mode,
+            VertexBuffer* vertexBuffer) override;
+
+  //################################################################################################
+  void drawPicking(RenderInfo& renderInfo,
+                   const ProcessedGeometry3D& processedGeometry3D,
+                   GLenum mode,
+                   VertexBuffer* vertexBuffer,
+                   const glm::vec4& pickingID) override;
+
+  //################################################################################################
+  void use(ShaderType shaderType) override;
+
+
+  //################################################################################################
+  enum class PatternSelection
+  {
+    Ghosty,  //!< Creates subtle stripes so the object still there but ghosty.
+  };
+
+  //################################################################################################
+  static std::vector<std::string> patternSelections();
+
+  //################################################################################################
+  static std::string patternSelectionToString(PatternSelection patternSelection);
+
+  //################################################################################################
+  static PatternSelection patternSelectionFromString(const std::string& patternSelection);
+
+  //################################################################################################
+  void setpatternSelection(PatternSelection patternSelection);
+
+  //################################################################################################
+  PatternSelection patternSelection() const;
+
+protected:
+  //################################################################################################
+  const std::string& vertexShaderStr(ShaderType shaderType) override;
+
+  //################################################################################################
+  const std::string& fragmentShaderStr(ShaderType shaderType) override;
+
+  //################################################################################################
+  void bindLocations(GLuint program, ShaderType shaderType) override;
+
+  //################################################################################################
+  void getLocations(GLuint program, ShaderType shaderType) override;
+};
+
+}
+
+#endif

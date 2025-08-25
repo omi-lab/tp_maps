@@ -1,5 +1,4 @@
-#ifndef tp_maps_LightsLayer_h
-#define tp_maps_LightsLayer_h
+#pragma once
 
 #include "tp_maps/Layer.h"
 
@@ -68,5 +67,3 @@ protected:
 };
 
 }
-
-#endif

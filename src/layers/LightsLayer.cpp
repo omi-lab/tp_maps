@@ -20,6 +20,7 @@ namespace tp_maps
 
 namespace
 {
+//##################################################################################################
 struct LabelDetails_lt
 {
   glm::vec3 position;

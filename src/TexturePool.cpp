@@ -243,7 +243,6 @@ void TexturePool::unsubscribe(const tp_utils::StringID& name)
   auto i = d->images.find(name);
   if(i == d->images.end())
   {
-    tpWarning() << "Error TexturePool::unsubscribe(name)!";
     return;
   }
 

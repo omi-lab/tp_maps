@@ -1,7 +1,8 @@
-#ifndef tp_maps_GraphController_h
-#define tp_maps_GraphController_h
+#pragma once
 
 #include "tp_maps/Controller.h"
+
+#include "tp_utils/CallbackCollection.h"
 
 namespace tp_maps
 {
@@ -19,6 +20,24 @@ public:
 
   //################################################################################################
   void setFocalPoint(const glm::dvec3& focalPoint);
+
+  //################################################################################################
+  double limitFocalPointMinX() const;
+
+  //################################################################################################
+  double limitFocalPointMaxX() const;
+
+  //################################################################################################
+  void setLimitFocalPointX(double minX, double maxX) const;
+
+  //################################################################################################
+  double limitFocalPointMinY() const;
+
+  //################################################################################################
+  double limitFocalPointMaxY() const;
+
+  //################################################################################################
+  void setLimitFocalPointY(double minY, double maxY) const;
 
   //################################################################################################
   bool allowTranslation() const;
@@ -51,10 +70,38 @@ public:
   void setDistanceY(double distanceY);
 
   //################################################################################################
+  void setLimitDistanceX(double limitDistanceMinX, double limitDistanceMaxX) const;
+
+  //################################################################################################
+  double limitDistanceMinX() const;
+
+  //################################################################################################
+  double limitDistanceMaxX() const;
+
+  //################################################################################################
+  void setLimitDistanceY(double limitDistanceMinY, double limitDistanceMaxY) const;
+
+  //################################################################################################
+  double limitDistanceMinY() const;
+
+  //################################################################################################
+  double limitDistanceMaxY() const;
+
+
+  //################################################################################################
+  bool ignoreAspectRatio() const;
+
+  //################################################################################################
+  void setIgnoreAspectRatio(bool ignoreAspectRatio);
+
+  //################################################################################################
   void saveState(nlohmann::json& j) const override;
 
   //################################################################################################
   void loadState(const nlohmann::json& j) override;
+
+  //################################################################################################
+  tp_utils::CallbackCollection<void()> focalPointParametersChanged;
 
 protected:
   //################################################################################################
@@ -73,12 +120,14 @@ protected:
   virtual void translate(double dx, double dy, double msSincePrevious);
 
   //################################################################################################
+  virtual void translateInteractionStarted();
+
+  //################################################################################################
   virtual void translateInteractionFinished();
 
   //################################################################################################
-  virtual void translateInteractionStarted();
+  virtual void zoomPerformed();
 };
 
 }
 
-#endif

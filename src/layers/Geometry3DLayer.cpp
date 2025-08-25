@@ -6,6 +6,7 @@
 #include "tp_maps/TexturePool.h"
 #include "tp_maps/shaders/G3DMaterialShader.h"
 #include "tp_maps/shaders/G3DImageShader.h"
+#include "tp_maps/shaders/G3DPatternShader.h"
 #include "tp_maps/shaders/G3DXYZShader.h"
 #include "tp_maps/shaders/G3DDepthShader.h"
 #include "tp_maps/shaders/G3DStaticLightShader.h"
@@ -200,6 +201,7 @@ std::string Geometry3DLayer::shaderSelectionToString(ShaderSelection shaderSelec
     case Geometry3DLayer::ShaderSelection::XYZ        : return "XYZ"        ;
     case Geometry3DLayer::ShaderSelection::Depth      : return "Depth"      ;
     case Geometry3DLayer::ShaderSelection::StaticLight: return "StaticLight";
+    case Geometry3DLayer::ShaderSelection::Pattern    : return "Pattern"    ;
   }
   return "Material";
 }
@@ -212,6 +214,7 @@ Geometry3DLayer::ShaderSelection Geometry3DLayer::shaderSelectionFromString(cons
   if(shaderSelection == "XYZ"        ) return Geometry3DLayer::ShaderSelection::XYZ        ;
   if(shaderSelection == "Depth"      ) return Geometry3DLayer::ShaderSelection::Depth      ;
   if(shaderSelection == "StaticLight") return Geometry3DLayer::ShaderSelection::StaticLight;
+  if(shaderSelection == "Pattern"    ) return Geometry3DLayer::ShaderSelection::Pattern    ;
 
   return Geometry3DLayer::ShaderSelection::Material;
 }
@@ -311,6 +314,7 @@ void Geometry3DLayer::render(RenderInfo& renderInfo)
       case ShaderSelection::XYZ         : shader = map()->getShader<G3DXYZShader>        (); break;
       case ShaderSelection::Depth       : shader = map()->getShader<G3DDepthShader>      (); break;
       case ShaderSelection::StaticLight : shader = map()->getShader<G3DStaticLightShader>(); break;
+      case ShaderSelection::Pattern     : shader = map()->getShader<G3DPatternShader>    (); break;
     }
   }
 
