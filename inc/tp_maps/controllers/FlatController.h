@@ -1,8 +1,9 @@
-#ifndef tp_maps_FlatController_h
-#define tp_maps_FlatController_h
+#pragma once
 
 #include "tp_maps/Controller.h"
 #include "tp_maps/MouseEvent.h"
+
+#include "tp_utils/CallbackCollection.h"
 
 namespace tp_maps
 {
@@ -80,6 +81,27 @@ public:
   //################################################################################################
   void loadState(const nlohmann::json& j) override;
 
+  //################################################################################################
+  struct Data
+  {
+    float distance{10.0f};
+
+    //The state of the camera
+    float viewAngle{0.0f};
+    float rotationAngle{0.0f};
+
+    glm::vec3 focalPoint{0, 0, 0};
+  };
+
+  //################################################################################################
+  void setData(const Data& data);
+
+  //################################################################################################
+  const Data& data() const;
+
+  //################################################################################################
+  tp_utils::CallbackCollection<void()> dataEdited;
+
 protected:
   //################################################################################################
   ~FlatController() override;
@@ -104,5 +126,3 @@ protected:
 };
 
 }
-
-#endif

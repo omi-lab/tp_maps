@@ -32,6 +32,9 @@ public:
                 bool quiet=false);
 
   //################################################################################################
+  const tp_image_utils::ColorMap& image() const;
+
+  //################################################################################################
   bool imageReady() override;
 
   void updateContent(GLuint texId) override;

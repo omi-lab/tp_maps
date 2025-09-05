@@ -60,6 +60,12 @@ void BasicTexture::setImage(const tp_image_utils::ColorMap& image,
 }
 
 //##################################################################################################
+const tp_image_utils::ColorMap& BasicTexture::image() const
+{
+  return d->image;
+}
+
+//##################################################################################################
 bool BasicTexture::imageReady()
 {
   return d->imageReady;
